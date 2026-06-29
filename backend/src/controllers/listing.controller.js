@@ -1,5 +1,5 @@
 import Listing from "../models/listing.model.js";
-
+import { groupListingsByProduct } from "../services/productGrouping.service.js";
 function normalizeText(text = "") {
   return text
     .toLowerCase()
@@ -78,23 +78,26 @@ export async function searchListings(req, res) {
         ? Math.round(prices.reduce((sum, price) => sum + price, 0) / prices.length)
         : null;
 
-    const bestDeal = listings.length > 0 ? listings[0] : null;
-    const platforms = [...new Set(listings.map((listing) => listing.platform))];
+const bestDeal = listings.length > 0 ? listings[0] : null;
+const platforms = [...new Set(listings.map((listing) => listing.platform))];
+const groups = groupListingsByProduct(listings);
 
-    res.json({
-      success: true,
-      query: q,
-      count: listings.length,
-      summary: {
-        platforms: platforms.length,
-        lowestPrice,
-        highestPrice,
-        averagePrice,
-        bestDealPlatform: bestDeal ? bestDeal.platform : null,
-        bestDealTitle: bestDeal ? bestDeal.title : null,
-      },
-      data: listings,
-    });
+res.json({
+  success: true,
+  query: q,
+  count: listings.length,
+  groupCount: groups.length,
+  summary: {
+    platforms: platforms.length,
+    lowestPrice,
+    highestPrice,
+    averagePrice,
+    bestDealPlatform: bestDeal ? bestDeal.platform : null,
+    bestDealTitle: bestDeal ? bestDeal.title : null,
+  },
+  groups,
+  data: listings,
+});
   } catch (error) {
     res.status(500).json({
       success: false,
