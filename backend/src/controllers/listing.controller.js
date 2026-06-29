@@ -1,18 +1,13 @@
 import Listing from "../models/listing.model.js";
+import { normalizeTitle } from "../services/normalizeTitle.service.js";
 import { groupListingsByProduct } from "../services/productGrouping.service.js";
-function normalizeText(text = "") {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
+
 
 export async function createListing(req, res) {
   try {
     const listingData = {
       ...req.body,
-      normalizedTitle: req.body.normalizedTitle || normalizeText(req.body.title),
+      normalizedTitle: req.body.normalizedTitle || normalizeTitle(req.body.title),
     };
 
     const listing = await Listing.create(listingData);
@@ -57,7 +52,7 @@ export async function searchListings(req, res) {
       });
     }
 
-    const normalizedQuery = normalizeText(q);
+    const normalizedQuery = normalizeTitle(q);
 
     const listings = await Listing.find({
       $or: [
