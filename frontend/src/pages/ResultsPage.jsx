@@ -1,89 +1,65 @@
 import { useSearchParams } from "react-router-dom";
-import { useState, useMemo } from "react";
-import ProductCard from "../components/ProductCard";
+import { useState, useMemo, useEffect } from "react";
+import { DUMMY_PRODUCTS } from "../data/dummyProducts";
+import { searchProducts } from "../api/api";
 import Sidebar from "../components/Sidebar";
-
-const DUMMY_PRODUCTS = [
-  {
-    _id: "1",
-    platform: "PriceOye",
-    title: "Apple iPhone 15 128GB PTA Approved",
-    price: 269999,
-    originalPrice: 310000,
-    discountPercent: 13,
-    productUrl: "https://priceoye.pk",
-    imageUrl: "",
-    category: "Mobile Phones",
-    sellerName: "PriceOye Official",
-    rating: 4,
-    reviewCount: 128,
-    deliveryFee: 0,
-    availability: "In Stock",
-    lastScrapedAt: new Date().toISOString(),
-    isBestDeal: true,
-    isSuspicious: false,
-  },
-  {
-    _id: "2",
-    platform: "Mega.pk",
-    title: "Apple iPhone 15 128GB",
-    price: 285000,
-    originalPrice: 320000,
-    discountPercent: 11,
-    productUrl: "https://mega.pk",
-    imageUrl: "",
-    category: "Mobile Phones",
-    sellerName: "Mega Store",
-    rating: 3,
-    reviewCount: 45,
-    deliveryFee: 200,
-    availability: "In Stock",
-    lastScrapedAt: new Date().toISOString(),
-    isBestDeal: false,
-    isSuspicious: false,
-  },
-  {
-    _id: "3",
-    platform: "Shophive",
-    title: "iPhone 15 128GB Space Black",
-    price: 299999,
-    originalPrice: 599999,
-    discountPercent: 50,
-    productUrl: "https://shophive.com",
-    imageUrl: "",
-    category: "Mobile Phones",
-    sellerName: "Shophive",
-    rating: 2,
-    reviewCount: 12,
-    deliveryFee: 0,
-    availability: "Limited Stock",
-    lastScrapedAt: new Date().toISOString(),
-    isBestDeal: false,
-    isSuspicious: true,
-  },
-];
+import SummaryCards from "../components/SummaryCards";
+import ProductHeader from "../components/ProductHeader";
+import ComparisonTable from "../components/ComparisonTable";
 
 function ResultsPage() {
   const [searchParams] = useSearchParams();
   const query = searchParams.get("q");
 
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [usingDummy, setUsingDummy] = useState(false);
+
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+
+      const result = await searchProducts(query);
+
+      if (result) {
+        setProducts(result);
+        setUsingDummy(false);
+      } else {
+        setProducts(DUMMY_PRODUCTS);
+        setUsingDummy(true);
+      }
+
+      setLoading(false);
+    }
+
+    if (query) {
+      fetchData();
+    }
+  }, [query]);
+
   const allPlatforms = useMemo(() => {
-    const platforms = DUMMY_PRODUCTS.map((p) => p.platform);
-    return [...new Set(platforms)];
-  }, []);
+    return [...new Set(products.map((p) => p.platform))];
+  }, [products]);
 
   const minPrice = useMemo(() => {
-    return Math.min(...DUMMY_PRODUCTS.map((p) => p.price));
-  }, []);
+    if (products.length === 0) return 0;
+    return Math.min(...products.map((p) => p.price));
+  }, [products]);
 
   const maxPrice = useMemo(() => {
-    return Math.max(...DUMMY_PRODUCTS.map((p) => p.price));
-  }, []);
+    if (products.length === 0) return 100000;
+    return Math.max(...products.map((p) => p.price));
+  }, [products]);
 
-  const [selectedPlatforms, setSelectedPlatforms] = useState(allPlatforms);
-  const [priceRange, setPriceRange] = useState([minPrice, maxPrice]);
+  const [selectedPlatforms, setSelectedPlatforms] = useState([]);
+  const [priceRange, setPriceRange] = useState([0, 100000]);
   const [showBestDeal, setShowBestDeal] = useState(false);
   const [showTopRated, setShowTopRated] = useState(false);
+
+  useEffect(() => {
+    setSelectedPlatforms(allPlatforms);
+    setPriceRange([minPrice, maxPrice]);
+  }, [allPlatforms, minPrice, maxPrice]);
 
   function handleReset() {
     setSelectedPlatforms(allPlatforms);
@@ -93,39 +69,34 @@ function ResultsPage() {
   }
 
   const filtered = useMemo(() => {
-    let results = [...DUMMY_PRODUCTS];
-
-    results = results.filter((p) =>
-      selectedPlatforms.includes(p.platform)
-    );
-
+    let results = [...products];
+    results = results.filter((p) => selectedPlatforms.includes(p.platform));
     results = results.filter(
       (p) => p.price >= priceRange[0] && p.price <= priceRange[1]
     );
-
-    if (showBestDeal) {
-      results = results.filter((p) => p.isBestDeal === true);
-    }
-
-    if (showTopRated) {
-      results.sort((a, b) => b.rating - a.rating);
-    }
-
+    if (showBestDeal) results = results.filter((p) => p.isBestDeal === true);
+    if (showTopRated) results.sort((a, b) => b.rating - a.rating);
     return results;
-  }, [selectedPlatforms, priceRange, showBestDeal, showTopRated]);
+  }, [products, selectedPlatforms, priceRange, showBestDeal, showTopRated]);
+
+  if (loading) {
+    return (
+      <div className="loading-screen">
+        <div className="loading-spinner" />
+        <p className="loading-text">Finding the best prices for "{query}"...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="results-page">
-      <div className="results-top">
-        <h2 className="results-title">
-          Results for: <span>"{query}"</span>
-        </h2>
-        <p className="results-count">
-          {filtered.length} products found across platforms
-        </p>
-      </div>
+      {usingDummy && (
+        <div className="demo-banner">
+          Demo mode — showing sample data. Connect backend for real results.
+        </div>
+      )}
 
-      <div className="results-layout">
+      <div className="results-body">
         <Sidebar
           allPlatforms={allPlatforms}
           selectedPlatforms={selectedPlatforms}
@@ -139,20 +110,75 @@ function ResultsPage() {
           showTopRated={showTopRated}
           setShowTopRated={setShowTopRated}
           onReset={handleReset}
+          products={products}
         />
 
-        <div className="products-area">
+        <div className="results-content">
+          <div className="results-top">
+            <div>
+              <h2 className="results-title">
+                Results for: <span>"{query}"</span>
+              </h2>
+              <p className="results-count">
+                {filtered.length} product found across {allPlatforms.length} platforms
+              </p>
+            </div>
+            <p className="results-freshness">
+              &#8635; Last updated:{" "}
+              {new Date().toLocaleDateString("en-GB", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+              ,{" "}
+              {new Date().toLocaleTimeString("en-US", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </p>
+          </div>
+
+          <SummaryCards products={filtered} />
+          <ProductHeader products={filtered} />
+
           {filtered.length === 0 ? (
             <p className="results-placeholder">
               No products match your filters.
             </p>
           ) : (
-            <div className="products-list">
-              {filtered.map((product) => (
-                <ProductCard key={product._id} product={product} />
-              ))}
-            </div>
+            <ComparisonTable products={filtered} />
           )}
+
+          <div className="trust-strip">
+            <div className="trust-item">
+              <span className="trust-icon">&#128737;</span>
+              <div>
+                <div className="trust-title">Safe Shopping</div>
+                <div className="trust-sub">All stores are verified and trusted</div>
+              </div>
+            </div>
+            <div className="trust-item">
+              <span className="trust-icon">&#8635;</span>
+              <div>
+                <div className="trust-title">Live Updates</div>
+                <div className="trust-sub">Prices updated regularly</div>
+              </div>
+            </div>
+            <div className="trust-item">
+              <span className="trust-icon">&#127991;</span>
+              <div>
+                <div className="trust-title">Best Prices</div>
+                <div className="trust-sub">We find the lowest prices for you</div>
+              </div>
+            </div>
+            <div className="trust-item">
+              <span className="trust-icon">&#128274;</span>
+              <div>
+                <div className="trust-title">Secure Deals</div>
+                <div className="trust-sub">Your data is safe with us</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
