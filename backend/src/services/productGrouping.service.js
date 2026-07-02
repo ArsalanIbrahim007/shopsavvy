@@ -1,39 +1,55 @@
 import { normalizeTitle } from "./normalizeTitle.service.js";
+import { isSimilarProduct } from "./similarity.service.js";
 
 export function groupListingsByProduct(listings = []) {
-  const groupsMap = {};
+  const groups = [];
 
   listings.forEach((listing) => {
-    const groupKey = normalizeTitle(listing.normalizedTitle || listing.title);
+    const normalizedListingTitle = normalizeTitle(
+      listing.normalizedTitle || listing.title
+    );
 
-    if (!groupsMap[groupKey]) {
-      groupsMap[groupKey] = {
+    let matchedGroup = null;
+
+    for (const group of groups) {
+      if (
+        isSimilarProduct(
+          normalizedListingTitle,
+          group.normalizedGroupKey,
+          0.7
+        )
+      ) {
+        matchedGroup = group;
+        break;
+      }
+    }
+
+    if (!matchedGroup) {
+      matchedGroup = {
         productName: listing.title,
-        normalizedGroupKey: groupKey,
+        normalizedGroupKey: normalizedListingTitle,
         offerCount: 0,
         lowestPrice: listing.price,
         highestPrice: listing.price,
         bestDeal: listing,
         offers: [],
       };
+
+      groups.push(matchedGroup);
     }
 
-    const group = groupsMap[groupKey];
+    matchedGroup.offers.push(listing);
+    matchedGroup.offerCount++;
 
-    group.offers.push(listing);
-    group.offerCount++;
-
-    if (listing.price < group.lowestPrice) {
-      group.lowestPrice = listing.price;
-      group.bestDeal = listing;
+    if (listing.price < matchedGroup.lowestPrice) {
+      matchedGroup.lowestPrice = listing.price;
+      matchedGroup.bestDeal = listing;
     }
 
-    if (listing.price > group.highestPrice) {
-      group.highestPrice = listing.price;
+    if (listing.price > matchedGroup.highestPrice) {
+      matchedGroup.highestPrice = listing.price;
     }
   });
 
-  return Object.values(groupsMap).sort(
-    (a, b) => b.offerCount - a.offerCount
-  );
+  return groups.sort((a, b) => b.offerCount - a.offerCount);
 }
