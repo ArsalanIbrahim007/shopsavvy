@@ -1,5 +1,6 @@
 import { normalizeTitle } from "./normalizeTitle.service.js";
 import { isSimilarProduct } from "./similarity.service.js";
+import { calculateDealScores, getBestDeal } from "../ranking/dealScore.js";
 
 export function groupListingsByProduct(listings = []) {
   const groups = [];
@@ -43,7 +44,6 @@ export function groupListingsByProduct(listings = []) {
 
     if (listing.price < matchedGroup.lowestPrice) {
       matchedGroup.lowestPrice = listing.price;
-      matchedGroup.bestDeal = listing;
     }
 
     if (listing.price > matchedGroup.highestPrice) {
@@ -51,5 +51,16 @@ export function groupListingsByProduct(listings = []) {
     }
   });
 
-  return groups.sort((a, b) => b.offerCount - a.offerCount);
+  return groups
+    .map((group) => {
+      const rankedOffers = calculateDealScores(group.offers);
+      const bestDeal = getBestDeal(group.offers);
+
+      return {
+        ...group,
+        bestDeal,
+        offers: rankedOffers,
+      };
+    })
+    .sort((a, b) => b.offerCount - a.offerCount);
 }
