@@ -25,25 +25,37 @@ import { scrapeShophiveSearch } from "./shophive.scraper.js";
 import { scrapeGeneric } from "./generic.scraper.js";
 import { searchForProduct } from "./googleSearch.js";
 
+// Known aliases — if user searches these, also match the alternatives in titles
+const QUERY_ALIASES = {
+  "playstation 5": ["ps5", "playstation5"],
+  "ps5": ["playstation 5", "playstation5"],
+  "dell laptop": ["dell latitude", "dell inspiron", "dell xps", "dell vostro"],
+  "hp laptop": ["hp pavilion", "hp elitebook", "hp probook", "hp envy"],
+  "lenovo laptop": ["lenovo thinkpad", "lenovo ideapad", "lenovo thinkbook"],
+  "samsung galaxy": ["samsung s", "galaxy s"],
+};
+
 /**
  * Filters scraped listings to only those relevant to the search query.
- * Uses phrase matching — the title must contain the full query as a phrase,
- * or at least the most specific part of it (last 2 words if query is long).
- * e.g. "iphone 15" will NOT match "iPhone 17" or "iPhone charger"
+ * Handles exact phrase matching, partial matching, and known aliases.
  */
 function filterByRelevance(listings, query) {
   const q = query.toLowerCase().trim();
   const words = q.split(/\s+/).filter((w) => w.length > 2);
   if (words.length === 0) return listings;
 
+  const aliases = QUERY_ALIASES[q] || [];
+
   return listings.filter((listing) => {
     const title = listing.title.toLowerCase();
 
-    // First try: exact phrase match (most strict)
+    // Exact phrase match
     if (title.includes(q)) return true;
 
-    // Second try: if query has 3+ words, check if last 2 words appear together
-    // e.g. "apple iphone 15" → check for "iphone 15" in title
+    // Check aliases
+    if (aliases.some((alias) => title.includes(alias))) return true;
+
+    // For 3+ word queries, check if last 2 words appear together
     if (words.length >= 3) {
       const lastTwo = words.slice(-2).join(" ");
       if (title.includes(lastTwo)) return true;
@@ -157,13 +169,18 @@ async function scrapeAllPlatforms(query, opts = {}) {
 
 export { scrapeAllPlatforms, scrapeFixedPlatforms, scrapeDiscoveredPlatforms };
 
-// CLI usage:
-//   node index.js "iphone 15"         → fixed scrapers only
-//   node index.js "iphone 15" --all   → fixed + Google discovery
-const query = process.argv[2] || "iphone";
-const dynamic = process.argv.includes("--all");
+// Only run CLI code when this file is executed directly (not when imported)
+// Works reliably on Windows by checking the filename, not the full URL
+const runningDirectly = process.argv[1]?.replace(/\\/g, "/").endsWith("scrapers/index.js");
 
-scrapeAllPlatforms(query, { dynamic }).then((results) => {
-  console.log(`\nTotal listings scraped: ${results.length}`);
-  console.log(JSON.stringify(results, null, 2));
-});
+if (runningDirectly) {
+  // Filter out flags to get the actual query argument
+  const args = process.argv.slice(2).filter((a) => !a.startsWith("--"));
+  const query = args[0] || "iphone";
+  const dynamic = process.argv.includes("--all");
+
+  scrapeAllPlatforms(query, { dynamic }).then((results) => {
+    console.log(`\nTotal listings scraped: ${results.length}`);
+    console.log(JSON.stringify(results, null, 2));
+  });
+}

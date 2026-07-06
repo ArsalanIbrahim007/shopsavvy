@@ -1,7 +1,6 @@
 // seed.js
 // Runs all fixed scrapers for a list of search queries and saves
-// results into MongoDB. Run this manually to populate the database
-// with fresh product listings.
+// results into MongoDB. Also records price history for each product.
 //
 // Usage:
 //   node src/scripts/seed.js                    — seeds default queries
@@ -12,11 +11,13 @@
 //   --all      Also run Google discovery layer (uses SerpApi + Groq quota)
 
 import { config } from "dotenv";
-config(); // loads backend/.env (run from backend/ directory)
+config();
 
 import { connectDB } from "../config/db.js";
 import Listing from "../models/listing.model.js";
+import PriceHistory from "../models/priceHistory.model.js";
 import { scrapeAllPlatforms } from "../scrapers/index.js";
+import { normalizeTitle } from "../services/normalizeTitle.service.js";
 
 // Default queries to seed if none provided via CLI
 const DEFAULT_QUERIES = [
@@ -27,28 +28,27 @@ const DEFAULT_QUERIES = [
   "playstation 5",
 ];
 
-/**
- * Converts a ScrapedListing (scraper output) to a Listing model document.
- * Maps scraper field names to model field names where they differ.
- */
 function toListingDoc(scraped) {
   return {
-    platform:      scraped.platform,
-    title:         scraped.title,
-    price:         scraped.price,
-    originalPrice: scraped.originalPrice ?? null,
-    sourceUrl:     scraped.sourceUrl,
-    productUrl:    scraped.sourceUrl,   // keep both in sync
-    imageUrl:      scraped.imageUrl ?? "",
-    brand:         scraped.brand ?? null,
-    inStock:       scraped.inStock ?? true,
-    scrapedAt:     scraped.scrapedAt ? new Date(scraped.scrapedAt) : new Date(),
-    category:      "",                  // filled in later by normalization layer
+    platform:        scraped.platform,
+    title:           scraped.title,
+    normalizedTitle: normalizeTitle(scraped.title), // Arsalan's field
+    price:           scraped.price,
+    originalPrice:   scraped.originalPrice ?? null,
+    currency:        "PKR",
+    sourceUrl:       scraped.sourceUrl,
+    productUrl:      scraped.sourceUrl,
+    imageUrl:        scraped.imageUrl ?? "",
+    brand:           scraped.brand ?? null,
+    category:        "Electronics",
+    inStock:         scraped.inStock ?? true,
+    isActive:        true,
+    lastScrapedAt:   new Date(),
+    scrapedAt:       scraped.scrapedAt ? new Date(scraped.scrapedAt) : new Date(),
   };
 }
 
 async function seed() {
-  // Parse CLI args
   const args = process.argv.slice(2);
   const shouldClear = args.includes("--clear");
   const dynamic = args.includes("--all");
@@ -62,17 +62,17 @@ async function seed() {
   console.log(`Clear DB  : ${shouldClear}`);
   console.log("");
 
-  // Connect to MongoDB
   await connectDB();
 
-  // Optionally clear existing listings
   if (shouldClear) {
     const deleted = await Listing.deleteMany({});
-    console.log(`Cleared ${deleted.deletedCount} existing listings\n`);
+    await PriceHistory.deleteMany({});
+    console.log(`Cleared ${deleted.deletedCount} existing listings and price history\n`);
   }
 
   let totalSaved = 0;
   let totalSkipped = 0;
+  let totalPriceRecords = 0;
 
   for (const query of queries) {
     console.log(`\n--- Scraping: "${query}" ---`);
@@ -90,38 +90,43 @@ async function seed() {
       continue;
     }
 
-    // Upsert each listing — if same platform+sourceUrl already exists,
-    // update it instead of creating a duplicate
     let saved = 0;
     let skipped = 0;
+    let priceRecords = 0;
 
     for (const item of scraped) {
-      // Skip listings with no price — not useful for comparison
       if (!item.price) {
         skipped++;
         continue;
       }
 
       try {
+        // Upsert the listing
         await Listing.findOneAndUpdate(
           { platform: item.platform, sourceUrl: item.sourceUrl },
           { $set: toListingDoc(item) },
           { upsert: true, returnDocument: "after" }
         );
         saved++;
+
+        // Record price history
+        await PriceHistory.recordPrice(item);
+        priceRecords++;
       } catch (err) {
         console.warn(`Failed to save "${item.title}":`, err.message);
         skipped++;
       }
     }
 
-    console.log(`"${query}" → saved ${saved}, skipped ${skipped} (no price or error)`);
+    console.log(`"${query}" → saved ${saved} listings, ${priceRecords} price records, skipped ${skipped}`);
     totalSaved += saved;
     totalSkipped += skipped;
+    totalPriceRecords += priceRecords;
   }
 
   console.log("\n=====================");
-  console.log(`Done! Total saved: ${totalSaved}, skipped: ${totalSkipped}`);
+  console.log(`Done! Listings: ${totalSaved} saved, ${totalSkipped} skipped`);
+  console.log(`Price history: ${totalPriceRecords} records written`);
   process.exit(0);
 }
 
