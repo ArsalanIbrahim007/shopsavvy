@@ -2,13 +2,7 @@ import { calculatePriceScore } from "./scores/priceScore.js";
 import { calculateFreshnessScore } from "./scores/freshnessScore.js";
 import { calculateAvailabilityScore } from "./scores/availabilityScore.js";
 import { calculateTrustScore } from "./scores/trustScore.js";
-
-const SCORE_WEIGHTS = {
-  price: 60,
-  trust: 20,
-  freshness: 10,
-  availability: 10,
-};
+import { SCORE_WEIGHTS } from "./scoreWeights.js";
 
 export function calculateDealScores(offers = []) {
   if (!offers.length) return [];
