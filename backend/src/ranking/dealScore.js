@@ -8,6 +8,34 @@ function normalizeValue(value, min, max, reverse = false) {
   return reverse ? 1 - normalized : normalized;
 }
 
+function calculateFreshnessScore(lastScrapedAt) {
+  if (!lastScrapedAt) return 0.5;
+
+  const scrapedDate = new Date(lastScrapedAt);
+  const now = new Date();
+
+  const ageInHours = (now - scrapedDate) / (1000 * 60 * 60);
+
+  if (ageInHours <= 24) return 1;
+  if (ageInHours <= 72) return 0.75;
+  if (ageInHours <= 168) return 0.5;
+
+  return 0.25;
+}
+
+function calculateAvailabilityScore(offer) {
+  if (offer.isActive === false) return 0;
+
+  if (offer.availability) {
+    if (offer.availability === "in_stock") return 1;
+    if (offer.availability === "limited_stock") return 0.7;
+    if (offer.availability === "unknown") return 0.5;
+    if (offer.availability === "out_of_stock") return 0;
+  }
+
+  return 1;
+}
+
 export function calculateDealScores(offers = []) {
   if (!offers.length) return [];
 
@@ -18,29 +46,38 @@ export function calculateDealScores(offers = []) {
 
   return offers
     .map((offer) => {
-      // Lower price = higher score
+      const plainOffer = offer.toObject ? offer.toObject() : offer;
+
       const priceScore = normalizeValue(
-        offer.price,
+        plainOffer.price,
         minPrice,
         maxPrice,
         true
       );
 
-      // Freshness (placeholder for now)
-      const freshnessScore = offer.lastScrapedAt ? 1 : 0.5;
+      const freshnessScore = calculateFreshnessScore(plainOffer.lastScrapedAt);
+      const availabilityScore = calculateAvailabilityScore(plainOffer);
 
-      // Active listing score
-      const availabilityScore = offer.isActive ? 1 : 0;
+      const scoreBreakdown = {
+        price: Number((priceScore * 70).toFixed(2)),
+        freshness: Number((freshnessScore * 20).toFixed(2)),
+        availability: Number((availabilityScore * 10).toFixed(2)),
+      };
 
-      // Weighted final score
       const finalScore =
-        priceScore * 0.7 +
-        freshnessScore * 0.2 +
-        availabilityScore * 0.1;
+        scoreBreakdown.price +
+        scoreBreakdown.freshness +
+        scoreBreakdown.availability;
 
       return {
-        ...(offer.toObject ? offer.toObject() : offer),
-        dealScore: Number((finalScore * 100).toFixed(2)),
+        ...plainOffer,
+        dealScore: Number(finalScore.toFixed(2)),
+        scoreBreakdown,
+        scoreWeights: {
+          price: 70,
+          freshness: 20,
+          availability: 10,
+        },
       };
     })
     .sort((a, b) => b.dealScore - a.dealScore);
