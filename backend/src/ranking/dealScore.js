@@ -1,40 +1,6 @@
-function normalizeValue(value, min, max, reverse = false) {
-  if (value === null || value === undefined) return 0;
-
-  if (max === min) return 1;
-
-  const normalized = (value - min) / (max - min);
-
-  return reverse ? 1 - normalized : normalized;
-}
-
-function calculateFreshnessScore(lastScrapedAt) {
-  if (!lastScrapedAt) return 0.5;
-
-  const scrapedDate = new Date(lastScrapedAt);
-  const now = new Date();
-
-  const ageInHours = (now - scrapedDate) / (1000 * 60 * 60);
-
-  if (ageInHours <= 24) return 1;
-  if (ageInHours <= 72) return 0.75;
-  if (ageInHours <= 168) return 0.5;
-
-  return 0.25;
-}
-
-function calculateAvailabilityScore(offer) {
-  if (offer.isActive === false) return 0;
-
-  if (offer.availability) {
-    if (offer.availability === "in_stock") return 1;
-    if (offer.availability === "limited_stock") return 0.7;
-    if (offer.availability === "unknown") return 0.5;
-    if (offer.availability === "out_of_stock") return 0;
-  }
-
-  return 1;
-}
+import { calculatePriceScore } from "./scores/priceScore.js";
+import { calculateFreshnessScore } from "./scores/freshnessScore.js";
+import { calculateAvailabilityScore } from "./scores/availabilityScore.js";
 
 export function calculateDealScores(offers = []) {
   if (!offers.length) return [];
@@ -48,26 +14,30 @@ export function calculateDealScores(offers = []) {
     .map((offer) => {
       const plainOffer = offer.toObject ? offer.toObject() : offer;
 
-      const priceScore = normalizeValue(
+      const priceScore = calculatePriceScore(
         plainOffer.price,
         minPrice,
-        maxPrice,
-        true
+        maxPrice
       );
 
-      const freshnessScore = calculateFreshnessScore(plainOffer.lastScrapedAt);
-      const availabilityScore = calculateAvailabilityScore(plainOffer);
+      const freshnessScore = calculateFreshnessScore(
+        plainOffer.lastScrapedAt
+      );
+
+      const availabilityScore = calculateAvailabilityScore(
+        plainOffer
+      );
 
       const scoreBreakdown = {
-        price: Number((priceScore * 70).toFixed(2)),
-        freshness: Number((freshnessScore * 20).toFixed(2)),
-        availability: Number((availabilityScore * 10).toFixed(2)),
+        price: priceScore,
+        freshness: freshnessScore,
+        availability: availabilityScore,
       };
 
       const finalScore =
-        scoreBreakdown.price +
-        scoreBreakdown.freshness +
-        scoreBreakdown.availability;
+        priceScore +
+        freshnessScore +
+        availabilityScore;
 
       return {
         ...plainOffer,
