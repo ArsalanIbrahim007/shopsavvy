@@ -1,6 +1,6 @@
 import { normalizeTitle } from "./normalizeTitle.service.js";
 import { isSimilarProduct } from "./similarity.service.js";
-import { calculateDealScores, getBestDeal } from "../ranking/dealScore.js";
+import { calculateDealScores } from "../ranking/dealScore.js";
 
 export function groupListingsByProduct(listings = []) {
   const groups = [];
@@ -32,7 +32,7 @@ export function groupListingsByProduct(listings = []) {
         offerCount: 0,
         lowestPrice: listing.price,
         highestPrice: listing.price,
-        bestDeal: listing,
+        bestDeal: null,
         offers: [],
       };
 
@@ -40,7 +40,7 @@ export function groupListingsByProduct(listings = []) {
     }
 
     matchedGroup.offers.push(listing);
-    matchedGroup.offerCount++;
+    matchedGroup.offerCount += 1;
 
     if (listing.price < matchedGroup.lowestPrice) {
       matchedGroup.lowestPrice = listing.price;
@@ -54,11 +54,13 @@ export function groupListingsByProduct(listings = []) {
   return groups
     .map((group) => {
       const rankedOffers = calculateDealScores(group.offers);
-      const bestDeal = getBestDeal(group.offers);
 
       return {
         ...group,
-        bestDeal,
+
+        // Offers are already sorted by highest deal score.
+        bestDeal: rankedOffers[0] || null,
+
         offers: rankedOffers,
       };
     })
