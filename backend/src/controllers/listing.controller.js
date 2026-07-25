@@ -1,20 +1,33 @@
+import mongoose from "mongoose";
 import Listing from "../models/listing.model.js";
 import { normalizeTitle } from "../services/normalizeTitle.service.js";
 import { groupListingsByProduct } from "../services/productGrouping.service.js";
-
+import {
+  getListingPriceHistory,
+  recordPriceSnapshot,
+} from "../services/priceHistory.service.js";
 
 export async function createListing(req, res) {
   try {
     const listingData = {
       ...req.body,
-      normalizedTitle: req.body.normalizedTitle || normalizeTitle(req.body.title),
+      normalizedTitle:
+        req.body.normalizedTitle ||
+        normalizeTitle(req.body.title),
     };
 
     const listing = await Listing.create(listingData);
 
+    const historyResult =
+      await recordPriceSnapshot(listing, {
+        source: "listing_created",
+        skipDuplicate: false,
+      });
+
     res.status(201).json({
       success: true,
       data: listing,
+      priceHistory: historyResult,
     });
   } catch (error) {
     res.status(400).json({
@@ -160,6 +173,148 @@ export async function getListingDetails(req, res) {
         bestDealScore: selectedGroup?.bestDeal?.dealScore || null,
       },
       offers,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+export async function addListingPriceHistory(
+  req,
+  res
+) {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid listing ID",
+      });
+    }
+
+    const listing = await Listing.findById(id);
+
+    if (!listing) {
+      return res.status(404).json({
+        success: false,
+        message: "Listing not found",
+      });
+    }
+
+    const {
+      price,
+      originalPrice,
+      recordedAt,
+      source = "manual",
+      updateListing = true,
+    } = req.body;
+
+    if (
+      price === undefined ||
+      price === null ||
+      price === ""
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Price is required",
+      });
+    }
+
+    const historyResult =
+      await recordPriceSnapshot(listing, {
+        price,
+        originalPrice,
+        recordedAt:
+          recordedAt || new Date(),
+        source,
+      });
+
+    if (
+      updateListing &&
+      historyResult.created
+    ) {
+      listing.price = Number(price);
+
+      if (
+        originalPrice !== undefined &&
+        originalPrice !== ""
+      ) {
+        listing.originalPrice =
+          originalPrice === null
+            ? null
+            : Number(originalPrice);
+      }
+
+      listing.lastScrapedAt =
+        recordedAt || new Date();
+
+      await listing.save();
+    }
+
+    res.status(
+      historyResult.created ? 201 : 200
+    ).json({
+      success: true,
+      message: historyResult.reason,
+      data: historyResult.snapshot,
+      listing,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
+export async function getListingHistory(
+  req,
+  res
+) {
+  try {
+    const { id } = req.params;
+    const { limit, days } = req.query;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid listing ID",
+      });
+    }
+
+    const listing = await Listing.findById(
+      id
+    ).lean();
+
+    if (!listing) {
+      return res.status(404).json({
+        success: false,
+        message: "Listing not found",
+      });
+    }
+
+    const historyResult =
+      await getListingPriceHistory(id, {
+        limit,
+        days,
+      });
+
+    res.json({
+      success: true,
+      listing: {
+        id: listing._id,
+        platform: listing.platform,
+        title: listing.title,
+        currentPrice: listing.price,
+        originalPrice:
+          listing.originalPrice ?? null,
+        currency: listing.currency,
+      },
+      summary: historyResult.summary,
+      data: historyResult.history,
     });
   } catch (error) {
     res.status(500).json({

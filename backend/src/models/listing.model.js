@@ -21,9 +21,21 @@ const listingSchema = new mongoose.Schema(
       lowercase: true,
     },
 
+    platformProductId: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
     price: {
       type: Number,
       required: true,
+      min: 0,
+    },
+
+    originalPrice: {
+      type: Number,
+      default: null,
       min: 0,
     },
 
@@ -31,6 +43,7 @@ const listingSchema = new mongoose.Schema(
       type: String,
       default: "PKR",
       trim: true,
+      uppercase: true,
     },
 
     productUrl: {
@@ -65,6 +78,11 @@ const listingSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+listingSchema.index({
+  platform: 1,
+  platformProductId: 1,
+});
 
 const Listing = mongoose.model("Listing", listingSchema);
 
