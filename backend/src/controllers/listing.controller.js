@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Listing from "../models/listing.model.js";
+import { attachPriceHistory } from "../services/historyEnrichment.service.js";
 import { normalizeTitle } from "../services/normalizeTitle.service.js";
 import { groupListingsByProduct } from "../services/productGrouping.service.js";
 import {
@@ -88,7 +89,8 @@ export async function searchListings(req, res) {
 
 const bestDeal = listings.length > 0 ? listings[0] : null;
 const platforms = [...new Set(listings.map((listing) => listing.platform))];
-const groups = groupListingsByProduct(listings);
+const enrichedListings = await attachPriceHistory(listings);
+const groups = groupListingsByProduct(enrichedListings);
 
 res.json({
   success: true,
@@ -104,7 +106,7 @@ res.json({
     bestDealTitle: bestDeal ? bestDeal.title : null,
   },
   groups,
-  data: listings,
+  data: enrichedListings,
 });
   } catch (error) {
     res.status(500).json({
@@ -147,7 +149,9 @@ export async function getListingDetails(req, res) {
         )
       ) || null;
 
-    const offers = selectedGroup ? selectedGroup.offers : [listing];
+    const offers = await attachPriceHistory(
+  selectedGroup ? selectedGroup.offers : [listing]
+);
 
     const prices = offers.map((offer) => offer.price).filter(Boolean);
 
