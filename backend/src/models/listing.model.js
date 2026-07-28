@@ -19,6 +19,12 @@ const listingSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
+    // Arsalan's field — platform-specific product ID
+    platformProductId: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     price: {
       type: Number,
       default: null,
@@ -28,13 +34,15 @@ const listingSchema = new mongoose.Schema(
     originalPrice: {
       type: Number,
       default: null,
+      min: 0,
     },
     currency: {
       type: String,
       default: "PKR",
       trim: true,
+      uppercase: true,
     },
-    // Muzammil's field — direct scraper URL (more specific than productUrl)
+    // Muzammil's field — direct scraper URL
     sourceUrl: {
       type: String,
       default: "",
@@ -65,7 +73,6 @@ const listingSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    // Arsalan's field
     isActive: {
       type: Boolean,
       default: true,
@@ -84,8 +91,9 @@ const listingSchema = new mongoose.Schema(
   }
 );
 
-// Arsalan's indexes for grouping/matching
+// Indexes for grouping/matching/sorting
 listingSchema.index({ platform: 1, title: 1 });
+listingSchema.index({ platform: 1, platformProductId: 1 });
 listingSchema.index({ normalizedTitle: 1 });
 listingSchema.index({ price: 1 });
 
