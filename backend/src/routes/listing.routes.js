@@ -1,4 +1,5 @@
 import express from "express";
+
 import {
   createListing,
   getListings,
@@ -8,9 +9,18 @@ import {
   getListingHistory,
 } from "../controllers/listing.controller.js";
 
+import {
+  validateCreateListing,
+} from "../middleware/validation.middleware.js";
+
 const router = express.Router();
 
-router.post("/", createListing);
+router.post(
+  "/",
+  validateCreateListing,
+  createListing
+);
+
 router.get("/", getListings);
 router.get("/search", searchListings);
 
