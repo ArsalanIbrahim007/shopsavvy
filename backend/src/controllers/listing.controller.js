@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+
 import Listing from "../models/listing.model.js";
 import { attachPriceHistory } from "../services/historyEnrichment.service.js";
 import { normalizeTitle } from "../services/normalizeTitle.service.js";
@@ -7,6 +8,70 @@ import {
   getListingPriceHistory,
   recordPriceSnapshot,
 } from "../services/priceHistory.service.js";
+import {
+  attachRecommendation,
+  attachRecommendations,
+} from "../services/recommendation/recommendation.service.js";
+
+/**
+ * Adds recommendations after product grouping and deal ranking.
+ *
+ * Recommendations must be generated after groupListingsByProduct()
+ * because the grouping service adds deal scores and ranking details.
+ */
+function attachRecommendationsToGroups(groups = []) {
+  if (!Array.isArray(groups)) {
+    return [];
+  }
+
+  return groups.map((group) => {
+    const recommendedOffers = attachRecommendations(group.offers || []);
+
+    const bestDealId = group.bestDeal?._id?.toString();
+
+    const recommendedBestDeal =
+      recommendedOffers.find(
+        (offer) => offer._id?.toString() === bestDealId
+      ) ||
+      (group.bestDeal
+        ? attachRecommendation(group.bestDeal)
+        : null);
+
+    return {
+      ...group,
+      offers: recommendedOffers,
+      bestDeal: recommendedBestDeal,
+    };
+  });
+}
+
+/**
+ * Creates a flat listing array from the recommended grouped offers.
+ * This keeps the existing "data" field available in the search response.
+ */
+function createRecommendedListingArray(listings = [], groups = []) {
+  const recommendedOffersById = new Map();
+
+  groups.forEach((group) => {
+    (group.offers || []).forEach((offer) => {
+      if (offer?._id) {
+        recommendedOffersById.set(
+          offer._id.toString(),
+          offer
+        );
+      }
+    });
+  });
+
+  return listings.map((listing) => {
+    const listingId = listing?._id?.toString();
+
+    return (
+      recommendedOffersById.get(listingId) ||
+      attachRecommendation(listing)
+    );
+  });
+}
 
 export async function createListing(req, res) {
   try {
@@ -19,11 +84,13 @@ export async function createListing(req, res) {
 
     const listing = await Listing.create(listingData);
 
-    const historyResult =
-      await recordPriceSnapshot(listing, {
+    const historyResult = await recordPriceSnapshot(
+      listing,
+      {
         source: "listing_created",
         skipDuplicate: false,
-      });
+      }
+    );
 
     res.status(201).json({
       success: true,
@@ -40,7 +107,9 @@ export async function createListing(req, res) {
 
 export async function getListings(req, res) {
   try {
-    const listings = await Listing.find().sort({ createdAt: -1 });
+    const listings = await Listing.find().sort({
+      createdAt: -1,
+    });
 
     res.json({
       success: true,
@@ -62,7 +131,8 @@ export async function searchListings(req, res) {
     if (!q || q.trim() === "") {
       return res.status(400).json({
         success: false,
-        message: "Search query is required. Example: /api/listings/search?q=iphone",
+        message:
+          "Search query is required. Example: /api/listings/search?q=iphone",
       });
     }
 
@@ -70,44 +140,122 @@ export async function searchListings(req, res) {
 
     const listings = await Listing.find({
       $or: [
-        { title: { $regex: q, $options: "i" } },
-        { normalizedTitle: { $regex: normalizedQuery, $options: "i" } },
-        { category: { $regex: q, $options: "i" } },
-        { platform: { $regex: q, $options: "i" } },
+        {
+          title: {
+            $regex: q,
+            $options: "i",
+          },
+        },
+        {
+          normalizedTitle: {
+            $regex: normalizedQuery,
+            $options: "i",
+          },
+        },
+        {
+          category: {
+            $regex: q,
+            $options: "i",
+          },
+        },
+        {
+          platform: {
+            $regex: q,
+            $options: "i",
+          },
+        },
       ],
-    }).sort({ price: 1, createdAt: -1 });
+    }).sort({
+      price: 1,
+      createdAt: -1,
+    });
 
-    const prices = listings.map((listing) => listing.price);
+    /*
+     * Correct processing order:
+     *
+     * Database listings
+     * → attach price history
+     * → group and rank products
+     * → generate recommendations
+     */
+    const enrichedListings =
+      await attachPriceHistory(listings);
 
-    const lowestPrice = prices.length > 0 ? Math.min(...prices) : null;
-    const highestPrice = prices.length > 0 ? Math.max(...prices) : null;
+    const rankedGroups =
+      groupListingsByProduct(enrichedListings);
 
-    const averagePrice =
-      prices.length > 0
-        ? Math.round(prices.reduce((sum, price) => sum + price, 0) / prices.length)
-        : null;
+    const groups =
+      attachRecommendationsToGroups(rankedGroups);
 
-const bestDeal = listings.length > 0 ? listings[0] : null;
-const platforms = [...new Set(listings.map((listing) => listing.platform))];
-const enrichedListings = await attachPriceHistory(listings);
-const groups = groupListingsByProduct(enrichedListings);
+    const recommendedListings =
+      createRecommendedListingArray(
+        enrichedListings,
+        groups
+      );
 
-res.json({
-  success: true,
-  query: q,
-  count: listings.length,
-  groupCount: groups.length,
-  summary: {
-    platforms: platforms.length,
-    lowestPrice,
-    highestPrice,
-    averagePrice,
-    bestDealPlatform: bestDeal ? bestDeal.platform : null,
-    bestDealTitle: bestDeal ? bestDeal.title : null,
-  },
-  groups,
-  data: enrichedListings,
-});
+    const prices = recommendedListings
+      .map((listing) => Number(listing.price))
+      .filter(
+        (price) =>
+          Number.isFinite(price) && price > 0
+      );
+
+    const lowestPrice = prices.length
+      ? Math.min(...prices)
+      : null;
+
+    const highestPrice = prices.length
+      ? Math.max(...prices)
+      : null;
+
+    const averagePrice = prices.length
+      ? Math.round(
+          prices.reduce(
+            (sum, price) => sum + price,
+            0
+          ) / prices.length
+        )
+      : null;
+
+    const platforms = [
+      ...new Set(
+        recommendedListings
+          .map((listing) => listing.platform)
+          .filter(Boolean)
+      ),
+    ];
+
+    const bestDeal =
+      groups
+        .map((group) => group.bestDeal)
+        .filter(Boolean)
+        .sort(
+          (firstOffer, secondOffer) =>
+            Number(secondOffer.dealScore || 0) -
+            Number(firstOffer.dealScore || 0)
+        )[0] || null;
+
+    res.json({
+      success: true,
+      query: q,
+      count: recommendedListings.length,
+      groupCount: groups.length,
+      summary: {
+        platforms: platforms.length,
+        lowestPrice,
+        highestPrice,
+        averagePrice,
+        bestDealPlatform:
+          bestDeal?.platform || null,
+        bestDealTitle: bestDeal?.title || null,
+        bestDealScore:
+          bestDeal?.dealScore ?? null,
+        bestDealRecommendation:
+          bestDeal?.recommendation?.action || null,
+      },
+      groups,
+      data: recommendedListings,
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -115,9 +263,17 @@ res.json({
     });
   }
 }
+
 export async function getListingDetails(req, res) {
   try {
     const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid listing ID",
+      });
+    }
 
     const listing = await Listing.findById(id);
 
@@ -132,49 +288,133 @@ export async function getListingDetails(req, res) {
       listing.normalizedTitle || listing.title
     );
 
+    const firstTitleWord =
+      listing.title?.split(" ")[0] || "";
+
     const possibleMatches = await Listing.find({
       $or: [
-        { normalizedTitle: { $regex: normalizedQuery, $options: "i" } },
-        { title: { $regex: listing.title.split(" ")[0], $options: "i" } },
-        { category: listing.category },
+        {
+          normalizedTitle: {
+            $regex: normalizedQuery,
+            $options: "i",
+          },
+        },
+        {
+          title: {
+            $regex: firstTitleWord,
+            $options: "i",
+          },
+        },
+        {
+          category: listing.category,
+        },
       ],
-    }).sort({ price: 1 });
+    }).sort({
+      price: 1,
+    });
 
-    const groups = groupListingsByProduct(possibleMatches);
+    /*
+     * Price history must be attached before grouping so the
+     * fake-discount and deal-ranking engines can use it.
+     */
+    const enrichedMatches =
+      await attachPriceHistory(possibleMatches);
+
+    const rankedGroups =
+      groupListingsByProduct(enrichedMatches);
+
+    const recommendedGroups =
+      attachRecommendationsToGroups(rankedGroups);
 
     const selectedGroup =
-      groups.find((group) =>
-        group.offers.some(
-          (offer) => offer._id.toString() === listing._id.toString()
+      recommendedGroups.find((group) =>
+        (group.offers || []).some(
+          (offer) =>
+            offer._id?.toString() ===
+            listing._id.toString()
         )
       ) || null;
 
-    const offers = await attachPriceHistory(
-  selectedGroup ? selectedGroup.offers : [listing]
-);
+    let offers;
 
-    const prices = offers.map((offer) => offer.price).filter(Boolean);
+    if (selectedGroup) {
+      offers = selectedGroup.offers;
+    } else {
+      const enrichedListing =
+        await attachPriceHistory([listing]);
 
-    const lowestPrice = prices.length ? Math.min(...prices) : null;
-    const highestPrice = prices.length ? Math.max(...prices) : null;
-    const averagePrice = prices.length
-      ? Math.round(prices.reduce((sum, price) => sum + price, 0) / prices.length)
+      offers =
+        attachRecommendations(enrichedListing);
+    }
+
+    const selectedListing =
+      offers.find(
+        (offer) =>
+          offer._id?.toString() ===
+          listing._id.toString()
+      ) || attachRecommendation(listing);
+
+    const prices = offers
+      .map((offer) => Number(offer.price))
+      .filter(
+        (price) =>
+          Number.isFinite(price) && price > 0
+      );
+
+    const lowestPrice = prices.length
+      ? Math.min(...prices)
       : null;
 
-    const platforms = [...new Set(offers.map((offer) => offer.platform))];
+    const highestPrice = prices.length
+      ? Math.max(...prices)
+      : null;
+
+    const averagePrice = prices.length
+      ? Math.round(
+          prices.reduce(
+            (sum, price) => sum + price,
+            0
+          ) / prices.length
+        )
+      : null;
+
+    const platforms = [
+      ...new Set(
+        offers
+          .map((offer) => offer.platform)
+          .filter(Boolean)
+      ),
+    ];
+
+    const bestDeal =
+      selectedGroup?.bestDeal ||
+      [...offers].sort(
+        (firstOffer, secondOffer) =>
+          Number(secondOffer.dealScore || 0) -
+          Number(firstOffer.dealScore || 0)
+      )[0] ||
+      selectedListing;
 
     res.json({
       success: true,
-      listing,
+      listing: selectedListing,
       productGroup: selectedGroup,
       summary: {
         platforms: platforms.length,
         lowestPrice,
         highestPrice,
         averagePrice,
-        bestDealPlatform: selectedGroup?.bestDeal?.platform || listing.platform,
-        bestDealTitle: selectedGroup?.bestDeal?.title || listing.title,
-        bestDealScore: selectedGroup?.bestDeal?.dealScore || null,
+        bestDealPlatform:
+          bestDeal?.platform ||
+          selectedListing.platform,
+        bestDealTitle:
+          bestDeal?.title ||
+          selectedListing.title,
+        bestDealScore:
+          bestDeal?.dealScore ?? null,
+        bestDealRecommendation:
+          bestDeal?.recommendation?.action ||
+          null,
       },
       offers,
     });
@@ -185,6 +425,7 @@ export async function getListingDetails(req, res) {
     });
   }
 }
+
 export async function addListingPriceHistory(
   req,
   res
@@ -258,14 +499,14 @@ export async function addListingPriceHistory(
       await listing.save();
     }
 
-    res.status(
-      historyResult.created ? 201 : 200
-    ).json({
-      success: true,
-      message: historyResult.reason,
-      data: historyResult.snapshot,
-      listing,
-    });
+    res
+      .status(historyResult.created ? 201 : 200)
+      .json({
+        success: true,
+        message: historyResult.reason,
+        data: historyResult.snapshot,
+        listing,
+      });
   } catch (error) {
     res.status(400).json({
       success: false,
