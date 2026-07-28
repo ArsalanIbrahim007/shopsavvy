@@ -1,7 +1,10 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-
+import {
+  notFoundHandler,
+  globalErrorHandler,
+} from "./middleware/error.middleware.js";
 import { connectDB } from "./config/db.js";
 import healthRoutes from "./routes/health.routes.js";
 import listingRoutes from "./routes/listing.routes.js";
@@ -17,7 +20,8 @@ app.use(express.json());
 app.use("/api/health", healthRoutes);
 app.use("/api/listings", listingRoutes);
 app.use("/api/analytics", analyticsRoutes);
-
+app.use(notFoundHandler);
+app.use(globalErrorHandler);
 const PORT = process.env.PORT || 5000;
 
 connectDB();
