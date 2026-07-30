@@ -12,7 +12,9 @@ import {
   attachRecommendation,
   attachRecommendations,
 } from "../services/recommendation/recommendation.service.js";
-
+import {
+  fetchAndRefreshListings,
+} from "../services/scraper.service.js";
 /**
  * Adds recommendations after product grouping and deal ranking.
  *
@@ -135,7 +137,12 @@ export async function searchListings(req, res) {
           "Search query is required. Example: /api/listings/search?q=iphone",
       });
     }
+    const refreshResult = await fetchAndRefreshListings(q, {
+    force: req.query.refresh === "true",
+    dynamic: false,
+});
 
+console.log("[search]", refreshResult);
     const normalizedQuery = normalizeTitle(q);
 
     const listings = await Listing.find({
@@ -237,6 +244,7 @@ export async function searchListings(req, res) {
 
     res.json({
       success: true,
+      refresh: refreshResult,
       query: q,
       count: recommendedListings.length,
       groupCount: groups.length,
