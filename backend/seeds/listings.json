@@ -1,0 +1,92 @@
+[
+  {
+    "platform": "PriceOye",
+    "title": "Apple iPhone 15 128GB PTA Approved",
+    "price": 269999,
+    "currency": "PKR",
+    "productUrl": "https://priceoye.pk",
+    "imageUrl": "",
+    "category": "Mobile Phones",
+    "sourceType": "seed"
+  },
+  {
+    "platform": "Mega.pk",
+    "title": "Apple iPhone 15 128 GB",
+    "price": 272999,
+    "currency": "PKR",
+    "productUrl": "https://mega.pk",
+    "imageUrl": "",
+    "category": "Mobile Phones",
+    "sourceType": "seed"
+  },
+  {
+    "platform": "Shophive",
+    "title": "iPhone 15 128GB Official Warranty",
+    "price": 268499,
+    "currency": "PKR",
+    "productUrl": "https://shophive.com",
+    "imageUrl": "",
+    "category": "Mobile Phones",
+    "sourceType": "seed"
+  },
+  {
+    "platform": "PriceOye",
+    "title": "Samsung Galaxy A55 256GB",
+    "price": 119999,
+    "currency": "PKR",
+    "productUrl": "https://priceoye.pk",
+    "imageUrl": "",
+    "category": "Mobile Phones",
+    "sourceType": "seed"
+  },
+  {
+    "platform": "Mega.pk",
+    "title": "Samsung Galaxy A55 5G 256GB",
+    "price": 123500,
+    "currency": "PKR",
+    "productUrl": "https://mega.pk",
+    "imageUrl": "",
+    "category": "Mobile Phones",
+    "sourceType": "seed"
+  },
+  {
+    "platform": "Shophive",
+    "title": "Samsung A55 256GB Official Warranty",
+    "price": 121999,
+    "currency": "PKR",
+    "productUrl": "https://shophive.com",
+    "imageUrl": "",
+    "category": "Mobile Phones",
+    "sourceType": "seed"
+  },
+  {
+    "platform": "PriceOye",
+    "title": "HP 15s Core i5 12th Gen Laptop",
+    "price": 164999,
+    "currency": "PKR",
+    "productUrl": "https://priceoye.pk",
+    "imageUrl": "",
+    "category": "Laptops",
+    "sourceType": "seed"
+  },
+  {
+    "platform": "Mega.pk",
+    "title": "HP 15s Intel Core i5 12th Generation",
+    "price": 169999,
+    "currency": "PKR",
+    "productUrl": "https://mega.pk",
+    "imageUrl": "",
+    "category": "Laptops",
+    "sourceType": "seed"
+  },
+  {
+    "platform": "Shophive",
+    "title": "HP 15s Core i5 Laptop 12th Gen",
+    "price": 167500,
+    "currency": "PKR",
+    "productUrl": "https://shophive.com",
+    "imageUrl": "",
+    "category": "Laptops",
+    "sourceType": "seed"
+  }
+]
