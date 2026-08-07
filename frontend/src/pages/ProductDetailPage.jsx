@@ -1,10 +1,63 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
+const PLATFORM_COLORS = {
+  priceoye: "#e8401c",
+  PriceOye: "#e8401c",
+  shophive: "#0066cc",
+  Shophive: "#0066cc",
+  mega: "#ff6600",
+  "Mega.pk": "#ff6600",
+  homeshopping: "#cc0000",
+  HomeShopping: "#cc0000",
+  telemart: "#2196F3",
+  Telemart: "#2196F3",
+  ishopping: "#4CAF50",
+  iShopping: "#4CAF50",
+  symbios: "#9C27B0",
+  Symbios: "#9C27B0",
+};
+
+const PLATFORM_LOGOS = {
+  priceoye: "https://priceoye.pk/favicon.ico",
+  PriceOye: "https://priceoye.pk/favicon.ico",
+  shophive: "https://shophive.com/favicon.ico",
+  Shophive: "https://shophive.com/favicon.ico",
+  mega: "https://mega.pk/favicon.ico",
+  "Mega.pk": "https://mega.pk/favicon.ico",
+  homeshopping: "https://homeshopping.pk/favicon.ico",
+  telemart: "https://telemart.pk/favicon.ico",
+};
+
+function PlatformBadge({ platform }) {
+  const color = PLATFORM_COLORS[platform] || "#1a73e8";
+  const logo = PLATFORM_LOGOS[platform];
+  const initial = platform ? platform.charAt(0).toUpperCase() : "S";
+
+  return (
+    <div className="detail-platform-badge" style={{ background: color }}>
+      {logo ? (
+        <img
+          src={logo}
+          alt={platform}
+          className="detail-badge-logo"
+          onError={(e) => {
+            e.target.style.display = "none";
+            e.target.nextSibling.style.display = "inline";
+          }}
+        />
+      ) : null}
+      <span style={{ display: logo ? "none" : "inline" }}>{initial}</span>
+    </div>
+  );
+}
+
 function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [product, setProduct] = useState(null);
+  const [listing, setListing] = useState(null);
+  const [offers, setOffers] = useState([]);
+  const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -15,12 +68,12 @@ function ProductDetailPage() {
         const data = await response.json();
 
         if (data.success && data.listing) {
-  setProduct(data.listing);
-} else if (data.success && data.data) {
-  setProduct(data.data);
-} else {
-  setError(true);
-}
+          setListing(data.listing);
+          setOffers(data.offers || []);
+          setSummary(data.summary || null);
+        } else {
+          setError(true);
+        }
       } catch (err) {
         console.error("Failed to fetch product:", err);
         setError(true);
@@ -41,7 +94,7 @@ function ProductDetailPage() {
     );
   }
 
-  if (error || !product) {
+  if (error || !listing) {
     return (
       <div className="detail-not-found">
         <h2>Product not found</h2>
@@ -52,101 +105,82 @@ function ProductDetailPage() {
     );
   }
 
+  const savings = summary?.highestPrice && summary?.lowestPrice
+    ? summary.highestPrice - summary.lowestPrice
+    : null;
+
   return (
     <div className="detail-page">
       <button className="back-btn" onClick={() => navigate(-1)}>
         &#8592; Back to Results
       </button>
 
-      <div className="detail-card">
-        <div className="detail-left">
+      <div className="detail-hero">
+        <div className="detail-hero-left">
           <img
-            src={product.imageUrl || product.images?.[0] || "https://placehold.co/300x300/f5f7fb/333?text=No+Image"}
-            onError={(e) => { e.target.src = "https://placehold.co/300x300/f5f7fb/333?text=No+Image"; }}
-            alt={product.title}
+            src={listing.imageUrl || listing.images?.[0] || "https://placehold.co/280x280/f5f7fb/333?text=No+Image"}
+            alt={listing.title}
             className="detail-image"
+            onError={(e) => {
+              e.target.src = "https://placehold.co/280x280/f5f7fb/333?text=No+Image";
+            }}
           />
-          {product.isBestDeal && (
-            <div className="detail-best-badge">Best Deal</div>
-          )}
         </div>
 
-        <div className="detail-right">
-          <div className="detail-platform">{product.platform}</div>
-          <h1 className="detail-title">{product.title}</h1>
+        <div className="detail-hero-middle">
+          <div className="detail-platform">{listing.platform}</div>
+          <h1 className="detail-title">{listing.title}</h1>
 
-          {product.tags && product.tags.length > 0 && (
-            <div className="detail-tags">
-              {product.tags.map((tag) => (
-                <span key={tag} className="product-tag">{tag}</span>
-              ))}
+          {listing.category && (
+            <div className="detail-category">
+              Category: {listing.category}
             </div>
-          )}
-
-          {product.description && (
-            <p className="detail-description">{product.description}</p>
           )}
 
           <div className="detail-price-row">
             <div className="detail-price">
-              PKR {product.price.toLocaleString()}
+              PKR {listing.price.toLocaleString()}
             </div>
-            {product.originalPrice && product.originalPrice > product.price && (
+            {listing.originalPrice && listing.originalPrice > listing.price && (
               <div className="detail-original-price">
-                PKR {product.originalPrice.toLocaleString()}
+                PKR {listing.originalPrice.toLocaleString()}
               </div>
             )}
-            {product.discountPercent > 0 && (
+            {listing.discountPercent > 0 && (
               <div className="detail-discount">
-                {product.discountPercent}% OFF
+                {listing.discountPercent}% OFF
               </div>
             )}
           </div>
 
           <div className="detail-meta">
-            {product.rating > 0 && (
-              <div className="detail-meta-item">
-                <span className="detail-meta-label">Rating</span>
-                <span className="detail-meta-value">
-                  &#9733; {product.rating}/5 ({product.reviewCount || 0} reviews)
-                </span>
-              </div>
-            )}
-            {product.sellerName && (
-              <div className="detail-meta-item">
-                <span className="detail-meta-label">Seller</span>
-                <span className="detail-meta-value">{product.sellerName}</span>
-              </div>
-            )}
+            <div className="detail-meta-item">
+              <span className="detail-meta-label">Availability</span>
+              <span className={listing.inStock ? "in-stock detail-meta-value" : "low-stock detail-meta-value"}>
+                &#9679; {listing.availability || (listing.inStock ? "In Stock" : "Out of Stock")}
+              </span>
+            </div>
             <div className="detail-meta-item">
               <span className="detail-meta-label">Delivery</span>
               <span className="detail-meta-value">
-                {product.deliveryFee === 0 ? "Free Delivery" : product.deliveryFee ? `PKR ${product.deliveryFee}` : "Check website"}
+                {listing.deliveryFee === 0 ? "Free Delivery" : listing.deliveryFee ? `PKR ${listing.deliveryFee}` : "Check website"}
               </span>
             </div>
-            <div className="detail-meta-item">
-              <span className="detail-meta-label">Availability</span>
-              <span className={
-                product.availability === "In Stock" || product.inStock
-                  ? "in-stock detail-meta-value"
-                  : "low-stock detail-meta-value"
-              }>
-                &#9679; {product.availability || (product.inStock ? "In Stock" : "Out of Stock")}
-              </span>
-            </div>
-            <div className="detail-meta-item">
-              <span className="detail-meta-label">Category</span>
-              <span className="detail-meta-value">{product.category || "Electronics"}</span>
-            </div>
+            {listing.sellerName && (
+              <div className="detail-meta-item">
+                <span className="detail-meta-label">Seller</span>
+                <span className="detail-meta-value">{listing.sellerName}</span>
+              </div>
+            )}
             <div className="detail-meta-item">
               <span className="detail-meta-label">Last Updated</span>
               <span className="detail-meta-value">
-                {new Date(product.lastScrapedAt || product.updatedAt).toLocaleDateString()}
+                {new Date(listing.lastScrapedAt || listing.updatedAt).toLocaleDateString()}
               </span>
             </div>
           </div>
 
-          {product.isSuspicious && (
+          {listing.isSuspicious && (
             <div className="suspicious-badge" style={{ marginBottom: "16px" }}>
               Warning: Suspicious discount detected on this product
             </div>
@@ -154,12 +188,135 @@ function ProductDetailPage() {
 
           <button
             className="detail-view-btn"
-            onClick={() => window.open(product.productUrl || product.sourceUrl, "_blank")}
+            onClick={() => window.open(listing.productUrl || listing.sourceUrl, "_blank")}
           >
-            Visit {product.platform} to Buy
+            Visit {listing.platform} to Buy
           </button>
         </div>
+
+        {summary && (
+          <div className="detail-hero-right">
+            <div className="detail-summary-card">
+              <div className="detail-summary-item">
+                <div className="detail-summary-label">Platforms Compared</div>
+                <div className="detail-summary-value">{summary.platforms}</div>
+              </div>
+              <div className="detail-summary-item">
+                <div className="detail-summary-label">Lowest Price</div>
+                <div className="detail-summary-value green">
+                  PKR {summary.lowestPrice?.toLocaleString()}
+                </div>
+              </div>
+              <div className="detail-summary-item">
+                <div className="detail-summary-label">Highest Price</div>
+                <div className="detail-summary-value">
+                  PKR {summary.highestPrice?.toLocaleString()}
+                </div>
+              </div>
+              {savings > 0 && (
+                <div className="detail-summary-item">
+                  <div className="detail-summary-label">You Can Save</div>
+                  <div className="detail-summary-value green">
+                    PKR {savings.toLocaleString()}
+                  </div>
+                </div>
+              )}
+              <div className="detail-summary-item">
+                <div className="detail-summary-label">Best Deal</div>
+                <div className="detail-summary-value blue">
+                  {summary.bestDealPlatform}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
+      {offers && offers.length > 1 && (
+        <div className="detail-offers-section">
+          <h2 className="detail-offers-title">
+            All Offers for This Product
+            <span className="detail-offers-count">{offers.length} offers</span>
+          </h2>
+          <div className="detail-offers-table-wrapper">
+            <table className="detail-offers-table">
+              <thead>
+                <tr>
+                  <th>Store</th>
+                  <th>Price</th>
+                  <th>Discount</th>
+                  <th>Availability</th>
+                  <th>Updated</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...offers]
+                  .sort((a, b) => a.price - b.price)
+                  .map((offer) => (
+                    <tr
+                      key={offer._id}
+                      className={offer._id === listing._id ? "current-offer-row" : ""}
+                    >
+                      <td>
+                        <div className="detail-store-cell">
+                          <PlatformBadge platform={offer.platform} />
+                          <span className="store-name">{offer.platform}</span>
+                          {offer._id === listing._id && (
+                            <span className="current-offer-tag">Viewing</span>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="detail-offer-price">
+                          PKR {offer.price?.toLocaleString()}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="discount-cell">
+                          {offer.originalPrice && offer.originalPrice > offer.price && (
+                            <span className="table-original">
+                              PKR {offer.originalPrice?.toLocaleString()}
+                            </span>
+                          )}
+                          {offer.discountPercent > 0 && (
+                            <span className="table-discount">
+                              {offer.discountPercent}% OFF
+                            </span>
+                          )}
+                          {!offer.originalPrice && !offer.discountPercent && (
+                            <span style={{ color: "#bbb", fontSize: "12px" }}>—</span>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        <span className={offer.inStock ? "in-stock" : "low-stock"}>
+                          &#9679; {offer.availability || (offer.inStock ? "In Stock" : "Out of Stock")}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="updated-date">
+                          {new Date(offer.lastScrapedAt || offer.updatedAt).toLocaleDateString("en-GB", {
+                            day: "numeric",
+                            month: "short",
+                          })}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          className="view-deal-btn"
+                          onClick={() => window.open(offer.productUrl || offer.sourceUrl, "_blank")}
+                        >
+                          View Deal
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
