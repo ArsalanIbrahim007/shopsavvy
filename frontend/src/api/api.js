@@ -12,8 +12,14 @@ export async function searchProducts(query) {
 
     const data = await response.json();
 
-    if (data.success && data.data.length > 0) {
-      return data.data;
+    console.log("API RESPONSE SUCCESS:", data.success, "COUNT:", data.count);
+
+    if (data.success && data.data && data.data.length > 0) {
+      return {
+        products: data.data,
+        summary: data.summary,
+        groups: data.groups,
+      };
     }
 
     return null;

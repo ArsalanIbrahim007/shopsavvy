@@ -1,4 +1,4 @@
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useState, useMemo, useEffect } from "react";
 import { DUMMY_PRODUCTS } from "../data/dummyProducts";
 import { searchProducts } from "../api/api";
@@ -8,7 +8,8 @@ import ProductHeader from "../components/ProductHeader";
 import ComparisonTable from "../components/ComparisonTable";
 
 function ResultsPage() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const query = searchParams.get("q");
 
   const [products, setProducts] = useState([]);
@@ -18,23 +19,17 @@ function ResultsPage() {
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
-
       const result = await searchProducts(query);
-
-      if (result) {
-        setProducts(result);
+      if (result && result.products && result.products.length > 0) {
+        setProducts(result.products);
         setUsingDummy(false);
       } else {
         setProducts(DUMMY_PRODUCTS);
         setUsingDummy(true);
       }
-
       setLoading(false);
     }
-
-    if (query) {
-      fetchData();
-    }
+    if (query) fetchData();
   }, [query]);
 
   const allPlatforms = useMemo(() => {
@@ -57,15 +52,63 @@ function ResultsPage() {
   const [showTopRated, setShowTopRated] = useState(false);
 
   useEffect(() => {
-    setSelectedPlatforms(allPlatforms);
-    setPriceRange([minPrice, maxPrice]);
+    if (allPlatforms.length > 0) {
+      const urlPlatforms = searchParams.get("platforms");
+      const urlMinPrice = searchParams.get("minPrice");
+      const urlMaxPrice = searchParams.get("maxPrice");
+      const urlBestDeal = searchParams.get("bestDeal");
+      const urlTopRated = searchParams.get("topRated");
+
+      setSelectedPlatforms(
+        urlPlatforms ? urlPlatforms.split(",") : allPlatforms
+      );
+      setPriceRange([
+        urlMinPrice ? Number(urlMinPrice) : minPrice,
+        urlMaxPrice ? Number(urlMaxPrice) : maxPrice,
+      ]);
+      setShowBestDeal(urlBestDeal === "true");
+      setShowTopRated(urlTopRated === "true");
+    }
   }, [allPlatforms, minPrice, maxPrice]);
+
+  function updateURL(platforms, price, bestDeal, topRated) {
+    const params = { q: query };
+    if (platforms.length !== allPlatforms.length) {
+      params.platforms = platforms.join(",");
+    }
+    if (price[0] !== minPrice) params.minPrice = price[0];
+    if (price[1] !== maxPrice) params.maxPrice = price[1];
+    if (bestDeal) params.bestDeal = "true";
+    if (topRated) params.topRated = "true";
+    setSearchParams(params);
+  }
+
+  function handlePlatformChange(platforms) {
+    setSelectedPlatforms(platforms);
+    updateURL(platforms, priceRange, showBestDeal, showTopRated);
+  }
+
+  function handlePriceChange(price) {
+    setPriceRange(price);
+    updateURL(selectedPlatforms, price, showBestDeal, showTopRated);
+  }
+
+  function handleBestDeal(val) {
+    setShowBestDeal(val);
+    updateURL(selectedPlatforms, priceRange, val, showTopRated);
+  }
+
+  function handleTopRated(val) {
+    setShowTopRated(val);
+    updateURL(selectedPlatforms, priceRange, showBestDeal, val);
+  }
 
   function handleReset() {
     setSelectedPlatforms(allPlatforms);
     setPriceRange([minPrice, maxPrice]);
     setShowBestDeal(false);
     setShowTopRated(false);
+    setSearchParams({ q: query });
   }
 
   const filtered = useMemo(() => {
@@ -100,15 +143,15 @@ function ResultsPage() {
         <Sidebar
           allPlatforms={allPlatforms}
           selectedPlatforms={selectedPlatforms}
-          setSelectedPlatforms={setSelectedPlatforms}
+          setSelectedPlatforms={handlePlatformChange}
           minPrice={minPrice}
           maxPrice={maxPrice}
           priceRange={priceRange}
-          setPriceRange={setPriceRange}
+          setPriceRange={handlePriceChange}
           showBestDeal={showBestDeal}
-          setShowBestDeal={setShowBestDeal}
+          setShowBestDeal={handleBestDeal}
           showTopRated={showTopRated}
-          setShowTopRated={setShowTopRated}
+          setShowTopRated={handleTopRated}
           onReset={handleReset}
           products={products}
         />
@@ -138,15 +181,37 @@ function ResultsPage() {
             </p>
           </div>
 
-          <SummaryCards products={filtered} />
-          <ProductHeader products={filtered} />
-
-          {filtered.length === 0 ? (
-            <p className="results-placeholder">
-              No products match your filters.
-            </p>
+          {filtered.length === 0 && !loading ? (
+            <div className="no-results">
+              <div className="no-results-icon">&#128269;</div>
+              <h2 className="no-results-title">No results found for "{query}"</h2>
+              <p className="no-results-subtitle">
+                Try searching with different keywords or check your filters.
+              </p>
+              <div className="no-results-suggestions">
+                <p>Try searching for:</p>
+                <div className="no-results-chips">
+                  {["iPhone 15", "Samsung S25", "HP Laptop", "MacBook Air"].map((term) => (
+                    <button
+                      key={term}
+                      className="search-chip"
+                      onClick={() => navigate(`/results?q=${encodeURIComponent(term)}`)}
+                    >
+                      {term}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <button className="reset-btn" onClick={handleReset}>
+                &#8635; Reset Filters
+              </button>
+            </div>
           ) : (
-            <ComparisonTable products={filtered} />
+            <>
+              <SummaryCards products={filtered} />
+              <ProductHeader products={filtered} />
+              <ComparisonTable products={filtered} />
+            </>
           )}
 
           <div className="trust-strip">
