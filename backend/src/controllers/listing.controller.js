@@ -232,8 +232,21 @@ console.log("[search]", refreshResult);
       ),
     ];
 
+   /*
+     * A "best deal" is only meaningful when the product was actually compared
+     * across platforms. Groups holding a single offer are excluded unless no
+     * multi-offer group exists, which stops an unrelated one-off listing from
+     * outranking a genuinely compared product.
+     */
+    const comparableGroups = groups.filter(
+      (group) => (group.offerCount || 0) >= 2
+    );
+
+    const candidateGroups =
+      comparableGroups.length > 0 ? comparableGroups : groups;
+
     const bestDeal =
-      groups
+      candidateGroups
         .map((group) => group.bestDeal)
         .filter(Boolean)
         .sort(
