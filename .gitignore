@@ -22,3 +22,8 @@ venv/
 # OS
 .DS_Store
 Thumbs.db
+# local diagnostics
+backend/api*.txt
+backend/diag*.txt
+backend/discounts*.txt
+backend/verify*.txt
