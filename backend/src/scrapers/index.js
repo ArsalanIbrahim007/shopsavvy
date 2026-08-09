@@ -39,31 +39,73 @@ const QUERY_ALIASES = {
  * Filters scraped listings to only those relevant to the search query.
  * Handles exact phrase matching, partial matching, and known aliases.
  */
+
+// Words that indicate an accessory, not a main product
+const ACCESSORY_KEYWORDS = [
+  "cable", "case", "cover", "charger", "protector", "handsfree",
+  "earphone", "pouch", "tempered", "adapter", "power bank", "powerbank",
+  "screen guard", "back cover", "flip cover", "wallet case", "bumper",
+  "skin", "sleeve", "bag", "stand", "holder", "mount", "dock",
+  "battery", "stylus", "keyboard", "mouse", "hub", "converter",
+];
+ 
+// Phone/laptop brand keywords — accessory filter only applies to these queries
+const MAIN_PRODUCT_KEYWORDS = [
+  "iphone", "samsung", "galaxy", "pixel", "oneplus", "oppo", "vivo",
+  "xiaomi", "redmi", "realme", "huawei", "nokia", "motorola",
+  "macbook", "laptop", "dell", "hp", "lenovo", "asus", "acer",
+  "playstation", "ps5", "xbox", "nintendo",
+];
+
+/**
+ * Checks if a query is for a main product (phone/laptop)
+ * rather than an accessory search
+ */
+function isMainProductQuery(query) {
+  const q = query.toLowerCase();
+  return MAIN_PRODUCT_KEYWORDS.some((keyword) => q.includes(keyword));
+}
+ 
+/**
+ * Checks if a product title is an accessory
+ */
+function isAccessory(title) {
+  const t = title.toLowerCase();
+  return ACCESSORY_KEYWORDS.some((keyword) => t.includes(keyword));
+}
+ 
+
 function filterByRelevance(listings, query) {
   const q = query.toLowerCase().trim();
   const words = q.split(/\s+/).filter((w) => w.length > 2);
   if (words.length === 0) return listings;
-
+ 
   const aliases = QUERY_ALIASES[q] || [];
-
+  const mainProductQuery = isMainProductQuery(q);
+ 
   return listings.filter((listing) => {
     const title = listing.title.toLowerCase();
-
+ 
+    // If searching for a phone/laptop, skip accessories
+    if (mainProductQuery && isAccessory(title)) {
+      return false;
+    }
+ 
     // Exact phrase match
     if (title.includes(q)) return true;
-
+ 
     // Check aliases
     if (aliases.some((alias) => title.includes(alias))) return true;
-
-    // For 3+ word queries, check if last 2 words appear together
+ 
+    // For 3+ word queries, check last 2 words together
     if (words.length >= 3) {
       const lastTwo = words.slice(-2).join(" ");
       if (title.includes(lastTwo)) return true;
     }
-
-    // For single-word queries, just check word presence
+ 
+    // Single word query
     if (words.length === 1) return title.includes(words[0]);
-
+ 
     return false;
   });
 }
