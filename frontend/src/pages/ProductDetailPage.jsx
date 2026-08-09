@@ -188,9 +188,15 @@ function ProductDetailPage() {
 
           <button
             className="detail-view-btn"
-            onClick={() => window.open(listing.productUrl || listing.sourceUrl, "_blank")}
+            disabled={!(listing.productUrl || listing.sourceUrl)}
+            onClick={() => {
+              const url = listing.productUrl || listing.sourceUrl;
+              if (url) window.open(url, "_blank", "noopener");
+            }}
           >
-            Visit {listing.platform} to Buy
+            {listing.productUrl || listing.sourceUrl
+              ? `Visit ${listing.platform} to Buy`
+              : "Store link unavailable"}
           </button>
         </div>
 
@@ -305,9 +311,13 @@ function ProductDetailPage() {
                       <td>
                         <button
                           className="view-deal-btn"
-                          onClick={() => window.open(offer.productUrl || offer.sourceUrl, "_blank")}
+                          disabled={!(offer.productUrl || offer.sourceUrl)}
+                          onClick={() => {
+                            const url = offer.productUrl || offer.sourceUrl;
+                            if (url) window.open(url, "_blank", "noopener");
+                          }}
                         >
-                          View Deal
+                          {offer.productUrl || offer.sourceUrl ? "View Deal" : "No link"}
                         </button>
                       </td>
                     </tr>

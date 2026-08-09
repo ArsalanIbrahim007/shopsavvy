@@ -12,20 +12,18 @@ export async function searchProducts(query) {
 
     const data = await response.json();
 
-    console.log("API RESPONSE SUCCESS:", data.success, "COUNT:", data.count);
-
-    if (data.success && data.data && data.data.length > 0) {
-      return {
-        products: data.data,
-        summary: data.summary,
-        groups: data.groups,
-      };
-    }
-
-    return null;
-
+    // An empty result is a valid answer, not a failure. Returning a shaped
+    // object here (rather than null) lets the page show a real empty state
+    // instead of falling back to placeholder products.
+    return {
+      products: data.data || [],
+      summary: data.summary || null,
+      groups: data.groups || [],
+      groupCount: data.groupCount || 0,
+      error: false,
+    };
   } catch (error) {
-    console.warn("Backend not available, using dummy data:", error.message);
-    return null;
+    console.warn("Backend unavailable:", error.message);
+    return { products: [], summary: null, groups: [], groupCount: 0, error: true };
   }
 }

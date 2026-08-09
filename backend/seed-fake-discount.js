@@ -18,7 +18,14 @@ const INFLATION = 1.45; // ~45% above reference — past the 20% threshold, stil
 
 await mongoose.connect(process.env.MONGO_URI);
 
-const listings = await Listing.find({ price: { $gt: 20000 } }).sort({ price: -1 }).limit(20);
+// Target the demo products directly. Sorting by price alone drifts onto
+// whatever expensive items were scraped most recently.
+const DEMO_QUERY = /iphone 17 pro/i;
+
+const listings = await Listing.find({
+  price: { $gt: 20000 },
+  title: DEMO_QUERY,
+}).sort({ price: -1 }).limit(20);
 const enriched = await attachPriceHistory(listings);
 
 // Only products with enough history can be evaluated at all

@@ -1,25 +1,38 @@
-import { normalizeTitle } from "./normalizeTitle.service.js";
+import { normalizeTitle, extractStorage } from "./normalizeTitle.service.js";
 import { isSimilarProduct } from "./similarity.service.js";
 import { calculateDealScores } from "../ranking/dealScore.js";
 
+/**
+ * Clusters listings from different platforms into single products.
+ *
+ * Each group records the storage capacity of the first member that states one.
+ * Without this, a listing whose title omits the capacity ("Apple iPhone 17
+ * Pro") matches every capacity variant and pulls unrelated models into one
+ * group, because the pairwise check has nothing to compare against.
+ *
+ * Once a group has a capacity, a listing declaring a different one starts its
+ * own group. Listings that state no capacity join the first compatible group,
+ * which is the best available assumption when the store has not specified it.
+ */
 export function groupListingsByProduct(listings = []) {
   const groups = [];
 
   listings.forEach((listing) => {
-    const normalizedListingTitle = normalizeTitle(
-      listing.normalizedTitle || listing.title
-    );
+    const rawTitle = listing.normalizedTitle || listing.title;
+    const normalizedListingTitle = normalizeTitle(rawTitle);
+    const listingStorage = extractStorage(rawTitle);
 
     let matchedGroup = null;
 
     for (const group of groups) {
-      if (
-        isSimilarProduct(
-          normalizedListingTitle,
-          group.normalizedGroupKey,
-          0.7
-        )
-      ) {
+      const capacityConflict =
+        group.storage !== null &&
+        listingStorage !== null &&
+        group.storage !== listingStorage;
+
+      if (capacityConflict) continue;
+
+      if (isSimilarProduct(normalizedListingTitle, group.normalizedGroupKey, 0.7)) {
         matchedGroup = group;
         break;
       }
@@ -29,6 +42,7 @@ export function groupListingsByProduct(listings = []) {
       matchedGroup = {
         productName: listing.title,
         normalizedGroupKey: normalizedListingTitle,
+        storage: listingStorage,
         offerCount: 0,
         lowestPrice: listing.price,
         highestPrice: listing.price,
@@ -39,16 +53,18 @@ export function groupListingsByProduct(listings = []) {
       groups.push(matchedGroup);
     }
 
+    // Adopt the first stated capacity, and with it the more specific title.
+    if (matchedGroup.storage === null && listingStorage !== null) {
+      matchedGroup.storage = listingStorage;
+      matchedGroup.normalizedGroupKey = normalizedListingTitle;
+      matchedGroup.productName = listing.title;
+    }
+
     matchedGroup.offers.push(listing);
     matchedGroup.offerCount += 1;
 
-    if (listing.price < matchedGroup.lowestPrice) {
-      matchedGroup.lowestPrice = listing.price;
-    }
-
-    if (listing.price > matchedGroup.highestPrice) {
-      matchedGroup.highestPrice = listing.price;
-    }
+    if (listing.price < matchedGroup.lowestPrice) matchedGroup.lowestPrice = listing.price;
+    if (listing.price > matchedGroup.highestPrice) matchedGroup.highestPrice = listing.price;
   });
 
   return groups
@@ -57,10 +73,7 @@ export function groupListingsByProduct(listings = []) {
 
       return {
         ...group,
-
-        // Offers are already sorted by highest deal score.
         bestDeal: rankedOffers[0] || null,
-
         offers: rankedOffers,
       };
     })
