@@ -27,3 +27,5 @@ backend/api*.txt
 backend/diag*.txt
 backend/discounts*.txt
 backend/verify*.txt
+
+db-backup-demo/
