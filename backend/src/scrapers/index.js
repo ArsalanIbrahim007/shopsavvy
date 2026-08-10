@@ -22,8 +22,10 @@ config({
 import { scrapePriceOyeSearch } from "./priceoye.scraper.js";
 import { scrapeMegaSearch } from "./mega.scraper.js";
 import { scrapeShophiveSearch } from "./shophive.scraper.js";
+import { scrapeTelemartSearch } from "./telemart.scraper.js";
 import { scrapeGeneric } from "./generic.scraper.js";
 import { searchForProduct } from "./googleSearch.js";
+import { detectCategory, detectQueryCategory } from "./productCategory.js";
 
 // Known aliases — if user searches these, also match the alternatives in titles
 const QUERY_ALIASES = {
@@ -42,11 +44,62 @@ const QUERY_ALIASES = {
 
 // Words that indicate an accessory, not a main product
 const ACCESSORY_KEYWORDS = [
-  "cable", "case", "cover", "charger", "protector", "handsfree",
-  "earphone", "pouch", "tempered", "adapter", "power bank", "powerbank",
-  "screen guard", "back cover", "flip cover", "wallet case", "bumper",
-  "skin", "sleeve", "bag", "stand", "holder", "mount", "dock",
-  "battery", "stylus", "keyboard", "mouse", "hub", "converter",
+  // General accessories
+  "bag",
+  "backpack",
+  "sleeve",
+  "case",
+  "cover",
+  "pouch",
+  "holder",
+  "mount",
+  "stand",
+
+  // Charging / power
+  "charger",
+  "charging cable",
+  "power cable",
+  "adapter",
+  "power adapter",
+  "power bank",
+  "powerbank",
+  "battery",
+
+  // Protection
+  "screen protector",
+  "screen guard",
+  "tempered glass",
+  "tempered",
+  "protector",
+  "skin",
+
+  // Audio
+  "handsfree",
+  "earphone",
+  "earphones",
+  "headphone",
+  "headphones",
+  "headset",
+  "airpods",
+
+  // Computer peripherals
+  "keyboard",
+  "mouse",
+  "mouse pad",
+  "webcam",
+  "cooling pad",
+  "cooling fan",
+  "laptop cooler",
+  "docking station",
+  "dock",
+  "hub",
+  "converter",
+
+  // Replacement parts
+  "replacement",
+  "replacement screen",
+  "replacement battery",
+  "replacement keyboard",
 ];
  
 // Phone/laptop brand keywords — accessory filter only applies to these queries
@@ -62,52 +115,91 @@ const MAIN_PRODUCT_KEYWORDS = [
  * rather than an accessory search
  */
 function isMainProductQuery(query) {
-  const q = query.toLowerCase();
-  return MAIN_PRODUCT_KEYWORDS.some((keyword) => q.includes(keyword));
+  const q = query.toLowerCase().trim();
+
+  // the user is intentionally searching for an accessory.
+  if (isAccessory(q)) {
+    return false;
+  }
+
+  return MAIN_PRODUCT_KEYWORDS.some((keyword) =>
+    q.includes(keyword)
+  );
 }
- 
+
 /**
  * Checks if a product title is an accessory
  */
 function isAccessory(title) {
-  const t = title.toLowerCase();
-  return ACCESSORY_KEYWORDS.some((keyword) => t.includes(keyword));
+  const t = title.toLowerCase().trim();
+
+  return ACCESSORY_KEYWORDS.some((keyword) => {
+    return t.includes(keyword);
+  });
 }
  
 
 function filterByRelevance(listings, query) {
   const q = query.toLowerCase().trim();
-  const words = q.split(/\s+/).filter((w) => w.length > 2);
-  if (words.length === 0) return listings;
- 
-  const aliases = QUERY_ALIASES[q] || [];
-  const mainProductQuery = isMainProductQuery(q);
- 
-  return listings.filter((listing) => {
-    const title = listing.title.toLowerCase();
- 
-    // If searching for a phone/laptop, skip accessories
-    if (mainProductQuery && isAccessory(title)) {
-      return false;
-    }
- 
-    // Exact phrase match
-    if (title.includes(q)) return true;
- 
-    // Check aliases
-    if (aliases.some((alias) => title.includes(alias))) return true;
- 
-    // For 3+ word queries, check last 2 words together
-    if (words.length >= 3) {
-      const lastTwo = words.slice(-2).join(" ");
-      if (title.includes(lastTwo)) return true;
-    }
- 
-    // Single word query
-    if (words.length === 1) return title.includes(words[0]);
- 
-    return false;
-  });
+
+  const queryCategory = detectQueryCategory(q);
+
+  console.log(
+    `[category] Query "${query}" detected as: ${queryCategory.category}`
+  );
+
+  return listings
+    .map((listing) => {
+      const productCategory = detectCategory(listing.title);
+
+      return {
+        ...listing,
+        category: productCategory.category,
+        categoryConfidence: productCategory.confidence,
+      };
+    })
+    .filter((listing) => {
+      const title = listing.title.toLowerCase();
+
+      // --------------------------------------------------
+      // CATEGORY FILTER
+      // --------------------------------------------------
+
+      // If we know the category of the query,
+      // only keep products from that category.
+      if (
+        queryCategory.category !== "other" &&
+        listing.category !== queryCategory.category
+      ) {
+        return false;
+      }
+
+      // --------------------------------------------------
+      // TEXT RELEVANCE FILTER
+      // --------------------------------------------------
+
+      // Exact phrase match
+      if (title.includes(q)) {
+        return true;
+      }
+
+      // Single-word searches
+      const words = q
+        .split(/\s+/)
+        .filter((word) => word.length > 2);
+
+      if (words.length === 1) {
+        return title.includes(words[0]);
+      }
+
+      // For multi-word searches, require at least
+      // some meaningful part of the query.
+      const matchingWords = words.filter((word) =>
+        title.includes(word)
+      );
+
+      return matchingWords.length >= Math.min(2, words.length);
+    });
 }
 
 /**
@@ -121,6 +213,7 @@ async function scrapeFixedPlatforms(query) {
     { platform: "priceoye", fn: () => scrapePriceOyeSearch(`https://priceoye.pk/search?q=${encoded}`) },
     { platform: "mega",     fn: () => scrapeMegaSearch(`https://www.mega.pk/search/${query.replace(/\s+/g, "-")}/`) },
     { platform: "shophive", fn: () => scrapeShophiveSearch(`https://www.shophive.com/catalogsearch/result/?q=${encoded}`) },
+    { platform: "telemart", fn: () => scrapeTelemartSearch(`https://www.telemart.pk/search?collection=all&type=product&q=${encoded}`) }
   ];
 
   const settled = await Promise.allSettled(tasks.map((t) => t.fn()));
