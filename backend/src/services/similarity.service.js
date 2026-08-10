@@ -1,20 +1,21 @@
-import { extractStorage, modelTokens } from "./normalizeTitle.service.js";
+import {
+  extractStorage,
+  modelTokens,
+  extractScreenInches,
+  extractPtaStatus,
+  extractModelCodes,
+} from "./normalizeTitle.service.js";
 
 /**
- * Words that mark a distinct product tier rather than describing the same
- * device. "Pro" and "Pro Max" are different phones, so these are compared as
- * an exact set rather than being diluted across a token-similarity score.
+ * Words marking a distinct product tier rather than describing the same
+ * device. "Pro" and "Pro Max" are different phones.
  */
 const VARIANT_TOKENS = new Set([
   "pro", "max", "plus", "ultra", "mini", "air", "fe", "lite", "se",
 ]);
 
 export function tokenize(text = "") {
-  return String(text)
-    .toLowerCase()
-    .split(" ")
-    .map((token) => token.trim())
-    .filter(Boolean);
+  return String(text).toLowerCase().split(" ").map((t) => t.trim()).filter(Boolean);
 }
 
 export function calculateJaccardSimilarity(textA = "", textB = "") {
@@ -23,7 +24,7 @@ export function calculateJaccardSimilarity(textA = "", textB = "") {
 
   if (tokensA.size === 0 || tokensB.size === 0) return 0;
 
-  const intersection = new Set([...tokensA].filter((token) => tokensB.has(token)));
+  const intersection = new Set([...tokensA].filter((t) => tokensB.has(t)));
   const union = new Set([...tokensA, ...tokensB]);
 
   return intersection.size / union.size;
@@ -34,7 +35,7 @@ export function getSimilarityPercentage(textA = "", textB = "") {
 }
 
 export function extractVariants(text = "") {
-  return new Set(tokenize(modelTokens(text)).filter((token) => VARIANT_TOKENS.has(token)));
+  return new Set(tokenize(modelTokens(text)).filter((t) => VARIANT_TOKENS.has(t)));
 }
 
 function sameSet(a, b) {
@@ -44,32 +45,46 @@ function sameSet(a, b) {
 }
 
 /**
- * Decides whether two listings describe the same product.
+ * Attributes that materially change what the buyer receives are treated as
+ * constraints, not as evidence. Each is a single token inside a long title, so
+ * a set based similarity score cannot give it the weight it deserves: a 256GB
+ * and a 1TB unit differ by one token out of six, as do a Pro and a Pro Max, a
+ * 65 inch and an 85 inch television, and a PTA approved and non approved
+ * handset. Where both listings declare such an attribute and the values
+ * differ, they are different products whatever their similarity score.
  *
- * Two attributes are treated as decisive rather than as ordinary tokens:
- * storage capacity, and tier words such as Pro, Max and Ultra. Both are single
- * tokens in a long title, so token similarity alone cannot separate a 256GB
- * from a 1TB, or a Pro from a Pro Max. Everything else is compared on the
- * remaining model name.
- *
- * Where only one title states a capacity, the comparison falls through to the
- * model name — that listing is simply less specific, not a different product.
+ * Where only one listing declares the attribute the comparison falls through
+ * to the model name, since that listing is simply less specific.
  */
-export function isSimilarProduct(textA = "", textB = "", threshold = 0.7) {
+function attributeConflict(textA, textB) {
   const storageA = extractStorage(textA);
   const storageB = extractStorage(textB);
+  if (storageA !== null && storageB !== null && storageA !== storageB) return true;
 
-  if (storageA !== null && storageB !== null && storageA !== storageB) {
-    return false;
-  }
+  const screenA = extractScreenInches(textA);
+  const screenB = extractScreenInches(textB);
+  if (screenA !== null && screenB !== null && screenA !== screenB) return true;
 
-  if (!sameSet(extractVariants(textA), extractVariants(textB))) {
-    return false;
-  }
+  // Network approval changes the usable value of a handset in Pakistan, so an
+  // approved and a non approved unit must never compete on price.
+  const ptaA = extractPtaStatus(textA);
+  const ptaB = extractPtaStatus(textB);
+  if (ptaA !== "unknown" && ptaB !== "unknown" && ptaA !== ptaB) return true;
+
+  const codesA = extractModelCodes(textA);
+  const codesB = extractModelCodes(textB);
+  if (codesA.size > 0 && codesB.size > 0 && !sameSet(codesA, codesB)) return true;
+
+  if (!sameSet(extractVariants(textA), extractVariants(textB))) return true;
+
+  return false;
+}
+
+export function isSimilarProduct(textA = "", textB = "", threshold = 0.7) {
+  if (attributeConflict(textA, textB)) return false;
 
   const baseA = tokenize(modelTokens(textA)).filter((t) => !VARIANT_TOKENS.has(t)).join(" ");
   const baseB = tokenize(modelTokens(textB)).filter((t) => !VARIANT_TOKENS.has(t)).join(" ");
 
   return calculateJaccardSimilarity(baseA, baseB) >= threshold;
-  
 }
