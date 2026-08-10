@@ -68,6 +68,9 @@ const CATEGORIES = {
             "cooling pad",
             "cooling fan",
             "laptop cooler",
+            "laptop battery",
+            "laptop cell",
+            "cell laptop",
             "keyboard",
             "mouse",
         ],
@@ -114,10 +117,13 @@ const CATEGORIES = {
 
     smartwatch: {
         keywords: [
+            "watch",
             "smartwatch",
             "smart watch",
             "apple watch",
             "galaxy watch",
+            "pixel watch",
+            "xiaomi watch",
             "watch fit",
             "band",
             "fitness tracker",
