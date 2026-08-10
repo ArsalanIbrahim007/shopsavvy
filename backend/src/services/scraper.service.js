@@ -54,8 +54,9 @@ function toListingDoc(scraped) {
     productUrl:      scraped.sourceUrl,
     imageUrl:        scraped.imageUrl ?? "",
     brand:           scraped.brand ?? null,
-    category:        "Electronics",
-    availability: scraped.inStock ? "in_stock" : "out_of_stock",    isActive:        true,
+    category:        scraped.category ?? "other",
+    availability: scraped.inStock ? "in_stock" : "out_of_stock",    
+    isActive:        true,
     lastScrapedAt:   new Date(),
     scrapedAt:       scraped.scrapedAt ? new Date(scraped.scrapedAt) : new Date(),
   };
