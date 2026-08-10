@@ -103,7 +103,7 @@ function FeaturedDealCard({ product }) {
       </div>
       <div className="featured-card-body">
         <div className="featured-platform">{product.platform}</div>
-        <div className="featured-title">{product.title}</div>
+        <div className="featured-card-title">{product.title}</div>
         <div className="featured-price-row">
           <div className="featured-price">
             PKR {product.price?.toLocaleString()}
