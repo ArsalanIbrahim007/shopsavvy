@@ -3,7 +3,6 @@ import { isSimilarProduct, calculateJaccardSimilarity } from "./src/services/sim
 import { normalizeTitle, extractStorage, modelTokens } from "./src/services/normalizeTitle.service.js";
 
 const CASES = [
-  ["Apple iPhone 15", "Apple iPhone 15 128GB PTA Approved", true, "one states storage"],
   ["Apple iPhone 15 128GB PTA Approved", "iPhone 15 128GB PTA Approved", true, "same phone, same PTA"],
   ["Apple iPhone 16 Pro Max 256GB PTA Approved", "Apple iPhone 16 Pro Max 256GB NON PTA", false, "PTA vs non-PTA"],
   ["Apple iPhone 17 Pro 256GB", "Apple iPhone 17 Pro 1TB", false, "different capacity"],
@@ -20,6 +19,8 @@ const CASES = [
 ["Samsung 65\" QN70F Neo QLED 4K AI Smart TV", "Samsung 75\" QN70F Neo QLED 4K AI Smart TV", false, "65 vs 75 inch, quote mark"],
   ["Samsung 65\" QN70F Neo QLED 4K AI Smart TV", "Samsung 65 Inch QN70F Neo QLED 4K AI Smart TV", true, "quote vs word, same size"],
   ["Apple iPhone 17 Pro Max 1TB Storage PTA Approved", "Apple iPhone 17 Pro Max 1TB PTA Approved", true, "same PTA status"],
+["Apple iPhone 15", "Apple iPhone 15 128GB PTA Approved", false, "bare vs specific, unproven"],
+  ["Apple iPhone 16 Pro Max", "Apple iPhone 16 Pro Max 256GB Single Sim PTA Approved", false, "bare vs 256GB PTA"],
 ];
 
 let pass = 0;

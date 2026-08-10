@@ -57,9 +57,20 @@ function sameSet(a, b) {
  * to the model name, since that listing is simply less specific.
  */
 function attributeConflict(textA, textB) {
+  // Two listings that both omit capacity and approval status cannot be
+  // confirmed equivalent either. Silence on both sides is not agreement.
+  if (extractStorage(textA) === null && extractStorage(textB) === null &&
+      extractPtaStatus(textA) === "unknown" && extractPtaStatus(textB) === "unknown") {
+    return true;
+  }
+ // Storage and network approval must be positively confirmed as equal. If one
+  // listing declares the attribute and the other is silent, equivalence is
+  // unproven, so the two are not compared. Assuming the silent listing matches
+  // produced comparisons such as a bare "iPhone 16 Pro Max" against a "256GB
+  // PTA Approved" unit at a difference of PKR 140,000.
   const storageA = extractStorage(textA);
   const storageB = extractStorage(textB);
-  if (storageA !== null && storageB !== null && storageA !== storageB) return true;
+  if (storageA !== storageB) return true;
 
   const screenA = extractScreenInches(textA);
   const screenB = extractScreenInches(textB);
@@ -69,7 +80,7 @@ function attributeConflict(textA, textB) {
   // approved and a non approved unit must never compete on price.
   const ptaA = extractPtaStatus(textA);
   const ptaB = extractPtaStatus(textB);
-  if (ptaA !== "unknown" && ptaB !== "unknown" && ptaA !== ptaB) return true;
+if (ptaA !== ptaB) return true;
 
   const codesA = extractModelCodes(textA);
   const codesB = extractModelCodes(textB);
