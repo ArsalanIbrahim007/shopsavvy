@@ -62,7 +62,10 @@ function parsePrice(raw) {
  */
 function cleanText(raw) {
   if (raw == null) return "";
-  return String(raw).replace(/\s+/g, " ").trim();
+  return String(raw)
+    .replace(/<[^>]*>/g, " ")   // strip any HTML that leaked from the page
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function sleep(ms) {

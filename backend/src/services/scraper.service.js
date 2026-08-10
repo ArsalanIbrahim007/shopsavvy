@@ -14,7 +14,7 @@ import Listing from "../models/listing.model.js";
 import PriceHistory from "../models/priceHistory.model.js";
 import { normalizeTitle } from "./normalizeTitle.service.js";
 import { scrapeAllPlatforms } from "../scrapers/index.js";
-
+import { extractAttributes } from "./productAttributes.service.js";
 // How old data can be before we re-scrape (in minutes)
 // Set to 30 minutes so rapid repeated searches don't hammer sites
 const STALE_THRESHOLD_MINUTES = 30;
@@ -54,11 +54,12 @@ function toListingDoc(scraped) {
     productUrl:      scraped.sourceUrl,
     imageUrl:        scraped.imageUrl ?? "",
     brand:           scraped.brand ?? null,
-    category:        scraped.category ?? "other",
-    availability: scraped.inStock ? "in_stock" : "out_of_stock",    
+    category:        "Electronics",
+    inStock:         scraped.inStock !== false,
     isActive:        true,
     lastScrapedAt:   new Date(),
     scrapedAt:       scraped.scrapedAt ? new Date(scraped.scrapedAt) : new Date(),
+    ...extractAttributes(scraped.title),
   };
 }
 

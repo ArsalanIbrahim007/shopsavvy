@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
-
 import Listing from "../models/listing.model.js";
-import { attachPriceHistory } from "../services/historyEnrichment.service.js";
+import { detectCategory } from "../scrapers/productCategory.js";import { attachPriceHistory } from "../services/historyEnrichment.service.js";
 import { normalizeTitle } from "../services/normalizeTitle.service.js";
 import { groupListingsByProduct } from "../services/productGrouping.service.js";
 import {
@@ -145,34 +144,32 @@ export async function searchListings(req, res) {
 console.log("[search]", refreshResult);
     const normalizedQuery = normalizeTitle(q);
 
-    const listings = await Listing.find({
+/*
+     * The scrape-time category filter only governs what is written. Listings
+     * collected before that filter existed are still stored, so the category
+     * constraint is applied again here at query time. Without this, a search
+     * for "laptop" returns bags and batteries saved by earlier runs.
+     */
+    const queryCategory = detectCategory(q).category;
+
+    const searchFilter = {
       $or: [
-        {
-          title: {
-            $regex: q,
-            $options: "i",
-          },
-        },
-        {
-          normalizedTitle: {
-            $regex: normalizedQuery,
-            $options: "i",
-          },
-        },
-        {
-          category: {
-            $regex: q,
-            $options: "i",
-          },
-        },
-        {
-          platform: {
-            $regex: q,
-            $options: "i",
-          },
-        },
+        { title: { $regex: q, $options: "i" } },
+        { normalizedTitle: { $regex: normalizedQuery, $options: "i" } },
       ],
-    }).sort({
+    };
+
+    if (queryCategory !== "other" && queryCategory !== "accessory") {
+      searchFilter.productCategory = queryCategory;
+    }
+
+    // Optional filters supplied by the user
+    if (req.query.storage) searchFilter.storageGb = Number(req.query.storage);
+    if (req.query.colour) searchFilter.colour = req.query.colour;
+    if (req.query.condition) searchFilter.condition = req.query.condition;
+    if (req.query.pta) searchFilter.ptaStatus = req.query.pta;
+
+    const listings = await Listing.find(searchFilter).sort({
       price: 1,
       createdAt: -1,
     });

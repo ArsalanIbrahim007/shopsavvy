@@ -85,6 +85,16 @@ const listingSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    // Structured attributes derived from the title at collection time.
+    // Stored rather than computed on demand so that the database can be
+    // filtered by category and queried for the variants it holds.
+    productCategory: { type: String, default: "other", index: true },
+    storageGb:       { type: Number, default: null, index: true },
+    ramGb:           { type: Number, default: null },
+    colour:          { type: String, default: null },
+    ptaStatus:       { type: String, default: "unknown", index: true },
+    condition:       { type: String, default: "new", index: true },
+    screenInches:    { type: Number, default: null },
   },
   {
     timestamps: true,
