@@ -771,6 +771,40 @@ body {
   margin-top: 60px;
 }
 
+/* ── Product Category Filter ── */
+.category-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 4px 0;
+}
+
+.category-filter-btn {
+  padding: 8px 14px;
+  border: 1px solid #e8edf5;
+  border-radius: 999px;
+  background: white;
+  color: #555;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: capitalize;
+}
+
+.category-filter-btn:hover {
+  border-color: #1a73e8;
+  color: #1a73e8;
+  background: #f5f8ff;
+}
+
+.category-filter-btn.active {
+  background: #1a73e8;
+  border-color: #1a73e8;
+  color: white;
+}
+
 /* ── Summary Cards ── */
 .summary-cards {
   display: grid;

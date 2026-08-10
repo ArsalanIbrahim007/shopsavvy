@@ -4,7 +4,21 @@ function ProductHeader({ products }) {
   const lowestPrice = Math.min(...products.map((p) => p.price));
   const highestPrice = Math.max(...products.map((p) => p.price));
   const savings = highestPrice - lowestPrice;
-  const bestDealProduct = products.find((p) => p.isBestDeal) || products[0];
+
+  const bestDealProduct =
+    products.find(
+      (p) =>
+        p.isBestDeal &&
+        p.imageUrl &&
+        !p.imageUrl.includes("placehold.co")
+    ) ||
+    products.find(
+      (p) =>
+        p.imageUrl &&
+        !p.imageUrl.includes("placehold.co")
+    ) ||
+    products[0];
+
   const allTags = [...new Set(products.flatMap((p) => p.tags || []))];
 
   return (
@@ -14,22 +28,47 @@ function ProductHeader({ products }) {
           src={bestDealProduct.imageUrl}
           alt={bestDealProduct.title}
           className="product-header-image"
+          onError={(e) => {
+            e.currentTarget.src =
+              "https://placehold.co/200x200/f5f7fb/333?text=No+Image";
+          }}
         />
       </div>
+
       <div className="product-header-middle">
-        <h2 className="product-header-title">{bestDealProduct.normalizedTitle || bestDealProduct.title}</h2>
+        <h2 className="product-header-title">
+          {bestDealProduct.normalizedTitle || bestDealProduct.title}
+        </h2>
+
         <div className="product-header-tags">
           {allTags.map((tag) => (
-            <span key={tag} className="product-tag">{tag}</span>
+            <span key={tag} className="product-tag">
+              {tag}
+            </span>
           ))}
         </div>
-        <p className="product-header-desc">{bestDealProduct.description}</p>
+
+        <p className="product-header-desc">
+          {bestDealProduct.description}
+        </p>
       </div>
+
       <div className="product-header-right">
-        <div className="best-deal-available-badge">Best Deal Available</div>
-        <div className="savings-label">You can save up to</div>
-        <div className="savings-amount">PKR {savings.toLocaleString()}</div>
-        <div className="savings-sub">compared to highest price</div>
+        <div className="best-deal-available-badge">
+          Best Deal Available
+        </div>
+
+        <div className="savings-label">
+          You can save up to
+        </div>
+
+        <div className="savings-amount">
+          PKR {savings.toLocaleString()}
+        </div>
+
+        <div className="savings-sub">
+          compared to highest price
+        </div>
       </div>
     </div>
   );

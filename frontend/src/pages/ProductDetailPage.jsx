@@ -118,11 +118,12 @@ function ProductDetailPage() {
       <div className="detail-hero">
         <div className="detail-hero-left">
           <img
-            src={listing.imageUrl || listing.images?.[0] || "https://placehold.co/280x280/f5f7fb/333?text=No+Image"}
+            src={listing.imageUrl}
             alt={listing.title}
             className="detail-image"
             onError={(e) => {
-              e.target.src = "https://placehold.co/280x280/f5f7fb/333?text=No+Image";
+              e.target.onerror = null;
+              e.target.src = "/icons.svg"; // fallback placeholder
             }}
           />
         </div>

@@ -10,10 +10,14 @@ function ProductCard({ product }) {
       )}
       <div className="product-card-inner">
         <img
-          src={product.imageUrl ? product.imageUrl : "https://placehold.co/120x120?text=No+Image"}
-          alt={product.title}
-          className="product-image"
-        />
+            src={listing.imageUrl}
+            alt={listing.title}
+            className="detail-image"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "/icons.svg"; // fallback placeholder
+            }}
+          />
         <div className="product-details">
           <div className="product-platform">{product.platform}</div>
           <div className="product-title">{product.title}</div>

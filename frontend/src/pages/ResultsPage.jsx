@@ -6,6 +6,20 @@ import SummaryCards from "../components/SummaryCards";
 import ProductHeader from "../components/ProductHeader";
 import ComparisonTable from "../components/ComparisonTable";
 
+const CATEGORY_NAMES = {
+  smartphone: "Smartphones",
+  laptop: "Laptops",
+  tablet: "Tablets",
+  tv: "TVs",
+  headphones: "Headphones",
+  smartwatch: "Smartwatches",
+  monitor: "Monitors",
+  gaming_console: "Gaming Consoles",
+  accessory: "Accessories",
+  appliance: "Appliances",
+  other: "Other",
+};
+
 function ResultsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -15,6 +29,7 @@ function ResultsPage() {
   const [groupCount, setGroupCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [backendDown, setBackendDown] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
   useEffect(() => {
     async function fetchData() {
@@ -32,6 +47,28 @@ function ResultsPage() {
     () => [...new Set(products.map((p) => p.platform))],
     [products]
   );
+
+  const allCategories = useMemo(
+    () => [
+      ...new Set(
+        products
+          .map((p) => p.productCategory)
+          .filter(Boolean)
+      ),
+    ],
+    [products]
+  );
+
+  const categoryCounts = useMemo(() => {
+    const counts = {};
+
+    products.forEach((product) => {
+      const category = product.productCategory || "other";
+      counts[category] = (counts[category] || 0) + 1;
+    });
+
+    return counts;
+  }, [products]);
 
   const minPrice = useMemo(
     () => (products.length === 0 ? 0 : Math.min(...products.map((p) => p.price))),
@@ -105,24 +142,46 @@ function ResultsPage() {
   const filtered = useMemo(() => {
     let results = [...products];
 
-    results = results.filter((p) => selectedPlatforms.includes(p.platform));
-    results = results.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1]);
+    // Category filter
+    if (selectedCategory !== "all") {
+      results = results.filter(
+        (p) => (p.productCategory || "other") === selectedCategory
+      );
+    }
 
-    // "Best deals only" now uses the backend's recommendation engine rather
-    // than a flag that no longer exists on live data.
+    // Platform filter
+    results = results.filter((p) =>
+      selectedPlatforms.includes(p.platform)
+    );
+
+    // Price filter
+    results = results.filter(
+      (p) => p.price >= priceRange[0] && p.price <= priceRange[1]
+    );
+
+    // Best deals
     if (showBestDeal) {
       results = results.filter((p) =>
         ["BUY_NOW", "GOOD_DEAL"].includes(p.recommendation?.action)
       );
     }
 
-    // Sort by the computed deal score instead of a rating field.
+    // Top rated
     if (showTopRated) {
-      results.sort((a, b) => (b.dealScore || 0) - (a.dealScore || 0));
+      results.sort(
+        (a, b) => (b.dealScore || 0) - (a.dealScore || 0)
+      );
     }
 
     return results;
-  }, [products, selectedPlatforms, priceRange, showBestDeal, showTopRated]);
+  }, [
+    products,
+    selectedCategory,
+    selectedPlatforms,
+    priceRange,
+    showBestDeal,
+    showTopRated,
+  ]);
 
   const fakeCount = useMemo(
     () => products.filter((p) => p.discountAnalysis?.isFakeDiscount).length,
@@ -169,11 +228,13 @@ function ResultsPage() {
               <h2 className="results-title">
                 Results for: <span>"{query}"</span>
               </h2>
+
               <p className="results-count">
                 {filtered.length} offers across {allPlatforms.length} platforms
                 {groupCount > 0 && ` · grouped into ${groupCount} products`}
               </p>
             </div>
+
             <p className="results-freshness">
               &#8635; Last updated:{" "}
               {new Date().toLocaleDateString("en-GB", {
@@ -188,6 +249,31 @@ function ResultsPage() {
               })}
             </p>
           </div>
+
+          {/* Product Category Filter */}
+          {allCategories.length > 1 && (
+            <div className="category-filter">
+              <button
+                className={`category-filter-btn ${selectedCategory === "all" ? "active" : ""
+                  }`}
+                onClick={() => setSelectedCategory("all")}
+              >
+                All ({products.length})
+              </button>
+
+              {allCategories.map((category) => (
+                <button
+                  key={category}
+                  className={`category-filter-btn ${selectedCategory === category ? "active" : ""
+                    }`}
+                  onClick={() => setSelectedCategory(category)}
+                >
+                  {CATEGORY_NAMES[category] || category} ({categoryCounts[category]})
+                </button>
+              ))}
+
+            </div>
+          )}
 
           {fakeCount > 0 && (
             <div className="fake-alert-strip">

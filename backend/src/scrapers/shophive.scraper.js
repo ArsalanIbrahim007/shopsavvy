@@ -35,8 +35,24 @@ async function scrapeShophiveSearch(searchUrl) {
       const titleLink = card.find(".product-item-link");
       const title = cleanText(titleLink.text());
       const href = titleLink.attr("href");
-      const imageUrl = card.find("img.product-image-photo").attr("src") || null;
+      const image = card.find("img.product-image-photo").first();
 
+      const imageUrl =
+        image.attr("data-src") ||
+        image.attr("data-lazy-src") ||
+        image.attr("data-original") ||
+        image.attr("src") ||
+        image.attr("srcset")?.split(",")[0]?.trim().split(" ")[0] ||
+        null;
+
+        console.log({
+  title,
+  src: image.attr("src"),
+  dataSrc: image.attr("data-src"),
+  lazySrc: image.attr("data-lazy-src"),
+  original: image.attr("data-original"),
+  srcset: image.attr("srcset"),
+});
       // Magento exposes the clean numeric price via data-price-amount —
       // far more reliable than regexing "Rs 10,799.00" text.
       const priceAmount = card.find("[data-price-amount]").first().attr("data-price-amount");
