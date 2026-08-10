@@ -16,6 +16,9 @@ const CASES = [
   ["Apple iPhone 15 128GB PTA Approved", "smartphone"],
   ["Apple iPhone 15 Silicone Case", "!smartphone"],
   ["Samsung 55 Inch QLED Smart TV", "tv"],
+  ["Apple MacBook Air M3 13 inch 256GB", "laptop"],
+  ["Apple 96W USB-C Power Adapter for MacBook Pro", "!laptop"],
+  ["Anker 65W Wall Charger for MacBook Air", "!laptop"],
 ];
 
 let pass = 0;
