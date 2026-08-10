@@ -37,19 +37,6 @@ async function main() {
     );
   });
 
-  console.log("\n=== POST /api/listings (Bug A isolation test) ===");
-  const post = await fetch(`${BASE}/listings`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      platform: "priceoye",
-      title: "Test Product 128GB",
-      price: 50000,
-    }),
-  });
-  console.log("status:", post.status);
-  const body = await post.json();
-  console.log("success:", body.success, "| reason:", body.priceHistory?.reason || body.message);
 }
 
 main().catch((e) => console.error("FAILED:", e.message));
