@@ -104,7 +104,15 @@ function ComparisonTable({ products }) {
   if (!products || products.length === 0) return null;
 
   const sorted = [...products].sort((a, b) => a.price - b.price);
-  const topScore = Math.max(...sorted.map((p) => Number(p.dealScore || 0)));
+  // A "best deal" only means something when there is more than one offer for
+  // the same product. Marking the top score in a single-offer table implied a
+  // comparison that had not taken place.
+  const bestId =
+    sorted.length > 1
+      ? [...sorted].sort(
+          (a, b) => Number(b.dealScore || 0) - Number(a.dealScore || 0)
+        )[0]._id
+      : null;
 
   return (
     <div className="comparison-table-wrapper">
@@ -122,7 +130,7 @@ function ComparisonTable({ products }) {
         </thead>
         <tbody>
           {sorted.map((product) => {
-            const isBest = Number(product.dealScore || 0) === topScore;
+            const isBest = product._id === bestId;
             const analysis = product.discountAnalysis || {};
             const rec = RECOMMENDATION_LABELS[product.recommendation?.action] ||
               RECOMMENDATION_LABELS.NO_HISTORY;

@@ -27,6 +27,7 @@ function ResultsPage() {
 
   const [products, setProducts] = useState([]);
   const [groupCount, setGroupCount] = useState(0);
+  const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [backendDown, setBackendDown] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -37,6 +38,7 @@ function ResultsPage() {
       const result = await searchProducts(query);
       setProducts(result.products);
       setGroupCount(result.groupCount);
+      setGroups(result.groups || []);
       setBackendDown(result.error);
       setLoading(false);
     }
@@ -182,6 +184,23 @@ function ResultsPage() {
     showBestDeal,
     showTopRated,
   ]);
+/*
+   * The backend has already decided which offers belong to the same product.
+   * Rebuilding the groups from the filtered set keeps the sidebar filters
+   * working while preserving that decision, so that a comparison is only ever
+   * shown between offers of the same product.
+   */
+  const filteredGroups = useMemo(() => {
+    const keep = new Set(filtered.map((p) => p._id));
+
+    return groups
+      .map((group) => ({
+        ...group,
+        offers: (group.offers || []).filter((o) => keep.has(o._id)),
+      }))
+      .filter((group) => group.offers.length > 0)
+      .sort((a, b) => b.offers.length - a.offers.length);
+  }, [groups, filtered]);
 
   const fakeCount = useMemo(
     () => products.filter((p) => p.discountAnalysis?.isFakeDiscount).length,
@@ -313,8 +332,21 @@ function ResultsPage() {
           ) : (
             <>
               <SummaryCards products={filtered} />
-              <ProductHeader products={filtered} />
-              <ComparisonTable products={filtered} />
+
+              {filteredGroups.map((group) => (
+                <div className="product-group" key={group.productName}>
+                  <div className="product-group-head">
+                    <h3 className="product-group-title">{group.productName}</h3>
+                    <span className="product-group-meta">
+                      {group.offers.length}{" "}
+                      {group.offers.length === 1 ? "offer" : "offers"}
+                      {group.offers.length > 1 &&
+                        ` from ${new Set(group.offers.map((o) => o.platform)).size} stores`}
+                    </span>
+                  </div>
+                  <ComparisonTable products={group.offers} />
+                </div>
+              ))}
             </>
           )}
 
