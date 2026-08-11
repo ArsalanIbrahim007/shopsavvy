@@ -37,6 +37,9 @@ async function scrapeShophiveSearch(searchUrl) {
       const href = titleLink.attr("href");
       const image = card.find("img.product-image-photo").first();
 
+      // The storefront lazy-loads images, so the real URL is usually held in
+      // a data attribute rather than src. The src attribute is checked last
+      // because on a lazy-loaded card it often holds a placeholder.
       const imageUrl =
         image.attr("data-src") ||
         image.attr("data-lazy-src") ||
@@ -45,14 +48,6 @@ async function scrapeShophiveSearch(searchUrl) {
         image.attr("srcset")?.split(",")[0]?.trim().split(" ")[0] ||
         null;
 
-        console.log({
-  title,
-  src: image.attr("src"),
-  dataSrc: image.attr("data-src"),
-  lazySrc: image.attr("data-lazy-src"),
-  original: image.attr("data-original"),
-  srcset: image.attr("srcset"),
-});
       // Magento exposes the clean numeric price via data-price-amount —
       // far more reliable than regexing "Rs 10,799.00" text.
       const priceAmount = card.find("[data-price-amount]").first().attr("data-price-amount");
