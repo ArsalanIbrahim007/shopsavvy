@@ -90,7 +90,9 @@ setSelectedResolution = () => {},
   ),
   colour: collect("colour").sort((a, b) => b.count - a.count),
   condition: collect("condition").sort((a, b) => b.count - a.count),
-  pta: collect("ptaStatus").sort((a, b) => b.count - a.count),
+  pta: collect("ptaStatus")
+  .filter((option) => option.value !== "unknown")
+  .sort((a, b) => b.count - a.count),
 };
   }, [products]);
 
