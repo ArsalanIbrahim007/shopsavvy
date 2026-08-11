@@ -281,6 +281,8 @@ return results;
           setShowTopRated={handleTopRated}
           onReset={handleReset}
           products={products}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
           selectedStorage={selectedStorage}
           setSelectedStorage={setSelectedStorage}
           selectedColours={selectedColours}
