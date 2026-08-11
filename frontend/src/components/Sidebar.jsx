@@ -108,7 +108,7 @@ const applicableFacets = useMemo(() => {
   });
 
   return allowed;
-}, [products]);  
+}, [products]);
 
   function toggleSelection(value, selected, setSelected) {
     setSelected(
