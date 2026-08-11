@@ -18,7 +18,7 @@ export function groupListingsByProduct(listings = []) {
   const groups = [];
 
   listings.forEach((listing) => {
-    const rawTitle = listing.normalizedTitle || listing.title;
+    const rawTitle = listing.title || listing.normalizedTitle || "";
     const normalizedListingTitle = normalizeTitle(rawTitle);
     const listingStorage = extractStorage(rawTitle);
 
@@ -32,7 +32,7 @@ export function groupListingsByProduct(listings = []) {
 
       if (capacityConflict) continue;
 
-      if (isSimilarProduct(normalizedListingTitle, group.normalizedGroupKey, 0.7)) {
+      if (isSimilarProduct(rawTitle, group.rawGroupKey, 0.7)) {
         matchedGroup = group;
         break;
       }
@@ -42,6 +42,7 @@ export function groupListingsByProduct(listings = []) {
       matchedGroup = {
         productName: listing.title,
         normalizedGroupKey: normalizedListingTitle,
+        rawGroupKey: rawTitle,
         storage: listingStorage,
         offerCount: 0,
         lowestPrice: listing.price,
@@ -57,6 +58,7 @@ export function groupListingsByProduct(listings = []) {
     if (matchedGroup.storage === null && listingStorage !== null) {
       matchedGroup.storage = listingStorage;
       matchedGroup.normalizedGroupKey = normalizedListingTitle;
+      matchedGroup.rawGroupKey = rawTitle;
       matchedGroup.productName = listing.title;
     }
 

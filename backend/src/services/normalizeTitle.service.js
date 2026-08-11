@@ -72,3 +72,50 @@ export function modelTokens(title = "") {
     .replace(/\s+/g, " ")
     .trim();
 }
+/**
+ * Screen size in inches. Decisive for televisions, monitors and laptops in the
+ * same way storage capacity is decisive for phones: a 65 inch and an 85 inch
+ * television are different products however similar their titles read.
+ */
+export function extractScreenInches(title = "") {
+  const match = String(title).toLowerCase()
+    .match(/\b(\d{2}(?:\.\d)?)\s*(?:inch|inches|"|\u201d|\u2033)/);
+
+  if (!match) return null;
+
+  const value = Number(match[1]);
+  return value >= 10 && value <= 120 ? value : null;
+}
+
+/**
+ * PTA approval status, specific to the Pakistani market. A non approved
+ * handset cannot use local cellular networks without a substantial tax
+ * payment, so it is consistently cheaper than the approved unit. Comparing the
+ * two on price alone is misleading, because the non approved offer wins on a
+ * difference the buyer has not accounted for.
+ */
+export function extractPtaStatus(title = "") {
+  const text = String(title).toLowerCase();
+
+  if (/\bnon[\s-]?pta\b/.test(text)) return "non_pta";
+  if (/\bpta\b/.test(text)) return "pta_approved";
+  return "unknown";
+}
+
+/**
+ * Manufacturer model codes such as QN70F, S85F or FA2787NR. These mix letters
+ * and digits and are frequently the only token distinguishing two otherwise
+ * identically described products, so they cannot be left to compete with every
+ * other word in a similarity score.
+ */
+export function extractModelCodes(title = "") {
+  const codes = new Set();
+
+  normalizeTitle(title).split(" ").forEach((token) => {
+   // Capacities are handled separately and must not be read as model codes.
+    if (/^\d+(gb|tb|mb)$/.test(token)) return;
+    if (/^(?=.*[a-z])(?=.*\d)[a-z0-9]{4,}$/.test(token)) codes.add(token);
+  });
+
+  return codes;
+}
