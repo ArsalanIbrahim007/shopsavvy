@@ -22,7 +22,8 @@ config({
 import { scrapePriceOyeSearch } from "./priceoye.scraper.js";
 import { scrapeMegaSearch } from "./mega.scraper.js";
 import { scrapeShophiveSearch } from "./shophive.scraper.js";
-import { scrapeTelemartSearch } from "./telemart.scraper.js";
+// import { scrapeTelemartSearch } from "./telemart.scraper.js";
+// import { scrapeIShoppingSearch } from "./ishopping.scraper.js";
 import { scrapeGeneric } from "./generic.scraper.js";
 import { searchForProduct } from "./googleSearch.js";
 import { detectCategory, detectQueryCategory } from "./productCategory.js";
@@ -101,7 +102,7 @@ const ACCESSORY_KEYWORDS = [
   "replacement battery",
   "replacement keyboard",
 ];
- 
+
 // Phone/laptop brand keywords — accessory filter only applies to these queries
 const MAIN_PRODUCT_KEYWORDS = [
   "iphone", "samsung", "galaxy", "pixel", "oneplus", "oppo", "vivo",
@@ -137,7 +138,7 @@ function isAccessory(title) {
     return t.includes(keyword);
   });
 }
- 
+
 
 function filterByRelevance(listings, query) {
   const q = query.toLowerCase().trim();
@@ -210,10 +211,41 @@ async function scrapeFixedPlatforms(query) {
   const encoded = encodeURIComponent(query);
 
   const tasks = [
-    { platform: "priceoye", fn: () => scrapePriceOyeSearch(`https://priceoye.pk/search?q=${encoded}`) },
-    { platform: "mega",     fn: () => scrapeMegaSearch(`https://www.mega.pk/search/${query.replace(/\s+/g, "-")}/`) },
-    { platform: "shophive", fn: () => scrapeShophiveSearch(`https://www.shophive.com/catalogsearch/result/?q=${encoded}`) },
-    { platform: "telemart", fn: () => scrapeTelemartSearch(`https://www.telemart.pk/search?collection=all&type=product&q=${encoded}`) }
+    {
+      platform: "priceoye",
+      fn: () =>
+        scrapePriceOyeSearch(
+          `https://priceoye.pk/search?q=${encoded}`
+        ),
+    },
+    {
+      platform: "mega",
+      fn: () =>
+        scrapeMegaSearch(
+          `https://www.mega.pk/search/${query.replace(/\s+/g, "-")}/`
+        ),
+    },
+    {
+      platform: "shophive",
+      fn: () =>
+        scrapeShophiveSearch(
+          `https://www.shophive.com/catalogsearch/result/?q=${encoded}`
+        ),
+    },
+    // {
+    //   platform: "telemart",
+    //   fn: () =>
+    //     scrapeTelemartSearch(
+    //       `https://www.telemart.pk/search?collection=all&type=product&q=${encoded}`
+    //     ),
+    // },
+    // {
+    //   platform: "ishopping",
+    //   fn: () =>
+    //     scrapeIShoppingSearch(
+    //       `https://www.ishopping.pk/catalogsearch/result/?q=${encoded}`
+    //     ),
+    // },
   ];
 
   const settled = await Promise.allSettled(tasks.map((t) => t.fn()));

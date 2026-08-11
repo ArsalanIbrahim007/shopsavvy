@@ -22,26 +22,68 @@ const DEFAULT_HEADERS = {
  * @param {number} [opts.timeout=10000]
  */
 async function fetchHtml(url, opts = {}) {
-  const { retries = 2, timeout = 10000, headers = {} } = opts;
+  const {
+    retries = 2,
+    timeout = 10000,
+    headers = {},
+  } = opts;
 
   let lastErr;
+
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       const res = await axios.get(url, {
-        headers: { ...DEFAULT_HEADERS, ...headers },
+        headers: {
+          ...DEFAULT_HEADERS,
+          ...headers,
+        },
+
         timeout,
+
+        maxRedirects: 5,
+
+        responseType: "text",
+
+        validateStatus(status) {
+          return status >= 200 && status < 300;
+        },
       });
+
       return res.data;
     } catch (err) {
       lastErr = err;
-      // simple backoff before retrying
+
+      const status = err.response?.status;
+
+      /*
+       * Retrying most 4xx responses with exactly the same request
+       * is pointless. 429 is the exception because rate limiting
+       * can be temporary.
+       */
+      const permanentClientError =
+        status >= 400 &&
+        status < 500 &&
+        status !== 408 &&
+        status !== 429;
+
+      if (permanentClientError) {
+        break;
+      }
+
       if (attempt < retries) {
         await sleep(500 * (attempt + 1));
       }
     }
   }
+
+  const status = lastErr?.response?.status;
+
+  const detail = status
+    ? `HTTP ${status}: ${lastErr.message}`
+    : lastErr?.message || "Unknown request error";
+
   throw new Error(
-    `fetchHtml failed for ${url} after ${retries + 1} attempts: ${lastErr.message}`
+    `fetchHtml failed for ${url}: ${detail}`
   );
 }
 

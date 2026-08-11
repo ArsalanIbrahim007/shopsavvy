@@ -18,48 +18,99 @@ const BASE_URL = "https://www.mega.pk";
  * @returns {Promise<import('./scraper.schema').ScrapedListing[]>}
  */
 async function scrapeMegaSearch(searchUrl) {
-  const html = await fetchHtml(searchUrl);
-  const $ = cheerio.load(html);
+  const allListings = [];
+  const MAX_PAGES = 5;
 
-  // Confirmed via DevTools inspection (June 2026): each card is an <li> with
-  // a data-brand attribute and a data-slug attribute.
-  const cards = $("li[data-brand]").toArray();
+  // Example:
+  // https://www.mega.pk/search/samsung/
+  const baseSearchUrl = searchUrl.endsWith("/")
+    ? searchUrl
+    : `${searchUrl}/`;
 
-  return safeMap(
-    cards,
-    (el) => {
-      const card = $(el);
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const pageUrl =
+      page === 1
+        ? baseSearchUrl
+        : `${baseSearchUrl}${page}/`;
 
-      const title = cleanText(card.find("#lap_name_div h3 a").text());
-      const href = card.find("#lap_name_div h3 a").attr("href");
-      const imageUrl = card.find(".image img").attr("src") || null;
-      const brand = card.attr("data-brand") || null;
+    const html = await fetchHtml(pageUrl);
+    const $ = cheerio.load(html);
 
-      // .cat_price contains both the "was" (original) price div AND the
-      // current price as a trailing text node, e.g.:
-      // <div class="was">599,999 - PKR</div>584,999<span> - PKR</span>
-      // Clone it, strip out the .was div, then read what's left for current price.
-      const priceBox = card.find(".cat_price").clone();
-      const originalPriceRaw = priceBox.find(".was").text();
-      priceBox.find(".was").remove();
-      const priceRaw = priceBox.text();
+    const cards = $("li[data-brand]").toArray();
 
-      if (!title || !href) return null;
+    console.log(
+      `[mega] page ${page}: ${cards.length} cards`
+    );
 
-      const sourceUrl = href.startsWith("http") ? href : `${BASE_URL}${href}`;
+    if (cards.length === 0) {
+      break;
+    }
 
-      return makeListing({
-        platform: PLATFORM,
-        sourceUrl,
-        title,
-        price: parsePrice(priceRaw),
-        originalPrice: parsePrice(originalPriceRaw) || null,
-        imageUrl,
-        brand,
-      });
-    },
-    PLATFORM
-  );
+    const listings = safeMap(
+      cards,
+      (el) => {
+        const card = $(el);
+
+        const title = cleanText(
+          card.find("#lap_name_div h3 a").text()
+        );
+
+        const href = card
+          .find("#lap_name_div h3 a")
+          .attr("href");
+
+        const imageUrl =
+          card.find(".image img").attr("src") ||
+          null;
+
+        const brand =
+          card.attr("data-brand") ||
+          null;
+
+        const priceBox = card
+          .find(".cat_price")
+          .clone();
+
+        const originalPriceRaw =
+          priceBox.find(".was").text();
+
+        priceBox.find(".was").remove();
+
+        const priceRaw = priceBox.text();
+
+        if (!title || !href) {
+          return null;
+        }
+
+        const sourceUrl = href.startsWith("http")
+          ? href
+          : `${BASE_URL}${href}`;
+
+        return makeListing({
+          platform: PLATFORM,
+          sourceUrl,
+          title,
+          price: parsePrice(priceRaw),
+          originalPrice:
+            parsePrice(originalPriceRaw) || null,
+          imageUrl,
+          brand,
+        });
+      },
+      PLATFORM
+    );
+
+    allListings.push(...listings);
+  }
+
+  return [
+    ...new Map(
+      allListings.map((item) => [
+        item.sourceUrl,
+        item,
+      ])
+    ).values(),
+  ];
 }
 
 export { scrapeMegaSearch };

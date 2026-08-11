@@ -20,59 +20,101 @@ const BASE_URL = "https://www.shophive.com";
  * @returns {Promise<import('./scraper.schema').ScrapedListing[]>}
  */
 async function scrapeShophiveSearch(searchUrl) {
-  const html = await fetchHtml(searchUrl);
-  const $ = cheerio.load(html);
+  const allListings = [];
+  const MAX_PAGES = 5;
 
-  // Confirmed via DevTools inspection (June 2026): Magento-based storefront,
-  // each card is <li class="item product product-item">
-  const cards = $("li.product-item").toArray();
+  const parsedUrl = new URL(searchUrl);
+  const query = parsedUrl.searchParams.get("q");
 
-  return safeMap(
-    cards,
-    (el) => {
-      const card = $(el);
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const pageUrl =
+      page === 1
+        ? searchUrl
+        : `${BASE_URL}/catalogsearch/result/index/?p=${page}&q=${encodeURIComponent(query)}`;
 
-      const titleLink = card.find(".product-item-link");
-      const title = cleanText(titleLink.text());
-      const href = titleLink.attr("href");
-      const image = card.find("img.product-image-photo").first();
+    const html = await fetchHtml(pageUrl);
+    const $ = cheerio.load(html);
 
-      // The storefront lazy-loads images, so the real URL is usually held in
-      // a data attribute rather than src. The src attribute is checked last
-      // because on a lazy-loaded card it often holds a placeholder.
-      const imageUrl =
-        image.attr("data-src") ||
-        image.attr("data-lazy-src") ||
-        image.attr("data-original") ||
-        image.attr("src") ||
-        image.attr("srcset")?.split(",")[0]?.trim().split(" ")[0] ||
-        null;
+    const cards = $("li.product-item").toArray();
 
-      // Magento exposes the clean numeric price via data-price-amount —
-      // far more reliable than regexing "Rs 10,799.00" text.
-      const priceAmount = card.find("[data-price-amount]").first().attr("data-price-amount");
+    console.log(
+      `[shophive] page ${page}: ${cards.length} cards`
+    );
 
-      // NOTE: not yet confirmed against a discounted product — Magento
-      // themes typically mark original price with .old-price .price and
-      // discounted price with .special-price .price. Wired in as a
-      // fallback; verify once a sale item is inspected.
-      const originalPriceRaw = card.find(".old-price .price").first().text();
+    if (cards.length === 0) {
+      break;
+    }
 
-      if (!title || !href) return null;
+    const listings = safeMap(
+      cards,
+      (el) => {
+        const card = $(el);
 
-      const sourceUrl = href.startsWith("http") ? href : `${BASE_URL}${href}`;
+        const titleLink = card.find(".product-item-link");
+        const title = cleanText(titleLink.text());
+        const href = titleLink.attr("href");
 
-      return makeListing({
-        platform: PLATFORM,
-        sourceUrl,
-        title,
-        price: priceAmount ? parsePrice(priceAmount) : null,
-        originalPrice: originalPriceRaw ? parsePrice(originalPriceRaw) : null,
-        imageUrl,
-      });
-    },
-    PLATFORM
-  );
+        const image = card
+          .find("img.product-image-photo")
+          .first();
+
+        const imageUrl =
+          image.attr("data-src") ||
+          image.attr("data-lazy-src") ||
+          image.attr("data-original") ||
+          image.attr("src") ||
+          image
+            .attr("srcset")
+            ?.split(",")[0]
+            ?.trim()
+            .split(" ")[0] ||
+          null;
+
+        const priceAmount = card
+          .find("[data-price-amount]")
+          .first()
+          .attr("data-price-amount");
+
+        const originalPriceRaw = card
+          .find(".old-price .price")
+          .first()
+          .text();
+
+        if (!title || !href) {
+          return null;
+        }
+
+        const sourceUrl = href.startsWith("http")
+          ? href
+          : `${BASE_URL}${href}`;
+
+        return makeListing({
+          platform: PLATFORM,
+          sourceUrl,
+          title,
+          price: priceAmount
+            ? parsePrice(priceAmount)
+            : null,
+          originalPrice: originalPriceRaw
+            ? parsePrice(originalPriceRaw)
+            : null,
+          imageUrl,
+        });
+      },
+      PLATFORM
+    );
+
+    allListings.push(...listings);
+  }
+
+  return [
+    ...new Map(
+      allListings.map((item) => [
+        item.sourceUrl,
+        item,
+      ])
+    ).values(),
+  ];
 }
 
 export { scrapeShophiveSearch };
