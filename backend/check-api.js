@@ -4,8 +4,12 @@ const QUERY = process.argv[2] || "iphone 17 pro";
 
 async function main() {
   console.log(`=== SEARCH: ${QUERY} ===`);
+// Refresh is opt-in. A re-scrape overwrites the seeded originalPrice values
+  // that the fake-discount badges depend on, so the default reads stored data.
+  const refresh = process.argv.includes("--refresh") ? "&refresh=true" : "";
+
   const res = await fetch(
-    `${BASE}/listings/search?q=${encodeURIComponent(QUERY)}&refresh=true`
+    `${BASE}/listings/search?q=${encodeURIComponent(QUERY)}${refresh}`
   );
   const j = await res.json();
 
