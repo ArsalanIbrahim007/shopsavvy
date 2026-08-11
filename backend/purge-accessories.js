@@ -35,6 +35,13 @@ const listings = await Listing.find().lean();
 
 const doomed = listings.filter((listing) => {
   const title = String(listing.title || "");
+
+  // Nothing priced above PKR 100,000 is an accessory. Two Samsung
+  // refrigerators were classified as accessories because "Top Mount" and
+  // "Cooling" match accessory keywords, and no appliance keyword outweighs
+  // them. A price floor is a blunt guard but it cannot delete a real product.
+  if (Number(listing.price) > 100000) return false;
+
   if (JUNK.some((pattern) => pattern.test(title))) return true;
   return detectCategory(title).category === "accessory";
 });

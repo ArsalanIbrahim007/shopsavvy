@@ -494,17 +494,6 @@ function HomePage() {
           </div>
         )}
 
-        <div className="home-platforms">
-          Comparing prices from
-          <br />
-          <span>PriceOye</span>
-          <span>Mega.pk</span>
-          <span>Shophive</span>
-          <span>HomeShopping</span>
-          <span>Telemart</span>
-        </div>
-      </div>
-
       <div className="categories-section">
         <h2 className="categories-title">
           Browse by Category
