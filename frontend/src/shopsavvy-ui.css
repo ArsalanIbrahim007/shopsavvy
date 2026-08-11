@@ -393,3 +393,82 @@
 .sparkline-up svg circle     { fill: #b42318; }
 .sparkline-label { font-size: 10px; color: #8593a5; white-space: nowrap; }
 .history-empty   { font-size: 10px; color: #8593a5; font-style: italic; }
+/* The wrapper must not clip the hover popover. */
+.comparison-table-wrapper { overflow: visible; }
+
+.score-cell { position: relative; }
+
+.score-bar { cursor: help; }
+
+.score-popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 40;
+  min-width: 258px;
+  margin-top: 8px;
+  padding: 12px 14px;
+  background: #fff;
+  border: 1px solid var(--ss-line);
+  border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(15, 27, 45, 0.16);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity .14s ease, transform .14s ease, visibility .14s;
+  pointer-events: none;
+}
+
+.score-cell:hover .score-popover {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.score-popover-head {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--ss-ink-mute);
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--ss-line-soft);
+}
+
+.score-popover-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 12.5px;
+}
+
+.score-popover-key {
+  width: 9px; height: 9px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.score-popover-key.seg-price { background: #1d4ed8; }
+.score-popover-key.seg-trust { background: #0e7c4a; }
+.score-popover-key.seg-fresh { background: #d19100; }
+.score-popover-key.seg-avail { background: #7c3aed; }
+
+.score-popover-label { flex: 1; color: var(--ss-ink-soft); }
+.score-popover-value { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.score-popover-total {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--ss-line-soft);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sparkline-range {
+  font-size: 10px;
+  color: var(--ss-ink-mute);
+  font-variant-numeric: tabular-nums;
+}

@@ -76,23 +76,48 @@ function ScoreCell({ score, breakdown, weights }) {
   const value = Number(score || 0);
   const tone = value >= 80 ? "score-high" : value >= 55 ? "score-mid" : "score-low";
 
-  const tooltip = breakdown
-    ? `Price ${breakdown.price}/${weights?.price ?? 60} · ` +
-    `Trust ${breakdown.trust}/${weights?.trust ?? 20} · ` +
-    `Freshness ${breakdown.freshness}/${weights?.freshness ?? 10} · ` +
-    `Availability ${breakdown.availability}/${weights?.availability ?? 10}`
-    : "";
+  const parts = breakdown
+    ? [
+        { key: "price", label: "Price competitiveness", got: breakdown.price, max: weights?.price ?? 60, cls: "seg-price" },
+        { key: "trust", label: "Platform trust", got: breakdown.trust, max: weights?.trust ?? 20, cls: "seg-trust" },
+        { key: "freshness", label: "Data freshness", got: breakdown.freshness, max: weights?.freshness ?? 10, cls: "seg-fresh" },
+        { key: "availability", label: "Availability", got: breakdown.availability, max: weights?.availability ?? 10, cls: "seg-avail" },
+      ]
+    : [];
 
   return (
-    <div className="score-cell" title={tooltip}>
+    <div className="score-cell">
       <div className={`score-value ${tone}`}>{value.toFixed(1)}</div>
+
       {breakdown && (
-        <div className="score-bar" aria-hidden="true">
-          <span className="seg seg-price" style={{ flexGrow: breakdown.price || 0.01 }} />
-          <span className="seg seg-trust" style={{ flexGrow: breakdown.trust || 0.01 }} />
-          <span className="seg seg-fresh" style={{ flexGrow: breakdown.freshness || 0.01 }} />
-          <span className="seg seg-avail" style={{ flexGrow: breakdown.availability || 0.01 }} />
-        </div>
+        <>
+          <div className="score-bar" aria-hidden="true">
+            {parts.map((p) => (
+              <span key={p.key} className={`seg ${p.cls}`} style={{ flexGrow: p.got || 0.01 }} />
+            ))}
+          </div>
+
+          {/* Shown on hover. The ranking is only defensible if the user can
+              see how the number was reached. */}
+          <div className="score-popover" role="tooltip">
+            <div className="score-popover-head">
+              How this score was calculated
+            </div>
+            {parts.map((p) => (
+              <div className="score-popover-row" key={p.key}>
+                <span className={`score-popover-key ${p.cls}`} />
+                <span className="score-popover-label">{p.label}</span>
+                <span className="score-popover-value">
+                  {Number(p.got).toFixed(1)} / {p.max}
+                </span>
+              </div>
+            ))}
+            <div className="score-popover-total">
+              <span>Total</span>
+              <span>{value.toFixed(1)} / 100</span>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
@@ -151,6 +176,12 @@ function PriceSparkline({ history }) {
       </svg>
       <span className="sparkline-label">
         {arrow} {Math.abs(changePercent)}% since first seen
+      </span>
+            <span className="sparkline-label">
+        {arrow} {Math.abs(changePercent)}% since first seen
+      </span>
+      <span className="sparkline-range">
+        Low {min.toLocaleString()} &middot; High {max.toLocaleString()}
       </span>
     </div>
   );
