@@ -177,9 +177,6 @@ function PriceSparkline({ history }) {
       <span className="sparkline-label">
         {arrow} {Math.abs(changePercent)}% since first seen
       </span>
-            <span className="sparkline-label">
-        {arrow} {Math.abs(changePercent)}% since first seen
-      </span>
       <span className="sparkline-range">
         Low {min.toLocaleString()} &middot; High {max.toLocaleString()}
       </span>
