@@ -87,6 +87,16 @@ function ResultsPage() {
   const [showBestDeal, setShowBestDeal] = useState(false);
   const [showTopRated, setShowTopRated] = useState(false);
 
+
+  // Attribute filters supplied by the sidebar. An empty array means the filter
+  // is not applied, so the default view shows everything.
+  const [selectedStorage, setSelectedStorage] = useState([]);
+  const [selectedColours, setSelectedColours] = useState([]);
+  const [selectedCondition, setSelectedCondition] = useState([]);
+  const [selectedPta, setSelectedPta] = useState([]);
+  const [selectedScreen, setSelectedScreen] = useState([]);
+  const [selectedResolution, setSelectedResolution] = useState([]);
+
   useEffect(() => {
     if (allPlatforms.length > 0) {
       const urlPlatforms = searchParams.get("platforms");
@@ -138,6 +148,12 @@ function ResultsPage() {
     setPriceRange([minPrice, maxPrice]);
     setShowBestDeal(false);
     setShowTopRated(false);
+    setSelectedStorage([]);
+    setSelectedColours([]);
+    setSelectedCondition([]);
+    setSelectedPta([]);
+    setSelectedScreen([]);
+    setSelectedResolution([]);
     setSearchParams({ q: query });
   }
 
@@ -160,6 +176,26 @@ function ResultsPage() {
     results = results.filter(
       (p) => p.price >= priceRange[0] && p.price <= priceRange[1]
     );
+    // Attribute filters. An empty selection means no constraint, so filters
+    // are additive and the default view is unfiltered.
+    if (selectedStorage.length) {
+      results = results.filter((p) => selectedStorage.includes(p.storageGb));
+    }
+    if (selectedColours.length) {
+      results = results.filter((p) => selectedColours.includes(p.colour));
+    }
+    if (selectedCondition.length) {
+      results = results.filter((p) => selectedCondition.includes(p.condition));
+    }
+    if (selectedPta.length) {
+      results = results.filter((p) => selectedPta.includes(p.ptaStatus));
+    }
+    if (selectedScreen.length) {
+      results = results.filter((p) => selectedScreen.includes(p.screenInches));
+    }
+    if (selectedResolution.length) {
+      results = results.filter((p) => selectedResolution.includes(p.resolution));
+    }
 
     // Best deals
     if (showBestDeal) {
@@ -175,7 +211,7 @@ function ResultsPage() {
       );
     }
 
-    return results;
+return results;
   }, [
     products,
     selectedCategory,
@@ -183,6 +219,12 @@ function ResultsPage() {
     priceRange,
     showBestDeal,
     showTopRated,
+    selectedStorage,
+    selectedColours,
+    selectedCondition,
+    selectedPta,
+    selectedScreen,
+    selectedResolution,
   ]);
 /*
    * The backend has already decided which offers belong to the same product.
@@ -239,6 +281,18 @@ function ResultsPage() {
           setShowTopRated={handleTopRated}
           onReset={handleReset}
           products={products}
+          selectedStorage={selectedStorage}
+          setSelectedStorage={setSelectedStorage}
+          selectedColours={selectedColours}
+          setSelectedColours={setSelectedColours}
+          selectedCondition={selectedCondition}
+          setSelectedCondition={setSelectedCondition}
+          selectedPta={selectedPta}
+          setSelectedPta={setSelectedPta}
+          selectedScreen={selectedScreen}
+          setSelectedScreen={setSelectedScreen}
+          selectedResolution={selectedResolution}
+          setSelectedResolution={setSelectedResolution}
         />
 
         <div className="results-content">

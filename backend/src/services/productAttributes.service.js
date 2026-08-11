@@ -86,6 +86,22 @@ export function extractScreenInches(title = "") {
   const value = Number(match[1]);
   return value >= 10 && value <= 120 ? value : null;
 }
+/**
+ * Display resolution. Checked from highest to lowest, because "Full HD"
+ * contains "HD" and "4K UHD" contains both markers, so an unordered test
+ * would classify a 4K panel as HD.
+ */
+export function extractResolution(title = "") {
+  const text = String(title).toLowerCase();
+
+  if (/\b8k\b/.test(text)) return "8K";
+  if (/\b4k\b|\buhd\b/.test(text)) return "4K";
+  if (/\bqhd\b|\b2k\b|\b1440p\b/.test(text)) return "QHD";
+  if (/\bfhd\b|\bfull hd\b|\b1080p\b/.test(text)) return "FHD";
+  if (/\bhd\b|\b720p\b/.test(text)) return "HD";
+
+  return null;
+}
 
 export function extractAttributes(title = "") {
   const { category } = detectCategory(title);
@@ -98,5 +114,6 @@ export function extractAttributes(title = "") {
     ptaStatus: extractPtaStatus(title),
     condition: extractCondition(title),
     screenInches: extractScreenInches(title),
+    resolution: extractResolution(title),
   };
 }

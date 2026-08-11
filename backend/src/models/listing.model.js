@@ -95,6 +95,7 @@ const listingSchema = new mongoose.Schema(
     ptaStatus:       { type: String, default: "unknown", index: true },
     condition:       { type: String, default: "new", index: true },
     screenInches:    { type: Number, default: null },
+    resolution: { type: String, default: null, index: true },
   },
   {
     timestamps: true,
