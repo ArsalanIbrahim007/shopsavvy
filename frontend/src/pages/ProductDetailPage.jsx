@@ -52,6 +52,78 @@ function PlatformBadge({ platform }) {
   );
 }
 
+function formatCapacity(gb) {
+  return gb >= 1024 ? `${gb / 1024} TB` : `${gb} GB`;
+}
+
+function formatCondition(condition) {
+  return {
+    new: "New",
+    used: "Used",
+    refurbished: "Refurbished",
+    open_box: "Open Box",
+  }[condition] || condition;
+}
+
+function formatPta(status) {
+  return {
+    pta_approved: "PTA Approved",
+    non_pta: "Non-PTA",
+  }[status] || "Not specified";
+}
+
+function formatCategory(category) {
+  return {
+    smartphone: "Smartphone",
+    laptop: "Laptop",
+    tv: "Television",
+    tablet: "Tablet",
+    smartwatch: "Smartwatch",
+    headphones: "Headphones",
+    monitor: "Monitor",
+    appliance: "Home Appliance",
+    accessory: "Accessory",
+  }[category] || category;
+}
+
+function Specifications({ listing }) {
+  const specs = [];
+
+  if (listing.brand) specs.push(["Brand", listing.brand]);
+  if (listing.productCategory && listing.productCategory !== "other") {
+    specs.push(["Category", formatCategory(listing.productCategory)]);
+  }
+  if (listing.storageGb) specs.push(["Storage", formatCapacity(listing.storageGb)]);
+  if (listing.ramGb) specs.push(["Memory", `${listing.ramGb} GB RAM`]);
+  if (listing.screenInches) specs.push(["Screen Size", `${listing.screenInches} inches`]);
+  if (listing.colour) specs.push(["Colour", listing.colour]);
+  if (listing.condition) specs.push(["Condition", formatCondition(listing.condition)]);
+  if (listing.ptaStatus && listing.ptaStatus !== "unknown") {
+    specs.push(["Network Approval", formatPta(listing.ptaStatus)]);
+  }
+
+  if (specs.length === 0) return null;
+
+  return (
+    <div className="detail-specs">
+      <h3 className="detail-specs-title">Specifications</h3>
+      <table className="detail-specs-table">
+        <tbody>
+          {specs.map(([label, value]) => (
+            <tr key={label}>
+              <td className="spec-label">{label}</td>
+              <td className="spec-value">{value}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="detail-specs-note">
+        Specifications are derived from the product title published by the store.
+      </p>
+    </div>
+  );
+}
+
 function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -133,9 +205,9 @@ function ProductDetailPage() {
           <div className="detail-platform">{listing.platform}</div>
           <h1 className="detail-title">{listing.title}</h1>
 
-          {listing.category && (
+          {listing.productCategory && listing.productCategory !== "other" && (
             <div className="detail-category">
-              Category: {listing.category}
+              Category: {formatCategory(listing.productCategory)}
             </div>
           )}
 
@@ -155,6 +227,8 @@ function ProductDetailPage() {
             )}
           </div>
 
+          <Specifications listing={listing} />
+
           <div className="detail-meta">
             <div className="detail-meta-item">
               <span className="detail-meta-label">Availability</span>
@@ -163,30 +237,12 @@ function ProductDetailPage() {
               </span>
             </div>
             <div className="detail-meta-item">
-              <span className="detail-meta-label">Delivery</span>
-              <span className="detail-meta-value">
-                {listing.deliveryFee === 0 ? "Free Delivery" : listing.deliveryFee ? `PKR ${listing.deliveryFee}` : "Check website"}
-              </span>
-            </div>
-            {listing.sellerName && (
-              <div className="detail-meta-item">
-                <span className="detail-meta-label">Seller</span>
-                <span className="detail-meta-value">{listing.sellerName}</span>
-              </div>
-            )}
-            <div className="detail-meta-item">
               <span className="detail-meta-label">Last Updated</span>
               <span className="detail-meta-value">
                 {new Date(listing.lastScrapedAt || listing.updatedAt).toLocaleDateString()}
               </span>
             </div>
           </div>
-
-          {listing.isSuspicious && (
-            <div className="suspicious-badge" style={{ marginBottom: "16px" }}>
-              Warning: Suspicious discount detected on this product
-            </div>
-          )}
 
           <button
             className="detail-view-btn"
