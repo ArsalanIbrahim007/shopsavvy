@@ -494,6 +494,8 @@ function HomePage() {
           </div>
         )}
 
+      </div>
+
       <div className="categories-section">
         <h2 className="categories-title">
           Browse by Category
