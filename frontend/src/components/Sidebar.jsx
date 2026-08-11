@@ -21,6 +21,27 @@ function formatPta(status) {
   }[status] || status;
 }
 
+const FACETS_BY_CATEGORY = {
+  smartphone: ["storage", "colour", "condition", "pta"],
+  tablet: ["storage", "colour", "condition", "pta"],
+  laptop: ["storage", "ram", "screen", "colour", "condition"],
+  tv: ["screen", "resolution", "condition"],
+  monitor: ["screen", "resolution", "condition"],
+  smartwatch: ["colour", "condition"],
+  headphones: ["colour", "condition"],
+  appliance: ["condition"],
+  accessory: ["colour", "condition"],
+  other: ["colour", "condition"],
+};
+
+const RESOLUTION_ORDER = {
+  "8K": 0,
+  "4K": 1,
+  QHD: 2,
+  FHD: 3,
+  HD: 4,
+};
+
 function Sidebar({
   allPlatforms,
   selectedPlatforms,
@@ -42,7 +63,11 @@ function Sidebar({
   selectedCondition = [],
   setSelectedCondition = () => {},
   selectedPta = [],
-  setSelectedPta = () => {},
+setSelectedPta = () => {},
+selectedScreen = [],
+setSelectedScreen = () => {},
+selectedResolution = [],
+setSelectedResolution = () => {},
 }) {
   const facets = useMemo(() => {
     const collect = (key) => {
@@ -56,12 +81,34 @@ function Sidebar({
     };
 
     return {
-      storage: collect("storageGb").sort((a, b) => a.value - b.value),
-      colour: collect("colour").sort((a, b) => b.count - a.count),
-      condition: collect("condition").sort((a, b) => b.count - a.count),
-      pta: collect("ptaStatus").sort((a, b) => b.count - a.count),
-    };
+  storage: collect("storageGb").sort((a, b) => a.value - b.value),
+  screen: collect("screenInches").sort((a, b) => a.value - b.value),
+  resolution: collect("resolution").sort(
+    (a, b) =>
+      (RESOLUTION_ORDER[a.value] ?? 99) -
+      (RESOLUTION_ORDER[b.value] ?? 99)
+  ),
+  colour: collect("colour").sort((a, b) => b.count - a.count),
+  condition: collect("condition").sort((a, b) => b.count - a.count),
+  pta: collect("ptaStatus").sort((a, b) => b.count - a.count),
+};
   }, [products]);
+
+const applicableFacets = useMemo(() => {
+  const categories = new Set(
+    products.map((product) => product.productCategory || "other")
+  );
+
+  const allowed = new Set();
+
+  categories.forEach((category) => {
+    (FACETS_BY_CATEGORY[category] || []).forEach((facet) => {
+      allowed.add(facet);
+    });
+  });
+
+  return allowed;
+}, [products]);
 
   function toggleSelection(value, selected, setSelected) {
     setSelected(
@@ -97,12 +144,14 @@ function Sidebar({
   }
 
   function handleReset() {
-    setSelectedStorage([]);
-    setSelectedColours([]);
-    setSelectedCondition([]);
-    setSelectedPta([]);
-    onReset();
-  }
+  setSelectedStorage([]);
+  setSelectedColours([]);
+  setSelectedCondition([]);
+  setSelectedPta([]);
+  setSelectedScreen([]);
+  setSelectedResolution([]);
+  onReset();
+}
   function togglePlatform(platform) {
     if (selectedPlatforms.includes(platform)) {
       if (selectedPlatforms.length === 1) return;
@@ -175,10 +224,57 @@ function Sidebar({
         </div>
       </div>
 
-      {renderFacet("Storage", facets.storage, selectedStorage, setSelectedStorage, formatCapacity)}
-      {renderFacet("Colour", facets.colour, selectedColours, setSelectedColours)}
-      {renderFacet("Condition", facets.condition, selectedCondition, setSelectedCondition, formatCondition)}
-      {renderFacet("PTA Status", facets.pta, selectedPta, setSelectedPta, formatPta)}
+      {applicableFacets.has("storage") &&
+  renderFacet(
+    "Storage",
+    facets.storage,
+    selectedStorage,
+    setSelectedStorage,
+    formatCapacity
+  )}
+
+{applicableFacets.has("screen") &&
+  renderFacet(
+    "Screen Size",
+    facets.screen,
+    selectedScreen,
+    setSelectedScreen,
+    (value) => `${value}"`
+  )}
+
+{applicableFacets.has("resolution") &&
+  renderFacet(
+    "Resolution",
+    facets.resolution,
+    selectedResolution,
+    setSelectedResolution
+  )}
+
+{applicableFacets.has("colour") &&
+  renderFacet(
+    "Colour",
+    facets.colour,
+    selectedColours,
+    setSelectedColours
+  )}
+
+{applicableFacets.has("condition") &&
+  renderFacet(
+    "Condition",
+    facets.condition,
+    selectedCondition,
+    setSelectedCondition,
+    formatCondition
+  )}
+
+{applicableFacets.has("pta") &&
+  renderFacet(
+    "PTA Status",
+    facets.pta,
+    selectedPta,
+    setSelectedPta,
+    formatPta
+  )}
 
       <div className="sidebar-section">
         <div className="sidebar-heading">Sort By</div>
