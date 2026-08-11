@@ -63,7 +63,7 @@ const CATEGORIES = {
             "aspire",
             "nitro",
         ],
-exclude: [
+        exclude: [
             "bag",
             "backpack",
             "backpack",
@@ -111,6 +111,9 @@ exclude: [
             "power supply",
             "tablets holder",
             "notebooks &",
+            "laptop desk",
+            "ac adapter",
+            "tablet holder",
         ],
     },
 
@@ -326,7 +329,7 @@ exclude: [
             "controller",
             "gamepad",
         ],
-        },
+    },
 };
 
 /**
