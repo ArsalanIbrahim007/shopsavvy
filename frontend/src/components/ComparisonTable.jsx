@@ -55,6 +55,7 @@ function PlatformLogo({ platform }) {
       <img
         src={logoUrl}
         alt={platform}
+        referrerPolicy="no-referrer"
         className="store-logo"
         onError={(e) => {
           e.target.style.display = "none";
@@ -77,9 +78,9 @@ function ScoreCell({ score, breakdown, weights }) {
 
   const tooltip = breakdown
     ? `Price ${breakdown.price}/${weights?.price ?? 60} · ` +
-      `Trust ${breakdown.trust}/${weights?.trust ?? 20} · ` +
-      `Freshness ${breakdown.freshness}/${weights?.freshness ?? 10} · ` +
-      `Availability ${breakdown.availability}/${weights?.availability ?? 10}`
+    `Trust ${breakdown.trust}/${weights?.trust ?? 20} · ` +
+    `Freshness ${breakdown.freshness}/${weights?.freshness ?? 10} · ` +
+    `Availability ${breakdown.availability}/${weights?.availability ?? 10}`
     : "";
 
   return (

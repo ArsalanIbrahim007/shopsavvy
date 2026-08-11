@@ -120,6 +120,7 @@ function ProductDetailPage() {
           <img
             src={listing.imageUrl}
             alt={listing.title}
+            referrerPolicy="no-referrer"
             className="detail-image"
             onError={(e) => {
               e.target.onerror = null;

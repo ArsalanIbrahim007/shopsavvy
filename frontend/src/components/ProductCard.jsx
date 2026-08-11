@@ -10,14 +10,15 @@ function ProductCard({ product }) {
       )}
       <div className="product-card-inner">
         <img
-            src={listing.imageUrl}
-            alt={listing.title}
-            className="detail-image"
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = "/icons.svg"; // fallback placeholder
-            }}
-          />
+          src={listing.imageUrl}
+          alt={listing.title}
+          referrerPolicy="no-referrer"
+          className="detail-image"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "/icons.svg"; // fallback placeholder
+          }}
+        />
         <div className="product-details">
           <div className="product-platform">{product.platform}</div>
           <div className="product-title">{product.title}</div>
