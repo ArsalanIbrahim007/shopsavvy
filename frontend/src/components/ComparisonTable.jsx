@@ -97,7 +97,64 @@ function ScoreCell({ score, breakdown, weights }) {
     </div>
   );
 }
+/**
+ * Inline price history chart.
+ *
+ * A raw count of observations tells a shopper nothing. Plotting the recorded
+ * prices shows the direction of movement, which is what actually informs a
+ * buying decision. Drawn as SVG rather than through a charting library so that
+ * it adds no dependency and renders inside a table cell.
+ */
+function PriceSparkline({ history }) {
+  if (!history || history.length < 2) {
+    return <span className="history-empty">Tracking started</span>;
+  }
 
+  const prices = history.map((point) => Number(point.price)).filter(Boolean);
+  if (prices.length < 2) {
+    return <span className="history-empty">Tracking started</span>;
+  }
+
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+  const range = max - min || 1;
+
+  const W = 92;
+  const H = 28;
+
+  const points = prices
+    .map((price, i) => {
+      const x = (i / (prices.length - 1)) * W;
+      const y = H - ((price - min) / range) * H;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(" ");
+
+  const first = prices[0];
+  const last = prices[prices.length - 1];
+  const changePercent = Math.round(((last - first) / first) * 100);
+
+  const tone = last < first ? "down" : last > first ? "up" : "flat";
+  const arrow = tone === "down" ? "\u2193" : tone === "up" ? "\u2191" : "\u2192";
+
+  const fmt = (d) =>
+    new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+
+  return (
+    <div
+      className={`sparkline sparkline-${tone}`}
+      title={`${prices.length} recorded prices, ${fmt(history[0].recordedAt)} to ${fmt(history[history.length - 1].recordedAt)}`}
+    >
+      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
+        <polyline points={points} fill="none" strokeWidth="1.8" />
+        <circle cx={W} cy={H - ((last - min) / range) * H} r="2.6" />
+      </svg>
+      <span className="sparkline-label">
+        {arrow} {Math.abs(changePercent)}% since first seen
+      </span>
+    </div>
+  );
+}
 function ComparisonTable({ products }) {
   const navigate = useNavigate();
 
@@ -202,11 +259,7 @@ function ComparisonTable({ products }) {
                     >
                       {rec.text}
                     </span>
-                    <span className="rec-meta">
-                      {historyCount > 0
-                        ? `${historyCount} price points`
-                        : "no history yet"}
-                    </span>
+                    <PriceSparkline history={product.priceHistory} />
                   </div>
                 </td>
 

@@ -384,3 +384,12 @@
   color: var(--ss-ink-mute);
   white-space: nowrap;
 }
+.sparkline { display: flex; flex-direction: column; gap: 3px; }
+.sparkline svg polyline { stroke: #8593a5; }
+.sparkline svg circle    { fill: #8593a5; }
+.sparkline-down svg polyline { stroke: #0e7c4a; }
+.sparkline-down svg circle   { fill: #0e7c4a; }
+.sparkline-up svg polyline   { stroke: #b42318; }
+.sparkline-up svg circle     { fill: #b42318; }
+.sparkline-label { font-size: 10px; color: #8593a5; white-space: nowrap; }
+.history-empty   { font-size: 10px; color: #8593a5; font-style: italic; }
