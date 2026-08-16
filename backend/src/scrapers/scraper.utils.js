@@ -93,14 +93,10 @@ async function fetchHtml(url, opts = {}) {
  */
 function parsePrice(raw) {
   if (raw == null) return null;
-  // Remove currency symbols, letters, spaces, slashes, dashes
-  // Keep only digits and commas, then remove commas
-  const cleaned = String(raw)
-    .replace(/[^\d,]/g, "")  // keep only digits and commas
-    .replace(/,/g, "");       // remove commas
-  if (!cleaned) return null;
-  const value = parseInt(cleaned, 10);
-  return Number.isNaN(value) ? null : value;
+  const match = String(raw).match(/\d[\d,]*(?:\.\d+)?/);
+  if (!match) return null;
+  const value = parseFloat(match[0].replace(/,/g, ""));
+  return Number.isFinite(value) ? Math.round(value) : null;
 }
 
 /**
