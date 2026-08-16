@@ -1,5 +1,17 @@
 // productCategory.js
 
+/**
+ * Brand names that imply a category on their own. A carousel filters by brand
+ * alone, so "hp" or "acer" must resolve without a product word alongside them.
+ */
+const BRAND_CATEGORY = {
+  iphone: "smartphone", apple: "smartphone", samsung: "smartphone",
+  xiaomi: "smartphone", redmi: "smartphone", oppo: "smartphone",
+  vivo: "smartphone", realme: "smartphone", infinix: "smartphone",
+  tecno: "smartphone", nokia: "smartphone", motorola: "smartphone",
+  hp: "laptop", dell: "laptop", lenovo: "laptop", acer: "laptop",
+  asus: "laptop", msi: "laptop", macbook: "laptop", thinkpad: "laptop",
+};
 const CATEGORIES = {
     smartphone: {
         keywords: [
@@ -283,7 +295,10 @@ const CATEGORIES = {
             "microwave",
             "air conditioner",
             "air conditioner",
-            "ac",
+            "air cooler",
+            "split ac",
+            "inverter ac",
+            "window ac",
             "air fryer",
             "oven",
             "dishwasher",
@@ -404,6 +419,12 @@ function detectCategory(title) {
  * Detect the category of a search query.
  */
 function detectQueryCategory(query) {
+    // A carousel filters by brand alone, so "hp" or "acer" must resolve
+    // without a product word alongside them.
+    const trimmed = String(query).trim().toLowerCase();
+    if (BRAND_CATEGORY[trimmed]) {
+        return { category: BRAND_CATEGORY[trimmed], confidence: 1 };
+    }
     return detectCategory(query);
 }
 

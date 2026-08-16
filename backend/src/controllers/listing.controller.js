@@ -150,7 +150,13 @@ console.log("[search]", refreshResult);
      * constraint is applied again here at query time. Without this, a search
      * for "laptop" returns bags and batteries saved by earlier runs.
      */
-    const queryCategory = detectCategory(q).category;
+    /*
+     * The category may be supplied explicitly by the caller, which the homepage
+     * carousels use to request only phones or only laptops. When it is not
+     * supplied it is inferred from the query text.
+     */
+    const requestedCategory = req.query.category;
+    const queryCategory = requestedCategory || detectCategory(q).category;
 
     const searchFilter = {
       $or: [
