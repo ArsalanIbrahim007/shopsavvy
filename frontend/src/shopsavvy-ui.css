@@ -472,3 +472,40 @@
   color: var(--ss-ink-mute);
   font-variant-numeric: tabular-nums;
 }
+/* ── Product category chips ─────────────────────────────────────────────
+   Restored here rather than in App.css so that a future rewrite of the
+   theme file cannot drop them again. */
+
+.category-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 18px;
+}
+
+.category-filter-btn {
+  padding: 7px 14px;
+  border: 1px solid var(--ss-line);
+  border-radius: 999px;
+  background: var(--ss-paper);
+  color: var(--ss-ink-soft);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.2;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s, border-color .15s, color .15s;
+}
+
+.category-filter-btn:hover {
+  background: var(--ss-blue-soft);
+  border-color: var(--ss-blue-ed, #93C5FD);
+  color: var(--ss-blue);
+}
+
+.category-filter-btn.active {
+  background: var(--ss-blue);
+  border-color: var(--ss-blue);
+  color: #fff;
+  font-weight: 600;
+}

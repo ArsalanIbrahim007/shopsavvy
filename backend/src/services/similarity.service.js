@@ -5,6 +5,7 @@ import {
   extractPtaStatus,
   extractModelCodes,
 } from "./normalizeTitle.service.js";
+import { extractRamGb } from "./productAttributes.service.js";
 
 /**
  * Words marking a distinct product tier rather than describing the same
@@ -71,7 +72,12 @@ function attributeConflict(textA, textB) {
   const storageA = extractStorage(textA);
   const storageB = extractStorage(textB);
   if (storageA !== storageB) return true;
-
+// Memory is stated alongside storage on some stores, as in
+  // "(12GB RAM + 256GB Storage)". Both variants share a storage capacity, so
+  // without this check an 8GB and a 12GB unit are treated as one product.
+  const ramA = extractRamGb(textA);
+  const ramB = extractRamGb(textB);
+  if (ramA !== null && ramB !== null && ramA !== ramB) return true;
   const screenA = extractScreenInches(textA);
   const screenB = extractScreenInches(textB);
   if (screenA !== null && screenB !== null && screenA !== screenB) return true;
@@ -80,7 +86,10 @@ function attributeConflict(textA, textB) {
   // approved and a non approved unit must never compete on price.
   const ptaA = extractPtaStatus(textA);
   const ptaB = extractPtaStatus(textB);
-if (ptaA !== ptaB) return true;
+// Approval status blocks a match only when both listings state it. Most
+  // stores are silent on the point, and treating silence as a conflict split
+  // the same handset across every platform that did not mention it.
+  if (ptaA !== "unknown" && ptaB !== "unknown" && ptaA !== ptaB) return true;
 
   const codesA = extractModelCodes(textA);
   const codesB = extractModelCodes(textB);
