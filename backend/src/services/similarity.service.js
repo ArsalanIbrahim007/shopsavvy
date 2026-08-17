@@ -53,42 +53,36 @@ function sameSet(a, b) {
  * 65 inch and an 85 inch television, and a PTA approved and non approved
  * handset. Where both listings declare such an attribute and the values
  * differ, they are different products whatever their similarity score.
- *
- * Where only one listing declares the attribute the comparison falls through
- * to the model name, since that listing is simply less specific.
  */
-function attributeConflict(textA, textB) {
-  // Two listings that both omit capacity and approval status cannot be
-  // confirmed equivalent either. Silence on both sides is not agreement.
-  if (extractStorage(textA) === null && extractStorage(textB) === null &&
-      extractPtaStatus(textA) === "unknown" && extractPtaStatus(textB) === "unknown") {
-    return true;
-  }
- // Storage and network approval must be positively confirmed as equal. If one
-  // listing declares the attribute and the other is silent, equivalence is
-  // unproven, so the two are not compared. Assuming the silent listing matches
-  // produced comparisons such as a bare "iPhone 16 Pro Max" against a "256GB
-  // PTA Approved" unit at a difference of PKR 140,000.
+function attributeConflict(textA, textB, { ignoreUnstatedStorage = false } = {}) {
+  // Capacity blocks a match when both sides state it and the values differ.
+  // When exactly one side states it equivalence is unproven, which is what
+  // stopped a bare "iPhone 16 Pro Max" being compared against a 256GB unit at
+  // a difference of PKR 140,000. Two listings that both omit it, such as
+  // televisions, are not in conflict.
   const storageA = extractStorage(textA);
   const storageB = extractStorage(textB);
-  if (storageA !== storageB) return true;
-// Memory is stated alongside storage on some stores, as in
+  const oneStorageUnstated = (storageA === null) !== (storageB === null);
+
+  if (storageA !== null && storageB !== null && storageA !== storageB) return true;
+  if (oneStorageUnstated && !ignoreUnstatedStorage) return true;
+
+  // Memory is stated alongside storage on some stores, as in
   // "(12GB RAM + 256GB Storage)". Both variants share a storage capacity, so
   // without this check an 8GB and a 12GB unit are treated as one product.
   const ramA = extractRamGb(textA);
   const ramB = extractRamGb(textB);
   if (ramA !== null && ramB !== null && ramA !== ramB) return true;
+
   const screenA = extractScreenInches(textA);
   const screenB = extractScreenInches(textB);
   if (screenA !== null && screenB !== null && screenA !== screenB) return true;
 
-  // Network approval changes the usable value of a handset in Pakistan, so an
-  // approved and a non approved unit must never compete on price.
-  const ptaA = extractPtaStatus(textA);
-  const ptaB = extractPtaStatus(textB);
-// Approval status blocks a match only when both listings state it. Most
+  // Approval status blocks a match only when both listings state it. Most
   // stores are silent on the point, and treating silence as a conflict split
   // the same handset across every platform that did not mention it.
+  const ptaA = extractPtaStatus(textA);
+  const ptaB = extractPtaStatus(textB);
   if (ptaA !== "unknown" && ptaB !== "unknown" && ptaA !== ptaB) return true;
 
   const codesA = extractModelCodes(textA);
@@ -100,8 +94,8 @@ function attributeConflict(textA, textB) {
   return false;
 }
 
-export function isSimilarProduct(textA = "", textB = "", threshold = 0.7) {
-  if (attributeConflict(textA, textB)) return false;
+export function isSimilarProduct(textA = "", textB = "", threshold = 0.7, opts = {}) {
+  if (attributeConflict(textA, textB, opts)) return false;
 
   const baseA = tokenize(modelTokens(textA)).filter((t) => !VARIANT_TOKENS.has(t)).join(" ");
   const baseB = tokenize(modelTokens(textB)).filter((t) => !VARIANT_TOKENS.has(t)).join(" ");

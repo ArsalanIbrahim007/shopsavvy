@@ -3,16 +3,24 @@ import { isSimilarProduct } from "./similarity.service.js";
 import { calculateDealScores } from "../ranking/dealScore.js";
 
 /**
+ * How far a listing's price may sit from a group's prices before it is treated
+ * as a different variant. Observed data puts the same handset within a few per
+ * cent across stores, while a capacity step is tens of per cent.
+ */
+const PRICE_PROXIMITY = 0.15;
+
+/**
  * Clusters listings from different platforms into single products.
  *
  * Each group records the storage capacity of the first member that states one.
- * Without this, a listing whose title omits the capacity ("Apple iPhone 17
- * Pro") matches every capacity variant and pulls unrelated models into one
- * group, because the pairwise check has nothing to compare against.
+ * Without this, a listing whose title omits the capacity matches every capacity
+ * variant and pulls unrelated models into one group, because the pairwise check
+ * has nothing to compare against.
  *
- * Once a group has a capacity, a listing declaring a different one starts its
- * own group. Listings that state no capacity join the first compatible group,
- * which is the best available assumption when the store has not specified it.
+ * Comparison uses the raw title rather than the normalised one. Normalisation
+ * deliberately removes compliance terms such as "PTA Approved" and punctuation
+ * including inch marks, and those are exactly the attributes that decide
+ * product identity.
  */
 export function groupListingsByProduct(listings = []) {
   const groups = [];
@@ -35,6 +43,32 @@ export function groupListingsByProduct(listings = []) {
       if (isSimilarProduct(rawTitle, group.rawGroupKey, 0.7)) {
         matchedGroup = group;
         break;
+      }
+
+      /*
+       * Some stores omit the storage capacity from the title. Rejecting those
+       * outright split the same handset across platforms, but accepting them
+       * unconditionally compared a bare "iPhone 16 Pro Max" against a 256GB
+       * unit at a difference of PKR 140,000.
+       *
+       * Price is used as the tiebreaker. A different capacity of the same model
+       * carries a materially different price, so a listing whose capacity is
+       * unstated joins the group only when its price is close to the prices
+       * already in it.
+       */
+      const capacityUnstated =
+        listingStorage === null || group.storage === null;
+
+      if (capacityUnstated && isSimilarProduct(rawTitle, group.rawGroupKey, 0.7, {
+        ignoreUnstatedStorage: true,
+      })) {
+        const reference = (group.lowestPrice + group.highestPrice) / 2;
+        const drift = Math.abs(listing.price - reference) / reference;
+
+        if (drift <= PRICE_PROXIMITY) {
+          matchedGroup = group;
+          break;
+        }
       }
     }
 
