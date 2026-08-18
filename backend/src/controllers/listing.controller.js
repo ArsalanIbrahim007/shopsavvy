@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import Listing from "../models/listing.model.js";
-import { detectCategory } from "../scrapers/productCategory.js";import { attachPriceHistory } from "../services/historyEnrichment.service.js";
+import { detectCategory } from "../scrapers/productCategory.js"; import { attachPriceHistory } from "../services/historyEnrichment.service.js";
 import { normalizeTitle } from "../services/normalizeTitle.service.js";
 import { groupListingsByProduct } from "../services/productGrouping.service.js";
 import {
@@ -137,19 +137,19 @@ export async function searchListings(req, res) {
       });
     }
     const refreshResult = await fetchAndRefreshListings(q, {
-    force: req.query.refresh === "true",
-    dynamic: false,
-});
+      force: req.query.refresh === "true",
+      dynamic: false,
+    });
 
-console.log("[search]", refreshResult);
+    console.log("[search]", refreshResult);
     const normalizedQuery = normalizeTitle(q);
 
-/*
-     * The scrape-time category filter only governs what is written. Listings
-     * collected before that filter existed are still stored, so the category
-     * constraint is applied again here at query time. Without this, a search
-     * for "laptop" returns bags and batteries saved by earlier runs.
-     */
+    /*
+         * The scrape-time category filter only governs what is written. Listings
+         * collected before that filter existed are still stored, so the category
+         * constraint is applied again here at query time. Without this, a search
+         * for "laptop" returns bags and batteries saved by earlier runs.
+         */
     /*
      * The category may be supplied explicitly by the caller, which the homepage
      * carousels use to request only phones or only laptops. When it is not
@@ -220,11 +220,11 @@ console.log("[search]", refreshResult);
 
     const averagePrice = prices.length
       ? Math.round(
-          prices.reduce(
-            (sum, price) => sum + price,
-            0
-          ) / prices.length
-        )
+        prices.reduce(
+          (sum, price) => sum + price,
+          0
+        ) / prices.length
+      )
       : null;
 
     const platforms = [
@@ -235,12 +235,12 @@ console.log("[search]", refreshResult);
       ),
     ];
 
-   /*
-     * A "best deal" is only meaningful when the product was actually compared
-     * across platforms. Groups holding a single offer are excluded unless no
-     * multi-offer group exists, which stops an unrelated one-off listing from
-     * outranking a genuinely compared product.
-     */
+    /*
+      * A "best deal" is only meaningful when the product was actually compared
+      * across platforms. Groups holding a single offer are excluded unless no
+      * multi-offer group exists, which stops an unrelated one-off listing from
+      * outranking a genuinely compared product.
+      */
     const comparableGroups = groups.filter(
       (group) => (group.offerCount || 0) >= 2
     );
@@ -316,26 +316,14 @@ export async function getListingDetails(req, res) {
       listing.title?.split(" ")[0] || "";
 
     const possibleMatches = await Listing.find({
+      productCategory: listing.productCategory || "other",
       $or: [
-        {
-          normalizedTitle: {
-            $regex: normalizedQuery,
-            $options: "i",
-          },
-        },
-        {
-          title: {
-            $regex: firstTitleWord,
-            $options: "i",
-          },
-        },
-        {
-          category: listing.category,
-        },
+        { normalizedTitle: { $regex: normalizedQuery, $options: "i" } },
+        { title: { $regex: firstTitleWord, $options: "i" } },
       ],
-    }).sort({
-      price: 1,
-    });
+    })
+      .sort({ price: 1 })
+      .limit(80);
 
     /*
      * Price history must be attached before grouping so the
@@ -395,11 +383,11 @@ export async function getListingDetails(req, res) {
 
     const averagePrice = prices.length
       ? Math.round(
-          prices.reduce(
-            (sum, price) => sum + price,
-            0
-          ) / prices.length
-        )
+        prices.reduce(
+          (sum, price) => sum + price,
+          0
+        ) / prices.length
+      )
       : null;
 
     const platforms = [
