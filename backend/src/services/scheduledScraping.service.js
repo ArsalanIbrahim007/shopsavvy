@@ -15,6 +15,15 @@ import { runScrapersAndSave } from "./scraper.service.js";
 
 const MAX_QUERY_WORDS = 4;
 
+// Demo queries carry hand-seeded originalPrice values (seed-fake-discount.js)
+// so the fake-discount badges have something to show. A scheduled re-scrape
+// upserts fresh price/originalPrice from the live site on every run, which
+// would silently overwrite that seeding -- the demo routine already re-seeds
+// right before presenting (see context.md's Demo Operations section), but
+// that only helps if it's actually run that day; excluding these here means
+// an unattended overnight job can't quietly break the demo in the meantime.
+const DEMO_PROTECTED_QUERIES = new Set(["iphone 17 pro", "samsung galaxy a57"]);
+
 // modelTokens() strips capacity tokens ("8gb", "256gb") but leaves a bare
 // "ram" or "storage" behind when the title spells them out separately
 // ("8GB RAM 256GB Storage"), producing a garbled query like "galaxy a17
@@ -68,7 +77,7 @@ export async function buildScheduledQueryList({ minOffers = 2 } = {}) {
       .filter((group) => (group.offerCount || 0) >= minOffers)
       .forEach((group) => {
         const query = deriveQuery(group.rawGroupKey || group.productName || "");
-        if (query) queries.add(query);
+        if (query && !DEMO_PROTECTED_QUERIES.has(query)) queries.add(query);
       });
   }
 

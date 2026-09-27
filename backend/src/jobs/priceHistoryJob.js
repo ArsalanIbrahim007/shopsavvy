@@ -16,11 +16,10 @@
 import cron from "node-cron";
 import { runScheduledScrape } from "../services/scheduledScraping.service.js";
 
-// 02:17 local time -- an off-the-hour minute so this doesn't line up with
-// every other cron job that defaults to a round number, and outside normal
-// working/demo hours so a ~5 minute scraping burst doesn't compete with
-// anyone actively using the app.
-const SCHEDULE = "17 2 * * *";
+// 10:00 PM local time, per Arsalan's request -- easier to reason about than
+// an off-hour jitter minute, and this runs on a single local dev machine
+// rather than a fleet where clustering at :00 would matter.
+const SCHEDULE = "0 22 * * *";
 
 export function startPriceHistoryJob() {
   if (process.env.SCHEDULED_SCRAPING !== "true") {
@@ -28,7 +27,7 @@ export function startPriceHistoryJob() {
     return null;
   }
 
-  console.log(`[priceHistoryJob] Scheduled: "${SCHEDULE}" (daily, 02:17 local time)`);
+  console.log(`[priceHistoryJob] Scheduled: "${SCHEDULE}" (daily, 10:00 PM local time)`);
 
   return cron.schedule(SCHEDULE, async () => {
     console.log("[priceHistoryJob] Starting scheduled re-scrape...");
