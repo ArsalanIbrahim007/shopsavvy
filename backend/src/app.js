@@ -11,6 +11,7 @@ import { connectDB } from "./config/db.js";
 import healthRoutes from "./routes/health.routes.js";
 import listingRoutes from "./routes/listing.routes.js";
 import analyticsRoutes from "./routes/analytics.routes.js";
+import { startPriceHistoryJob } from "./jobs/priceHistoryJob.js";
 
 dotenv.config();
 
@@ -36,6 +37,7 @@ app.use(globalErrorHandler);
 const PORT = process.env.PORT || 5000;
 
 connectDB();
+startPriceHistoryJob();
 
 app.listen(PORT, () => {
   console.log(`ShopSavvy backend running on port ${PORT}`);
