@@ -19,7 +19,10 @@ import { extractRamGb } from "../../services/productAttributes.service.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATASET_DIR = join(__dirname, "..", "..", "ml", "dataset");
 
-const pairs = JSON.parse(readFileSync(join(DATASET_DIR, "pairs.raw.json"), "utf8"));
+const inputName = process.argv[2] || "pairs.raw.json";
+const outputName = process.argv[3] || "pairs.suggested.json";
+
+const pairs = JSON.parse(readFileSync(join(DATASET_DIR, inputName), "utf8"));
 
 // Words that mark an accessory/bundle-extra rather than the device itself.
 // None of these appear in normalizeTitle's strip list or productCategory's
@@ -158,11 +161,11 @@ const results = pairs.map((pair) => {
   return { ...pair, attrsA, attrsB, suggestedLabel, rationale, needsReview };
 });
 
-writeFileSync(join(DATASET_DIR, "pairs.suggested.json"), JSON.stringify(results, null, 2));
+writeFileSync(join(DATASET_DIR, outputName), JSON.stringify(results, null, 2));
 
 const reviewCount = results.filter((r) => r.needsReview).length;
 const labelCounts = results.reduce((acc, r) => { acc[r.suggestedLabel] = (acc[r.suggestedLabel] || 0) + 1; return acc; }, {});
 console.log(`Total pairs: ${results.length}`);
 console.log(`Label counts:`, labelCounts);
 console.log(`Flagged for manual review: ${reviewCount}`);
-console.log(`Wrote pairs.suggested.json`);
+console.log(`Wrote ${outputName}`);
