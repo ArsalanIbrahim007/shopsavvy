@@ -15,6 +15,11 @@ import {
 import {
   fetchAndRefreshListings,
 } from "../services/scraper.service.js";
+import {
+  escapeRegex,
+  buildSpaceTolerantPattern,
+  fuzzyMatchIds,
+} from "../services/searchMatching.service.js";
 /**
  * Adds recommendations after product grouping and deal ranking.
  *
@@ -165,6 +170,9 @@ console.log("[search]", refreshResult);
      * The raw query can contain regex metacharacters ("iPhone (17)", "9+"),
      * which would either throw or match something unintended if passed
      * straight into $regex, so it is escaped before use.
+     * buildSpaceTolerantPattern also escapes, and additionally lets a
+     * missing space at a letter/digit boundary match either way, so
+     * "iphone17" still finds "iPhone 17" and vice versa.
      *
      * normalizeTitle strips whole words it considers noise (brand names such
      * as "apple", compliance/marketing terms). A query consisting only of
@@ -172,13 +180,11 @@ console.log("[search]", refreshResult);
      * and an empty pattern matches every document. That clause is therefore
      * only added once there is still something left to match on.
      */
-    const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
     const searchFilter = {
       $or: [
-        { title: { $regex: escapeRegex(trimmedQuery), $options: "i" } },
+        { title: { $regex: buildSpaceTolerantPattern(trimmedQuery), $options: "i" } },
         ...(normalizedQuery
-          ? [{ normalizedTitle: { $regex: escapeRegex(normalizedQuery), $options: "i" } }]
+          ? [{ normalizedTitle: { $regex: buildSpaceTolerantPattern(normalizedQuery), $options: "i" } }]
           : []),
       ],
     };
@@ -193,10 +199,66 @@ console.log("[search]", refreshResult);
     if (req.query.condition) searchFilter.condition = req.query.condition;
     if (req.query.pta) searchFilter.ptaStatus = req.query.pta;
 
-    const listings = await Listing.find(searchFilter).sort({
+    let listings = await Listing.find(searchFilter).sort({
       price: 1,
       createdAt: -1,
     });
+
+    /*
+     * The exact match found nothing -- try progressively looser strategies
+     * before giving up, rather than showing an empty result for something
+     * a real shopper would consider a reasonable typo. Each only runs if
+     * the one before it found nothing, and both still respect the category
+     * and attribute filters above so a fuzzy match can't leak results from
+     * an unrelated product category.
+     */
+    /*
+     * A typo'd query usually can't be classified (detectQueryCategory has
+     * nothing exact to match), so no category filter makes it into
+     * searchFilter above -- intentionally, since the same "no filter"
+     * behaviour is what lets a genuine multi-category brand search like
+     * "apple" or "samsung" return everything that brand makes (see
+     * MULTI_CATEGORY_BRANDS in productCategory.js). But once we're already
+     * in a fallback -- the strict match found nothing, so we're guessing --
+     * that permissiveness works against us: "accessory" and "other" junk
+     * (cases, chargers, holders, and miscategorized odds and ends) share
+     * enough incidental text with the real product to fuzzy-match it, and
+     * outrank it since there's nothing to tell them apart otherwise. A
+     * misspelled main-product search is far more likely to mean the
+     * product than an accessory for it or something uncategorized.
+     */
+    const fallbackCategoryFloor = searchFilter.productCategory
+      ? {}
+      : { productCategory: { $nin: ["accessory", "other"] } };
+
+    if (listings.length === 0) {
+      const queryTokens = trimmedQuery.split(/[^a-zA-Z0-9]+/).filter((t) => t.length >= 2);
+
+      if (queryTokens.length > 0) {
+        const tokenFilter = {
+          ...searchFilter,
+          ...fallbackCategoryFloor,
+          $and: queryTokens.map((token) => ({
+            title: { $regex: escapeRegex(token), $options: "i" },
+          })),
+        };
+        delete tokenFilter.$or;
+
+        listings = await Listing.find(tokenFilter).sort({ price: 1, createdAt: -1 });
+      }
+    }
+
+    if (listings.length === 0) {
+      const { $or, ...attributeFilters } = searchFilter;
+      Object.assign(attributeFilters, fallbackCategoryFloor);
+
+      const candidates = await Listing.find(attributeFilters, { title: 1 }).lean();
+      const fuzzyIds = fuzzyMatchIds(trimmedQuery, candidates);
+
+      if (fuzzyIds.length > 0) {
+        listings = await Listing.find({ _id: { $in: fuzzyIds } }).sort({ price: 1, createdAt: -1 });
+      }
+    }
 
     /*
      * Correct processing order:

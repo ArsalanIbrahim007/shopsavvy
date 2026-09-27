@@ -4,6 +4,14 @@
  * Brand names that imply a category on their own. A carousel filters by brand
  * alone, so "hp" or "acer" must resolve without a product word alongside them.
  */
+/**
+ * Keywords short or common enough to appear as a substring of an unrelated
+ * word rather than as the word itself -- "tv" inside a longer token, "oven"
+ * inside "TechWoven" (Apple's name for its woven-fabric case material).
+ * Matched with a word-boundary regex instead of a plain substring check.
+ */
+const WORD_BOUNDARY_KEYWORDS = new Set(["tv", "oven"]);
+
 const BRAND_CATEGORY = {
   iphone: "smartphone", apple: "smartphone", samsung: "smartphone",
   xiaomi: "smartphone", redmi: "smartphone", oppo: "smartphone",
@@ -308,6 +316,10 @@ const CATEGORIES = {
             "inverter ac",
             "window ac",
             "air fryer",
+            // Matched on its own word below, not as a substring -- "oven"
+            // is also the last four letters of "TechWoven", Apple's name
+            // for its woven-fabric case material, which was being
+            // classified as an appliance for exactly that reason.
             "oven",
             "dishwasher",
             "vacuum cleaner",
@@ -381,14 +393,14 @@ function detectCategory(title) {
         }
 
         for (const keyword of config.keywords) {
-            // "tv" alone is too short and common to safely substring-match
-            // (it would match inside unrelated words). A word-boundary
-            // check avoids that while still catching "... Smart TV" or a
-            // bare "Apple Tv 3rd Generation" listing.
-            const matched =
-                keyword === "tv"
-                    ? /\btv\b/.test(text)
-                    : text.includes(keyword);
+            // Some keywords are short/common enough to turn up as a
+            // substring of an unrelated word ("tv" inside a longer token,
+            // "oven" inside "TechWoven"), so they're matched on their own
+            // word instead. Longer, more specific phrases are safe to
+            // substring-match as before.
+            const matched = WORD_BOUNDARY_KEYWORDS.has(keyword)
+                ? new RegExp(`\\b${keyword}\\b`).test(text)
+                : text.includes(keyword);
 
             if (matched) {
                 // Exact product/category identifiers are strong signals.
