@@ -157,6 +157,28 @@ function ResultsPage() {
     setSearchParams({ q: query });
   }
 
+  /*
+   * The sidebar renders four sort radios but the two booleans that back them
+   * only combine into four states because "Lowest Price" was wired to reuse
+   * the same (false, false) as "Best Deal" -- an unreachable (true, true)
+   * sat unused. Each combination now names one mode explicitly so the
+   * filter/sort logic below can't apply two of them at once by accident
+   * (e.g. "Lowest Price" no longer also inherits the Highest-Discount
+   * filter just because showBestDeal happens to be true for it too).
+   */
+  const sortMode = !showBestDeal && !showTopRated
+    ? "recommended"
+    : showBestDeal && showTopRated
+      ? "lowestPrice"
+      : showTopRated
+        ? "bestScore"
+        : "highestDiscount";
+
+  function discountPercent(product) {
+    if (!product.originalPrice || product.originalPrice <= product.price) return 0;
+    return (product.originalPrice - product.price) / product.originalPrice;
+  }
+
   const filtered = useMemo(() => {
     let results = [...products];
 
@@ -197,19 +219,18 @@ function ResultsPage() {
       results = results.filter((p) => selectedResolution.includes(p.resolution));
     }
 
-    // Best deals
-    if (showBestDeal) {
+    if (sortMode === "highestDiscount") {
       results = results.filter((p) =>
         ["BUY_NOW", "GOOD_DEAL"].includes(p.recommendation?.action)
       );
+      results.sort((a, b) => discountPercent(b) - discountPercent(a));
+    } else if (sortMode === "bestScore") {
+      results.sort((a, b) => (b.dealScore || 0) - (a.dealScore || 0));
+    } else if (sortMode === "lowestPrice") {
+      results.sort((a, b) => a.price - b.price);
     }
-
-    // Top rated
-    if (showTopRated) {
-      results.sort(
-        (a, b) => (b.dealScore || 0) - (a.dealScore || 0)
-      );
-    }
+    // "recommended" keeps the order the API returned (already price-ascending
+    // per product group, with the backend's own recommendation baked in).
 
 return results;
   }, [
@@ -217,8 +238,7 @@ return results;
     selectedCategory,
     selectedPlatforms,
     priceRange,
-    showBestDeal,
-    showTopRated,
+    sortMode,
     selectedStorage,
     selectedColours,
     selectedCondition,
@@ -235,14 +255,35 @@ return results;
   const filteredGroups = useMemo(() => {
     const keep = new Set(filtered.map((p) => p._id));
 
-    return groups
+    const withOffers = groups
       .map((group) => ({
         ...group,
         offers: (group.offers || []).filter((o) => keep.has(o._id)),
       }))
-      .filter((group) => group.offers.length > 0)
-      .sort((a, b) => b.offers.length - a.offers.length);
-  }, [groups, filtered]);
+      .filter((group) => group.offers.length > 0);
+
+    // Group order follows the same sort mode as the flat list, so picking
+    // "Lowest Price" actually surfaces the cheapest products first instead
+    // of leaving every mode pinned to most-offers-first regardless of what
+    // was selected.
+    if (sortMode === "lowestPrice") {
+      return withOffers.sort(
+        (a, b) => Math.min(...a.offers.map((o) => o.price)) - Math.min(...b.offers.map((o) => o.price))
+      );
+    }
+    if (sortMode === "bestScore") {
+      return withOffers.sort(
+        (a, b) => Math.max(...b.offers.map((o) => o.dealScore || 0)) - Math.max(...a.offers.map((o) => o.dealScore || 0))
+      );
+    }
+    if (sortMode === "highestDiscount") {
+      return withOffers.sort(
+        (a, b) => Math.max(...b.offers.map(discountPercent)) - Math.max(...a.offers.map(discountPercent))
+      );
+    }
+
+    return withOffers.sort((a, b) => b.offers.length - a.offers.length);
+  }, [groups, filtered, sortMode]);
 
   const fakeCount = useMemo(
     () => products.filter((p) => p.discountAnalysis?.isFakeDiscount).length,

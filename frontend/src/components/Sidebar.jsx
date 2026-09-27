@@ -457,11 +457,11 @@ function Sidebar({
               type="radio"
               name="sort"
               checked={
-                !showBestDeal && !showTopRated
+                showBestDeal && showTopRated
               }
               onChange={() => {
-                setShowBestDeal(false);
-                setShowTopRated(false);
+                setShowBestDeal(true);
+                setShowTopRated(true);
               }}
               className="sort-radio"
             />
@@ -473,7 +473,7 @@ function Sidebar({
             <input
               type="radio"
               name="sort"
-              checked={showTopRated}
+              checked={showTopRated && !showBestDeal}
               onChange={() => {
                 setShowTopRated(true);
                 setShowBestDeal(false);
@@ -488,7 +488,7 @@ function Sidebar({
             <input
               type="radio"
               name="sort"
-              checked={showBestDeal}
+              checked={showBestDeal && !showTopRated}
               onChange={() => {
                 setShowBestDeal(true);
                 setShowTopRated(false);

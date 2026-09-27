@@ -11,7 +11,7 @@ import { extractRamGb } from "./productAttributes.service.js";
  * Words marking a distinct product tier rather than describing the same
  * device. "Pro" and "Pro Max" are different phones.
  */
-const VARIANT_TOKENS = new Set([
+export const VARIANT_TOKENS = new Set([
   "pro", "max", "plus", "ultra", "mini", "air", "fe", "lite", "se",
 ]);
 
@@ -39,7 +39,7 @@ export function extractVariants(text = "") {
   return new Set(tokenize(modelTokens(text)).filter((t) => VARIANT_TOKENS.has(t)));
 }
 
-function sameSet(a, b) {
+export function sameSet(a, b) {
   if (a.size !== b.size) return false;
   for (const value of a) if (!b.has(value)) return false;
   return true;
@@ -54,7 +54,7 @@ function sameSet(a, b) {
  * handset. Where both listings declare such an attribute and the values
  * differ, they are different products whatever their similarity score.
  */
-function attributeConflict(textA, textB, { ignoreUnstatedStorage = false } = {}) {
+export function attributeConflict(textA, textB, { ignoreUnstatedStorage = false } = {}) {
   // Capacity blocks a match when both sides state it and the values differ.
   // When exactly one side states it equivalence is unproven, which is what
   // stopped a bare "iPhone 16 Pro Max" being compared against a 256GB unit at

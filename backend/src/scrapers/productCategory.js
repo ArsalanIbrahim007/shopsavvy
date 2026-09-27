@@ -139,6 +139,14 @@ const CATEGORIES = {
             "mini led",
             "led tv",
             "television",
+            // Bare "tv" is matched on its own word (see the special-cased
+            // check below), not as a substring. Real listings often
+            // separate "Smart" and "TV" with other words ("Smart & 4K
+            // Crystal UHD TV"), so the compound phrases above miss them.
+            // Without this, those titles fall through to "other", or worse,
+            // get claimed by a brand keyword from another category (a
+            // Xiaomi TV loses to "xiaomi" in the smartphone list).
+            "tv",
         ],
         exclude: [
             "wall mount",
@@ -373,7 +381,16 @@ function detectCategory(title) {
         }
 
         for (const keyword of config.keywords) {
-            if (text.includes(keyword)) {
+            // "tv" alone is too short and common to safely substring-match
+            // (it would match inside unrelated words). A word-boundary
+            // check avoids that while still catching "... Smart TV" or a
+            // bare "Apple Tv 3rd Generation" listing.
+            const matched =
+                keyword === "tv"
+                    ? /\btv\b/.test(text)
+                    : text.includes(keyword);
+
+            if (matched) {
                 // Exact product/category identifiers are strong signals.
                 if (
                     keyword === "iphone" ||
@@ -389,7 +406,8 @@ function detectCategory(title) {
                     keyword === "latitude" ||
                     keyword === "inspiron" ||
                     keyword === "qled" ||
-                    keyword === "oled"
+                    keyword === "oled" ||
+                    keyword === "tv"
                 ) {
                     score += 6;
                 } else if (keyword.length >= 8) {
@@ -416,12 +434,29 @@ function detectCategory(title) {
 }
 
 /**
+ * Brands that sell across several of the categories above (a phone maker
+ * that also sells TVs, tablets or watches). Their name is still a useful
+ * classification keyword on an actual product title -- a bare "Xiaomi 14T
+ * Pro" listing has nothing else to identify it by -- but forcing a single
+ * category when the brand name is searched ALONE is wrong: it would hide
+ * every Huawei tablet or Xiaomi TV behind a smartphone-only filter. A bare
+ * search for one of these should behave like "apple" or "samsung" already
+ * do (returns everything the brand makes, unfiltered by category).
+ */
+const MULTI_CATEGORY_BRANDS = new Set(["xiaomi", "huawei", "samsung", "apple", "lg", "sony", "google"]);
+
+/**
  * Detect the category of a search query.
  */
 function detectQueryCategory(query) {
     // A carousel filters by brand alone, so "hp" or "acer" must resolve
     // without a product word alongside them.
     const trimmed = String(query).trim().toLowerCase();
+
+    if (MULTI_CATEGORY_BRANDS.has(trimmed)) {
+        return { category: "other", confidence: 0 };
+    }
+
     if (BRAND_CATEGORY[trimmed]) {
         return { category: BRAND_CATEGORY[trimmed], confidence: 1 };
     }

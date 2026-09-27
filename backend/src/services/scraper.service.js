@@ -19,19 +19,30 @@ import { extractAttributes } from "./productAttributes.service.js";
 // Set to 30 minutes so rapid repeated searches don't hammer sites
 const STALE_THRESHOLD_MINUTES = 30;
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 /**
  * Checks if we have fresh listings in MongoDB for a given query.
  * "Fresh" means scraped within the last STALE_THRESHOLD_MINUTES.
  */
 async function hasFreshData(query) {
+  const trimmed = query.trim();
+  const normalizedQuery = normalizeTitle(trimmed);
   const threshold = new Date(
     Date.now() - STALE_THRESHOLD_MINUTES * 60 * 1000
   );
 
+  // A query made only of words normalizeTitle strips (e.g. "apple" alone)
+  // normalises to an empty string, and an empty regex matches every
+  // document -- see listing.controller.js for the same guard on the actual
+  // search filter. Skipping the clause here keeps a freshness check for
+  // "apple" from being satisfied by literally any recently scraped listing.
   const count = await Listing.countDocuments({
     $or: [
-      { title: { $regex: query, $options: "i" } },
-      { normalizedTitle: { $regex: normalizeTitle(query), $options: "i" } },
+      { title: { $regex: escapeRegex(trimmed), $options: "i" } },
+      ...(normalizedQuery
+        ? [{ normalizedTitle: { $regex: escapeRegex(normalizedQuery), $options: "i" } }]
+        : []),
     ],
     lastScrapedAt: { $gte: threshold },
   });

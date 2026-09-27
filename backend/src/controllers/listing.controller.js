@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Listing from "../models/listing.model.js";
-import { detectCategory } from "../scrapers/productCategory.js";import { attachPriceHistory } from "../services/historyEnrichment.service.js";
+import { detectCategory, detectQueryCategory } from "../scrapers/productCategory.js";
+import { attachPriceHistory } from "../services/historyEnrichment.service.js";
 import { normalizeTitle } from "../services/normalizeTitle.service.js";
 import { groupListingsByProduct } from "../services/productGrouping.service.js";
 import {
@@ -136,13 +137,15 @@ export async function searchListings(req, res) {
           "Search query is required. Example: /api/listings/search?q=iphone",
       });
     }
-    const refreshResult = await fetchAndRefreshListings(q, {
+    const trimmedQuery = q.trim();
+
+    const refreshResult = await fetchAndRefreshListings(trimmedQuery, {
     force: req.query.refresh === "true",
     dynamic: false,
 });
 
 console.log("[search]", refreshResult);
-    const normalizedQuery = normalizeTitle(q);
+    const normalizedQuery = normalizeTitle(trimmedQuery);
 
 /*
      * The scrape-time category filter only governs what is written. Listings
@@ -156,12 +159,27 @@ console.log("[search]", refreshResult);
      * supplied it is inferred from the query text.
      */
     const requestedCategory = req.query.category;
-    const queryCategory = requestedCategory || detectCategory(q).category;
+    const queryCategory = requestedCategory || detectQueryCategory(trimmedQuery).category;
+
+    /*
+     * The raw query can contain regex metacharacters ("iPhone (17)", "9+"),
+     * which would either throw or match something unintended if passed
+     * straight into $regex, so it is escaped before use.
+     *
+     * normalizeTitle strips whole words it considers noise (brand names such
+     * as "apple", compliance/marketing terms). A query consisting only of
+     * such words -- "apple" is itself one -- normalises to an empty string,
+     * and an empty pattern matches every document. That clause is therefore
+     * only added once there is still something left to match on.
+     */
+    const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
     const searchFilter = {
       $or: [
-        { title: { $regex: q, $options: "i" } },
-        { normalizedTitle: { $regex: normalizedQuery, $options: "i" } },
+        { title: { $regex: escapeRegex(trimmedQuery), $options: "i" } },
+        ...(normalizedQuery
+          ? [{ normalizedTitle: { $regex: escapeRegex(normalizedQuery), $options: "i" } }]
+          : []),
       ],
     };
 

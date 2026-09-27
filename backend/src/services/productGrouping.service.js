@@ -10,6 +10,40 @@ import { calculateDealScores } from "../ranking/dealScore.js";
 const PRICE_PROXIMITY = 0.15;
 
 /**
+ * Default matching decision: rule-based (attribute constraints + Jaccard
+ * threshold), reproducing the system's original behaviour exactly. Kept as a
+ * standalone function so an alternative strategy (e.g. the trained classifier
+ * in similarityModel.service.js) can be swapped in without touching the
+ * clustering loop itself.
+ */
+function ruleMatchStrategy(rawTitle, group, listing, listingStorage) {
+  if (isSimilarProduct(rawTitle, group.rawGroupKey, 0.7)) return true;
+
+  /*
+   * Some stores omit the storage capacity from the title. Rejecting those
+   * outright split the same handset across platforms, but accepting them
+   * unconditionally compared a bare "iPhone 16 Pro Max" against a 256GB
+   * unit at a difference of PKR 140,000.
+   *
+   * Price is used as the tiebreaker. A different capacity of the same model
+   * carries a materially different price, so a listing whose capacity is
+   * unstated joins the group only when its price is close to the prices
+   * already in it.
+   */
+  const capacityUnstated = listingStorage === null || group.storage === null;
+
+  if (capacityUnstated && isSimilarProduct(rawTitle, group.rawGroupKey, 0.7, {
+    ignoreUnstatedStorage: true,
+  })) {
+    const reference = (group.lowestPrice + group.highestPrice) / 2;
+    const drift = Math.abs(listing.price - reference) / reference;
+    return drift <= PRICE_PROXIMITY;
+  }
+
+  return false;
+}
+
+/**
  * Clusters listings from different platforms into single products.
  *
  * Each group records the storage capacity of the first member that states one.
@@ -21,8 +55,13 @@ const PRICE_PROXIMITY = 0.15;
  * deliberately removes compliance terms such as "PTA Approved" and punctuation
  * including inch marks, and those are exactly the attributes that decide
  * product identity.
+ *
+ * `matchStrategy` decides whether a listing belongs to an existing group; it
+ * defaults to the rule-based approach above so existing callers are
+ * unaffected. Passing a different strategy (same signature) swaps the
+ * matching logic without changing the clustering loop.
  */
-export function groupListingsByProduct(listings = []) {
+export function groupListingsByProduct(listings = [], { matchStrategy = ruleMatchStrategy } = {}) {
   const groups = [];
 
   listings.forEach((listing) => {
@@ -40,35 +79,9 @@ export function groupListingsByProduct(listings = []) {
 
       if (capacityConflict) continue;
 
-      if (isSimilarProduct(rawTitle, group.rawGroupKey, 0.7)) {
+      if (matchStrategy(rawTitle, group, listing, listingStorage)) {
         matchedGroup = group;
         break;
-      }
-
-      /*
-       * Some stores omit the storage capacity from the title. Rejecting those
-       * outright split the same handset across platforms, but accepting them
-       * unconditionally compared a bare "iPhone 16 Pro Max" against a 256GB
-       * unit at a difference of PKR 140,000.
-       *
-       * Price is used as the tiebreaker. A different capacity of the same model
-       * carries a materially different price, so a listing whose capacity is
-       * unstated joins the group only when its price is close to the prices
-       * already in it.
-       */
-      const capacityUnstated =
-        listingStorage === null || group.storage === null;
-
-      if (capacityUnstated && isSimilarProduct(rawTitle, group.rawGroupKey, 0.7, {
-        ignoreUnstatedStorage: true,
-      })) {
-        const reference = (group.lowestPrice + group.highestPrice) / 2;
-        const drift = Math.abs(listing.price - reference) / reference;
-
-        if (drift <= PRICE_PROXIMITY) {
-          matchedGroup = group;
-          break;
-        }
       }
     }
 
