@@ -91,7 +91,13 @@ async function scrapeFixedPlatforms(query) {
     },
     {
       platform: "mega",
-      fn: () => scrapeMegaSearch(`https://www.mega.pk/search/${query.replace(/\s+/g, "-")}/`),
+      // Mega's own search backend throws a 500 (empty body, confirmed via
+      // direct request) for any hyphenated multi-word path -- every query
+      // of more than one word was failing, not intermittently, on every
+      // single scrape. A literal "+" in the path works instead (verified
+      // returning real, relevant result cards); their server evidently
+      // does its own space substitution on "+" but not "-".
+      fn: () => scrapeMegaSearch(`https://www.mega.pk/search/${query.trim().replace(/\s+/g, "+")}/`),
     },
     {
       platform: "shophive",
