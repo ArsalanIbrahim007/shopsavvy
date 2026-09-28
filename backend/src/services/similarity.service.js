@@ -5,7 +5,7 @@ import {
   extractPtaStatus,
   extractModelCodes,
 } from "./normalizeTitle.service.js";
-import { extractRamGb } from "./productAttributes.service.js";
+import { extractRamGb, extractCondition } from "./productAttributes.service.js";
 
 /**
  * Words marking a distinct product tier rather than describing the same
@@ -90,6 +90,15 @@ export function attributeConflict(textA, textB, { ignoreUnstatedStorage = false 
   if (codesA.size > 0 && codesB.size > 0 && !sameSet(codesA, codesB)) return true;
 
   if (!sameSet(extractVariants(textA), extractVariants(textB))) return true;
+
+  // A used/refurbished/open-box unit is not the same product as a new one at
+  // a different price -- it's a different product at a genuinely different
+  // price, and letting the two group together lets a used listing's lower
+  // price win "Best Deal" against new ones, which is misleading. Unlike PTA
+  // status, extractCondition() has no "unstated" case -- silence defaults to
+  // "new" -- so a plain != comparison already does the right thing without
+  // an unknown-value carve-out.
+  if (extractCondition(textA) !== extractCondition(textB)) return true;
 
   return false;
 }
