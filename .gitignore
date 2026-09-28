@@ -29,3 +29,10 @@ backend/discounts*.txt
 backend/verify*.txt
 
 db-backup-demo/
+
+# Local AI-assistant context/config, not for the shared repo
+context.md
+.claude/
+
+# Per-machine scheduled-job bookkeeping
+backend/.scheduled-scrape-state.json

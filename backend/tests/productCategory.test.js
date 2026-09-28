@@ -1,0 +1,41 @@
+// Formal Vitest version of the 17 hand-labeled cases in test-categories.js
+// (kept as-is at the repo root as a standalone diagnostic script -- same
+// data, real assertions instead of console.log.
+import { describe, it, expect } from "vitest";
+import { detectCategory } from "../src/scrapers/productCategory.js";
+
+// expected starting with "!" means "must NOT classify as this category"
+// (used for accessory-exclusion cases), matching the original script.
+const CASES = [
+  ["HP Victus 15-FA2787NR Core i7-13620H Gaming Laptop", "laptop"],
+  ["Dell Vostro 15 3530 Laptop Core i7-1355U (8GB, 512GB SSD)", "laptop"],
+  ["Lenovo IdeaPad Slim 3 15.6 inch Core i5 512GB SSD", "laptop"],
+  ["MacBook Air M3 13 inch 256GB SSD 8GB RAM", "laptop"],
+  ["ASUS VivoBook 15 X1504 Core i3 8GB RAM 512GB SSD", "laptop"],
+  ["Lexar DDR5 8GB 5600Mhz Ram For Laptop", "!laptop"],
+  ["Transcend JetRam 16GB 4800MHz DDR5 Laptop Ram", "!laptop"],
+  ["Dell Latitude E6440 Laptop Battery", "!laptop"],
+  ["Swissewin Laptop Backpack", "!laptop"],
+  ["Targus Geo 15.6 Mojave Laptop Backpack", "!laptop"],
+  ["Awei X30 Desktop Folding Laptops & Tablets Holder", "!laptop"],
+  ["Apple iPhone 15 128GB PTA Approved", "smartphone"],
+  ["Apple iPhone 15 Silicone Case", "!smartphone"],
+  ["Samsung 55 Inch QLED Smart TV", "tv"],
+  ["Apple MacBook Air M3 13 inch 256GB", "laptop"],
+  ["Apple 96W USB-C Power Adapter for MacBook Pro", "!laptop"],
+  ["Anker 65W Wall Charger for MacBook Air", "!laptop"],
+];
+
+describe("detectCategory (17 hand-labeled classification cases)", () => {
+  it.each(CASES)("%s -> %s", (title, expected) => {
+    const { category } = detectCategory(title);
+    const negate = expected.startsWith("!");
+    const target = negate ? expected.slice(1) : expected;
+
+    if (negate) {
+      expect(category).not.toBe(target);
+    } else {
+      expect(category).toBe(target);
+    }
+  });
+});
