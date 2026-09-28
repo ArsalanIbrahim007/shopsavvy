@@ -48,13 +48,16 @@ function runQueued(fn) {
  *   graceful-degradation approach the rest of the scrapers use.
  * @param {number} [opts.timeout=20000]
  * @param {number} [opts.retries=1]
+ * @param {boolean} [opts.scrollToLoad=false] - scroll the page in steps
+ *   before reading content, for sites that lazy-load images/content below
+ *   the fold (e.g. Daraz's product grid images never populate otherwise).
  */
 function fetchHtmlWithBrowser(url, opts = {}) {
   return runQueued(() => fetchHtmlWithBrowserUnqueued(url, opts));
 }
 
 async function fetchHtmlWithBrowserUnqueued(url, opts = {}) {
-  const { waitForSelector, timeout = 20000, retries = 1 } = opts;
+  const { waitForSelector, timeout = 20000, retries = 1, scrollToLoad = false } = opts;
 
   let lastErr;
 
@@ -74,6 +77,13 @@ async function fetchHtmlWithBrowserUnqueued(url, opts = {}) {
 
       if (waitForSelector) {
         await page.waitForSelector(waitForSelector, { timeout: 8000 }).catch(() => {});
+      }
+
+      if (scrollToLoad) {
+        for (let i = 0; i < 6; i++) {
+          await page.mouse.wheel(0, 1500);
+          await page.waitForTimeout(300);
+        }
       }
 
       const html = await page.content();

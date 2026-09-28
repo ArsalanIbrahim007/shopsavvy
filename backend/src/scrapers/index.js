@@ -20,6 +20,7 @@ import { scrapePaklapSearch } from "./paklap.scraper.js";
 import { scrapeW11StopSearch } from "./w11stop.scraper.js";
 import { scrapeTelemartSearch } from "./telemart.scraper.js";
 import { scrapeIShoppingSearch } from "./ishopping.scraper.js";
+import { scrapeDarazSearch } from "./daraz.scraper.js";
 import { detectCategory, detectQueryCategory } from "./productCategory.js";
 
 // Query aliases — map shorthand searches to what actually appears in titles
@@ -123,6 +124,14 @@ async function scrapeFixedPlatforms(query) {
       platform: "ishopping",
       // Same 403-without-a-real-browser issue as Paklap.
       fn: () => scrapeIShoppingSearch(`https://www.ishopping.pk/catalogsearch/result/?q=${encoded}`),
+    },
+    {
+      platform: "daraz",
+      // React SPA, needs a headless browser like Paklap/iShopping. Unlike
+      // those two, Daraz's robots.txt explicitly disallows /catalog/ (this
+      // path) -- doesn't trigger a CAPTCHA or block page, but is a
+      // deliberate signal, see daraz.scraper.js for the full note.
+      fn: () => scrapeDarazSearch(`https://www.daraz.pk/catalog/?q=${encoded}`),
     },
   ];
 
