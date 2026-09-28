@@ -75,3 +75,38 @@ body("imageUrl")
     });
   },
 ];
+
+export const validateCreateAlert = [
+  body("listingId")
+    .trim()
+    .notEmpty()
+    .withMessage("listingId is required")
+    .isMongoId()
+    .withMessage("listingId must be a valid id"),
+
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("email is required")
+    .isEmail()
+    .withMessage("email must be a valid email address")
+    .normalizeEmail(),
+
+  body("targetPrice")
+    .isFloat({ gt: 0 })
+    .withMessage("targetPrice must be greater than zero"),
+
+  (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (errors.isEmpty()) {
+      return next();
+    }
+
+    return res.status(400).json({
+      success: false,
+      message: "Validation failed",
+      errors: errors.array(),
+    });
+  },
+];
