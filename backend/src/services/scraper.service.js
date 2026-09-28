@@ -127,6 +127,17 @@ async function runScrapersAndSave(query, opts = {}) {
   return saved;
 }
 
+// Tracks scrapes currently in progress, keyed by a normalized query, so a
+// second request for the same query while the first is still running joins
+// it instead of starting its own redundant scrape. Confirmed live
+// 2026-09-29: without this, a slow query (~20s now, was worse before
+// today's Playwright page-count fix) that gets requested twice before the
+// first finishes -- a double-click, an impatient reload, two of the
+// homepage's background fetches racing -- looks "not fresh yet" to both
+// requests and each kicks off its own full 8-platform scrape, multiplying
+// the load on the shared Playwright queue instead of just waiting.
+const inFlightScrapes = new Map();
+
 /**
  * Main entry point called by the search controller.
  * Checks freshness and runs scrapers if needed before returning.
@@ -146,7 +157,21 @@ async function fetchAndRefreshListings(query, opts = {}) {
     return { scraped: false, reason: "fresh_data" };
   }
 
-  const saved = await runScrapersAndSave(query, { dynamic });
+  const dedupeKey = query.trim().toLowerCase();
+  const inFlight = inFlightScrapes.get(dedupeKey);
+
+  if (inFlight) {
+    console.log(`[scraperService] Scrape already in flight for "${query}", joining it`);
+    const saved = await inFlight;
+    return { scraped: true, saved, reason: "joined_in_flight" };
+  }
+
+  const scrapePromise = runScrapersAndSave(query, { dynamic }).finally(() => {
+    inFlightScrapes.delete(dedupeKey);
+  });
+  inFlightScrapes.set(dedupeKey, scrapePromise);
+
+  const saved = await scrapePromise;
   return { scraped: true, saved, reason: fresh ? "force_refresh" : "stale_or_missing" };
 }
 
