@@ -16,9 +16,10 @@ config({
 import { scrapePriceOyeSearch } from "./priceoye.scraper.js";
 import { scrapeMegaSearch } from "./mega.scraper.js";
 import { scrapeShophiveSearch } from "./shophive.scraper.js";
-// import { scrapePaklapSearch } from "./paklap.scraper.js"; // 403s -- needs a headless browser, not just axios+cheerio
+import { scrapePaklapSearch } from "./paklap.scraper.js";
 import { scrapeW11StopSearch } from "./w11stop.scraper.js";
 import { scrapeTelemartSearch } from "./telemart.scraper.js";
+import { scrapeIShoppingSearch } from "./ishopping.scraper.js";
 import { detectCategory, detectQueryCategory } from "./productCategory.js";
 
 // Query aliases — map shorthand searches to what actually appears in titles
@@ -104,10 +105,12 @@ async function scrapeFixedPlatforms(query) {
       platform: "shophive",
       fn: () => scrapeShophiveSearch(`https://www.shophive.com/catalogsearch/result/?q=${encoded}`),
     },
-    // {
-    //   platform: "paklap",
-    //   fn: () => scrapePaklapSearch(`https://www.paklap.pk/catalogsearch/result/index/?cat=0&q=${encoded}`),
-    // },
+    {
+      platform: "paklap",
+      // Paklap 403s every plain axios request -- goes through a headless
+      // browser instead (see paklap.scraper.js / playwrightFetch.js).
+      fn: () => scrapePaklapSearch(`https://www.paklap.pk/catalogsearch/result/index/?cat=0&q=${encoded}`),
+    },
     {
       platform: "w11stop",
       fn: () => scrapeW11StopSearch(`https://w11stop.com/search?search=${encoded}`),
@@ -115,6 +118,11 @@ async function scrapeFixedPlatforms(query) {
     {
       platform: "telemart",
       fn: () => scrapeTelemartSearch(`https://www.telemart.pk/search?q=${encoded}`),
+    },
+    {
+      platform: "ishopping",
+      // Same 403-without-a-real-browser issue as Paklap.
+      fn: () => scrapeIShoppingSearch(`https://www.ishopping.pk/catalogsearch/result/?q=${encoded}`),
     },
   ];
 
