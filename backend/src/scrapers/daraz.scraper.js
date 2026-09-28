@@ -30,7 +30,10 @@ import { makeListing } from "./scraper.schema.js";
 
 const PLATFORM = "daraz";
 const BASE_URL = "https://www.daraz.pk";
-const MAX_PAGES = 3;
+// Was 3 -- see the matching note in paklap.scraper.js on MAX_PAGES. 1 page
+// (~40 listings) is enough for a search result to be useful, and cuts this
+// scraper's share of the serialized Playwright queue to a third.
+const MAX_PAGES = 1;
 
 // Current class name for the price span, confirmed live 2026-09-29.
 // Kept as a best-effort first try; PRICE_TEXT_REGEX is the real safety net.

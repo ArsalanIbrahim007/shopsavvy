@@ -16,7 +16,13 @@ const BASE_URL = "https://www.paklap.pk";
 
 async function scrapePaklapSearch(searchUrl) {
   const allListings = [];
-  const MAX_PAGES = 5;
+  // Was 5 -- each page is a full Playwright navigation serialized against
+  // iShopping/Daraz through one shared browser (see playwrightFetch.js).
+  // Confirmed live 2026-09-29 that several concurrent live searches (e.g.
+  // the homepage's background category fetches) piling up on that queue
+  // made a single search take minutes. 2 pages keeps most of the coverage
+  // at under half the serialized cost.
+  const MAX_PAGES = 2;
 
   for (let page = 1; page <= MAX_PAGES; page++) {
     const pageUrl =
