@@ -20,6 +20,19 @@ import {
   buildSpaceTolerantPattern,
   fuzzyMatchIds,
 } from "../services/searchMatching.service.js";
+import { mlMatchStrategy } from "../services/similarityModel.service.js";
+
+/**
+ * The trained classifier is the default matching strategy as of 2026-09-28
+ * (see backend/src/ml/EVALUATION_REPORT.md: F1 0.923 vs the old fixed-
+ * threshold rule's 0.667 on held-out data). ?matching=rule falls back to
+ * the original Jaccard-threshold behaviour -- kept reachable, not deleted,
+ * as an escape hatch if the trained model ever needs to be compared
+ * against or rolled back live without a code change.
+ */
+function resolveMatchStrategy(req) {
+  return req.query.matching === "rule" ? undefined : mlMatchStrategy;
+}
 /**
  * Adds recommendations after product grouping and deal ranking.
  *
@@ -272,7 +285,7 @@ console.log("[search]", refreshResult);
       await attachPriceHistory(listings);
 
     const rankedGroups =
-      groupListingsByProduct(enrichedListings);
+      groupListingsByProduct(enrichedListings, { matchStrategy: resolveMatchStrategy(req) });
 
     const groups =
       attachRecommendationsToGroups(rankedGroups);
@@ -425,7 +438,7 @@ export async function getListingDetails(req, res) {
       await attachPriceHistory(possibleMatches);
 
     const rankedGroups =
-      groupListingsByProduct(enrichedMatches);
+      groupListingsByProduct(enrichedMatches, { matchStrategy: resolveMatchStrategy(req) });
 
     const recommendedGroups =
       attachRecommendationsToGroups(rankedGroups);
