@@ -12,7 +12,8 @@ import { dirname, join } from "path";
 
 import { buildFeatureVector } from "../ml/features.js";
 import { predictProba } from "../ml/logisticRegression.js";
-import { attributeConflict } from "./similarity.service.js";
+import { attributeConflict, tokenize, sameSet } from "./similarity.service.js";
+import { modelTokens, extractStorage } from "./normalizeTitle.service.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ARTIFACT_PATH = join(__dirname, "..", "ml", "model.artifact.json");
@@ -52,17 +53,76 @@ export function classifyPairML(itemA, itemB) {
   return { isMatch: probability >= loadedModel.threshold, probability };
 }
 
+// Words a store adds without saying anything about which product it is:
+// colours, warranty and SIM wording, connectivity, and generic "storage".
+// "titanium" is included because on watches it is a colour ("Titanium Blue").
+const FILLER_WORDS = new Set([
+  "black", "white", "blue", "green", "red", "silver", "gold", "grey", "gray", "pink",
+  "purple", "orange", "yellow", "titanium", "midnight", "starlight", "graphite", "cream",
+  "lavender", "mint", "navy", "sky", "cobalt", "violet", "marine", "phantom",
+  "dual", "sim", "esim", "physical", "official", "warranty", "mercantile", "brand", "year",
+  "one", "with", "wifi", "wi", "fi", "ram", "rom", "storage", "pta", "non", "approved",
+  "new", "box", "pack", "the", "and", "for", "in", "pakistan",
+]);
+
+// Price tolerance when a capacity is missing on either side, matching the rule
+// strategy's tiebreak: a different capacity of one model differs by tens of
+// per cent, the same unit across stores by a few.
+const UNSTATED_CAPACITY_PRICE_DRIFT = 0.15;
+
+// Members compared individually when the representative does not match.
+// Bounds the extra work on very large groups.
+const MAX_MEMBER_CHECKS = 40;
+
+function fillerFreeTokens(title) {
+  return new Set(tokenize(modelTokens(title)).filter((t) => !FILLER_WORDS.has(t)));
+}
+
 /**
  * Same signature as productGrouping.service.js's ruleMatchStrategy, so it
  * can be passed as groupListingsByProduct(listings, { matchStrategy: mlMatchStrategy }).
+ *
+ * A group is represented by its most detailed title ("... 8GB RAM 256GB
+ * Storage PTA Approved"). A plainer listing of the same phone ("... Dual Sim
+ * With Official Warranty") scores poorly against that title even though it is
+ * the same product as the group's plainer members, which left popular phones
+ * split into a main group plus one-offer groups. So when the representative
+ * does not match, the listing may still join through a member whose title is
+ * identical once filler words are removed.
+ *
+ * The fallback deliberately does not use the classifier: filler words inflate
+ * its similarity, and trying members with it chained Z Fold 5, 6 and 8, and
+ * five different Oppo Reno models, into single groups. Joining also still
+ * requires that the listing conflict with no member (checked by the grouping
+ * loop).
  */
 export function mlMatchStrategy(rawTitle, group, listing) {
   const groupPrice = group.lowestPrice != null && group.highestPrice != null
     ? (group.lowestPrice + group.highestPrice) / 2
     : null;
 
-  return classifyPairML(
+  if (classifyPairML(
     { title: rawTitle, price: listing.price },
     { title: group.rawGroupKey, price: groupPrice }
-  ).isMatch;
+  ).isMatch) return true;
+
+  const own = fillerFreeTokens(rawTitle);
+  if (own.size < 2) return false;
+  const ownStorage = extractStorage(rawTitle);
+
+  let checks = 0;
+  for (const member of group.offers || []) {
+    if (++checks > MAX_MEMBER_CHECKS) break;
+    const title = member.title || member.normalizedTitle || "";
+    if (!title || !sameSet(own, fillerFreeTokens(title))) continue;
+
+    const capacityUnstated = ownStorage === null || extractStorage(title) === null;
+    if (capacityUnstated && member.price > 0) {
+      const drift = Math.abs(listing.price - member.price) / member.price;
+      if (drift > UNSTATED_CAPACITY_PRICE_DRIFT) continue;
+    }
+    return true;
+  }
+
+  return false;
 }

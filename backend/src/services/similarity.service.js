@@ -52,6 +52,28 @@ function sameModelCode(a, b) {
   return long.startsWith(short) && /^[a-z]{1,2}$/.test(long.slice(short.length));
 }
 
+// A bare number after these words describes an operating system, CPU family or
+// generation counter rather than which model it is, and stores omit or vary it
+// ("Windows 11", "Ryzen 5", "Gen 7").
+const NON_MODEL_NUMBER_PRECEDERS = new Set([
+  "windows", "win", "android", "ios", "ipados", "gen", "generation", "ryzen", "core", "pack", "of",
+]);
+
+/**
+ * The bare numbers in a title that name the model within a product line:
+ * "Fold 5", "Reno 4", "Watch 8", "Buds 3", "iPhone 17". Capacities and sizes
+ * carry units ("256GB", "40mm") and are not pure numbers, so they are not
+ * counted here.
+ */
+export function seriesNumbers(text = "") {
+  const tokens = tokenize(modelTokens(text));
+  const found = new Set();
+  tokens.forEach((token, i) => {
+    if (/^\d{1,2}$/.test(token) && !NON_MODEL_NUMBER_PRECEDERS.has(tokens[i - 1])) found.add(token);
+  });
+  return found;
+}
+
 export function sameSet(a, b) {
   if (a.size !== b.size) return false;
   for (const value of a) if (!b.has(value)) return false;
@@ -122,6 +144,19 @@ export function attributeConflict(textA, textB, { ignoreUnstatedStorage = false 
     const valuesB = specsB.get(unit);
     if (valuesB && ![...valuesA].some((v) => valuesB.has(v))) return true;
   }
+
+  // Different series numbers ("Z Fold 5" / "Z Fold 7", "Reno 4" / "Reno 6") are
+  // different products. Like model codes, this blocks only when both titles
+  // state numbers and share none: one side omitting it proves nothing. Before
+  // this check, stores' wording noise ("Dual Sim With Official Warranty") could
+  // outweigh a single differing digit in both the rule and the classifier.
+  const numbersA = seriesNumbers(textA);
+  const numbersB = seriesNumbers(textB);
+  if (
+    numbersA.size > 0 &&
+    numbersB.size > 0 &&
+    ![...numbersA].some((n) => numbersB.has(n))
+  ) return true;
 
   if (!sameSet(extractVariants(textA), extractVariants(textB))) return true;
 

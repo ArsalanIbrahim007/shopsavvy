@@ -112,3 +112,64 @@ describe("trained matcher on the pairs that motivated the fix", () => {
     expect(classifyPairML(ideapad, thinkpad).isMatch).toBe(false);
   });
 });
+
+describe("series numbers", () => {
+  it.each([
+    ["Samsung Galaxy Z Fold 5", "Samsung Galaxy Z Fold 7 12GB RAM 256GB Storage Non PTA"],
+    ["Oppo Reno 4", "Oppo Reno 6"],
+    ["Samsung Galaxy Buds 3", "Samsung Galaxy Buds 4"],
+    ["WIWU Skin Pro 16'' Smart Stand Leather Sleeve", "WIWU Skin Pro 13'' Smart Stand Leather Sleeve"],
+  ])("separates %s / %s", (a, b) => {
+    expect(attributeConflict(a, b)).toBe(true);
+  });
+
+  it.each([
+    // One side omitting the number proves nothing.
+    ["Samsung Galaxy Watch Ultra 47mm", "Samsung Galaxy Watch Ultra 2 47mm"],
+    // The same number with extra store wording.
+    ["Apple iPhone 17", "Apple iPhone 17 PTA Approved With Official Warranty"],
+    // Operating system numbers are not model numbers.
+    ["Acer Aspire 8GB 256GB Windows 10", "Acer Aspire 8GB 256GB Windows 11"],
+  ])("does not veto %s / %s on numbers alone", (a, b) => {
+    expect(attributeConflict(a, b)).toBe(false);
+  });
+});
+
+describe("grouping: plain listings join their product, different series numbers do not", () => {
+  const groupIds = (listings) =>
+    groupListingsByProduct(listings, { matchStrategy: mlMatchStrategy }).map((g) =>
+      g.offers.map((o) => o._id).sort()
+    );
+
+  it("joins a store's 'Dual Sim With Official Warranty' listing to the phone's group", () => {
+    // The group is represented by its most detailed title; the plain listing
+    // used to score too low against it and sat alone as a one-offer group.
+    const groups = groupIds([
+      { _id: "detail", platform: "mega", title: "Samsung Galaxy A17 8GB RAM 256GB Storage PTA Approved", price: 66000 },
+      { _id: "bare", platform: "priceoye", title: "Samsung Galaxy A17", price: 65000 },
+      { _id: "warranty", platform: "telemart", title: "Samsung Galaxy A17 Dual Sim With Official Warranty", price: 67999 },
+    ]);
+    expect(groups.some((g) => g.includes("warranty") && g.includes("bare"))).toBe(true);
+    expect(groups).toHaveLength(1);
+  });
+
+  it("keeps consecutive foldables apart even when stores add the same filler words", () => {
+    const groups = groupIds([
+      { _id: "f5", platform: "priceoye", title: "Samsung Galaxy Z Fold 5", price: 325999 },
+      { _id: "f5w", platform: "telemart", title: "Samsung Galaxy Z Fold 5 With Official Warranty", price: 329999 },
+      { _id: "f6w", platform: "telemart", title: "Samsung Galaxy Z Fold 6 Dual Sim with Official Warranty", price: 340000 },
+      { _id: "f7", platform: "mega", title: "Samsung Galaxy Z Fold 7", price: 417499 },
+    ]);
+    const groupOf = (id) => groups.findIndex((g) => g.includes(id));
+    expect(groupOf("f5")).toBe(groupOf("f5w"));
+    expect(new Set([groupOf("f5"), groupOf("f6w"), groupOf("f7")]).size).toBe(3);
+  });
+
+  it("does not let a colour-only difference split the same watch", () => {
+    const groups = groupIds([
+      { _id: "plain", platform: "telemart", title: "Samsung Galaxy Watch 8 40mm", price: 64000 },
+      { _id: "black", platform: "shophive", title: "Samsung Galaxy Watch 8 40mm Black - Wifi", price: 64500 },
+    ]);
+    expect(groups).toHaveLength(1);
+  });
+});
