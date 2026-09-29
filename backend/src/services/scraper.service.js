@@ -21,6 +21,30 @@ const STALE_THRESHOLD_MINUTES = 30;
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
+// Query parameters that identify a *search session*, not a product. Telemart
+// (Shopify) appends _pos/_sid/_ss to every result link, and they change on
+// every search -- because listings and price history are keyed on
+// platform + sourceUrl, each search inserted the same product again. Found
+// 2026-09-30: 182 of 248 Telemart listings were duplicates of 66 products,
+// and none of them could accumulate price history. Only known tracking
+// params are stripped; anything else (e.g. a Shopify ?variant=) can identify
+// a genuinely different product and is kept.
+const TRACKING_PARAMS = new Set(["_pos", "_sid", "_ss", "_fid", "fbclid", "gclid"]);
+
+export function canonicalSourceUrl(url) {
+  if (!url) return url;
+  try {
+    const parsed = new URL(url);
+    for (const key of [...parsed.searchParams.keys()]) {
+      if (TRACKING_PARAMS.has(key) || key.startsWith("utm_")) parsed.searchParams.delete(key);
+    }
+    parsed.hash = "";
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}
+
 /**
  * Checks if we have fresh listings in MongoDB for a given query.
  * "Fresh" means scraped within the last STALE_THRESHOLD_MINUTES.
@@ -103,8 +127,11 @@ async function runScrapersAndSave(query, opts = {}) {
 
   let saved = 0;
 
-  for (const item of scraped) {
-    if (!item.price) continue;
+  for (const scrapedItem of scraped) {
+    if (!scrapedItem.price) continue;
+
+    // Canonicalise before both writes below, which key on sourceUrl.
+    const item = { ...scrapedItem, sourceUrl: canonicalSourceUrl(scrapedItem.sourceUrl) };
 
     try {
       // Upsert listing
