@@ -285,8 +285,13 @@ return results;
     return withOffers.sort((a, b) => b.offers.length - a.offers.length);
   }, [groups, filtered, sortMode]);
 
+  // Either check can flag a claim: its own past prices (history rule) or
+  // other stores' current prices for the same product (cross-store model).
   const fakeCount = useMemo(
-    () => products.filter((p) => p.discountAnalysis?.isFakeDiscount).length,
+    () =>
+      products.filter(
+        (p) => p.discountAnalysis?.isFakeDiscount || p.discountAnomaly?.isAnomalous
+      ).length,
     [products]
   );
 
@@ -395,7 +400,7 @@ return results;
             <div className="fake-alert-strip">
               &#9888; ShopSavvy flagged <strong>{fakeCount}</strong>{" "}
               {fakeCount === 1 ? "offer" : "offers"} with a suspicious discount claim,
-              based on recorded price history.
+              based on recorded price history and what other stores charge.
             </div>
           )}
 

@@ -268,6 +268,14 @@ function ComparisonTable({ products }) {
                         {disc.text}
                       </span>
                     )}
+                    {product.discountAnomaly?.isAnomalous && (
+                      <span
+                        className="disc-badge disc-market"
+                        title={product.discountAnomaly.reason}
+                      >
+                        {"\u26A0 "}Above market
+                      </span>
+                    )}
                   </div>
                 </td>
 

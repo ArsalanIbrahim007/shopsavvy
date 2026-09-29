@@ -104,7 +104,7 @@ export function extractPtaStatus(title = "") {
 
 /*
  * Title tokens that mix letters and digits fall into two kinds, and treating
- * them alike was a real matching bug (found 2026-09-30):
+ * them alike was a real matching bug (found 2026-09-29):
  *
  *   - Model codes (QN70F, L320, S2721DGF) name *this product*. Two titles
  *     sharing one is strong evidence they are the same product.

@@ -25,7 +25,7 @@ const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // (Shopify) appends _pos/_sid/_ss to every result link, and they change on
 // every search -- because listings and price history are keyed on
 // platform + sourceUrl, each search inserted the same product again. Found
-// 2026-09-30: 182 of 248 Telemart listings were duplicates of 66 products,
+// 2026-09-29: 182 of 248 Telemart listings were duplicates of 66 products,
 // and none of them could accumulate price history. Only known tracking
 // params are stripped; anything else (e.g. a Shopify ?variant=) can identify
 // a genuinely different product and is kept.

@@ -189,6 +189,9 @@
 .disc-genuine    { background: var(--ss-green-soft); color: var(--ss-green); border-color: #b3ddc7; }
 .disc-likely     { background: var(--ss-blue-soft);  color: var(--ss-blue);  border-color: #c2d3ff; }
 .disc-unverified { background: #f3f5f8;              color: var(--ss-ink-mute); border-color: var(--ss-line); }
+/* Cross-store check: the "was" price isn't supported by what other stores
+   charge. Amber, not red -- a warning about the claim, not proof it's fake. */
+.disc-market     { background: var(--ss-amber-soft); color: var(--ss-amber); border-color: #f3d19e; cursor: help; }
 
 .fake-alert-strip {
   background: var(--ss-amber-soft);
