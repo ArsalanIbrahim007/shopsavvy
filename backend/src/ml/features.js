@@ -50,9 +50,14 @@ function matchFlag(valueA, valueB, unknownValue = null) {
   return valueA === valueB ? 1 : -1;
 }
 
+// minCodeLength: 4 is the definition this model was trained on. The veto in
+// similarity.service.js also recognises 3-character codes; widening this
+// feature too would shift the model's inputs away from its training data
+// (retraining on the small, phone-heavy labeled set was tried and made
+// whole-DB grouping worse -- see context.md).
 function modelCodeMatchFlag(titleA, titleB) {
-  const codesA = extractModelCodes(titleA);
-  const codesB = extractModelCodes(titleB);
+  const codesA = extractModelCodes(titleA, { minCodeLength: 4 });
+  const codesB = extractModelCodes(titleB, { minCodeLength: 4 });
   if (codesA.size === 0 || codesB.size === 0) return 0;
   if (codesA.size !== codesB.size) return -1;
   for (const code of codesA) if (!codesB.has(code)) return -1;

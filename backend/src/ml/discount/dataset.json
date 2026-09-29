@@ -1,5 +1,5 @@
 {
- "builtAt": "2026-09-29T05:24:54.987Z",
+ "builtAt": "2026-09-29T05:33:32.848Z",
  "featureNames": [
   "logOriginalVsMedian",
   "logOriginalVsMax",
@@ -123,121 +123,6 @@
    "ruleClassification": "unverified_discount"
   },
   {
-   "id": "6a7b74ca9de462208cfb9612",
-   "title": "Samsung Galaxy A57 5G",
-   "platform": "priceoye",
-   "category": "smartphone",
-   "group": "Samsung Galaxy A57 8GB RAM 256GB Storage 5G PTA APPROVED",
-   "groupSize": 8,
-   "features": [
-    0.006006060132861882,
-    0,
-    -0.1147762472574814,
-    0.11377313636608602
-   ],
-   "context": {
-    "price": 147999,
-    "originalPrice": 166999,
-    "marketMedian": 165999,
-    "marketMax": 166999,
-    "comparators": 7
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6a825b247fed3db412e98007",
-   "title": "Samsung Galaxy A57 5G 8GB 256GB",
-   "platform": "shophive",
-   "category": "smartphone",
-   "group": "Samsung Galaxy A57 8GB RAM 256GB Storage 5G PTA APPROVED",
-   "groupSize": 8,
-   "features": [
-    0.006006060132861882,
-    0,
-    -0.07503565535595998,
-    0.0778447775136378
-   ],
-   "context": {
-    "price": 153999,
-    "originalPrice": 166999,
-    "marketMedian": 165999,
-    "marketMax": 166999,
-    "comparators": 7
-   },
-   "historyCount": 2,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6a824c967fed3db412e97fd3",
-   "title": "Samsung Galaxy A37 (8GB RAM + 256GB Storage)",
-   "platform": "w11stop",
-   "category": "smartphone",
-   "group": "Samsung Galaxy A57 8GB RAM 256GB Storage 5G PTA APPROVED",
-   "groupSize": 8,
-   "features": [
-    -0.03681419902771715,
-    -0.042820259160579105,
-    -0.10135313683464603,
-    0.06250039062744142
-   ],
-   "context": {
-    "price": 149999,
-    "originalPrice": 159999,
-    "marketMedian": 165999,
-    "marketMax": 166999,
-    "comparators": 7
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6ab87b157b2d0415f0561915",
-   "title": "Samsung Galaxy A57 5G Dark Blue (8GB RAM + 256GB Storage)",
-   "platform": "w11stop",
-   "category": "smartphone",
-   "group": "Samsung Galaxy A57 8GB RAM 256GB Storage 5G PTA APPROVED",
-   "groupSize": 8,
-   "features": [
-    0.14483182341272338,
-    0.06379010792390151,
-    0.08104171548882197,
-    0.06179809998932578
-   ],
-   "context": {
-    "price": 166999,
-    "originalPrice": 177999,
-    "marketMedian": 153999,
-    "marketMax": 166999,
-    "comparators": 7
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6a824c967fed3db412e97fd5",
-   "title": "Samsung Galaxy A57 5G (8GB RAM + 256GB Storage)",
-   "platform": "w11stop",
-   "category": "smartphone",
-   "group": "Samsung Galaxy A57 8GB RAM 256GB Storage 5G PTA APPROVED",
-   "groupSize": 8,
-   "features": [
-    0.14483182341272338,
-    0.06379010792390151,
-    0.08104171548882197,
-    0.06179809998932578
-   ],
-   "context": {
-    "price": 166999,
-    "originalPrice": 177999,
-    "marketMedian": 153999,
-    "marketMax": 166999,
-    "comparators": 7
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
    "id": "6a6b01724d3ce0c30fbd2743",
    "title": "Apple iPhone 17 Pro Max",
    "platform": "mega",
@@ -324,6 +209,98 @@
     "originalPrice": 749000,
     "marketMedian": 543999,
     "marketMax": 581999,
+    "comparators": 6
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b74ca9de462208cfb9612",
+   "title": "Samsung Galaxy A57 5G",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A57 8GB RAM 256GB Storage 5G PTA APPROVED",
+   "groupSize": 7,
+   "features": [
+    0.0029985209784183266,
+    0,
+    -0.11778378641192504,
+    0.11377313636608602
+   ],
+   "context": {
+    "price": 147999,
+    "originalPrice": 166999,
+    "marketMedian": 166499,
+    "marketMax": 166999,
+    "comparators": 6
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825b247fed3db412e98007",
+   "title": "Samsung Galaxy A57 5G 8GB 256GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A57 8GB RAM 256GB Storage 5G PTA APPROVED",
+   "groupSize": 7,
+   "features": [
+    0.0029985209784183266,
+    0,
+    -0.07804319451040366,
+    0.0778447775136378
+   ],
+   "context": {
+    "price": 153999,
+    "originalPrice": 166999,
+    "marketMedian": 166499,
+    "marketMax": 166999,
+    "comparators": 6
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6ab87b157b2d0415f0561915",
+   "title": "Samsung Galaxy A57 5G Dark Blue (8GB RAM + 256GB Storage)",
+   "platform": "w11stop",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A57 8GB RAM 256GB Storage 5G PTA APPROVED",
+   "groupSize": 7,
+   "features": [
+    0.10661036708448055,
+    0.06379010792390151,
+    0.04282025916057915,
+    0.06179809998932578
+   ],
+   "context": {
+    "price": 166999,
+    "originalPrice": 177999,
+    "marketMedian": 159999,
+    "marketMax": 166999,
+    "comparators": 6
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a824c967fed3db412e97fd5",
+   "title": "Samsung Galaxy A57 5G (8GB RAM + 256GB Storage)",
+   "platform": "w11stop",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A57 8GB RAM 256GB Storage 5G PTA APPROVED",
+   "groupSize": 7,
+   "features": [
+    0.10661036708448055,
+    0.06379010792390151,
+    0.04282025916057915,
+    0.06179809998932578
+   ],
+   "context": {
+    "price": 166999,
+    "originalPrice": 177999,
+    "marketMedian": 159999,
+    "marketMax": 166999,
     "comparators": 6
    },
    "historyCount": 1,
@@ -445,92 +422,92 @@
    "ruleClassification": "unverified_discount"
   },
   {
-   "id": "6a78a2af9c96f297ede77377",
-   "title": "Samsung Galaxy S26 Ultra 12GB RAM 256GB Storage NON PTA",
-   "platform": "mega",
-   "category": "smartphone",
-   "group": "Samsung Galaxy S26 Ultra 12GB RAM 256GB Storage NON PTA",
-   "groupSize": 5,
-   "features": [
-    -0.2492895620338013,
-    -0.39882165442856476,
-    -0.3539148783262597,
-    0.09933807727840159
-   ],
-   "context": {
-    "price": 271999,
-    "originalPrice": 301999,
-    "marketMedian": 387499,
-    "marketMax": 449999,
-    "comparators": 4
-   },
-   "historyCount": 2,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6a825b247fed3db412e98013",
-   "title": "Samsung Galaxy S26 Ultra 12GB 256GB",
-   "platform": "shophive",
-   "category": "smartphone",
-   "group": "Samsung Galaxy S26 Ultra 12GB RAM 256GB Storage NON PTA",
-   "groupSize": 5,
-   "features": [
-    0.2189860851964097,
-    0,
-    0.06298146153854908,
-    0.14444476543281207
-   ],
-   "context": {
-    "price": 384999,
-    "originalPrice": 449999,
-    "marketMedian": 361499,
-    "marketMax": 449999,
-    "comparators": 4
-   },
-   "historyCount": 2,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6a7a374bdc7ea9aa971ccccc",
-   "title": "Samsung Galaxy S26 Ultra",
+   "id": "6a7b36d19de462208cfb959f",
+   "title": "Samsung Galaxy A37 5G",
    "platform": "priceoye",
    "category": "smartphone",
-   "group": "Samsung Galaxy S26 Ultra 12GB RAM 256GB Storage NON PTA",
+   "group": "Samsung Galaxy A37 8GB RAM 256GB Storage 5G PTA APPROVED",
    "groupSize": 5,
    "features": [
-    0.22592575757059516,
+    0.006689032893825107,
     0,
-    0.08282457204876172,
-    0.13333362963028808
+    -0.11359798511704658,
+    0.11333408889392596
    ],
    "context": {
-    "price": 389999,
-    "originalPrice": 449999,
-    "marketMedian": 358999,
-    "marketMax": 449999,
+    "price": 132999,
+    "originalPrice": 149999,
+    "marketMedian": 148999,
+    "marketMax": 149999,
     "comparators": 4
    },
    "historyCount": 2,
    "ruleClassification": "unverified_discount"
   },
   {
-   "id": "6a824c967fed3db412e97fd8",
-   "title": "Samsung Galaxy S26 Ultra (12GB RAM + 256GB Storage)",
-   "platform": "w11stop",
+   "id": "6a825b247fed3db412e98012",
+   "title": "Samsung Galaxy A37 5G 8GB 256GB",
+   "platform": "shophive",
    "category": "smartphone",
-   "group": "Samsung Galaxy S26 Ultra 12GB RAM 256GB Storage NON PTA",
+   "group": "Samsung Galaxy A37 8GB RAM 256GB Storage 5G PTA APPROVED",
    "groupSize": 5,
    "features": [
-    0.2479047125986552,
-    0.1650801405498936,
-    0.22592575757059516,
-    0.02173917769386455
+    0.006689032893825107,
+    0,
+    -0.02721274866847256,
+    0.03333355555703705
    ],
    "context": {
-    "price": 449999,
-    "originalPrice": 459999,
-    "marketMedian": 358999,
-    "marketMax": 389999,
+    "price": 144999,
+    "originalPrice": 149999,
+    "marketMedian": 148999,
+    "marketMax": 149999,
+    "comparators": 4
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6ab87b157b2d0415f0561914",
+   "title": "Samsung Galaxy A37 Dark Green (8GB RAM + 256GB Storage)",
+   "platform": "w11stop",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A37 8GB RAM 256GB Storage 5G PTA APPROVED",
+   "groupSize": 5,
+   "features": [
+    0.08814896271903695,
+    0.06453893780692892,
+    0.02361002491210817,
+    0.06250039062744142
+   ],
+   "context": {
+    "price": 149999,
+    "originalPrice": 159999,
+    "marketMedian": 146499,
+    "marketMax": 149999,
+    "comparators": 4
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a824c967fed3db412e97fd3",
+   "title": "Samsung Galaxy A37 (8GB RAM + 256GB Storage)",
+   "platform": "w11stop",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A37 8GB RAM 256GB Storage 5G PTA APPROVED",
+   "groupSize": 5,
+   "features": [
+    0.08814896271903695,
+    0.06453893780692892,
+    0.02361002491210817,
+    0.06250039062744142
+   ],
+   "context": {
+    "price": 149999,
+    "originalPrice": 159999,
+    "marketMedian": 146499,
+    "marketMax": 149999,
     "comparators": 4
    },
    "historyCount": 1,
@@ -610,46 +587,23 @@
    "title": "Samsung Galaxy S25 Ultra",
    "platform": "mega",
    "category": "smartphone",
-   "group": "Samsung Galaxy S25 Ultra 12GB 512GB",
+   "group": "Samsung Galaxy S25 Ultra (12GB-256GB)",
    "groupSize": 5,
    "features": [
-    -0.31508204764410275,
-    -0.3677259197300283,
-    -0.41224617402817115,
+    -0.22462468161094823,
+    -0.2736967172822275,
+    -0.32178880799501647,
     0.09259293552939085
    ],
    "context": {
     "price": 244999,
     "originalPrice": 269999,
-    "marketMedian": 369999,
-    "marketMax": 389999,
+    "marketMedian": 337999,
+    "marketMax": 354999,
     "comparators": 4
    },
    "historyCount": 2,
    "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6a7b36d19de462208cfb95a3",
-   "title": "Samsung Galaxy S25 Ultra 12GB 512GB",
-   "platform": "shophive",
-   "category": "smartphone",
-   "group": "Samsung Galaxy S25 Ultra 12GB 512GB",
-   "groupSize": 5,
-   "features": [
-    0.35357508832510237,
-    0.17798357868592068,
-    0.18849494777520895,
-    0.15217424385705186
-   ],
-   "context": {
-    "price": 389999,
-    "originalPrice": 459999,
-    "marketMedian": 322999,
-    "marketMax": 384999,
-    "comparators": 4
-   },
-   "historyCount": 3,
-   "ruleClassification": "likely_fake"
   },
   {
    "id": "6a825cd27fed3db412e980ac",
@@ -1066,69 +1020,92 @@
    "ruleClassification": "unverified_discount"
   },
   {
-   "id": "6a7b36d19de462208cfb959f",
-   "title": "Samsung Galaxy A37 5G",
-   "platform": "priceoye",
+   "id": "6a78a2af9c96f297ede77377",
+   "title": "Samsung Galaxy S26 Ultra 12GB RAM 256GB Storage NON PTA",
+   "platform": "mega",
    "category": "smartphone",
-   "group": "Samsung Galaxy A37 8GB RAM 256GB Storage 5G PTA APPROVED",
+   "group": "Samsung Galaxy S26 Ultra 12GB RAM 256GB Storage NON PTA",
    "groupSize": 4,
    "features": [
-    0.01342311042283544,
-    0,
-    -0.10686390758803635,
-    0.11333408889392596
+    -0.25572046890673134,
+    -0.39882165442856476,
+    -0.3603457851991899,
+    0.09933807727840159
    ],
    "context": {
-    "price": 132999,
-    "originalPrice": 149999,
-    "marketMedian": 147999,
-    "marketMax": 149999,
+    "price": 271999,
+    "originalPrice": 301999,
+    "marketMedian": 389999,
+    "marketMax": 449999,
     "comparators": 3
    },
    "historyCount": 2,
    "ruleClassification": "unverified_discount"
   },
   {
-   "id": "6a825b247fed3db412e98012",
-   "title": "Samsung Galaxy A37 5G 8GB 256GB",
+   "id": "6a825b247fed3db412e98013",
+   "title": "Samsung Galaxy S26 Ultra 12GB 256GB",
    "platform": "shophive",
    "category": "smartphone",
-   "group": "Samsung Galaxy A37 8GB RAM 256GB Storage 5G PTA APPROVED",
+   "group": "Samsung Galaxy S26 Ultra 12GB RAM 256GB Storage NON PTA",
    "groupSize": 4,
    "features": [
-    0.01342311042283544,
+    0.14310118552183337,
     0,
-    -0.020478671139462383,
-    0.03333355555703705
+    -0.012903438136027163,
+    0.14444476543281207
    ],
    "context": {
-    "price": 144999,
-    "originalPrice": 149999,
-    "marketMedian": 147999,
-    "marketMax": 149999,
+    "price": 384999,
+    "originalPrice": 449999,
+    "marketMedian": 389999,
+    "marketMax": 449999,
     "comparators": 3
    },
-   "historyCount": 1,
+   "historyCount": 2,
    "ruleClassification": "unverified_discount"
   },
   {
-   "id": "6ab87b157b2d0415f0561914",
-   "title": "Samsung Galaxy A37 Dark Green (8GB RAM + 256GB Storage)",
-   "platform": "w11stop",
+   "id": "6a7a374bdc7ea9aa971ccccc",
+   "title": "Samsung Galaxy S26 Ultra",
+   "platform": "priceoye",
    "category": "smartphone",
-   "group": "Samsung Galaxy A37 8GB RAM 256GB Storage 5G PTA APPROVED",
+   "group": "Samsung Galaxy S26 Ultra 12GB RAM 256GB Storage NON PTA",
    "groupSize": 4,
    "features": [
-    0.09844071936922667,
-    0.07796204822976427,
-    0.03390178156229783,
-    0.06250039062744142
+    0.15600462365786058,
+    0,
+    0.012903438136027083,
+    0.13333362963028808
    ],
    "context": {
-    "price": 149999,
-    "originalPrice": 159999,
-    "marketMedian": 144999,
-    "marketMax": 147999,
+    "price": 389999,
+    "originalPrice": 449999,
+    "marketMedian": 384999,
+    "marketMax": 449999,
+    "comparators": 3
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a824c967fed3db412e97fd8",
+   "title": "Samsung Galaxy S26 Ultra (12GB RAM + 256GB Storage)",
+   "platform": "w11stop",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S26 Ultra 12GB RAM 256GB Storage NON PTA",
+   "groupSize": 4,
+   "features": [
+    0.17798357868592068,
+    0.1650801405498936,
+    0.15600462365786058,
+    0.02173917769386455
+   ],
+   "context": {
+    "price": 449999,
+    "originalPrice": 459999,
+    "marketMedian": 384999,
+    "marketMax": 389999,
     "comparators": 3
    },
    "historyCount": 1,
@@ -2628,6 +2605,29 @@
    },
    "historyCount": 2,
    "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b36d19de462208cfb95a3",
+   "title": "Samsung Galaxy S25 Ultra 12GB 512GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S25 Ultra 12GB 512GB",
+   "groupSize": 2,
+   "features": [
+    0.17798357868592068,
+    0.17798357868592068,
+    0.012903438136027083,
+    0.15217424385705186
+   ],
+   "context": {
+    "price": 389999,
+    "originalPrice": 459999,
+    "marketMedian": 384999,
+    "marketMax": 384999,
+    "comparators": 1
+   },
+   "historyCount": 3,
+   "ruleClassification": "likely_fake"
   },
   {
    "id": "6a825cd17fed3db412e980a2",
@@ -5091,29 +5091,6 @@
    "ruleClassification": "unverified_discount"
   },
   {
-   "id": "6a7b3d549de462208cfb95c8",
-   "title": "Samsung Galaxy Tab S10 FE Plus (X620)",
-   "platform": "priceoye",
-   "category": "tablet",
-   "group": "Samsung Galaxy Tab S10 FE Plus 8GB RAM 128GB Storage Wifi",
-   "groupSize": 3,
-   "features": [
-    0.14197115858414386,
-    0.09237388939448775,
-    0.036609989327488025,
-    0.10000058823875435
-   ],
-   "context": {
-    "price": 152999,
-    "originalPrice": 169999,
-    "marketMedian": 147499,
-    "marketMax": 154999,
-    "comparators": 2
-   },
-   "historyCount": 2,
-   "ruleClassification": "unverified_discount"
-  },
-  {
    "id": "6a7b74ca9de462208cfb9666",
    "title": "Samsung Galaxy Tab S11 11\" 256GB Wifi",
    "platform": "shophive",
@@ -5177,6 +5154,29 @@
     "originalPrice": 124999,
     "marketMedian": 121999,
     "marketMax": 121999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b3d549de462208cfb95c8",
+   "title": "Samsung Galaxy Tab S10 FE Plus (X620)",
+   "platform": "priceoye",
+   "category": "tablet",
+   "group": "Samsung Galaxy Tab S10 FE Plus 8GB RAM 128GB Storage Wifi",
+   "groupSize": 2,
+   "features": [
+    0.09237388939448775,
+    0.09237388939448775,
+    -0.012987279862168024,
+    0.10000058823875435
+   ],
+   "context": {
+    "price": 152999,
+    "originalPrice": 169999,
+    "marketMedian": 154999,
+    "marketMax": 154999,
     "comparators": 1
    },
    "historyCount": 2,
@@ -5344,6 +5344,29 @@
    "ruleClassification": "unverified_discount"
   },
   {
+   "id": "6abaa6cccdd20c9c0815d5a8",
+   "title": "Lenovo ThinkPad E16 16\" Panther Lake Intel Core Ultra 7 355 Series 3 16GB RAM 512GB SSD Laptop 1 Year Warranty",
+   "platform": "shophive",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad E16 Gen 4 Intel Core Ultra 7 355 16GB RAM 512GB SSD Laptop - 1 Year Warranty",
+   "groupSize": 3,
+   "features": [
+    0.08489964985116095,
+    0.047628162432519834,
+    0.015075700285526097,
+    0.06744201730701699
+   ],
+   "context": {
+    "price": 400999,
+    "originalPrice": 429999,
+    "marketMedian": 394999,
+    "marketMax": 409999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
    "id": "6a7b74bd9de462208cfb9601",
    "title": "Lenovo ThinkPad E16 Gen 4 Intel Core Ultra 7 355 16GB RAM 512GB SSD Laptop - 1 Year Warranty",
    "platform": "shophive",
@@ -5351,16 +5374,16 @@
    "group": "Lenovo ThinkPad E16 Gen 4 Intel Core Ultra 7 355 16GB RAM 512GB SSD Laptop - 1 Year Warranty",
    "groupSize": 3,
    "features": [
-    -0.2659362398864048,
-    -0.2748094283136613,
-    -0.31356440231892446,
+    0.09635747464650898,
+    0.0698239495656349,
+    0.04872931221398933,
     0.04651173607380482
    ],
    "context": {
     "price": 409999,
     "originalPrice": 429999,
-    "marketMedian": 560999,
-    "marketMax": 565999,
+    "marketMedian": 390499,
+    "marketMax": 400999,
     "comparators": 2
    },
    "historyCount": 1,
@@ -5384,52 +5407,6 @@
     "originalPrice": 314999,
     "marketMedian": 281099.5,
     "marketMax": 291200,
-    "comparators": 2
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6abaa6cbcdd20c9c0815d573",
-   "title": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 7 256V (16GB RAM - 512GB SSD)",
-   "platform": "priceoye",
-   "category": "laptop",
-   "group": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 7 256V (16GB RAM - 512GB SSD)",
-   "groupSize": 3,
-   "features": [
-    0.16322832522037417,
-    0.1589820223182135,
-    -0.00711748803234624,
-    0.15662688343827336
-   ],
-   "context": {
-    "price": 349999,
-    "originalPrice": 414999,
-    "marketMedian": 352499,
-    "marketMax": 353999,
-    "comparators": 2
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6abaa6cbcdd20c9c0815d57c",
-   "title": "Lenovo ThinkPad E14 Gen 7 Intel Core Ultra 7 256V (16GB RAM - 512GB SSD)",
-   "platform": "priceoye",
-   "category": "laptop",
-   "group": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 7 256V (16GB RAM - 512GB SSD)",
-   "groupSize": 3,
-   "features": [
-    0.1808944769186709,
-    0.1794689558632402,
-    0.009936234867499711,
-    0.15714323129340785
-   ],
-   "context": {
-    "price": 353999,
-    "originalPrice": 419999,
-    "marketMedian": 350499,
-    "marketMax": 350999,
     "comparators": 2
    },
    "historyCount": 1,
@@ -5689,6 +5666,52 @@
    "ruleClassification": "unverified_discount"
   },
   {
+   "id": "6abaa6cbcdd20c9c0815d573",
+   "title": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 7 256V (16GB RAM - 512GB SSD)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 7 256V (16GB RAM - 512GB SSD)",
+   "groupSize": 2,
+   "features": [
+    0.16749273613028245,
+    0.16749273613028245,
+    -0.002853077122437827,
+    0.15662688343827336
+   ],
+   "context": {
+    "price": 349999,
+    "originalPrice": 414999,
+    "marketMedian": 350999,
+    "marketMax": 350999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6cbcdd20c9c0815d57c",
+   "title": "Lenovo ThinkPad E14 Gen 7 Intel Core Ultra 7 256V (16GB RAM - 512GB SSD)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad E14 Gen 7 Intel Core Ultra 7 256V (16GB RAM - 512GB SSD)",
+   "groupSize": 2,
+   "features": [
+    0.18518327345338942,
+    0.18518327345338942,
+    0.014225031402218265,
+    0.15714323129340785
+   ],
+   "context": {
+    "price": 353999,
+    "originalPrice": 419999,
+    "marketMedian": 348999,
+    "marketMax": 348999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
    "id": "6abaa6cbcdd20c9c0815d57d",
    "title": "Lenovo ThinkPad E14 G5 13th Gen Core i7 1355U (8GB-512GB)",
    "platform": "priceoye",
@@ -5752,29 +5775,6 @@
     "originalPrice": 295000,
     "marketMedian": 243999,
     "marketMax": 243999,
-    "comparators": 1
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6abaa6cccdd20c9c0815d5a8",
-   "title": "Lenovo ThinkPad E16 16\" Panther Lake Intel Core Ultra 7 355 Series 3 16GB RAM 512GB SSD Laptop 1 Year Warranty",
-   "platform": "shophive",
-   "category": "laptop",
-   "group": "Lenovo ThinkPad E16 16\" Panther Lake Intel Core Ultra 7 355 Series 3 16GB RAM 512GB SSD Laptop 1 Year Warranty",
-   "groupSize": 2,
-   "features": [
-    0.0698239495656349,
-    0.0698239495656349,
-    0,
-    0.06744201730701699
-   ],
-   "context": {
-    "price": 400999,
-    "originalPrice": 429999,
-    "marketMedian": 400999,
-    "marketMax": 400999,
     "comparators": 1
    },
    "historyCount": 1,

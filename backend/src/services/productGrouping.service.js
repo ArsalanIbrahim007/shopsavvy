@@ -1,5 +1,5 @@
 import { normalizeTitle, extractStorage } from "./normalizeTitle.service.js";
-import { isSimilarProduct } from "./similarity.service.js";
+import { isSimilarProduct, attributeConflict } from "./similarity.service.js";
 import { calculateDealScores } from "../ranking/dealScore.js";
 
 /**
@@ -79,7 +79,22 @@ export function groupListingsByProduct(listings = [], { matchStrategy = ruleMatc
 
       if (capacityConflict) continue;
 
-      if (matchStrategy(rawTitle, group, listing, listingStorage)) {
+      /*
+       * The match strategy only compares against the group's representative
+       * title, so a vague member can bridge listings that contradict each
+       * other: a bare "Samsung Galaxy S25 Ultra" (PTA unstated) matched both
+       * a NON PTA and a PTA Approved unit and put them in one comparison.
+       * A listing may only join a group it has no hard conflict with any
+       * member of. Checked after the strategy agrees, so it only runs on
+       * candidate matches. Unstated storage is left to the strategy, as the
+       * rule path's price-proximity tiebreak already handles it.
+       */
+      if (
+        matchStrategy(rawTitle, group, listing, listingStorage) &&
+        !group.offers.some((member) =>
+          attributeConflict(rawTitle, member.title || member.normalizedTitle || "", { ignoreUnstatedStorage: true })
+        )
+      ) {
         matchedGroup = group;
         break;
       }

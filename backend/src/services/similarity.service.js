@@ -40,6 +40,18 @@ export function extractVariants(text = "") {
   return new Set(tokenize(modelTokens(text)).filter((t) => VARIANT_TOKENS.has(t)));
 }
 
+/**
+ * Two model codes name the same model when equal or when one only adds a
+ * trailing letter or two -- a regional SKU suffix (Galaxy Watch 7 "L310" vs
+ * "L310F"). Differing digits are a different model ("L500" Bluetooth vs
+ * "L505" LTE).
+ */
+function sameModelCode(a, b) {
+  if (a === b) return true;
+  const [short, long] = a.length < b.length ? [a, b] : [b, a];
+  return long.startsWith(short) && /^[a-z]{1,2}$/.test(long.slice(short.length));
+}
+
 export function sameSet(a, b) {
   if (a.size !== b.size) return false;
   for (const value of a) if (!b.has(value)) return false;
@@ -86,9 +98,18 @@ export function attributeConflict(textA, textB, { ignoreUnstatedStorage = false 
   const ptaB = extractPtaStatus(textB);
   if (ptaA !== "unknown" && ptaB !== "unknown" && ptaA !== ptaB) return true;
 
+  // Model codes conflict only when both titles state some and they share
+  // none. Requiring identical sets split a store that appends a SKU ("S24
+  // Ultra (SM-S928B)") from one that doesn't ("S24 Ultra") once short codes
+  // like "s24" count; the same one-sided extra is not evidence of a
+  // different product.
   const codesA = extractModelCodes(textA);
   const codesB = extractModelCodes(textB);
-  if (codesA.size > 0 && codesB.size > 0 && !sameSet(codesA, codesB)) return true;
+  if (
+    codesA.size > 0 &&
+    codesB.size > 0 &&
+    ![...codesA].some((a) => [...codesB].some((b) => sameModelCode(a, b)))
+  ) return true;
 
   // A specification both titles state must share a value: a 40mm and a 44mm
   // watch, or a 12th- and 13th-gen laptop, are different products. Disjoint

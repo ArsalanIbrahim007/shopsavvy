@@ -139,7 +139,8 @@ const GPU_PREFIX = new Set(["rtx", "gtx", "rx", "mx", "arc"]);
 const CPU_TIER_TOKEN = /^c?i[3579]$/;
 const CPU_TIER_PREFIX = new Set(["core", "ultra", "ryzen"]);
 
-function classifyTitleTokens(title) {
+function classifyTitleTokens(title, { minCodeLength = 3 } = {}) {
+  const codePattern = new RegExp(`^(?=.*[a-z])(?=.*\\d)[a-z0-9]{${minCodeLength},}$`);
   const tokens = normalizeTitle(title).split(" ").filter(Boolean);
   const specs = new Map();
   const codes = new Set();
@@ -168,8 +169,7 @@ function classifyTitleTokens(title) {
     } else if (GPU_PREFIX.has(token) && /^\d{3,4}$/.test(next ?? "")) {
       addSpec("gpu", `${token}${next}`);
       consumed.add(i + 1);
-    } else if (!consumed.has(i) && !/^\d+(gb|tb|mb)$/.test(token) &&
-               /^(?=.*[a-z])(?=.*\d)[a-z0-9]{4,}$/.test(token)) {
+    } else if (!consumed.has(i) && !/^\d+(gb|tb|mb)$/.test(token) && codePattern.test(token)) {
       // Capacities are handled separately and are not model codes either.
       codes.add(token);
     }
@@ -183,9 +183,14 @@ function classifyTitleTokens(title) {
  * and digits and are frequently the only token distinguishing two otherwise
  * identically described products, so they cannot be left to compete with every
  * other word in a similarity score. Specifications are excluded -- see above.
+ *
+ * Three characters is enough for a code (Samsung TV "Q7F", ThinkPad "E14",
+ * Galaxy "S24", Huawei "GT5"); four missed all of those. The trained
+ * classifier's feature keeps { minCodeLength: 4 }, the definition it was
+ * trained on -- see ml/features.js.
  */
-export function extractModelCodes(title = "") {
-  return classifyTitleTokens(title).codes;
+export function extractModelCodes(title = "", opts) {
+  return classifyTitleTokens(title, opts).codes;
 }
 
 /**
