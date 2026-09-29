@@ -1,0 +1,6037 @@
+{
+ "builtAt": "2026-09-29T04:58:52.597Z",
+ "featureNames": [
+  "logOriginalVsMedian",
+  "logOriginalVsMax",
+  "logPriceVsMedian",
+  "claimedDiscount"
+ ],
+ "rows": [
+  {
+   "id": "6a7a374bdc7ea9aa971cccc9",
+   "title": "Samsung Galaxy A17",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A17 8GB RAM 256GB Storage PTA Approved",
+   "groupSize": 11,
+   "features": [
+    -0.18119305093914165,
+    -0.3147144435136639,
+    -0.2865550886889921,
+    0.1000013698817792
+   ],
+   "context": {
+    "price": 65699,
+    "originalPrice": 72999,
+    "marketMedian": 87500,
+    "marketMax": 99999,
+    "comparators": 10
+   },
+   "historyCount": 4,
+   "ruleClassification": "suspicious"
+  },
+  {
+   "id": "6a825b247fed3db412e9800d",
+   "title": "Samsung Galaxy A17 8GB 256GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A17 8GB RAM 256GB Storage PTA Approved",
+   "groupSize": 11,
+   "features": [
+    0.0822275718657805,
+    -0.05129382070874167,
+    -0.14091861105854037,
+    0.20000210528531878
+   ],
+   "context": {
+    "price": 75999,
+    "originalPrice": 94999,
+    "marketMedian": 87500,
+    "marketMax": 99999,
+    "comparators": 10
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6ab87b157b2d0415f0561913",
+   "title": "Samsung Galaxy A17 Black (8GB RAM + 256GB Storage)",
+   "platform": "w11stop",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A17 8GB RAM 256GB Storage PTA Approved",
+   "groupSize": 11,
+   "features": [
+    0.17009506740415312,
+    -0.0253078079342895,
+    0.061881482763920484,
+    0.10256410256410256
+   ],
+   "context": {
+    "price": 87500,
+    "originalPrice": 97500,
+    "marketMedian": 82249.5,
+    "marketMax": 99999,
+    "comparators": 10
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a824c967fed3db412e97fd2",
+   "title": "Samsung Galaxy A17 (8GB RAM + 256GB Storage)",
+   "platform": "w11stop",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A17 8GB RAM 256GB Storage PTA Approved",
+   "groupSize": 11,
+   "features": [
+    0.17009506740415312,
+    -0.0253078079342895,
+    0.061881482763920484,
+    0.10256410256410256
+   ],
+   "context": {
+    "price": 87500,
+    "originalPrice": 97500,
+    "marketMedian": 82249.5,
+    "marketMax": 99999,
+    "comparators": 10
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6ab87b157b2d0415f0561901",
+   "title": "Samsung Galaxy A17 5G",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A17 8GB RAM 256GB Storage PTA Approved",
+   "groupSize": 11,
+   "features": [
+    0.1954028753384427,
+    0,
+    0.16081107859836827,
+    0.034000340003400034
+   ],
+   "context": {
+    "price": 96599,
+    "originalPrice": 99999,
+    "marketMedian": 82249.5,
+    "marketMax": 99999,
+    "comparators": 10
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b74ca9de462208cfb9612",
+   "title": "Samsung Galaxy A57 5G",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A57 8GB RAM 256GB Storage 5G PTA APPROVED",
+   "groupSize": 8,
+   "features": [
+    0.006006060132861882,
+    0,
+    -0.1147762472574814,
+    0.11377313636608602
+   ],
+   "context": {
+    "price": 147999,
+    "originalPrice": 166999,
+    "marketMedian": 165999,
+    "marketMax": 166999,
+    "comparators": 7
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825b247fed3db412e98007",
+   "title": "Samsung Galaxy A57 5G 8GB 256GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A57 8GB RAM 256GB Storage 5G PTA APPROVED",
+   "groupSize": 8,
+   "features": [
+    0.006006060132861882,
+    0,
+    -0.07503565535595998,
+    0.0778447775136378
+   ],
+   "context": {
+    "price": 153999,
+    "originalPrice": 166999,
+    "marketMedian": 165999,
+    "marketMax": 166999,
+    "comparators": 7
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a824c967fed3db412e97fd3",
+   "title": "Samsung Galaxy A37 (8GB RAM + 256GB Storage)",
+   "platform": "w11stop",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A57 8GB RAM 256GB Storage 5G PTA APPROVED",
+   "groupSize": 8,
+   "features": [
+    -0.03681419902771715,
+    -0.042820259160579105,
+    -0.10135313683464603,
+    0.06250039062744142
+   ],
+   "context": {
+    "price": 149999,
+    "originalPrice": 159999,
+    "marketMedian": 165999,
+    "marketMax": 166999,
+    "comparators": 7
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6ab87b157b2d0415f0561915",
+   "title": "Samsung Galaxy A57 5G Dark Blue (8GB RAM + 256GB Storage)",
+   "platform": "w11stop",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A57 8GB RAM 256GB Storage 5G PTA APPROVED",
+   "groupSize": 8,
+   "features": [
+    0.14483182341272338,
+    0.06379010792390151,
+    0.08104171548882197,
+    0.06179809998932578
+   ],
+   "context": {
+    "price": 166999,
+    "originalPrice": 177999,
+    "marketMedian": 153999,
+    "marketMax": 166999,
+    "comparators": 7
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a824c967fed3db412e97fd5",
+   "title": "Samsung Galaxy A57 5G (8GB RAM + 256GB Storage)",
+   "platform": "w11stop",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A57 8GB RAM 256GB Storage 5G PTA APPROVED",
+   "groupSize": 8,
+   "features": [
+    0.14483182341272338,
+    0.06379010792390151,
+    0.08104171548882197,
+    0.06179809998932578
+   ],
+   "context": {
+    "price": 166999,
+    "originalPrice": 177999,
+    "marketMedian": 153999,
+    "marketMax": 166999,
+    "comparators": 7
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a6b01724d3ce0c30fbd2743",
+   "title": "Apple iPhone 17 Pro Max",
+   "platform": "mega",
+   "category": "smartphone",
+   "group": "Apple iPhone 17 Pro Max 512GB Storage PTA Approved",
+   "groupSize": 7,
+   "features": [
+    -0.2578296440625733,
+    -0.3143819135364311,
+    -0.28889553788093086,
+    0.030588307266605334
+   ],
+   "context": {
+    "price": 411999,
+    "originalPrice": 424999,
+    "marketMedian": 549999,
+    "marketMax": 581999,
+    "comparators": 6
+   },
+   "historyCount": 8,
+   "ruleClassification": "possibly_genuine"
+  },
+  {
+   "id": "6a7a330ddc7ea9aa971cccb3",
+   "title": "Apple Iphone 17 Pro Max",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Apple iPhone 17 Pro Max 512GB Storage PTA Approved",
+   "groupSize": 7,
+   "features": [
+    0.1201701905109396,
+    0.06179808100828322,
+    -0.007312660215071534,
+    0.11969148764335326
+   ],
+   "context": {
+    "price": 544999,
+    "originalPrice": 619100,
+    "marketMedian": 548999,
+    "marketMax": 581999,
+    "comparators": 6
+   },
+   "historyCount": 4,
+   "ruleClassification": "likely_fake"
+  },
+  {
+   "id": "6a789fd49c96f297ede77358",
+   "title": "Apple iPhone 17 Pro Max 512GB PTA Approved",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Apple iPhone 17 Pro Max 512GB Storage PTA Approved",
+   "groupSize": 7,
+   "features": [
+    0.11941589599455153,
+    0.05189457509660728,
+    0.020018903324050565,
+    0.09461679382837493
+   ],
+   "context": {
+    "price": 554999,
+    "originalPrice": 612999,
+    "marketMedian": 543999,
+    "marketMax": 581999,
+    "comparators": 6
+   },
+   "historyCount": 9,
+   "ruleClassification": "suspicious"
+  },
+  {
+   "id": "6abb408a77eed84b8d2a1d2e",
+   "title": "Apple iPhone 17 Pro Max PTA Approved With Official Warranty",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Apple iPhone 17 Pro Max 512GB Storage PTA Approved",
+   "groupSize": 7,
+   "features": [
+    0.3197915748982606,
+    0.2522702540003163,
+    0.020018903324050565,
+    0.25901335113484647
+   ],
+   "context": {
+    "price": 554999,
+    "originalPrice": 749000,
+    "marketMedian": 543999,
+    "marketMax": 581999,
+    "comparators": 6
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a6b01724d3ce0c30fbd2753",
+   "title": "Apple iPhone 17 Pro",
+   "platform": "mega",
+   "category": "smartphone",
+   "group": "Apple iPhone 17 Pro 1TB Storage PTA Approved",
+   "groupSize": 5,
+   "features": [
+    -0.38057535059319547,
+    -0.49164377529918485,
+    -0.4451140383978639,
+    0.06250015625039063
+   ],
+   "context": {
+    "price": 374999,
+    "originalPrice": 399999,
+    "marketMedian": 585249,
+    "marketMax": 653999,
+    "comparators": 4
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a6b01724d3ce0c30fbd272c",
+   "title": "Apple Iphone 17 Pro",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Apple iPhone 17 Pro 1TB Storage PTA Approved",
+   "groupSize": 5,
+   "features": [
+    -0.1753896246528535,
+    -0.28645804935884306,
+    -0.2966936654625854,
+    0.1142353899409489
+   ],
+   "context": {
+    "price": 434999,
+    "originalPrice": 491100,
+    "marketMedian": 585249,
+    "marketMax": 653999,
+    "comparators": 4
+   },
+   "historyCount": 9,
+   "ruleClassification": "genuine_discount"
+  },
+  {
+   "id": "6abb408a77eed84b8d2a1d32",
+   "title": "Apple iPhone 17 Pro PTA Approved With Official Warranty",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Apple iPhone 17 Pro 1TB Storage PTA Approved",
+   "groupSize": 5,
+   "features": [
+    0.2686180037475655,
+    0.08215914763131911,
+    -0.04282007779109472,
+    0.2676070422535211
+   ],
+   "context": {
+    "price": 519999,
+    "originalPrice": 710000,
+    "marketMedian": 542749,
+    "marketMax": 653999,
+    "comparators": 4
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6ab8816e7b2d0415f0561990",
+   "title": "Apple iPhone 16",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Apple iPhone 16 128GB Single Sim PTA Approved",
+   "groupSize": 5,
+   "features": [
+    0.0925635205461582,
+    0.04445479287845557,
+    0.02356754346432211,
+    0.0666695652173913
+   ],
+   "context": {
+    "price": 321999,
+    "originalPrice": 345000,
+    "marketMedian": 314499,
+    "marketMax": 329999,
+    "comparators": 4
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7a38ccdc7ea9aa971ccce1",
+   "title": "Apple iPhone 16 128GB PTA Approved",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Apple iPhone 16 128GB Single Sim PTA Approved",
+   "groupSize": 5,
+   "features": [
+    0.05997203434184718,
+    0.015037922593079974,
+    0.014162358384752365,
+    0.04477625306344198
+   ],
+   "context": {
+    "price": 319999,
+    "originalPrice": 334999,
+    "marketMedian": 315499,
+    "marketMax": 329999,
+    "comparators": 4
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a78a2af9c96f297ede77377",
+   "title": "Samsung Galaxy S26 Ultra 12GB RAM 256GB Storage NON PTA",
+   "platform": "mega",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S26 Ultra 12GB RAM 256GB Storage NON PTA",
+   "groupSize": 5,
+   "features": [
+    -0.2492895620338013,
+    -0.39882165442856476,
+    -0.3539148783262597,
+    0.09933807727840159
+   ],
+   "context": {
+    "price": 271999,
+    "originalPrice": 301999,
+    "marketMedian": 387499,
+    "marketMax": 449999,
+    "comparators": 4
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825b247fed3db412e98013",
+   "title": "Samsung Galaxy S26 Ultra 12GB 256GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S26 Ultra 12GB RAM 256GB Storage NON PTA",
+   "groupSize": 5,
+   "features": [
+    0.2189860851964097,
+    0,
+    0.06298146153854908,
+    0.14444476543281207
+   ],
+   "context": {
+    "price": 384999,
+    "originalPrice": 449999,
+    "marketMedian": 361499,
+    "marketMax": 449999,
+    "comparators": 4
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7a374bdc7ea9aa971ccccc",
+   "title": "Samsung Galaxy S26 Ultra",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S26 Ultra 12GB RAM 256GB Storage NON PTA",
+   "groupSize": 5,
+   "features": [
+    0.22592575757059516,
+    0,
+    0.08282457204876172,
+    0.13333362963028808
+   ],
+   "context": {
+    "price": 389999,
+    "originalPrice": 449999,
+    "marketMedian": 358999,
+    "marketMax": 449999,
+    "comparators": 4
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a824c967fed3db412e97fd8",
+   "title": "Samsung Galaxy S26 Ultra (12GB RAM + 256GB Storage)",
+   "platform": "w11stop",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S26 Ultra 12GB RAM 256GB Storage NON PTA",
+   "groupSize": 5,
+   "features": [
+    0.2479047125986552,
+    0.1650801405498936,
+    0.22592575757059516,
+    0.02173917769386455
+   ],
+   "context": {
+    "price": 449999,
+    "originalPrice": 459999,
+    "marketMedian": 358999,
+    "marketMax": 389999,
+    "comparators": 4
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7a374bdc7ea9aa971ccccd",
+   "title": "Samsung Galaxy S26 Plus",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S26 Plus 12GB RAM 512GB Storage PTA Approved",
+   "groupSize": 5,
+   "features": [
+    -0.1448312980908905,
+    -0.1448312980908905,
+    -0.3111777210953637,
+    0.15324715129130206
+   ],
+   "context": {
+    "price": 325999,
+    "originalPrice": 384999,
+    "marketMedian": 444999,
+    "marketMax": 444999,
+    "comparators": 4
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6ab87b157b2d0415f0561916",
+   "title": "Samsung Galaxy S26 Plus Black (12GB RAM + 512GB Storage)",
+   "platform": "w11stop",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S26 Plus 12GB RAM 512GB Storage PTA Approved",
+   "groupSize": 5,
+   "features": [
+    0.02666830635208911,
+    0.024418581556821334,
+    0.002249724795267948,
+    0.024122859918552453
+   ],
+   "context": {
+    "price": 444999,
+    "originalPrice": 455999,
+    "marketMedian": 443999,
+    "marketMax": 444999,
+    "comparators": 4
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a824c967fed3db412e97fd7",
+   "title": "Samsung Galaxy S26 Plus (12GB RAM + 512GB Storage)",
+   "platform": "w11stop",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S26 Plus 12GB RAM 512GB Storage PTA Approved",
+   "groupSize": 5,
+   "features": [
+    0.02666830635208911,
+    0.024418581556821334,
+    0.002249724795267948,
+    0.024122859918552453
+   ],
+   "context": {
+    "price": 444999,
+    "originalPrice": 455999,
+    "marketMedian": 443999,
+    "marketMax": 444999,
+    "comparators": 4
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b7bec9de462208cfb96a4",
+   "title": "Samsung Galaxy S25 Ultra",
+   "platform": "mega",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S25 Ultra 12GB 512GB",
+   "groupSize": 5,
+   "features": [
+    -0.31508204764410275,
+    -0.3677259197300283,
+    -0.41224617402817115,
+    0.09259293552939085
+   ],
+   "context": {
+    "price": 244999,
+    "originalPrice": 269999,
+    "marketMedian": 369999,
+    "marketMax": 389999,
+    "comparators": 4
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b36d19de462208cfb95a3",
+   "title": "Samsung Galaxy S25 Ultra 12GB 512GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S25 Ultra 12GB 512GB",
+   "groupSize": 5,
+   "features": [
+    0.35357508832510237,
+    0.17798357868592068,
+    0.18849494777520895,
+    0.15217424385705186
+   ],
+   "context": {
+    "price": 389999,
+    "originalPrice": 459999,
+    "marketMedian": 322999,
+    "marketMax": 384999,
+    "comparators": 4
+   },
+   "historyCount": 3,
+   "ruleClassification": "likely_fake"
+  },
+  {
+   "id": "6a825cd27fed3db412e980ac",
+   "title": "Vivo Y05",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Vivo Y05 4GB 128GB",
+   "groupSize": 5,
+   "features": [
+    0.0033389755889824835,
+    -0.06453991005636044,
+    -0.11444683791076675,
+    0.11111358030178449
+   ],
+   "context": {
+    "price": 39999,
+    "originalPrice": 44999,
+    "marketMedian": 44849,
+    "marketMax": 47999,
+    "comparators": 4
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abacee2cdd20c9c0815d75d",
+   "title": "Vivo Y05 Dual Sim With Official Warranty",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Vivo Y05 4GB 128GB",
+   "groupSize": 5,
+   "features": [
+    -0.04422192249503084,
+    -0.13351055907417234,
+    -0.046629580483561646,
+    0.0024047619047619048
+   ],
+   "context": {
+    "price": 41899,
+    "originalPrice": 42000,
+    "marketMedian": 43899,
+    "marketMax": 47999,
+    "comparators": 4
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd27fed3db412e980b9",
+   "title": "Vivo Y05 4GB 128GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Vivo Y05 4GB 128GB",
+   "groupSize": 5,
+   "features": [
+    0.21947863471246748,
+    0.06480130591247081,
+    0.15885278738105602,
+    0.05882468283691837
+   ],
+   "context": {
+    "price": 47999,
+    "originalPrice": 50999,
+    "marketMedian": 40949,
+    "marketMax": 47799,
+    "comparators": 4
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd27fed3db412e980c1",
+   "title": "Vivo V70 FE 8GB 256GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Vivo V70 FE 8GB 256GB",
+   "groupSize": 5,
+   "features": [
+    0.010050416662232066,
+    -0.09894070148383698,
+    -0.022473039508288686,
+    0.03200025600204802
+   ],
+   "context": {
+    "price": 120999,
+    "originalPrice": 124999,
+    "marketMedian": 123749,
+    "marketMax": 137999,
+    "comparators": 4
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abacee2cdd20c9c0815d75e",
+   "title": "Vivo V70 FE Dual Sim with Official Warranty",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Vivo V70 FE 8GB 256GB",
+   "groupSize": 5,
+   "features": [
+    0.26299758997575956,
+    0.14792737647968895,
+    -0.004073358571911442,
+    0.23438125
+   ],
+   "context": {
+    "price": 122499,
+    "originalPrice": 160000,
+    "marketMedian": 122999,
+    "marketMax": 137999,
+    "comparators": 4
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd27fed3db412e980af",
+   "title": "Vivo V70 FE",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Vivo V70 FE 8GB 256GB",
+   "groupSize": 5,
+   "features": [
+    0.24145711690892532,
+    0.21511292801523063,
+    0.1252848903775317,
+    0.10967812695565778
+   ],
+   "context": {
+    "price": 137999,
+    "originalPrice": 154999,
+    "marketMedian": 121749,
+    "marketMax": 124999,
+    "comparators": 4
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd27fed3db412e980ba",
+   "title": "Vivo Y31D 8GB 128GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Vivo Y31D 8GB 128GB",
+   "groupSize": 5,
+   "features": [
+    0.1080428570546118,
+    0.05701738735827245,
+    -0.020339960052208034,
+    0.1204833793178231
+   ],
+   "context": {
+    "price": 72999,
+    "originalPrice": 82999,
+    "marketMedian": 74499,
+    "marketMax": 78399,
+    "comparators": 4
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abacee2cdd20c9c0815d75f",
+   "title": "Vivo Y31d Dual Sim With Official Warranty",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Vivo Y31D 8GB 128GB",
+   "groupSize": 5,
+   "features": [
+    0.0662630842651647,
+    -0.005102345483382646,
+    0.04027443988060128,
+    0.025653846153846156
+   ],
+   "context": {
+    "price": 75999,
+    "originalPrice": 78000,
+    "marketMedian": 72999,
+    "marketMax": 78399,
+    "comparators": 4
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6ab87b1e7b2d0415f0561986",
+   "title": "Huawei GT6 46mm Watch with Black Stainless Steel Strap",
+   "platform": "mega",
+   "category": "smartphone",
+   "group": "Huawei GT6 46mm Watch with Black Stainless Steel Strap",
+   "groupSize": 5,
+   "features": [
+    0.18233973877742773,
+    0.18233973877742773,
+    0.1670568819129103,
+    0.015166666666666667
+   ],
+   "context": {
+    "price": 64999,
+    "originalPrice": 66000,
+    "marketMedian": 54999,
+    "marketMax": 54999,
+    "comparators": 4
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abb408a77eed84b8d2a1d39",
+   "title": "Apple iPhone 18 Pro 256GB PTA Approved",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Apple iPhone 18 Pro -256GB",
+   "groupSize": 5,
+   "features": [
+    0.3215844861967994,
+    0.2793832696370859,
+    0.07312152433291308,
+    0.22000125
+   ],
+   "context": {
+    "price": 623999,
+    "originalPrice": 800000,
+    "marketMedian": 579999.5,
+    "marketMax": 605000,
+    "comparators": 4
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b5ec59de462208cfb95e8",
+   "title": "Apple iPhone 17 256GB PTA Approved",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Apple iPhone 17 256GB Storage PTA Approved",
+   "groupSize": 4,
+   "features": [
+    0.11684393805101868,
+    0.0754586076891434,
+    0.09402920244780076,
+    0.02255644750989351
+   ],
+   "context": {
+    "price": 389999,
+    "originalPrice": 398999,
+    "marketMedian": 354999,
+    "marketMax": 369999,
+    "comparators": 3
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a6b01724d3ce0c30fbd272e",
+   "title": "Apple Iphone 17 Air",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Apple iPhone 17 Air 256GB PTA Approved",
+   "groupSize": 4,
+   "features": [
+    0.02720691432344326,
+    0.0035090667323269707,
+    -0.07984308683257772,
+    0.10151925320886815
+   ],
+   "context": {
+    "price": 384999,
+    "originalPrice": 428500,
+    "marketMedian": 416999,
+    "marketMax": 426999,
+    "comparators": 3
+   },
+   "historyCount": 9,
+   "ruleClassification": "genuine_discount"
+  },
+  {
+   "id": "6a7b5ec59de462208cfb95e9",
+   "title": "Apple iPhone 17 Air 256GB PTA Approved",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Apple iPhone 17 Air 256GB PTA Approved",
+   "groupSize": 4,
+   "features": [
+    0.08394003308917736,
+    0.00350673300731686,
+    0.05673545249074427,
+    0.026837868933183042
+   ],
+   "context": {
+    "price": 416999,
+    "originalPrice": 428499,
+    "marketMedian": 393999,
+    "marketMax": 426999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abb408a77eed84b8d2a1d3c",
+   "title": "Apple iPhone 17 Air PTA Approved With Official Warranty",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Apple iPhone 17 Air 256GB PTA Approved",
+   "groupSize": 4,
+   "features": [
+    0.6829455484599906,
+    0.6262100959692461,
+    0.08043330008186063,
+    0.4525653846153846
+   ],
+   "context": {
+    "price": 426999,
+    "originalPrice": 780000,
+    "marketMedian": 393999,
+    "marketMax": 416999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a789fd49c96f297ede77353",
+   "title": "Apple iPhone 17 Pro 256GB PTA Approved",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Apple iPhone 17 Pro 256GB Storage PTA Approved",
+   "groupSize": 4,
+   "features": [
+    0.11221866365258934,
+    0.0486874126027273,
+    0.03505171733284819,
+    0.07426470739499567
+   ],
+   "context": {
+    "price": 449999,
+    "originalPrice": 486099,
+    "marketMedian": 434499,
+    "marketMax": 462999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a6b01724d3ce0c30fbd274c",
+   "title": "Apple iPhone 17 Pro 256GB Storage PTA Approved",
+   "platform": "mega",
+   "category": "smartphone",
+   "group": "Apple iPhone 17 Pro 256GB Storage PTA Approved",
+   "groupSize": 4,
+   "features": [
+    0.10995318587286149,
+    0.07490146854001346,
+    0.063531251049862,
+    0.045360918269934575
+   ],
+   "context": {
+    "price": 462999,
+    "originalPrice": 484999,
+    "marketMedian": 434499,
+    "marketMax": 449999,
+    "comparators": 3
+   },
+   "historyCount": 8,
+   "ruleClassification": "genuine_discount"
+  },
+  {
+   "id": "6a78a2af9c96f297ede77368",
+   "title": "Samsung Galaxy Z Fold 5",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Samsung Galaxy Z Fold 7 12GB RAM 256GB Storage Non PTA",
+   "groupSize": 4,
+   "features": [
+    0.5960410470224207,
+    0.45340034733497614,
+    -0.10474713551367593,
+    0.5038059418659694
+   ],
+   "context": {
+    "price": 325999,
+    "originalPrice": 656999,
+    "marketMedian": 361999,
+    "marketMax": 417499,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b7bec9de462208cfb968a",
+   "title": "Samsung Galaxy Z Fold 7 12GB RAM 256GB Storage Non PTA",
+   "platform": "mega",
+   "category": "smartphone",
+   "group": "Samsung Galaxy Z Fold 7 12GB RAM 256GB Storage Non PTA",
+   "groupSize": 4,
+   "features": [
+    0.1749419215382772,
+    -0.030397551110772407,
+    0.06269877296160506,
+    0.10617310166197941
+   ],
+   "context": {
+    "price": 361999,
+    "originalPrice": 404999,
+    "marketMedian": 339999,
+    "marketMax": 417499,
+    "comparators": 3
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b7bec9de462208cfb968f",
+   "title": "Samsung Galaxy Z Fold 7",
+   "platform": "mega",
+   "category": "smartphone",
+   "group": "Samsung Galaxy Z Fold 7 12GB RAM 256GB Storage Non PTA",
+   "groupSize": 4,
+   "features": [
+    0.2913525447169262,
+    0.22865377175532106,
+    0.2053394726490496,
+    0.0824177635555243
+   ],
+   "context": {
+    "price": 417499,
+    "originalPrice": 454999,
+    "marketMedian": 339999,
+    "marketMax": 361999,
+    "comparators": 3
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b36d19de462208cfb959f",
+   "title": "Samsung Galaxy A37 5G",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A37 8GB RAM 256GB Storage 5G PTA APPROVED",
+   "groupSize": 4,
+   "features": [
+    0.01342311042283544,
+    0,
+    -0.10686390758803635,
+    0.11333408889392596
+   ],
+   "context": {
+    "price": 132999,
+    "originalPrice": 149999,
+    "marketMedian": 147999,
+    "marketMax": 149999,
+    "comparators": 3
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825b247fed3db412e98012",
+   "title": "Samsung Galaxy A37 5G 8GB 256GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A37 8GB RAM 256GB Storage 5G PTA APPROVED",
+   "groupSize": 4,
+   "features": [
+    0.01342311042283544,
+    0,
+    -0.020478671139462383,
+    0.03333355555703705
+   ],
+   "context": {
+    "price": 144999,
+    "originalPrice": 149999,
+    "marketMedian": 147999,
+    "marketMax": 149999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6ab87b157b2d0415f0561914",
+   "title": "Samsung Galaxy A37 Dark Green (8GB RAM + 256GB Storage)",
+   "platform": "w11stop",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A37 8GB RAM 256GB Storage 5G PTA APPROVED",
+   "groupSize": 4,
+   "features": [
+    0.09844071936922667,
+    0.07796204822976427,
+    0.03390178156229783,
+    0.06250039062744142
+   ],
+   "context": {
+    "price": 149999,
+    "originalPrice": 159999,
+    "marketMedian": 144999,
+    "marketMax": 147999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7a374bdc7ea9aa971cccc8",
+   "title": "Samsung Galaxy A07",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A07 4GB RAM 128GB Storage PTA Approved",
+   "groupSize": 4,
+   "features": [
+    -0.04546340769199204,
+    -0.1900476280180946,
+    -0.24278563237508993,
+    0.17907393195190585
+   ],
+   "context": {
+    "price": 35299,
+    "originalPrice": 42999,
+    "marketMedian": 44999,
+    "marketMax": 51999,
+    "comparators": 3
+   },
+   "historyCount": 4,
+   "ruleClassification": "suspicious"
+  },
+  {
+   "id": "6a825b247fed3db412e98010",
+   "title": "Samsung Galaxy A07 4GB 128GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A07 4GB RAM 128GB Storage PTA Approved",
+   "groupSize": 4,
+   "features": [
+    0.15415385449594188,
+    0.009569634169839164,
+    -0.04546340769199204,
+    0.180955827730052
+   ],
+   "context": {
+    "price": 42999,
+    "originalPrice": 52499,
+    "marketMedian": 44999,
+    "marketMax": 51999,
+    "comparators": 3
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a824c967fed3db412e97fce",
+   "title": "Samsung Galaxy A07 Green (4GB RAM + 128GB Storage)",
+   "platform": "w11stop",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A07 4GB RAM 128GB Storage PTA Approved",
+   "groupSize": 4,
+   "features": [
+    0.33315103580735533,
+    0.14310340778926067,
+    0.04546340769199203,
+    0.25000416673611225
+   ],
+   "context": {
+    "price": 44999,
+    "originalPrice": 59999,
+    "marketMedian": 42999,
+    "marketMax": 51999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825b247fed3db412e9800f",
+   "title": "Samsung Galaxy A07 4GB 64GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A07 4GB RAM 64GB Storage PTA Approved",
+   "groupSize": 4,
+   "features": [
+    0.13683592663282326,
+    0.023531051133080676,
+    -0.054836405905833614,
+    0.1744226609921161
+   ],
+   "context": {
+    "price": 35499,
+    "originalPrice": 42999,
+    "marketMedian": 37500,
+    "marketMax": 41999,
+    "comparators": 3
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a824c967fed3db412e97fcf",
+   "title": "Samsung Galaxy A07 Violet (4GB RAM + 64GB Storage)",
+   "platform": "w11stop",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A07 4GB RAM 64GB Storage PTA Approved",
+   "groupSize": 4,
+   "features": [
+    0.29122518397006397,
+    0.12308390256448803,
+    0.05483640590583367,
+    0.21052631578947367
+   ],
+   "context": {
+    "price": 37500,
+    "originalPrice": 47500,
+    "marketMedian": 35499,
+    "marketMax": 41999,
+    "comparators": 3
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b36d19de462208cfb95a2",
+   "title": "Samsung Galaxy S25 FE 8GB 512GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S25 FE 8GB RAM 512GB Storage PTA Approved",
+   "groupSize": 4,
+   "features": [
+    0.2942408145933685,
+    0.06062486691546533,
+    0.22524766299323443,
+    0.06666692810560042
+   ],
+   "context": {
+    "price": 237999,
+    "originalPrice": 254999,
+    "marketMedian": 189999,
+    "marketMax": 239999,
+    "comparators": 3
+   },
+   "historyCount": 3,
+   "ruleClassification": "suspicious"
+  },
+  {
+   "id": "6a825b247fed3db412e9800e",
+   "title": "Samsung Galaxy A07 6GB 128GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A07 6GB RAM 128GB Storage PTA Approved",
+   "groupSize": 4,
+   "features": [
+    0.17433738701677642,
+    0.008032300731595237,
+    -0.019250779592137387,
+    0.17600281604505671
+   ],
+   "context": {
+    "price": 51499,
+    "originalPrice": 62499,
+    "marketMedian": 52500,
+    "marketMax": 61999,
+    "comparators": 3
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a824c967fed3db412e97fd0",
+   "title": "Samsung Galaxy A07 Violet (6GB RAM + 128GB Storage)",
+   "platform": "w11stop",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A07 6GB RAM 128GB Storage PTA Approved",
+   "groupSize": 4,
+   "features": [
+    0.20157233638609207,
+    0.01601647050877348,
+    0.019250779592137425,
+    0.16666666666666666
+   ],
+   "context": {
+    "price": 52500,
+    "originalPrice": 63000,
+    "marketMedian": 51499,
+    "marketMax": 61999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825b247fed3db412e9800c",
+   "title": "Samsung Galaxy A17 6GB 128GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A17 6GB RAM 128GB Storage PTA Approved",
+   "groupSize": 4,
+   "features": [
+    0,
+    -0.028171273797683433,
+    -0.028987957047410293,
+    0.028571836740524863
+   ],
+   "context": {
+    "price": 67999,
+    "originalPrice": 69999,
+    "marketMedian": 69999,
+    "marketMax": 71999,
+    "comparators": 3
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a824c967fed3db412e97fd1",
+   "title": "Samsung Galaxy A17 Black (6GB RAM + 128GB Storage)",
+   "platform": "w11stop",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A17 6GB RAM 128GB Storage PTA Approved",
+   "groupSize": 4,
+   "features": [
+    0.16252113541013483,
+    0.10536190456504108,
+    0.028987957047410258,
+    0.12500156251953148
+   ],
+   "context": {
+    "price": 69999,
+    "originalPrice": 79999,
+    "marketMedian": 67999,
+    "marketMax": 71999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abacee2cdd20c9c0815d762",
+   "title": "Vivo Y500 Dual Sim With Official Warranty",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Vivo Y500 8GB 128GB",
+   "groupSize": 4,
+   "features": [
+    0.1278447352108151,
+    0.10537162683066627,
+    -0.09156828320222773,
+    0.19701
+   ],
+   "context": {
+    "price": 80299,
+    "originalPrice": 100000,
+    "marketMedian": 87999,
+    "marketMax": 89999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abacee2cdd20c9c0815d75a",
+   "title": "Vivo Y500 8GB 128GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Vivo Y500 8GB 128GB",
+   "groupSize": 4,
+   "features": [
+    0.21940301836304255,
+    0.10536162678066589,
+    0.09156828320222786,
+    0.12000120001200013
+   ],
+   "context": {
+    "price": 87999,
+    "originalPrice": 99999,
+    "marketMedian": 80299,
+    "marketMax": 89999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd27fed3db412e980ae",
+   "title": "Vivo Y500",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Vivo Y500 8GB 128GB",
+   "groupSize": 4,
+   "features": [
+    0.21940301836304255,
+    0.1278347351608148,
+    0.11404139158237661,
+    0.1000010000100001
+   ],
+   "context": {
+    "price": 89999,
+    "originalPrice": 99999,
+    "marketMedian": 80299,
+    "marketMax": 87999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd27fed3db412e980b0",
+   "title": "Vivo Y11d",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Vivo Y11D 6GB 128GB",
+   "groupSize": 4,
+   "features": [
+    -0.17284580780008996,
+    -0.18232470150243235,
+    -0.2719386758921414,
+    0.09434140266797486
+   ],
+   "context": {
+    "price": 47999,
+    "originalPrice": 52999,
+    "marketMedian": 62999,
+    "marketMax": 63599,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd27fed3db412e980bc",
+   "title": "Vivo Y11D 6GB 128GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Vivo Y11D 6GB 128GB",
+   "groupSize": 4,
+   "features": [
+    0.12323454114230083,
+    0.08149426478659089,
+    0.03226138265336771,
+    0.08695778199684054
+   ],
+   "context": {
+    "price": 62999,
+    "originalPrice": 68999,
+    "marketMedian": 60999,
+    "marketMax": 63599,
+    "comparators": 3
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abb408a77eed84b8d2a1d33",
+   "title": "Apple iPhone 18 Pro Max 256GB PTA Approved",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Apple iPhone 18 Pro Max 256GB PTA APPROVED",
+   "groupSize": 4,
+   "features": [
+    0.363264753617788,
+    0.3387753465140187,
+    0.09305218542036195,
+    0.23678275862068965
+   ],
+   "context": {
+    "price": 663999,
+    "originalPrice": 870000,
+    "marketMedian": 605000,
+    "marketMax": 619999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abacee1cdd20c9c0815d6fa",
+   "title": "Vivo V80 Lite 5G",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Vivo V80 Lite 5G 8GB 128GB",
+   "groupSize": 4,
+   "features": [
+    0.09651171096034405,
+    0.06614034951761782,
+    -0.01330408362615075,
+    0.10400083200665605
+   ],
+   "context": {
+    "price": 111999,
+    "originalPrice": 124999,
+    "marketMedian": 113499,
+    "marketMax": 116999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abacee2cdd20c9c0815d75c",
+   "title": "Vivo V80 Lite 5G Dual Sim with Official Warranty",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Vivo V80 Lite 5G 8GB 128GB",
+   "groupSize": 4,
+   "features": [
+    0.3566838725500208,
+    0.31300842748114366,
+    0.013304083626150865,
+    0.29063125
+   ],
+   "context": {
+    "price": 113499,
+    "originalPrice": 160000,
+    "marketMedian": 111999,
+    "marketMax": 116999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a77af963e7f2c0838ecf910",
+   "title": "Apple iPhone 15 128GB PTA Approved",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Apple iPhone 15 128GB PTA Approved",
+   "groupSize": 3,
+   "features": [
+    0.22314430889255,
+    0.21936357175870774,
+    0.04082214603596913,
+    0.16666717171870218
+   ],
+   "context": {
+    "price": 274999,
+    "originalPrice": 329999,
+    "marketMedian": 263999,
+    "marketMax": 264999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a6b01724d3ce0c30fbd275c",
+   "title": "Apple iPhone 17e 256GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Apple iPhone 17e 256GB",
+   "groupSize": 3,
+   "features": [
+    -0.1866232257407302,
+    -0.18805282263780823,
+    -0.22171466870514198,
+    0.034482877527163884
+   ],
+   "context": {
+    "price": 279999,
+    "originalPrice": 289999,
+    "marketMedian": 349499,
+    "marketMax": 349999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a6b01724d3ce0c30fbd272d",
+   "title": "Apple Iphone 17e",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Apple iPhone 17e 256GB",
+   "groupSize": 3,
+   "features": [
+    0.18258702319374656,
+    0.078498862810139,
+    0.10694940085131893,
+    0.07284787509370885
+   ],
+   "context": {
+    "price": 349999,
+    "originalPrice": 377499,
+    "marketMedian": 314499,
+    "marketMax": 348999,
+    "comparators": 2
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a789fd49c96f297ede77357",
+   "title": "Apple iPhone 17 Pro Max 256GB PTA Approved",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Apple iPhone 17 Pro Max 256GB Storage PTA Approved",
+   "groupSize": 3,
+   "features": [
+    0.10469034209466793,
+    0.06869666540779285,
+    -0.005249366908487099,
+    0.10411185234223376
+   ],
+   "context": {
+    "price": 474999,
+    "originalPrice": 530199,
+    "marketMedian": 477499,
+    "marketMax": 494999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a789fd49c96f297ede77354",
+   "title": "Apple iPhone 17 Pro 512GB PTA Approved",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Apple iPhone 17 Pro 512GB Storage PTA Approved",
+   "groupSize": 3,
+   "features": [
+    0.05898192085781761,
+    0.012928565677618232,
+    -0.020269409981808963,
+    0.07619228610291413
+   ],
+   "context": {
+    "price": 524999,
+    "originalPrice": 568299,
+    "marketMedian": 535749,
+    "marketMax": 560999,
+    "comparators": 2
+   },
+   "historyCount": 8,
+   "ruleClassification": "genuine_discount"
+  },
+  {
+   "id": "6a78a2af9c96f297ede77363",
+   "title": "Samsung Galaxy Z Flip 6",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Samsung Galaxy Z Flip 6(12GB-256GB)",
+   "groupSize": 3,
+   "features": [
+    0.190406641633052,
+    0.15112538265735068,
+    -0.042525597335249306,
+    0.20779274751362992
+   ],
+   "context": {
+    "price": 304999,
+    "originalPrice": 384999,
+    "marketMedian": 318249,
+    "marketMax": 330999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abad14acdd20c9c0815d7c9",
+   "title": "Samsung Galaxy Flip 6 Dual Sim with Official Warranty",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Samsung Galaxy Z Flip 6(12GB-256GB)",
+   "groupSize": 3,
+   "features": [
+    0.006272757672627846,
+    -0.033794358430690695,
+    -0.04010173283727391,
+    0.045315625
+   ],
+   "context": {
+    "price": 305499,
+    "originalPrice": 320000,
+    "marketMedian": 317999,
+    "marketMax": 330999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a78a2af9c96f297ede77378",
+   "title": "Samsung Galaxy S26 Ultra 12GB RAM 512GB Storage NON PTA",
+   "platform": "mega",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S26 Ultra 12GB RAM 512GB Storage NON PTA",
+   "groupSize": 3,
+   "features": [
+    -0.337507728162449,
+    -0.4102853700202665,
+    -0.4284797824214639,
+    0.08695677378775012
+   ],
+   "context": {
+    "price": 314999,
+    "originalPrice": 344999,
+    "marketMedian": 483499,
+    "marketMax": 519999,
+    "comparators": 2
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825b247fed3db412e98014",
+   "title": "Samsung Galaxy S26 Ultra 12GB 512GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S26 Ultra 12GB RAM 512GB Storage NON PTA",
+   "groupSize": 3,
+   "features": [
+    0.21954473941823996,
+    0,
+    0.06827420839614032,
+    0.14038488535554877
+   ],
+   "context": {
+    "price": 446999,
+    "originalPrice": 519999,
+    "marketMedian": 417499,
+    "marketMax": 519999,
+    "comparators": 2
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a824c967fed3db412e97fd9",
+   "title": "Samsung Galaxy S26 Ultra (12GB RAM + 512GB Storage)",
+   "platform": "w11stop",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S26 Ultra 12GB RAM 512GB Storage NON PTA",
+   "groupSize": 3,
+   "features": [
+    0.3300783693005941,
+    0.17031876227733353,
+    0.3110301380453603,
+    0.018867960128226658
+   ],
+   "context": {
+    "price": 519999,
+    "originalPrice": 529999,
+    "marketMedian": 380999,
+    "marketMax": 446999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825b247fed3db412e9800a",
+   "title": "Samsung Galaxy S26 12GB 512GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S26 12GB RAM 512GB Storage PTA Approved",
+   "groupSize": 3,
+   "features": [
+    0.061036056210668446,
+    0.0026350545815035523,
+    -0.08004294077444875,
+    0.13157929362972007
+   ],
+   "context": {
+    "price": 329999,
+    "originalPrice": 379999,
+    "marketMedian": 357499,
+    "marketMax": 378999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7a374bdc7ea9aa971cccc5",
+   "title": "Samsung Galaxy S26",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S26 12GB RAM 512GB Storage PTA Approved",
+   "groupSize": 3,
+   "features": [
+    0.06946309604428914,
+    0.0026350545815035523,
+    -0.05359734132543322,
+    0.11578977839415366
+   ],
+   "context": {
+    "price": 335999,
+    "originalPrice": 379999,
+    "marketMedian": 354499,
+    "marketMax": 378999,
+    "comparators": 2
+   },
+   "historyCount": 3,
+   "ruleClassification": "likely_fake"
+  },
+  {
+   "id": "6a825b247fed3db412e9800b",
+   "title": "Samsung Galaxy S26 12GB 256GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S26 12GB RAM 256GB Storage PTA Approved",
+   "groupSize": 3,
+   "features": [
+    0.003129902805196552,
+    0,
+    -0.09531049328498045,
+    0.09375029296966553
+   ],
+   "context": {
+    "price": 289999,
+    "originalPrice": 319999,
+    "marketMedian": 318999,
+    "marketMax": 319999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a824c967fed3db412e97fd6",
+   "title": "Samsung Galaxy S26 Black (12GB RAM + 256GB Storage)",
+   "platform": "w11stop",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S26 12GB RAM 256GB Storage PTA Approved",
+   "groupSize": 3,
+   "features": [
+    0.08206521222577716,
+    0.03704138603175995,
+    0.05129345886176228,
+    0.030303122130673123
+   ],
+   "context": {
+    "price": 319999,
+    "originalPrice": 329999,
+    "marketMedian": 303999,
+    "marketMax": 317999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abad14acdd20c9c0815d7ce",
+   "title": "Samsung Galaxy Z Fold 6 Dual SIm with Official Warranty",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Samsung Galaxy Z Fold 6 (12GB-256GB)",
+   "groupSize": 3,
+   "features": [
+    -0.05543281473872297,
+    -0.06203351121843784,
+    -0.07870348876307942,
+    0.023002
+   ],
+   "context": {
+    "price": 488499,
+    "originalPrice": 500000,
+    "marketMedian": 528499,
+    "marketMax": 531999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abad14acdd20c9c0815d7c6",
+   "title": "Samsung Galaxy A27 5G Dual Sim with Official Warranty",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A27 5G 8GB 256GB",
+   "groupSize": 3,
+   "features": [
+    0.11395288007603122,
+    0.09685830060209819,
+    -0.021787544069594295,
+    0.12693076923076924
+   ],
+   "context": {
+    "price": 113499,
+    "originalPrice": 130000,
+    "marketMedian": 115999,
+    "marketMax": 117999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a78eaedc60a7969ca34abb8",
+   "title": "Samsung Galaxy A27 5G",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A27 5G 8GB 256GB",
+   "groupSize": 3,
+   "features": [
+    0.03605935579382108,
+    0.016807259560506018,
+    -0.01523437719397182,
+    0.050000416670138915
+   ],
+   "context": {
+    "price": 113999,
+    "originalPrice": 119999,
+    "marketMedian": 115749,
+    "marketMax": 117999,
+    "comparators": 2
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825b247fed3db412e98011",
+   "title": "Samsung Galaxy A27 5G 8GB 256GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A27 5G 8GB 256GB",
+   "groupSize": 3,
+   "features": [
+    0.053489142830364544,
+    0.05129373298779296,
+    0.03668188326985848,
+    0.016666805556712974
+   ],
+   "context": {
+    "price": 117999,
+    "originalPrice": 119999,
+    "marketMedian": 113749,
+    "marketMax": 113999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825b247fed3db412e98017",
+   "title": "Samsung Galaxy A56 5G 8GB 256GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A56 8GB RAM 256GB Storage PTA APPROVED",
+   "groupSize": 3,
+   "features": [
+    0.07327275200461306,
+    0.03315245157859289,
+    -0.10905025407625611,
+    0.16666787440488698
+   ],
+   "context": {
+    "price": 114999,
+    "originalPrice": 137999,
+    "marketMedian": 128249,
+    "marketMax": 133499,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b36d19de462208cfb95a0",
+   "title": "Samsung Galaxy A56 5G",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A56 8GB RAM 256GB Storage PTA APPROVED",
+   "groupSize": 3,
+   "features": [
+    0.1481313490392615,
+    0.1150702134960706,
+    0.11497889746066882,
+    0.03260893194878224
+   ],
+   "context": {
+    "price": 133499,
+    "originalPrice": 137999,
+    "marketMedian": 118999,
+    "marketMax": 122999,
+    "comparators": 2
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825b247fed3db412e98009",
+   "title": "Samsung Galaxy A57 5G 12GB 256GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A57 5G (12GB RAM + 256GB Storage)",
+   "groupSize": 3,
+   "features": [
+    -0.10021266583704015,
+    -0.19574553809178893,
+    -0.18477053081533087,
+    0.0810815193595641
+   ],
+   "context": {
+    "price": 169999,
+    "originalPrice": 184999,
+    "marketMedian": 204499,
+    "marketMax": 224999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a824c967fed3db412e97fd4",
+   "title": "Samsung Galaxy A57 5G (12GB RAM + 256GB Storage)",
+   "platform": "w11stop",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A57 5G (12GB RAM + 256GB Storage)",
+   "groupSize": 3,
+   "features": [
+    0.28343717597560086,
+    0.24465093600434773,
+    0.23995187490974376,
+    0.04255337256754284
+   ],
+   "context": {
+    "price": 224999,
+    "originalPrice": 234999,
+    "marketMedian": 176999,
+    "marketMax": 183999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abad14acdd20c9c0815d7c2",
+   "title": "Samsung Galaxy A57 5G Dual Sim With Official Warranty",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A57 5G 12GB 512GB",
+   "groupSize": 3,
+   "features": [
+    -0.2151067713113964,
+    -0.24685561363584654,
+    -0.24999994748910676,
+    0.03429142857142857
+   ],
+   "context": {
+    "price": 168999,
+    "originalPrice": 175000,
+    "marketMedian": 216999,
+    "marketMax": 223999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825b247fed3db412e98008",
+   "title": "Samsung Galaxy A57 5G 12GB 512GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A57 5G 12GB 512GB",
+   "groupSize": 3,
+   "features": [
+    0.13543861551225667,
+    0.004454370190738608,
+    0.0664454265635264,
+    0.06666696296427985
+   ],
+   "context": {
+    "price": 209999,
+    "originalPrice": 224999,
+    "marketMedian": 196499,
+    "marketMax": 223999,
+    "comparators": 2
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd17fed3db412e980aa",
+   "title": "Oppo A6 Pro 8GB 256GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "OPPO A6 Pro 8GB RAM 256GB Storage PTA Approved",
+   "groupSize": 3,
+   "features": [
+    0.12405411619260254,
+    0,
+    0.09588292176201099,
+    0.02777808642318248
+   ],
+   "context": {
+    "price": 87499,
+    "originalPrice": 89999,
+    "marketMedian": 79499,
+    "marketMax": 89999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd27fed3db412e980b2",
+   "title": "Vivo Y05e",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Vivo Y05e",
+   "groupSize": 3,
+   "features": [
+    0.07190073925908373,
+    0.06054806033322964,
+    -0.006062829290386602,
+    0.07500187504687617
+   ],
+   "context": {
+    "price": 36999,
+    "originalPrice": 39999,
+    "marketMedian": 37224,
+    "marketMax": 37649,
+    "comparators": 2
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abacee2cdd20c9c0815d760",
+   "title": "Vivo Y05e Dual Sim With Official Warranty",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Vivo Y05e",
+   "groupSize": 3,
+   "features": [
+    0.19847803936205988,
+    0.19577160451835907,
+    0.02012194305994172,
+    0.16335555555555556
+   ],
+   "context": {
+    "price": 37649,
+    "originalPrice": 45000,
+    "marketMedian": 36899,
+    "marketMax": 36999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd27fed3db412e980b7",
+   "title": "Vivo X200 FE 12GB RAM 512GB Storage PTA Approved",
+   "platform": "mega",
+   "category": "smartphone",
+   "group": "Vivo X200 FE 12GB RAM 512GB Storage PTA Approved",
+   "groupSize": 3,
+   "features": [
+    -0.04995116808407621,
+    -0.07061789980975555,
+    -0.07464390262626955,
+    0.024390362879818925
+   ],
+   "context": {
+    "price": 199999,
+    "originalPrice": 204999,
+    "marketMedian": 215499,
+    "marketMax": 219999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abacee1cdd20c9c0815d6fb",
+   "title": "Vivo X200 FE",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Vivo X200 FE 12GB RAM 512GB Storage PTA Approved",
+   "groupSize": 3,
+   "features": [
+    0.04652023208611659,
+    0,
+    0.004750625326974064,
+    0.04090927686034936
+   ],
+   "context": {
+    "price": 210999,
+    "originalPrice": 219999,
+    "marketMedian": 209999,
+    "marketMax": 219999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6ab87b1d7b2d0415f056191a",
+   "title": "HUAWEI Band 9",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "HUAWEI Band 9",
+   "groupSize": 3,
+   "features": [
+    0.5843824657685566,
+    0.478116449356286,
+    -0.40327001259129525,
+    0.62755
+   ],
+   "context": {
+    "price": 7449,
+    "originalPrice": 20000,
+    "marketMedian": 11149,
+    "marketMax": 12399,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6ab87b1e7b2d0415f0561988",
+   "title": "Huawei GT5 Pro 46mm Titanium",
+   "platform": "mega",
+   "category": "smartphone",
+   "group": "Huawei GT6 Pro 46mm Titanium",
+   "groupSize": 3,
+   "features": [
+    -0.03838457046244618,
+    -0.10709901871583073,
+    -0.1293571768330671,
+    0.08695727788937295
+   ],
+   "context": {
+    "price": 104999,
+    "originalPrice": 114999,
+    "marketMedian": 119499,
+    "marketMax": 127999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6ab87b1e7b2d0415f056198f",
+   "title": "Huawei Watch GT6 Pro 46mm",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Huawei GT6 Pro 46mm Titanium",
+   "groupSize": 3,
+   "features": [
+    0.10964406884037617,
+    0.015504306729204758,
+    -0.048361497015184225,
+    0.14615497042284942
+   ],
+   "context": {
+    "price": 110999,
+    "originalPrice": 129999,
+    "marketMedian": 116499,
+    "marketMax": 127999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6ab87b1e7b2d0415f0561987",
+   "title": "Huawei GT6 Pro 46mm Titanium",
+   "platform": "mega",
+   "category": "smartphone",
+   "group": "Huawei GT6 Pro 46mm Titanium",
+   "groupSize": 3,
+   "features": [
+    0.1854124826334892,
+    0.15801325819283868,
+    0.16990048356700616,
+    0.015392307692307693
+   ],
+   "context": {
+    "price": 127999,
+    "originalPrice": 130000,
+    "marketMedian": 107999,
+    "marketMax": 110999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abb408a77eed84b8d2a1d38",
+   "title": "Apple iPhone 18 Pro Max 512GB PTA Approved",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Apple iPhone 18 Pro Max 512GB PTA APPROVED",
+   "groupSize": 3,
+   "features": [
+    0.34076931298675384,
+    0.3293561872930712,
+    0.07195438972497968,
+    0.23571530612244898
+   ],
+   "context": {
+    "price": 748999,
+    "originalPrice": 980000,
+    "marketMedian": 696998.5,
+    "marketMax": 704999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a6b01724d3ce0c30fbd274a",
+   "title": "Apple iPhone 17 Pro Max 1TB Storage PTA Approved",
+   "platform": "mega",
+   "category": "smartphone",
+   "group": "Apple iPhone 17 Pro Max 1TB Storage PTA Approved",
+   "groupSize": 2,
+   "features": [
+    0.020202736061452172,
+    0.020202736061452172,
+    -0.01564344711506762,
+    0.035211317199038306
+   ],
+   "context": {
+    "price": 684999,
+    "originalPrice": 709999,
+    "marketMedian": 695799,
+    "marketMax": 695799,
+    "comparators": 1
+   },
+   "historyCount": 8,
+   "ruleClassification": "genuine_discount"
+  },
+  {
+   "id": "6ab878e57b2d0415f05618d1",
+   "title": "Apple iPhone 17e 512GB PTA Approved",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Apple iPhone 17e 512GB",
+   "groupSize": 2,
+   "features": [
+    0.02007026575716426,
+    0.02007026575716426,
+    -0.027399049263395297,
+    0.04636026490066225
+   ],
+   "context": {
+    "price": 359999,
+    "originalPrice": 377500,
+    "marketMedian": 369999,
+    "marketMax": 369999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a6b01724d3ce0c30fbd275d",
+   "title": "Apple iPhone 17e 512GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Apple iPhone 17e 512GB",
+   "groupSize": 2,
+   "features": [
+    0.04746666601042844,
+    0.04746666601042844,
+    0.02739904926339525,
+    0.019867602298284232
+   ],
+   "context": {
+    "price": 369999,
+    "originalPrice": 377499,
+    "marketMedian": 359999,
+    "marketMax": 359999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a78a0bc9c96f297ede7735a",
+   "title": "Samsung Galaxy S24 Ultra",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S24 Ultra (12GB-1TB)",
+   "groupSize": 2,
+   "features": [
+    0.27780264518294506,
+    0.27780264518294506,
+    -0.11602930256114881,
+    0.3255326075161862
+   ],
+   "context": {
+    "price": 316999,
+    "originalPrice": 469999,
+    "marketMedian": 355999,
+    "marketMax": 355999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a78a0bc9c96f297ede7735b",
+   "title": "Samsung Galaxy S24 Ultra (12GB-1TB)",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S24 Ultra (12GB-1TB)",
+   "groupSize": 2,
+   "features": [
+    0.5363655371213215,
+    0.5363655371213215,
+    0.11602930256114877,
+    0.3431740648967987
+   ],
+   "context": {
+    "price": 355999,
+    "originalPrice": 541999,
+    "marketMedian": 316999,
+    "marketMax": 316999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a78a0bc9c96f297ede7735c",
+   "title": "Samsung Galaxy S24 FE 8GB 256GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S24 FE 8GB 256GB",
+   "groupSize": 2,
+   "features": [
+    0.26966497388289445,
+    0.26966497388289445,
+    0.08552266134102515,
+    0.16818258264810296
+   ],
+   "context": {
+    "price": 182999,
+    "originalPrice": 219999,
+    "marketMedian": 167999,
+    "marketMax": 167999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a78a2af9c96f297ede77369",
+   "title": "Samsung Galaxy Z Fold 6",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Samsung Galaxy Z Fold 8 12GB RAM 512GB Storage Non PTA",
+   "groupSize": 2,
+   "features": [
+    0.23144278457048034,
+    0.23144278457048034,
+    -0.02105345352416683,
+    0.22314086469564412
+   ],
+   "context": {
+    "price": 469999,
+    "originalPrice": 604999,
+    "marketMedian": 479999,
+    "marketMax": 479999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a824c967fed3db412e97fcc",
+   "title": "Samsung Galaxy Z Fold 8 12GB RAM 512GB Storage Non PTA",
+   "platform": "mega",
+   "category": "smartphone",
+   "group": "Samsung Galaxy Z Fold 8 12GB RAM 512GB Storage Non PTA",
+   "groupSize": 2,
+   "features": [
+    0.10109632145443445,
+    0.10109632145443445,
+    0.021053453524166838,
+    0.07692322485235549
+   ],
+   "context": {
+    "price": 479999,
+    "originalPrice": 519999,
+    "marketMedian": 469999,
+    "marketMax": 469999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a78a2af9c96f297ede7736a",
+   "title": "Samsung Galaxy Z Flip 5",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Samsung Galaxy Z Flip 5",
+   "groupSize": 2,
+   "features": [
+    0.5753660893547579,
+    0.5753660893547579,
+    -0.03160548212749439,
+    0.45500113750284377
+   ],
+   "context": {
+    "price": 217999,
+    "originalPrice": 399999,
+    "marketMedian": 224999,
+    "marketMax": 224999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abad14acdd20c9c0815d7c8",
+   "title": "Samsung Galaxy Flip 5 Dual Sim With Official Warranty",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Samsung Galaxy Z Flip 5",
+   "groupSize": 2,
+   "features": [
+    0.07509503852155429,
+    0.07509503852155429,
+    0.03160548212749433,
+    0.04255744680851064
+   ],
+   "context": {
+    "price": 224999,
+    "originalPrice": 235000,
+    "marketMedian": 217999,
+    "marketMax": 217999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b7bec9de462208cfb9694",
+   "title": "Samsung Galaxy A36 8GB RAM 256GB Storage PTA APPROVED",
+   "platform": "mega",
+   "category": "smartphone",
+   "group": "Samsung Galaxy A36 8GB RAM 256GB Storage PTA APPROVED",
+   "groupSize": 2,
+   "features": [
+    0.09097260637062098,
+    0.09097260637062098,
+    0.03738788157248509,
+    0.05217436673362377
+   ],
+   "context": {
+    "price": 108999,
+    "originalPrice": 114999,
+    "marketMedian": 104999,
+    "marketMax": 104999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6ab87b157b2d0415f0561917",
+   "title": "Samsung Galaxy S26 Ultra Cobalt Violet (12GB RAM + 512GB Storage)",
+   "platform": "w11stop",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S26 Ultra 12GB RAM 512GB Storage PTA Approved",
+   "groupSize": 2,
+   "features": [
+    0.02290180799624561,
+    0.02290180799624561,
+    0.003853576741011794,
+    0.018867960128226658
+   ],
+   "context": {
+    "price": 519999,
+    "originalPrice": 529999,
+    "marketMedian": 517999,
+    "marketMax": 517999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6ab87b157b2d0415f0561918",
+   "title": "Samsung Galaxy S26 Ultra Sky Blue (12GB RAM + 256GB Storage)",
+   "platform": "w11stop",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S26 Ultra 12GB RAM 256GB Storage PTA Approved",
+   "groupSize": 2,
+   "features": [
+    0.026433315298097424,
+    0.026433315298097424,
+    0.004454360270037214,
+    0.02173917769386455
+   ],
+   "context": {
+    "price": 449999,
+    "originalPrice": 459999,
+    "marketMedian": 447999,
+    "marketMax": 447999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6ab87b157b2d0415f0561902",
+   "title": "Samsung Galaxy S25",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S25 12GB 512GB",
+   "groupSize": 2,
+   "features": [
+    0.1973600854496608,
+    0.1973600854496608,
+    -0.018349206008511067,
+    0.19403042994158193
+   ],
+   "context": {
+    "price": 269999,
+    "originalPrice": 334999,
+    "marketMedian": 274999,
+    "marketMax": 274999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b36d19de462208cfb95a1",
+   "title": "Samsung Galaxy S25 12GB 512GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Samsung Galaxy S25 12GB 512GB",
+   "groupSize": 2,
+   "features": [
+    0.2157092914581719,
+    0.2157092914581719,
+    0.018349206008511018,
+    0.17910501225376793
+   ],
+   "context": {
+    "price": 274999,
+    "originalPrice": 334999,
+    "marketMedian": 269999,
+    "marketMax": 269999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd17fed3db412e980a2",
+   "title": "Oppo A6 8GB 128GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Oppo A6 8GB 128GB",
+   "groupSize": 2,
+   "features": [
+    0.04362116621422118,
+    0.04362116621422118,
+    -0.11460492962068819,
+    0.14634324808839133
+   ],
+   "context": {
+    "price": 69999,
+    "originalPrice": 81999,
+    "marketMedian": 78499,
+    "marketMax": 78499,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd17fed3db412e98095",
+   "title": "Oppo A6",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Oppo A6 8GB 128GB",
+   "groupSize": 2,
+   "features": [
+    0.2513176029243936,
+    0.2513176029243936,
+    0.11460492962068813,
+    0.1277791975466394
+   ],
+   "context": {
+    "price": 78499,
+    "originalPrice": 89999,
+    "marketMedian": 69999,
+    "marketMax": 69999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd17fed3db412e980a3",
+   "title": "Oppo A6s 8GB 256GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Oppo A6s 8GB 256GB",
+   "groupSize": 2,
+   "features": [
+    -0.031714322341784645,
+    -0.031714322341784645,
+    -0.059885516772376204,
+    0.02777808642318248
+   ],
+   "context": {
+    "price": 87499,
+    "originalPrice": 89999,
+    "marketMedian": 92899,
+    "marketMax": 92899,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd17fed3db412e98097",
+   "title": "Oppo A6s",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Oppo A6s 8GB 256GB",
+   "groupSize": 2,
+   "features": [
+    0.13353282121125756,
+    0.13353282121125756,
+    0.05988551677237618,
+    0.07100071000710007
+   ],
+   "context": {
+    "price": 92899,
+    "originalPrice": 99999,
+    "marketMedian": 87499,
+    "marketMax": 87499,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd17fed3db412e98099",
+   "title": "Oppo A6K",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Oppo A6K 6GB 128GB",
+   "groupSize": 2,
+   "features": [
+    -0.06782374677530859,
+    -0.06782374677530859,
+    -0.15006334879919203,
+    0.07894875348690328
+   ],
+   "context": {
+    "price": 52499,
+    "originalPrice": 56999,
+    "marketMedian": 60999,
+    "marketMax": 60999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd17fed3db412e980a4",
+   "title": "Oppo A6K 6GB 128GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Oppo A6K 6GB 128GB",
+   "groupSize": 2,
+   "features": [
+    0.21357776336478584,
+    0.21357776336478584,
+    0.15006334879919203,
+    0.061539408298589206
+   ],
+   "context": {
+    "price": 60999,
+    "originalPrice": 64999,
+    "marketMedian": 52499,
+    "marketMax": 52499,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd17fed3db412e980a7",
+   "title": "Oppo A6C 4GB 64GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Oppo A6C 4GB 64GB",
+   "groupSize": 2,
+   "features": [
+    0.01197647791531964,
+    0.01197647791531964,
+    -0.02934267581180207,
+    0.04047715421795757
+   ],
+   "context": {
+    "price": 40299,
+    "originalPrice": 41999,
+    "marketMedian": 41499,
+    "marketMax": 41499,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd17fed3db412e9809a",
+   "title": "Oppo A6C",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Oppo A6C 4GB 64GB",
+   "groupSize": 2,
+   "features": [
+    0.08784025163827963,
+    0.08784025163827963,
+    0.029342675811802006,
+    0.05681947316984477
+   ],
+   "context": {
+    "price": 41499,
+    "originalPrice": 43999,
+    "marketMedian": 40299,
+    "marketMax": 40299,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd17fed3db412e9809b",
+   "title": "Oppo Reno 15F",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Oppo Reno 15F 5G 8GB 256GB",
+   "groupSize": 2,
+   "features": [
+    0.014925761607092185,
+    0.014925761607092185,
+    -0.11122651968161858,
+    0.11851939643997363
+   ],
+   "context": {
+    "price": 118999,
+    "originalPrice": 134999,
+    "marketMedian": 132999,
+    "marketMax": 132999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd17fed3db412e980ab",
+   "title": "Oppo Reno 15F 5G 8GB 256GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Oppo Reno 15F 5G 8GB 256GB",
+   "groupSize": 2,
+   "features": [
+    0.16252019001177476,
+    0.16252019001177476,
+    0.1112265196816185,
+    0.05000035714540818
+   ],
+   "context": {
+    "price": 132999,
+    "originalPrice": 139999,
+    "marketMedian": 118999,
+    "marketMax": 118999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd17fed3db412e980a9",
+   "title": "OPPO A6s Pro 8GB 256GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "OPPO A6s Pro 8GB 256GB",
+   "groupSize": 2,
+   "features": [
+    -0.05826947416721186,
+    -0.05826947416721186,
+    -0.06328206624251616,
+    0.005000050000500005
+   ],
+   "context": {
+    "price": 99499,
+    "originalPrice": 99999,
+    "marketMedian": 105999,
+    "marketMax": 105999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd17fed3db412e9809c",
+   "title": "Oppo A6s Pro",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "OPPO A6s Pro 8GB 256GB",
+   "groupSize": 2,
+   "features": [
+    0.18733581555120352,
+    0.18733581555120352,
+    0.06328206624251616,
+    0.1166676388969908
+   ],
+   "context": {
+    "price": 105999,
+    "originalPrice": 119999,
+    "marketMedian": 99499,
+    "marketMax": 99499,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd27fed3db412e980bb",
+   "title": "Vivo V70 12GB 512GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Vivo V70 12GB 512GB",
+   "groupSize": 2,
+   "features": [
+    0.10536107121631391,
+    0.10536107121631391,
+    0.03815197392748271,
+    0.065000325001625
+   ],
+   "context": {
+    "price": 186999,
+    "originalPrice": 199999,
+    "marketMedian": 179999,
+    "marketMax": 179999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd27fed3db412e980b1",
+   "title": "Vivo X300 FE",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Vivo X300 FE",
+   "groupSize": 2,
+   "features": [
+    0.10330541954978141,
+    0.10330541954978141,
+    0.038272700412507944,
+    0.06296319615998577
+   ],
+   "context": {
+    "price": 252999,
+    "originalPrice": 269999,
+    "marketMedian": 243499,
+    "marketMax": 243499,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd27fed3db412e980b5",
+   "title": "Vivo V60",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Vivo V60 12GB RAM 256GB Storage PTA Approved",
+   "groupSize": 2,
+   "features": [
+    0.08701198305445988,
+    0.08701198305445988,
+    -0.0036430178214947647,
+    0.08666724444829632
+   ],
+   "context": {
+    "price": 136999,
+    "originalPrice": 149999,
+    "marketMedian": 137499,
+    "marketMax": 137499,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd27fed3db412e980b6",
+   "title": "Vivo V60 12GB RAM 256GB Storage PTA Approved",
+   "platform": "mega",
+   "category": "smartphone",
+   "group": "Vivo V60 12GB RAM 256GB Storage PTA Approved",
+   "groupSize": 2,
+   "features": [
+    0.0906550008759547,
+    0.0906550008759547,
+    0.0036430178214947283,
+    0.08333388889259262
+   ],
+   "context": {
+    "price": 137499,
+    "originalPrice": 149999,
+    "marketMedian": 136999,
+    "marketMax": 136999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd27fed3db412e980bd",
+   "title": "Vivo Y05 4GB 64GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Vivo Y05 4GB 64GB",
+   "groupSize": 2,
+   "features": [
+    0.07616311959931656,
+    0.07616311959931656,
+    0.030699711907324564,
+    0.04444543212071379
+   ],
+   "context": {
+    "price": 42999,
+    "originalPrice": 44999,
+    "marketMedian": 41699,
+    "marketMax": 41699,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd27fed3db412e980be",
+   "title": "Vivo Y31D 8GB 256GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Vivo Y31D 8GB 256GB",
+   "groupSize": 2,
+   "features": [
+    0.022473108380148876,
+    0.022473108380148876,
+    -0.03468595906204683,
+    0.05555617284636496
+   ],
+   "context": {
+    "price": 84999,
+    "originalPrice": 89999,
+    "marketMedian": 87999,
+    "marketMax": 87999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a825cd27fed3db412e980c2",
+   "title": "Vivo V70 FE 12GB 256GB",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Vivo V70 FE 12GB 256GB",
+   "groupSize": 2,
+   "features": [
+    0.08408368314530912,
+    0.08408368314530912,
+    -0.032088543386084495,
+    0.10967812695565778
+   ],
+   "context": {
+    "price": 137999,
+    "originalPrice": 154999,
+    "marketMedian": 142499,
+    "marketMax": 142499,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abad14acdd20c9c0815d7cd",
+   "title": "Samsung Galaxy Z Fold 8 Ultra Dual Sim Non PTA",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Samsung Galaxy Z Fold 8 Ultra 12GB RAM 512GB Storage Non PTA",
+   "groupSize": 2,
+   "features": [
+    -0.009754233195906709,
+    -0.009754233195906709,
+    -0.053851602243558346,
+    0.04313921568627451
+   ],
+   "context": {
+    "price": 487999,
+    "originalPrice": 510000,
+    "marketMedian": 514999,
+    "marketMax": 514999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6ab87b157b2d0415f0561910",
+   "title": "Samsung Galaxy Z Fold 8 Ultra 12GB RAM 512GB Storage Non PTA",
+   "platform": "mega",
+   "category": "smartphone",
+   "group": "Samsung Galaxy Z Fold 8 Ultra 12GB RAM 512GB Storage Non PTA",
+   "groupSize": 2,
+   "features": [
+    0.08256176308121502,
+    0.08256176308121502,
+    0.0538516022435585,
+    0.028301940192339985
+   ],
+   "context": {
+    "price": 514999,
+    "originalPrice": 529999,
+    "marketMedian": 487999,
+    "marketMax": 487999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6ab87b1d7b2d0415f0561919",
+   "title": "Huawei Band 10",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Huawei Band 10",
+   "groupSize": 2,
+   "features": [
+    0.18233489110513768,
+    0.18233489110513768,
+    -0.04082532812583288,
+    0.20001333422228149
+   ],
+   "context": {
+    "price": 11999,
+    "originalPrice": 14999,
+    "marketMedian": 12499,
+    "marketMax": 12499,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6ab87b1d7b2d0415f056191b",
+   "title": "Huawei Watch GT6",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Huawei Watch GT6",
+   "groupSize": 2,
+   "features": [
+    0.6931653625434184,
+    0.6931653625434184,
+    -0.046520881451875606,
+    0.5227363636363637
+   ],
+   "context": {
+    "price": 52499,
+    "originalPrice": 110000,
+    "marketMedian": 54999,
+    "marketMax": 54999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6ab87b1e7b2d0415f056198e",
+   "title": "Huawei 46mm Watch GT6",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Huawei Watch GT6",
+   "groupSize": 2,
+   "features": [
+    0.21357776336478584,
+    0.21357776336478584,
+    0.04652088145187559,
+    0.153848520746473
+   ],
+   "context": {
+    "price": 54999,
+    "originalPrice": 64999,
+    "marketMedian": 52499,
+    "marketMax": 52499,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abb408a77eed84b8d2a1d2c",
+   "title": "Apple iPhone Duo 2TB PTA Approved",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Apple iPhone Duo 2TB PTA Approved",
+   "groupSize": 2,
+   "features": [
+    1.0116025783465354,
+    1.0116025783465354,
+    0.9025983955516396,
+    0.10327333333333333
+   ],
+   "context": {
+    "price": 1479599,
+    "originalPrice": 1650000,
+    "marketMedian": 599999,
+    "marketMax": 599999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abb408a77eed84b8d2a1d3d",
+   "title": "Apple iPhone 18 Pro Max 1TB PTA Approved",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Apple iPhone 18 Pro Max 1TB PTA APPROVED",
+   "groupSize": 2,
+   "features": [
+    0.2933489463517404,
+    0.2933489463517404,
+    0.04336426310784301,
+    0.2211872881355932
+   ],
+   "context": {
+    "price": 918999,
+    "originalPrice": 1180000,
+    "marketMedian": 879999,
+    "marketMax": 879999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa5a7cdd20c9c0815d44a",
+   "title": "Xiaomi Smart Air Purifier 4 Pro",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Xiaomi Smart Air Purifier 4 Pro",
+   "groupSize": 2,
+   "features": [
+    0.12516445015721855,
+    0.12516445015721855,
+    -0.011173425443465257,
+    0.1274522299238228
+   ],
+   "context": {
+    "price": 88999,
+    "originalPrice": 101999,
+    "marketMedian": 89999,
+    "marketMax": 89999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa5a7cdd20c9c0815d453",
+   "title": "Xiaomi Smart Air Purifier 4 Pro",
+   "platform": "shophive",
+   "category": "smartphone",
+   "group": "Xiaomi Smart Air Purifier 4 Pro",
+   "groupSize": 2,
+   "features": [
+    0.06524123151538953,
+    0.06524123151538953,
+    0.011173425443465161,
+    0.052632132969820736
+   ],
+   "context": {
+    "price": 89999,
+    "originalPrice": 94999,
+    "marketMedian": 88999,
+    "marketMax": 88999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abb408a77eed84b8d2a1d3a",
+   "title": "Apple iPhone 18 Pro 512GB PTA Approved",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Apple iPhone 18 Pro - 512GB",
+   "groupSize": 2,
+   "features": [
+    0.33955544636968826,
+    0.33955544636968826,
+    0.08855352812213645,
+    0.2219791208791209
+   ],
+   "context": {
+    "price": 707999,
+    "originalPrice": 910000,
+    "marketMedian": 647999,
+    "marketMax": 647999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abb408a77eed84b8d2a1d35",
+   "title": "Apple iPhone 14 128GB PTA Approved A Condition (Pre Owned)",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Apple iPhone 14 128GB PTA Approved A+ Condition (Pre Owned)",
+   "groupSize": 2,
+   "features": [
+    0.11420043207430233,
+    0.11420043207430233,
+    -0.01626065307803765,
+    0.12230935251798561
+   ],
+   "context": {
+    "price": 121999,
+    "originalPrice": 139000,
+    "marketMedian": 123999,
+    "marketMax": 123999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abb408a77eed84b8d2a1d34",
+   "title": "Apple iPhone 14 128GB PTA Approved A+ Condition (Pre Owned)",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Apple iPhone 14 128GB PTA Approved A+ Condition (Pre Owned)",
+   "groupSize": 2,
+   "features": [
+    0.10126193046007757,
+    0.10126193046007757,
+    0.016260653078037566,
+    0.08148888888888889
+   ],
+   "context": {
+    "price": 123999,
+    "originalPrice": 135000,
+    "marketMedian": 121999,
+    "marketMax": 121999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abb408a77eed84b8d2a1d37",
+   "title": "Apple iPhone 13 Pro 512GB PTA Approved A Condition (Pre Owned)",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Apple iPhone 13 Pro 512GB PTA Approved A+ Condition (Pre Owned)",
+   "groupSize": 2,
+   "features": [
+    0.012428770018088451,
+    0.012428770018088451,
+    -0.03174889992876398,
+    0.04321604938271605
+   ],
+   "context": {
+    "price": 154999,
+    "originalPrice": 162000,
+    "marketMedian": 159999,
+    "marketMax": 159999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abb408a77eed84b8d2a1d36",
+   "title": "Apple iPhone 13 Pro 512GB PTA Approved A+ Condition (Pre Owned)",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Apple iPhone 13 Pro 512GB PTA Approved A+ Condition (Pre Owned)",
+   "groupSize": 2,
+   "features": [
+    0.1213673086379824,
+    0.1213673086379824,
+    0.03174889992876398,
+    0.08572
+   ],
+   "context": {
+    "price": 159999,
+    "originalPrice": 175000,
+    "marketMedian": 154999,
+    "marketMax": 154999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abb408a77eed84b8d2a1d45",
+   "title": "Apple iPhone 14 Pro 256GB PTA Approved A Condition (Pre Owned)",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Apple iPhone 14 Pro 256GB PTA Approved A+ Condition (Pre Owned)",
+   "groupSize": 2,
+   "features": [
+    0.021396595401332284,
+    0.021396595401332284,
+    -0.03857248735953394,
+    0.058206349206349206
+   ],
+   "context": {
+    "price": 177999,
+    "originalPrice": 189000,
+    "marketMedian": 184999,
+    "marketMax": 184999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abb408a77eed84b8d2a1d3b",
+   "title": "Apple iPhone 14 Pro 256GB PTA Approved A+ Condition (Pre Owned)",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Apple iPhone 14 Pro 256GB PTA Approved A+ Condition (Pre Owned)",
+   "groupSize": 2,
+   "features": [
+    0.09122162626497056,
+    0.09122162626497056,
+    0.03857248735953396,
+    0.051287179487179486
+   ],
+   "context": {
+    "price": 184999,
+    "originalPrice": 195000,
+    "marketMedian": 177999,
+    "marketMax": 177999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abb408a77eed84b8d2a1d40",
+   "title": "Apple iPhone 14 Pro Max 256GB PTA Approved A Condition (Pre Owned)",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Apple iPhone 14 Pro Max 256GB PTA Approved A Condition (Pre Owned)",
+   "groupSize": 2,
+   "features": [
+    0.04732506148611891,
+    0.04732506148611891,
+    -0.022272734827726168,
+    0.0672310924369748
+   ],
+   "context": {
+    "price": 221999,
+    "originalPrice": 238000,
+    "marketMedian": 226999,
+    "marketMax": 226999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abb408a77eed84b8d2a1d42",
+   "title": "Apple iPhone 14 Pro Max 256GB PTA Approved A+ Condition (Pre Owned)",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Apple iPhone 14 Pro Max 256GB PTA Approved A Condition (Pre Owned)",
+   "groupSize": 2,
+   "features": [
+    0.14250456712193285,
+    0.14250456712193285,
+    0.022272734827726095,
+    0.11328515625
+   ],
+   "context": {
+    "price": 226999,
+    "originalPrice": 256000,
+    "marketMedian": 221999,
+    "marketMax": 221999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abb408a77eed84b8d2a1d41",
+   "title": "Apple iPhone 13 Pro Max 256GB PTA Approved A Condition (Pre Owned)",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Apple iPhone 13 Pro Max 256GB PTA Approved A Condition (Pre Owned)",
+   "groupSize": 2,
+   "features": [
+    0.04879571974041973,
+    0.04879571974041973,
+    -0.016807212478867375,
+    0.0634973544973545
+   ],
+   "context": {
+    "price": 176999,
+    "originalPrice": 189000,
+    "marketMedian": 179999,
+    "marketMax": 179999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abb408a77eed84b8d2a1d44",
+   "title": "Apple iPhone 13 Pro Max 256GB PTA Approved A+ Condition (Pre Owned)",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Apple iPhone 13 Pro Max 256GB PTA Approved A Condition (Pre Owned)",
+   "groupSize": 2,
+   "features": [
+    0.09685547572339144,
+    0.09685547572339144,
+    0.016807212478867278,
+    0.07692820512820513
+   ],
+   "context": {
+    "price": 179999,
+    "originalPrice": 195000,
+    "marketMedian": 176999,
+    "marketMax": 176999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abb408a77eed84b8d2a1d47",
+   "title": "Apple iPhone 14 Pro 1TB PTA Approved A+ Condition (Pre Owned)",
+   "platform": "telemart",
+   "category": "smartphone",
+   "group": "Apple iPhone 14 Pro 1TB PTA Approved A Condition (Pre Owned)",
+   "groupSize": 2,
+   "features": [
+    0.08237604795093198,
+    0.08237604795093198,
+    0.010050386358805709,
+    0.06977209302325581
+   ],
+   "context": {
+    "price": 199999,
+    "originalPrice": 215000,
+    "marketMedian": 197999,
+    "marketMax": 197999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7a374bdc7ea9aa971cccc7",
+   "title": "Samsung Galaxy Buds 3",
+   "platform": "priceoye",
+   "category": "headphones",
+   "group": "Samsung Galaxy Buds 3",
+   "groupSize": 4,
+   "features": [
+    0.4054984419970656,
+    0.04267556316957808,
+    -0.16252481206410327,
+    0.43335555555555555
+   ],
+   "context": {
+    "price": 25499,
+    "originalPrice": 45000,
+    "marketMedian": 29999,
+    "marketMax": 43120,
+    "comparators": 3
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa46acdd20c9c0815d3b2",
+   "title": "Samsung Galaxy Buds 3 - SM-R530",
+   "platform": "shophive",
+   "category": "headphones",
+   "group": "Samsung Galaxy Buds 3",
+   "groupSize": 4,
+   "features": [
+    0.09531321020377694,
+    -0.2675096686237107,
+    -0.05129504883353595,
+    0.13636776872026424
+   ],
+   "context": {
+    "price": 28499,
+    "originalPrice": 32999,
+    "marketMedian": 29999,
+    "marketMax": 43120,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa46acdd20c9c0815d3b5",
+   "title": "Samsung Galaxy Buds 3",
+   "platform": "w11stop",
+   "category": "headphones",
+   "group": "Samsung Galaxy Buds 3",
+   "groupSize": 4,
+   "features": [
+    0.5621540064884278,
+    0.5108589576548919,
+    0.4141179276610235,
+    0.1376
+   ],
+   "context": {
+    "price": 43120,
+    "originalPrice": 50000,
+    "marketMedian": 28499,
+    "marketMax": 29999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7a374bdc7ea9aa971ccccf",
+   "title": "Samsung Galaxy Buds 3 Pro",
+   "platform": "priceoye",
+   "category": "headphones",
+   "group": "Samsung Galaxy Buds 3 Pro",
+   "groupSize": 4,
+   "features": [
+    0.44184068893185113,
+    0.07455533134059186,
+    -0.1534138979017317,
+    0.44857783682624036
+   ],
+   "context": {
+    "price": 38599,
+    "originalPrice": 69999,
+    "marketMedian": 44999,
+    "marketMax": 64970,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa46acdd20c9c0815d3b6",
+   "title": "Samsung Galaxy Buds 3 Pro",
+   "platform": "w11stop",
+   "category": "headphones",
+   "group": "Samsung Galaxy Buds 3 Pro",
+   "groupSize": 4,
+   "features": [
+    0.5108494335732514,
+    0.4418549747481787,
+    0.43627981641633207,
+    0.07185714285714286
+   ],
+   "context": {
+    "price": 64970,
+    "originalPrice": 70000,
+    "marketMedian": 41999,
+    "marketMax": 44999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b2a089de462208cfb959c",
+   "title": "Samsung Galaxy Buds Core",
+   "platform": "priceoye",
+   "category": "headphones",
+   "group": "Samsung Galaxy Buds Core",
+   "groupSize": 3,
+   "features": [
+    0.003841957341722002,
+    -0.05122186326498007,
+    -0.09909876490373427,
+    0.09781954887218045
+   ],
+   "context": {
+    "price": 11999,
+    "originalPrice": 13300,
+    "marketMedian": 13249,
+    "marketMax": 13999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7a374bdc7ea9aa971cccce",
+   "title": "Samsung Galaxy Buds 4 Pro",
+   "platform": "priceoye",
+   "category": "headphones",
+   "group": "Samsung Galaxy Buds 4 Pro",
+   "groupSize": 2,
+   "features": [
+    0.5306364864870861,
+    0.5306364864870861,
+    0,
+    0.4117695502300027
+   ],
+   "context": {
+    "price": 49999,
+    "originalPrice": 84999,
+    "marketMedian": 49999,
+    "marketMax": 49999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b837b9de462208cfb96ec",
+   "title": "Nothing CMF-Headphone 1",
+   "platform": "priceoye",
+   "category": "headphones",
+   "group": "Nothing CMF-Headphone 1",
+   "groupSize": 2,
+   "features": [
+    0.17590392915108272,
+    0.17590392915108272,
+    -0.03234826990206477,
+    0.18799777530589543
+   ],
+   "context": {
+    "price": 72999,
+    "originalPrice": 89900,
+    "marketMedian": 75399,
+    "marketMax": 75399,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b837b9de462208cfb96fb",
+   "title": "Nothing CMF-Headphone 1 with one year brand warranty",
+   "platform": "priceoye",
+   "category": "headphones",
+   "group": "Nothing CMF-Headphone 1",
+   "groupSize": 2,
+   "features": [
+    0.31472444356366436,
+    0.31472444356366436,
+    0.03234826990206471,
+    0.24601
+   ],
+   "context": {
+    "price": 75399,
+    "originalPrice": 100000,
+    "marketMedian": 72999,
+    "marketMax": 72999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b837b9de462208cfb96ed",
+   "title": "Nothing Headphone (a)",
+   "platform": "priceoye",
+   "category": "headphones",
+   "group": "Nothing Headphone (a)",
+   "groupSize": 2,
+   "features": [
+    0.09531199802085447,
+    0.09531199802085447,
+    -0.07257219824242081,
+    0.15454826451390025
+   ],
+   "context": {
+    "price": 46499,
+    "originalPrice": 54999,
+    "marketMedian": 49999,
+    "marketMax": 49999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6ab878fd7b2d0415f05618fd",
+   "title": "FASTER F15 Universal Music Earphone",
+   "platform": "w11stop",
+   "category": "headphones",
+   "group": "Faster F15 Universal Music Earphone",
+   "groupSize": 2,
+   "features": [
+    0.28768207245178085,
+    0.28768207245178085,
+    -0.2657031657330056,
+    0.425
+   ],
+   "context": {
+    "price": 460,
+    "originalPrice": 800,
+    "marketMedian": 600,
+    "marketMax": 600,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6ab878fd7b2d0415f05618fc",
+   "title": "Faster F15 Universal Music Earphone",
+   "platform": "w11stop",
+   "category": "headphones",
+   "group": "Faster F15 Universal Music Earphone",
+   "groupSize": 2,
+   "features": [
+    0.7765287894989963,
+    0.7765287894989963,
+    0.2657031657330057,
+    0.4
+   ],
+   "context": {
+    "price": 600,
+    "originalPrice": 1000,
+    "marketMedian": 460,
+    "marketMax": 460,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a78a2b09c96f297ede77389",
+   "title": "Samsung Galaxy Fit 3",
+   "platform": "mega",
+   "category": "other",
+   "group": "Samsung Galaxy Fit 3",
+   "groupSize": 2,
+   "features": [
+    0.03774317720080792,
+    0.03774317720080792,
+    -0.08004911844363018,
+    0.11111934217349434
+   ],
+   "context": {
+    "price": 11999,
+    "originalPrice": 13499,
+    "marketMedian": 12999,
+    "marketMax": 12999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a78a2af9c96f297ede7735e",
+   "title": "Samsung Galaxy Fit 3",
+   "platform": "priceoye",
+   "category": "other",
+   "group": "Samsung Galaxy Fit 3",
+   "groupSize": 2,
+   "features": [
+    0.5596991247411711,
+    0.5596991247411711,
+    0.08004911844363029,
+    0.381
+   ],
+   "context": {
+    "price": 12999,
+    "originalPrice": 21000,
+    "marketMedian": 11999,
+    "marketMax": 11999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b837b9de462208cfb96ea",
+   "title": "Nothing Phone 3A",
+   "platform": "priceoye",
+   "category": "other",
+   "group": "Nothing Phone 3A 12GB 256GB",
+   "groupSize": 2,
+   "features": [
+    0.03475885305460584,
+    0.03475885305460584,
+    -0.08031123419616379,
+    0.10869632730638079
+   ],
+   "context": {
+    "price": 143499,
+    "originalPrice": 160999,
+    "marketMedian": 155499,
+    "marketMax": 155499,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b837b9de462208cfb9704",
+   "title": "Nothing Phone 3A 12GB 256GB",
+   "platform": "shophive",
+   "category": "other",
+   "group": "Nothing Phone 3A 12GB 256GB",
+   "groupSize": 2,
+   "features": [
+    0.11507008725076959,
+    0.11507008725076959,
+    0.08031123419616379,
+    0.034161702867719676
+   ],
+   "context": {
+    "price": 155499,
+    "originalPrice": 160999,
+    "marketMedian": 143499,
+    "marketMax": 143499,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b837b9de462208cfb96f4",
+   "title": "Nothing CMF Phone 2 Pro",
+   "platform": "priceoye",
+   "category": "other",
+   "group": "Nothing CMF Phone 2 Pro 8GB 128GB",
+   "groupSize": 2,
+   "features": [
+    0.023420493623880736,
+    0.023420493623880736,
+    -0.08091276255135882,
+    0.09907499143510588
+   ],
+   "context": {
+    "price": 97299,
+    "originalPrice": 107999,
+    "marketMedian": 105499,
+    "marketMax": 105499,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b837b9de462208cfb9709",
+   "title": "Nothing CMF Phone 2 Pro 8GB 128GB",
+   "platform": "shophive",
+   "category": "other",
+   "group": "Nothing CMF Phone 2 Pro 8GB 128GB",
+   "groupSize": 2,
+   "features": [
+    0.1043332561752396,
+    0.1043332561752396,
+    0.08091276255135874,
+    0.02314836248483782
+   ],
+   "context": {
+    "price": 105499,
+    "originalPrice": 107999,
+    "marketMedian": 97299,
+    "marketMax": 97299,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b837b9de462208cfb96f6",
+   "title": "Nothing Phone 4a",
+   "platform": "priceoye",
+   "category": "other",
+   "group": "Nothing Phone 4A 12GB 256GB",
+   "groupSize": 2,
+   "features": [
+    -0.12871276977961982,
+    -0.12871276977961982,
+    -0.2177246589393694,
+    0.08516530310606102
+   ],
+   "context": {
+    "price": 166499,
+    "originalPrice": 181999,
+    "marketMedian": 206999,
+    "marketMax": 206999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b837b9de462208cfb9706",
+   "title": "Nothing Phone 4A 12GB 256GB",
+   "platform": "shophive",
+   "category": "other",
+   "group": "Nothing Phone 4A 12GB 256GB",
+   "groupSize": 2,
+   "features": [
+    0.2556440735575991,
+    0.2556440735575991,
+    0.21772465893936943,
+    0.0372094753929088
+   ],
+   "context": {
+    "price": 206999,
+    "originalPrice": 214999,
+    "marketMedian": 166499,
+    "marketMax": 166499,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b837b9de462208cfb96f7",
+   "title": "Nothing Phone (2a)",
+   "platform": "priceoye",
+   "category": "other",
+   "group": "Nothing Phone 2a 12GB 256GB",
+   "groupSize": 2,
+   "features": [
+    0.02575271718021544,
+    0.02575271718021544,
+    -0.04263561040579064,
+    0.06610225510385681
+   ],
+   "context": {
+    "price": 110199,
+    "originalPrice": 117999,
+    "marketMedian": 114999,
+    "marketMax": 114999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b837b9de462208cfb9705",
+   "title": "Nothing Phone 2a 12GB 256GB",
+   "platform": "shophive",
+   "category": "other",
+   "group": "Nothing Phone 2a 12GB 256GB",
+   "groupSize": 2,
+   "features": [
+    0.06838832758600602,
+    0.06838832758600602,
+    0.04263561040579066,
+    0.02542394427071416
+   ],
+   "context": {
+    "price": 114999,
+    "originalPrice": 117999,
+    "marketMedian": 110199,
+    "marketMax": 110199,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b837b9de462208cfb96f8",
+   "title": "Nothing Phone 4a Pro",
+   "platform": "priceoye",
+   "category": "other",
+   "group": "Nothing Phone 4A Pro 12GB 256GB",
+   "groupSize": 2,
+   "features": [
+    0.02839958974850294,
+    0.02839958974850294,
+    -0.04632426679355063,
+    0.072000288001152
+   ],
+   "context": {
+    "price": 231999,
+    "originalPrice": 249999,
+    "marketMedian": 242999,
+    "marketMax": 242999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b837b9de462208cfb9708",
+   "title": "Nothing Phone 4A Pro 12GB 256GB",
+   "platform": "shophive",
+   "category": "other",
+   "group": "Nothing Phone 4A Pro 12GB 256GB",
+   "groupSize": 2,
+   "features": [
+    0.07472385654205363,
+    0.07472385654205363,
+    0.046324266793550596,
+    0.028000112000448003
+   ],
+   "context": {
+    "price": 242999,
+    "originalPrice": 249999,
+    "marketMedian": 231999,
+    "marketMax": 231999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b837b9de462208cfb96f9",
+   "title": "Nothing Phone 3A Pro",
+   "platform": "priceoye",
+   "category": "other",
+   "group": "Nothing Phone 3a Pro 12GB 256GB",
+   "groupSize": 2,
+   "features": [
+    0.03191777277251974,
+    0.03191777277251974,
+    -0.07286175681524662,
+    0.09947696061235922
+   ],
+   "context": {
+    "price": 171999,
+    "originalPrice": 190999,
+    "marketMedian": 184999,
+    "marketMax": 184999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b837b9de462208cfb9707",
+   "title": "Nothing Phone 3a Pro 12GB 256GB",
+   "platform": "shophive",
+   "category": "other",
+   "group": "Nothing Phone 3a Pro 12GB 256GB",
+   "groupSize": 2,
+   "features": [
+    0.1047795295877662,
+    0.1047795295877662,
+    0.0728617568152466,
+    0.031413777035481864
+   ],
+   "context": {
+    "price": 184999,
+    "originalPrice": 190999,
+    "marketMedian": 171999,
+    "marketMax": 171999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa4eccdd20c9c0815d427",
+   "title": "Nothing CMF Phone 1 5G",
+   "platform": "priceoye",
+   "category": "other",
+   "group": "Nothing CMF Phone 1",
+   "groupSize": 2,
+   "features": [
+    0.13353317836272444,
+    0.13353317836272444,
+    0.09010306559801193,
+    0.04250053125664071
+   ],
+   "context": {
+    "price": 76599,
+    "originalPrice": 79999,
+    "marketMedian": 69999,
+    "marketMax": 69999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa5a7cdd20c9c0815d454",
+   "title": "EcoFlow Delta Pro Smart Extra Battery",
+   "platform": "shophive",
+   "category": "other",
+   "group": "EcoFlow Delta Pro Smart Extra Battery",
+   "groupSize": 2,
+   "features": [
+    0.14650276182605423,
+    0.14650276182605423,
+    -0.20935074668696302,
+    0.29942475897266596
+   ],
+   "context": {
+    "price": 364999,
+    "originalPrice": 520999,
+    "marketMedian": 449999,
+    "marketMax": 449999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa5a7cdd20c9c0815d457",
+   "title": "EcoFlow Delta Pro 3 Smart Extra Battery",
+   "platform": "shophive",
+   "category": "other",
+   "group": "EcoFlow Delta Pro Smart Extra Battery",
+   "groupSize": 2,
+   "features": [
+    0.5615719999997858,
+    0.5615719999997858,
+    0.20935074668696296,
+    0.2968754638679123
+   ],
+   "context": {
+    "price": 449999,
+    "originalPrice": 639999,
+    "marketMedian": 364999,
+    "marketMax": 364999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a78eaedc60a7969ca34abb9",
+   "title": "Samsung Galaxy Watch 7 44mm",
+   "platform": "priceoye",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch 7 44mm",
+   "groupSize": 8,
+   "features": [
+    0.47001696266795856,
+    0.21279107361015465,
+    -0.44629460275654664,
+    0.6000083333333334
+   ],
+   "context": {
+    "price": 47999,
+    "originalPrice": 120000,
+    "marketMedian": 74999,
+    "marketMax": 96999,
+    "comparators": 7
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa4ddcdd20c9c0815d415",
+   "title": "Samsung Galaxy Watch 7 44mm - Wifi",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch 7 44mm",
+   "groupSize": 8,
+   "features": [
+    -0.2231468846975438,
+    -0.4803727737553478,
+    -0.3472017346644954,
+    0.11666861114351906
+   ],
+   "context": {
+    "price": 52999,
+    "originalPrice": 59999,
+    "marketMedian": 74999,
+    "marketMax": 96999,
+    "comparators": 7
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7a374bdc7ea9aa971ccccb",
+   "title": "Samsung Watch 8 44mm",
+   "platform": "priceoye",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch 7 44mm",
+   "groupSize": 8,
+   "features": [
+    0.6931538472932793,
+    0.43592795823547537,
+    -0.15082506030851595,
+    0.5700038000253335
+   ],
+   "context": {
+    "price": 64499,
+    "originalPrice": 149999,
+    "marketMedian": 74999,
+    "marketMax": 96999,
+    "comparators": 7
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa4ddcdd20c9c0815d40a",
+   "title": "Samsung Galaxy Watch 8 44MM - Wifi",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch 7 44mm",
+   "groupSize": 8,
+   "features": [
+    0.20430292731066133,
+    -0.052922961747142554,
+    -0.15082506030851595,
+    0.29891629256839747
+   ],
+   "context": {
+    "price": 64499,
+    "originalPrice": 91999,
+    "marketMedian": 74999,
+    "marketMax": 96999,
+    "comparators": 7
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b74ca9de462208cfb9660",
+   "title": "Samsung Galaxy Watch 8 44MM Graphite - Wifi",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch 7 44mm",
+   "groupSize": 8,
+   "features": [
+    0.3551279876191773,
+    -0.052922961747142554,
+    0.15082506030851597,
+    0.18478461722410025
+   ],
+   "context": {
+    "price": 74999,
+    "originalPrice": 91999,
+    "marketMedian": 64499,
+    "marketMax": 96999,
+    "comparators": 7
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b74ca9de462208cfb9664",
+   "title": "Samsung Galaxy Watch 8 44MM Silver - Wifi",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch 7 44mm",
+   "groupSize": 8,
+   "features": [
+    0.3551279876191773,
+    -0.052922961747142554,
+    0.15082506030851597,
+    0.18478461722410025
+   ],
+   "context": {
+    "price": 74999,
+    "originalPrice": 91999,
+    "marketMedian": 64499,
+    "marketMax": 96999,
+    "comparators": 7
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b37279de462208cfb95b0",
+   "title": "Samsung Galaxy Watch 9 44mm",
+   "platform": "priceoye",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch 7 44mm",
+   "groupSize": 8,
+   "features": [
+    1.0537006998527387,
+    0.8636544135637224,
+    0.4080509493663198,
+    0.47567824690944277
+   ],
+   "context": {
+    "price": 96999,
+    "originalPrice": 184999,
+    "marketMedian": 64499,
+    "marketMax": 77999,
+    "comparators": 7
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa4ddcdd20c9c0815d40c",
+   "title": "Samsung Galaxy Watch 8 40mm Black - Wifi",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Watch 8 40mm",
+   "groupSize": 5,
+   "features": [
+    0.2513176029243936,
+    -0.021979148267323653,
+    -0.12136270035027219,
+    0.31111456793964376
+   ],
+   "context": {
+    "price": 61999,
+    "originalPrice": 89999,
+    "marketMedian": 69999,
+    "marketMax": 91999,
+    "comparators": 4
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a78a2af9c96f297ede77367",
+   "title": "Samsung Watch 8 40mm",
+   "platform": "priceoye",
+   "category": "smartwatch",
+   "group": "Samsung Watch 8 40mm",
+   "groupSize": 5,
+   "features": [
+    0.4519903186089713,
+    0.178693567417254,
+    -0.07410907107112338,
+    0.40909462813298303
+   ],
+   "context": {
+    "price": 64999,
+    "originalPrice": 109999,
+    "marketMedian": 69999,
+    "marketMax": 91999,
+    "comparators": 4
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b74ca9de462208cfb965f",
+   "title": "Samsung Galaxy Watch 8 40MM Silver - Wifi",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Watch 8 40mm",
+   "groupSize": 5,
+   "features": [
+    0.27297941253595115,
+    -0.021979148267323653,
+    -0.007326147435852709,
+    0.24444716052400584
+   ],
+   "context": {
+    "price": 67999,
+    "originalPrice": 89999,
+    "marketMedian": 68499,
+    "marketMax": 91999,
+    "comparators": 4
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa4ddcdd20c9c0815d411",
+   "title": "Samsung Galaxy Watch Ultra 47MM Titanium Gray With Marine Orange (2025)",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch Ultra 47MM Titanium Silver (2025)",
+   "groupSize": 5,
+   "features": [
+    0.04255997674072142,
+    -0.18924343643107877,
+    -0.24512487351584358,
+    0.25000208335069457
+   ],
+   "context": {
+    "price": 89999,
+    "originalPrice": 119999,
+    "marketMedian": 114999,
+    "marketMax": 144999,
+    "comparators": 4
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa4ddcdd20c9c0815d412",
+   "title": "Samsung Galaxy Watch Ultra 47MM Titanium White With Marine White (2025)",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch Ultra 47MM Titanium Silver (2025)",
+   "groupSize": 5,
+   "features": [
+    0.04255997674072142,
+    -0.18924343643107877,
+    -0.24512487351584358,
+    0.25000208335069457
+   ],
+   "context": {
+    "price": 89999,
+    "originalPrice": 119999,
+    "marketMedian": 114999,
+    "marketMax": 144999,
+    "comparators": 4
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa4ddcdd20c9c0815d408",
+   "title": "Samsung Galaxy Watch Ultra 47MM",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch Ultra 47MM Titanium Silver (2025)",
+   "groupSize": 5,
+   "features": [
+    0.15763036698067942,
+    -0.18924343643107877,
+    0.11507039023995798,
+    0.04166701389178243
+   ],
+   "context": {
+    "price": 114999,
+    "originalPrice": 119999,
+    "marketMedian": 102499,
+    "marketMax": 144999,
+    "comparators": 4
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b7bec9de462208cfb96c2",
+   "title": "Samsung Galaxy Watch Ultra 47MM Titanium Silver (2025)",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch Ultra 47MM Titanium Silver (2025)",
+   "groupSize": 5,
+   "features": [
+    0.15763036698067942,
+    -0.18924343643107877,
+    0.11507039023995798,
+    0.04166701389178243
+   ],
+   "context": {
+    "price": 114999,
+    "originalPrice": 119999,
+    "marketMedian": 102499,
+    "marketMax": 144999,
+    "comparators": 4
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa573cdd20c9c0815d435",
+   "title": "Samsung Galaxy Watch Ultra 2 (47MM)",
+   "platform": "priceoye",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch Ultra 47MM Titanium Silver (2025)",
+   "groupSize": 5,
+   "features": [
+    0.6171657665554301,
+    0.5020953763154722,
+    0.3468738034117581,
+    0.23684335180711477
+   ],
+   "context": {
+    "price": 144999,
+    "originalPrice": 189999,
+    "marketMedian": 102499,
+    "marketMax": 114999,
+    "comparators": 4
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b74ca9de462208cfb9613",
+   "title": "Samsung Watch 8 Classic 46mm",
+   "platform": "priceoye",
+   "category": "smartwatch",
+   "group": "Samsung Watch 8 Classic 46mm",
+   "groupSize": 4,
+   "features": [
+    0.441836720569226,
+    0.441836720569226,
+    -0.16121453732638177,
+    0.4528603775741255
+   ],
+   "context": {
+    "price": 76599,
+    "originalPrice": 139999,
+    "marketMedian": 89999,
+    "marketMax": 89999,
+    "comparators": 3
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa4ddcdd20c9c0815d40b",
+   "title": "Samsung Galaxy Watch 8 46MM Classic",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Watch 8 Classic 46mm",
+   "groupSize": 4,
+   "features": [
+    0.441836720569226,
+    0.441836720569226,
+    -0.09920780892453465,
+    0.4178601275723398
+   ],
+   "context": {
+    "price": 81499,
+    "originalPrice": 139999,
+    "marketMedian": 89999,
+    "marketMax": 89999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b74ca9de462208cfb9661",
+   "title": "Samsung Galaxy Watch 8 46MM Classic - Black",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Watch 8 Classic 46mm",
+   "groupSize": 4,
+   "features": [
+    0.5410445294937607,
+    0.441836720569226,
+    0.09920780892453461,
+    0.357145408181487
+   ],
+   "context": {
+    "price": 89999,
+    "originalPrice": 139999,
+    "marketMedian": 81499,
+    "marketMax": 89999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b74ca9de462208cfb9662",
+   "title": "Samsung Galaxy Watch 8 46MM Classic - White",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Watch 8 Classic 46mm",
+   "groupSize": 4,
+   "features": [
+    0.5410445294937607,
+    0.441836720569226,
+    0.09920780892453461,
+    0.357145408181487
+   ],
+   "context": {
+    "price": 89999,
+    "originalPrice": 139999,
+    "marketMedian": 81499,
+    "marketMax": 89999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b7bec9de462208cfb96c4",
+   "title": "Samsung Galaxy Watch Ultra 47MM Titanium Blue With Marine Blue (2025)",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch Ultra 2025 Titanium Blue",
+   "groupSize": 2,
+   "features": [
+    0.08701213457198749,
+    0.08701213457198749,
+    -0.20067271568457765,
+    0.25000208335069457
+   ],
+   "context": {
+    "price": 89999,
+    "originalPrice": 119999,
+    "marketMedian": 109999,
+    "marketMax": 109999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a78a2b09c96f297ede7738a",
+   "title": "Samsung Galaxy Watch Ultra 2025 Titanium Blue",
+   "platform": "mega",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch Ultra 2025 Titanium Blue",
+   "groupSize": 2,
+   "features": [
+    0.24512487351584372,
+    0.24512487351584372,
+    0.20067271568457756,
+    0.043478638944686475
+   ],
+   "context": {
+    "price": 109999,
+    "originalPrice": 114999,
+    "marketMedian": 89999,
+    "marketMax": 89999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa4ddcdd20c9c0815d425",
+   "title": "Samsung Galaxy Fit 3 Smart Watch",
+   "platform": "w11stop",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Band Fit 3 Smart Watch",
+   "groupSize": 2,
+   "features": [
+    0.15913366252515937,
+    0.15913366252515937,
+    0.04589909043642709,
+    0.10705882352941176
+   ],
+   "context": {
+    "price": 15180,
+    "originalPrice": 17000,
+    "marketMedian": 14499,
+    "marketMax": 14499,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b837b9de462208cfb96f1",
+   "title": "Nothing CMF Pro Smart Watch",
+   "platform": "priceoye",
+   "category": "smartwatch",
+   "group": "Nothing CMF Pro Smart Watch",
+   "groupSize": 2,
+   "features": [
+    0.28769874009072693,
+    0.28769874009072693,
+    -0.0689976337205343,
+    0.3000150007500375
+   ],
+   "context": {
+    "price": 13999,
+    "originalPrice": 19999,
+    "marketMedian": 14999,
+    "marketMax": 14999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b837b9de462208cfb970a",
+   "title": "Nothing Cmf Watch Pro",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Nothing CMF Pro Smart Watch",
+   "groupSize": 2,
+   "features": [
+    0.19416862030394444,
+    0.19416862030394444,
+    0.06899763372053423,
+    0.11765397964586152
+   ],
+   "context": {
+    "price": 14999,
+    "originalPrice": 16999,
+    "marketMedian": 13999,
+    "marketMax": 13999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b837b9de462208cfb9701",
+   "title": "Nothing CMF Watch 3 Pro",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Nothing CMF Watch 3 Pro",
+   "groupSize": 2,
+   "features": [
+    0.06899525252153484,
+    0.06899525252153484,
+    -0.03636896697031533,
+    0.10000333344444814
+   ],
+   "context": {
+    "price": 26999,
+    "originalPrice": 29999,
+    "marketMedian": 27999,
+    "marketMax": 27999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b837b9de462208cfb96f3",
+   "title": "Nothing CMF Watch 3 Pro",
+   "platform": "priceoye",
+   "category": "smartwatch",
+   "group": "Nothing CMF Watch 3 Pro",
+   "groupSize": 2,
+   "features": [
+    0.6744920852707178,
+    0.6744920852707178,
+    0.036368966970315324,
+    0.4717169811320755
+   ],
+   "context": {
+    "price": 27999,
+    "originalPrice": 53000,
+    "marketMedian": 26999,
+    "marketMax": 26999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6ab878fd7b2d0415f05618fb",
+   "title": "D-Link DPH-120SE - Broadband Internet IP Phone",
+   "platform": "w11stop",
+   "category": "smartwatch",
+   "group": "D-Link DPH-120SE Broadband Internet IP Phone",
+   "groupSize": 2,
+   "features": [
+    0.1542173487162459,
+    0.1542173487162459,
+    -0.10529384676883868,
+    0.22857142857142856
+   ],
+   "context": {
+    "price": 13500,
+    "originalPrice": 17500,
+    "marketMedian": 14999,
+    "marketMax": 14999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa4ddcdd20c9c0815d414",
+   "title": "Samsung Galaxy Watch 7 44mm Silver With Green Sport Band - SM-L310NZ",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch 7 44mm Green With Silver Sport Band - SM-L310NZ",
+   "groupSize": 2,
+   "features": [
+    0.4404517445903152,
+    0.4404517445903152,
+    -0.009756365316488415,
+    0.36250453130664134
+   ],
+   "context": {
+    "price": 50999,
+    "originalPrice": 79999,
+    "marketMedian": 51499,
+    "marketMax": 51499,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa4ddcdd20c9c0815d413",
+   "title": "Samsung Galaxy Watch 7 44mm Green With Silver Sport Band - SM-L310NZ",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch 7 44mm Green With Silver Sport Band - SM-L310NZ",
+   "groupSize": 2,
+   "features": [
+    0.4502081099068037,
+    0.4502081099068037,
+    0.009756365316488465,
+    0.35625445318066473
+   ],
+   "context": {
+    "price": 51499,
+    "originalPrice": 79999,
+    "marketMedian": 50999,
+    "marketMax": 50999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa573cdd20c9c0815d43f",
+   "title": "Apple Watch SE Gen 3 40mm Midnight Case With Midnight Sports Band",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Apple Watch SE Gen 3 40mm Starlight Case with Starlight Sports Band",
+   "groupSize": 2,
+   "features": [
+    0,
+    0,
+    -0.035932439647288594,
+    0.035294532876857375
+   ],
+   "context": {
+    "price": 81999,
+    "originalPrice": 84999,
+    "marketMedian": 84999,
+    "marketMax": 84999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b3d549de462208cfb95cb",
+   "title": "Samsung Galaxy Tab S10 Lite WiFi X400 (6GB-128GB)",
+   "platform": "priceoye",
+   "category": "tablet",
+   "group": "Samsung Galaxy Tab S10 Lite 6GB RAM 128GB Storage Wifi",
+   "groupSize": 3,
+   "features": [
+    0.2450177618537231,
+    0.21357593181565632,
+    -0.07922485234903669,
+    0.2769252071169778
+   ],
+   "context": {
+    "price": 93999,
+    "originalPrice": 129999,
+    "marketMedian": 101749,
+    "marketMax": 104999,
+    "comparators": 2
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa4ddcdd20c9c0815d419",
+   "title": "Samsung Galaxy Tab S10 Lite 6GB 128GB WiFi (SM-x400)",
+   "platform": "shophive",
+   "category": "tablet",
+   "group": "Samsung Galaxy Tab S10 Lite 6GB RAM 128GB Storage Wifi",
+   "groupSize": 3,
+   "features": [
+    0.05380323243986121,
+    0,
+    -0.010101198020542207,
+    0.0619053514795379
+   ],
+   "context": {
+    "price": 98499,
+    "originalPrice": 104999,
+    "marketMedian": 99499,
+    "marketMax": 104999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b3d549de462208cfb95c8",
+   "title": "Samsung Galaxy Tab S10 FE Plus (X620)",
+   "platform": "priceoye",
+   "category": "tablet",
+   "group": "Samsung Galaxy Tab S10 FE Plus 8GB RAM 128GB Storage Wifi",
+   "groupSize": 3,
+   "features": [
+    0.14197115858414386,
+    0.09237388939448775,
+    0.036609989327488025,
+    0.10000058823875435
+   ],
+   "context": {
+    "price": 152999,
+    "originalPrice": 169999,
+    "marketMedian": 147499,
+    "marketMax": 154999,
+    "comparators": 2
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b74ca9de462208cfb9666",
+   "title": "Samsung Galaxy Tab S11 11\" 256GB Wifi",
+   "platform": "shophive",
+   "category": "tablet",
+   "group": "Samsung Galaxy Tab S11 11\" 256GB Wifi",
+   "groupSize": 3,
+   "features": [
+    0.2657041802296555,
+    0.14310135646302696,
+    0.1416510913065399,
+    0.11666705555685186
+   ],
+   "context": {
+    "price": 264999,
+    "originalPrice": 299999,
+    "marketMedian": 229999,
+    "marketMax": 259999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b74ca9de462208cfb9667",
+   "title": "Samsung Galaxy Tab A11 Plus 11\" 6GB 128GB WiFi",
+   "platform": "shophive",
+   "category": "tablet",
+   "group": "Samsung Galaxy Tab A11 Plus 6GB RAM 128GB Storage Wifi",
+   "groupSize": 2,
+   "features": [
+    -0.05334669233193778,
+    -0.05334669233193778,
+    -0.10970042301774957,
+    0.054795271168098195
+   ],
+   "context": {
+    "price": 68999,
+    "originalPrice": 72999,
+    "marketMedian": 76999,
+    "marketMax": 76999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b3d549de462208cfb95c6",
+   "title": "Samsung Galaxy Tab S10 FE X520 WiFi",
+   "platform": "priceoye",
+   "category": "tablet",
+   "group": "Samsung Galaxy Tab S10 FE 8GB RAM 128GB Storage Wifi",
+   "groupSize": 2,
+   "features": [
+    0.02429288929194924,
+    0.02429288929194924,
+    -0.07663387886269088,
+    0.09600076800614404
+   ],
+   "context": {
+    "price": 112999,
+    "originalPrice": 124999,
+    "marketMedian": 121999,
+    "marketMax": 121999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a78a2b09c96f297ede77391",
+   "title": "Samsung 65\" QN70F Neo QLED 4K AI Smart TV (2025)",
+   "platform": "shophive",
+   "category": "tv",
+   "group": "Samsung 65\" QN70F Neo QLED 4K AI Smart TV (2025)",
+   "groupSize": 2,
+   "features": [
+    0.6124909675841994,
+    0.6124909675841994,
+    0.5716688897304408,
+    0.04000008000016
+   ],
+   "context": {
+    "price": 479999,
+    "originalPrice": 499999,
+    "marketMedian": 270999,
+    "marketMax": 270999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a78a2b09c96f297ede77394",
+   "title": "Samsung 75” QN85F Neo QLED 4K AI Smart TV (2025)",
+   "platform": "shophive",
+   "category": "tv",
+   "group": "Samsung 75” QN85F Neo QLED 4K AI Smart TV (2025)",
+   "groupSize": 2,
+   "features": [
+    0.042907544852657464,
+    0.042907544852657464,
+    0.020661913410427488,
+    0.022000022000022
+   ],
+   "context": {
+    "price": 977999,
+    "originalPrice": 999999,
+    "marketMedian": 957999,
+    "marketMax": 957999,
+    "comparators": 1
+   },
+   "historyCount": 8,
+   "ruleClassification": "possibly_genuine"
+  },
+  {
+   "id": "6a7b74ca9de462208cfb964f",
+   "title": "Samsung 65DU7000 65\" Crystal UHD 4K Smart TV (2024)",
+   "platform": "shophive",
+   "category": "tv",
+   "group": "Samsung 65DU7000 65 Inch Smart & 4k Crystal UHD TV",
+   "groupSize": 2,
+   "features": [
+    0.17852722900168158,
+    0.17852722900168158,
+    -0.02298962393343012,
+    0.18251019965855383
+   ],
+   "context": {
+    "price": 214999,
+    "originalPrice": 262999,
+    "marketMedian": 219999,
+    "marketMax": 219999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b74ca9de462208cfb9650",
+   "title": "Samsung 55DU7000 55\" Crystal UHD 4K Smart TV (2024)",
+   "platform": "shophive",
+   "category": "tv",
+   "group": "Samsung 55DU7000 55 inch Smart & Crystal UHD 4K LED TV",
+   "groupSize": 2,
+   "features": [
+    0.2295757650599376,
+    0.2295757650599376,
+    -0.07361231017808822,
+    0.2615398027682193
+   ],
+   "context": {
+    "price": 143999,
+    "originalPrice": 194999,
+    "marketMedian": 154999,
+    "marketMax": 154999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b74ca9de462208cfb964e",
+   "title": "Samsung 75DU7000 75\" Crystal UHD 4K Smart TV (2024)",
+   "platform": "shophive",
+   "category": "tv",
+   "group": "Samsung 75DU7000 75 inch Smart & Crystal UHD 4K LED TV",
+   "groupSize": 2,
+   "features": [
+    0.03774042294984776,
+    0.03774042294984776,
+    -0.09402920244780084,
+    0.12345709495579002
+   ],
+   "context": {
+    "price": 354999,
+    "originalPrice": 404999,
+    "marketMedian": 389999,
+    "marketMax": 389999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6bacdd20c9c0815d55a",
+   "title": "Lenovo ThinkBook 16 G8 Intel Core Ultra 5 225U",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad E14 Gen 7 14\" Intel Core Ultra 5 225U 8GB 512GB SSD Laptop",
+   "groupSize": 6,
+   "features": [
+    0.11778343248311869,
+    0.04214575810631005,
+    -0.09352640815219133,
+    0.19047679516442909
+   ],
+   "context": {
+    "price": 254999,
+    "originalPrice": 314999,
+    "marketMedian": 279999,
+    "marketMax": 301999,
+    "comparators": 5
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6cbcdd20c9c0815d57a",
+   "title": "Lenovo ThinkPad E14 Gen 7 Core Ultra 5 225U (8GB RAM - 512GB SSD)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad E14 Gen 7 14\" Intel Core Ultra 5 225U 8GB 512GB SSD Laptop",
+   "groupSize": 6,
+   "features": [
+    0.22314426560221998,
+    0.14750659122541124,
+    -0.003577834148749028,
+    0.20285772245063557
+   ],
+   "context": {
+    "price": 278999,
+    "originalPrice": 349999,
+    "marketMedian": 279999,
+    "marketMax": 301999,
+    "comparators": 5
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6cbcdd20c9c0815d579",
+   "title": "Lenovo ThinkPad E16 G3 Ultra 5 225U (8GB-512GB SSD)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad E14 Gen 7 14\" Intel Core Ultra 5 225U 8GB 512GB SSD Laptop",
+   "groupSize": 6,
+   "features": [
+    0.19773447884385956,
+    0.11851897031830193,
+    0.0035778341487491382,
+    0.17647110726796256
+   ],
+   "context": {
+    "price": 279999,
+    "originalPrice": 339999,
+    "marketMedian": 278999,
+    "marketMax": 301999,
+    "comparators": 5
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6bacdd20c9c0815d55e",
+   "title": "Lenovo ThinkBook 14 G8 IAL Core Ultra 7 255H (16GB Ram - 512GB SSD)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad E14 Gen 7 14\" Intel Core Ultra 7 255H 16GB 512GB SSD Laptop",
+   "groupSize": 4,
+   "features": [
+    0.0754586076891434,
+    0.04879028948303722,
+    -0.1327598735641018,
+    0.18797039591577924
+   ],
+   "context": {
+    "price": 323999,
+    "originalPrice": 398999,
+    "marketMedian": 369999,
+    "marketMax": 379999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6cbcdd20c9c0815d578",
+   "title": "Lenovo ThinkPad E16 G3 Ultra 7 255H (16GB-512GB SSD)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad E14 Gen 7 14\" Intel Core Ultra 7 255H 16GB 512GB SSD Laptop",
+   "groupSize": 4,
+   "features": [
+    0.07796174417294191,
+    0.05129342596683547,
+    -0.010869701774718556,
+    0.08500021250053125
+   ],
+   "context": {
+    "price": 365999,
+    "originalPrice": 399999,
+    "marketMedian": 369999,
+    "marketMax": 379999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6cbcdd20c9c0815d572",
+   "title": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 5 226V (16GB RAM - 512GB SSD)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad T14 Gen 6 Core Ultra 5 226V 16GB Ram 512GB SSD Laptop - 3 Year Warranty",
+   "groupSize": 4,
+   "features": [
+    0.20037892439804048,
+    -0.2040148670625751,
+    0.02852817404890834,
+    0.1578951523556641
+   ],
+   "context": {
+    "price": 319999,
+    "originalPrice": 379999,
+    "marketMedian": 310999,
+    "marketMax": 465999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6cbcdd20c9c0815d573",
+   "title": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 7 256V (16GB RAM - 512GB SSD)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 7 256V (16GB RAM - 512GB SSD)",
+   "groupSize": 4,
+   "features": [
+    0.16749273613028245,
+    0.1589820223182135,
+    -0.002853077122437827,
+    0.15662688343827336
+   ],
+   "context": {
+    "price": 349999,
+    "originalPrice": 414999,
+    "marketMedian": 350999,
+    "marketMax": 353999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6cbcdd20c9c0815d57c",
+   "title": "Lenovo ThinkPad E14 Gen 7 Intel Core Ultra 7 256V (16GB RAM - 512GB SSD)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 7 256V (16GB RAM - 512GB SSD)",
+   "groupSize": 4,
+   "features": [
+    0.18232203298567792,
+    0.1794689558632402,
+    0.011363790934506908,
+    0.15714323129340785
+   ],
+   "context": {
+    "price": 353999,
+    "originalPrice": 419999,
+    "marketMedian": 349999,
+    "marketMax": 350999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6bacdd20c9c0815d555",
+   "title": "Lenovo ThinkBook 16 G7 AMD Ryzen 5 7535HS (16GB Ram - 512GB SSD)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkBook 16 G7 AMD Ryzen 5 7535HS 16GB RAM 512GB SSD Laptop - 1 Year Warranty",
+   "groupSize": 3,
+   "features": [
+    0.18802409202847942,
+    0.1809853217359791,
+    -0.015252009950861109,
+    0.1839471035020184
+   ],
+   "context": {
+    "price": 243999,
+    "originalPrice": 298999,
+    "marketMedian": 247749,
+    "marketMax": 249499,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b74bd9de462208cfb9601",
+   "title": "Lenovo ThinkPad E16 Gen 4 Intel Core Ultra 7 355 16GB RAM 512GB SSD Laptop - 1 Year Warranty",
+   "platform": "shophive",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad E16 Gen 4 Intel Core Ultra 7 355 16GB RAM 512GB SSD Laptop - 1 Year Warranty",
+   "groupSize": 3,
+   "features": [
+    -0.2659362398864048,
+    -0.2748094283136613,
+    -0.31356440231892446,
+    0.04651173607380482
+   ],
+   "context": {
+    "price": 409999,
+    "originalPrice": 429999,
+    "marketMedian": 560999,
+    "marketMax": 565999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6bacdd20c9c0815d559",
+   "title": "Lenovo ThinkBook 16 G8 Intel Core 7 240H",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkBook 16 G8 Arrow Lake Intel Core 7 240H 16GB Ram 512GB SSD Laptop 1 Year Warranty",
+   "groupSize": 3,
+   "features": [
+    0.035627298541661676,
+    0.020202775344959373,
+    -0.1709877158515028,
+    0.18666728889096296
+   ],
+   "context": {
+    "price": 243999,
+    "originalPrice": 299999,
+    "marketMedian": 289499,
+    "marketMax": 293999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6bacdd20c9c0815d55b",
+   "title": "LENOVO THINKBOOK 16 G9 CORE 7 240H (16GB RAM - 512GB SSD)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkBook 16 G8 Arrow Lake Intel Core 7 240H 16GB Ram 512GB SSD Laptop 1 Year Warranty",
+   "groupSize": 3,
+   "features": [
+    0.28009282676364994,
+    0.20544462584595566,
+    0.105738895399482,
+    0.16000045714416328
+   ],
+   "context": {
+    "price": 293999,
+    "originalPrice": 349999,
+    "marketMedian": 264499,
+    "marketMax": 284999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6cbcdd20c9c0815d576",
+   "title": "Lenovo ThinkPad E16 G1 14 Inches 13th Gen Core i5 (8GB - 512GB)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad E16 G1 14 Inches 13th Gen Core i7 (8GB - 512GB)",
+   "groupSize": 3,
+   "features": [
+    -0.2881789489881869,
+    -0.4421158550588083,
+    -0.33737339486845785,
+    0.048004
+   ],
+   "context": {
+    "price": 237999,
+    "originalPrice": 250000,
+    "marketMedian": 333499,
+    "marketMax": 388999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6cbcdd20c9c0815d575",
+   "title": "Lenovo ThinkPad E16 G1 14 Inches 13th Gen Core i7 (8GB - 512GB)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad E16 G1 14 Inches 13th Gen Core i7 (8GB - 512GB)",
+   "groupSize": 3,
+   "features": [
+    -0.04401369561902347,
+    -0.2597942982648536,
+    -0.12017865371335931,
+    0.07333666666666666
+   ],
+   "context": {
+    "price": 277999,
+    "originalPrice": 300000,
+    "marketMedian": 313499,
+    "marketMax": 388999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6cccdd20c9c0815d57e",
+   "title": "Lenovo Thinkpad T14 13th Gen Core I7 DOS",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad E16 G1 14 Inches 13th Gen Core i7 (8GB - 512GB)",
+   "groupSize": 3,
+   "features": [
+    0.43850883816286834,
+    0.3638470305461168,
+    0.410621063975941,
+    0.0275025
+   ],
+   "context": {
+    "price": 388999,
+    "originalPrice": 400000,
+    "marketMedian": 257999,
+    "marketMax": 277999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7a330adc7ea9aa971cccb2",
+   "title": "HP 15 FD2100TU AI Laptop Intel Core Ultra 5 225U Processor (16GB RAM - 512GB SSD)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "HP 15 FD2100TU AI Laptop Intel Core Ultra 5 225U Processor (16GB RAM - 512GB SSD)",
+   "groupSize": 2,
+   "features": [
+    0.2124869332684306,
+    0.2124869332684306,
+    -0.05073570194527967,
+    0.23142923265495044
+   ],
+   "context": {
+    "price": 268999,
+    "originalPrice": 349999,
+    "marketMedian": 282999,
+    "marketMax": 282999,
+    "comparators": 1
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7a3555dc7ea9aa971cccb6",
+   "title": "HP Notebook 15 FD2100tu 15.6\" Intel Core Ultra 5 225U 16GB Ram 512GB SSD AI Laptop - 1 Year Warranty",
+   "platform": "shophive",
+   "category": "laptop",
+   "group": "HP 15 FD2100TU AI Laptop Intel Core Ultra 5 225U Processor (16GB RAM - 512GB SSD)",
+   "groupSize": 2,
+   "features": [
+    0.09056794537732746,
+    0.09056794537732746,
+    0.05073570194527957,
+    0.039049368588687905
+   ],
+   "context": {
+    "price": 282999,
+    "originalPrice": 294499,
+    "marketMedian": 268999,
+    "marketMax": 268999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6bacdd20c9c0815d558",
+   "title": "Lenovo ThinkBook 16 G8 Ultra 7 255H",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkBook 16 G8 Arrow Lake 16\" Intel Core Ultra 7 255H 8GB 512GB SSD Laptop 1Y",
+   "groupSize": 2,
+   "features": [
+    0.26570394611435244,
+    0.26570394611435244,
+    0.0033389124138239255,
+    0.2307698224867243
+   ],
+   "context": {
+    "price": 299999,
+    "originalPrice": 389999,
+    "marketMedian": 298999,
+    "marketMax": 298999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6cbcdd20c9c0815d571",
+   "title": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 5 228V (32GB RAM - 512GB SSD)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo Thinkpad E16 Gen 3 Lunar Lake 16\" Intel Core Ultra 5 228V 32GB RAM 512GB SSD Laptop - 1 Year Warranty",
+   "groupSize": 2,
+   "features": [
+    0.1454173921446242,
+    0.1454173921446242,
+    -0.0029027680840054354,
+    0.13784495700490476
+   ],
+   "context": {
+    "price": 343999,
+    "originalPrice": 398999,
+    "marketMedian": 344999,
+    "marketMax": 344999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6bacdd20c9c0815d55d",
+   "title": "Lenovo ThinkBook 14 G8 IAL Core Ultra 5 225U (16GB Ram - 512GB SSD)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkBook 14 G8 IAL Core Ultra 5 225U (16GB Ram - 512GB SSD)",
+   "groupSize": 2,
+   "features": [
+    0.2558151665005283,
+    0.2558151665005283,
+    0.046855586192253974,
+    0.18857196734847814
+   ],
+   "context": {
+    "price": 283999,
+    "originalPrice": 349999,
+    "marketMedian": 270999,
+    "marketMax": 270999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6cbcdd20c9c0815d574",
+   "title": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 7 258V (32GB RAM - 512GB SSD)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 7 258V (32GB RAM - 512GB SSD)",
+   "groupSize": 2,
+   "features": [
+    -0.2537810188613735,
+    -0.2537810188613735,
+    -0.37406746877998903,
+    0.11333358518574485
+   ],
+   "context": {
+    "price": 398999,
+    "originalPrice": 449999,
+    "marketMedian": 579999,
+    "marketMax": 579999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6cbcdd20c9c0815d577",
+   "title": "Lenovo ThinkPad E16 G1 15.6 Inches 13th Gen Core i5 (8GB - 512GB)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad E16 G1 15.6 Inches 13th Gen Core i5 (8GB - 512GB)",
+   "groupSize": 2,
+   "features": [
+    -0.09748962127725709,
+    -0.09748962127725709,
+    -0.14668406715752821,
+    0.048004
+   ],
+   "context": {
+    "price": 237999,
+    "originalPrice": 250000,
+    "marketMedian": 275600,
+    "marketMax": 275600,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6cbcdd20c9c0815d57d",
+   "title": "Lenovo ThinkPad E14 G5 13th Gen Core i7 1355U (8GB-512GB)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad E14 G5 13th Gen Core i7 1355U (8GB-512GB)",
+   "groupSize": 2,
+   "features": [
+    0.07361528957149634,
+    0.07361528957149634,
+    -0.006968693597452185,
+    0.07742258064516129
+   ],
+   "context": {
+    "price": 285999,
+    "originalPrice": 310000,
+    "marketMedian": 287999,
+    "marketMax": 287999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6cccdd20c9c0815d582",
+   "title": "LENOVO THINKPAD E14 G4 13TH GEN Intel Core I7 1355U (8GB-512GB SSD)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad E14 G5 13th Gen Core i7 1355U (8GB-512GB)",
+   "groupSize": 2,
+   "features": [
+    0.04779416034595783,
+    0.04779416034595783,
+    0.006968693597452302,
+    0.040003333333333335
+   ],
+   "context": {
+    "price": 287999,
+    "originalPrice": 300000,
+    "marketMedian": 285999,
+    "marketMax": 285999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6cccdd20c9c0815d580",
+   "title": "Lenovo ThinkPad E14 G4 14 Inches 12th Gen Core i5 DOS (8GB - 512GB)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad E14 G4 14 Inches 12th Gen Core i7 DOS (8GB - 512GB)",
+   "groupSize": 2,
+   "features": [
+    0.11826824950743345,
+    0.11826824950743345,
+    -0.004338420420437729,
+    0.11538846153846154
+   ],
+   "context": {
+    "price": 229999,
+    "originalPrice": 260000,
+    "marketMedian": 230999,
+    "marketMax": 230999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6cccdd20c9c0815d57f",
+   "title": "Lenovo ThinkPad E14 G4 14 Inches 12th Gen Core i7 DOS (8GB - 512GB)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad E14 G4 14 Inches 12th Gen Core i7 DOS (8GB - 512GB)",
+   "groupSize": 2,
+   "features": [
+    0.29849411057988084,
+    0.29849411057988084,
+    0.004338420420437836,
+    0.25483953174042495
+   ],
+   "context": {
+    "price": 230999,
+    "originalPrice": 309999,
+    "marketMedian": 229999,
+    "marketMax": 229999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6cccdd20c9c0815d581",
+   "title": "Lenovo ThinkPad E14 Intel Core Ultra 5 (8GB-512GB)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad E14 Intel Core Ultra 5 (8GB-512GB)",
+   "groupSize": 2,
+   "features": [
+    0.18981122941567197,
+    0.18981122941567197,
+    0.01222016111263795,
+    0.16271525423728814
+   ],
+   "context": {
+    "price": 246999,
+    "originalPrice": 295000,
+    "marketMedian": 243999,
+    "marketMax": 243999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6cccdd20c9c0815d58a",
+   "title": "Lenovo Ideapad Slim 3 13th Gen Core i3 DOS",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo IdeaPad Slim 3 Core i5 13th Gen",
+   "groupSize": 2,
+   "features": [
+    0.18885544465527926,
+    0.18885544465527926,
+    -0.0819176020541436,
+    0.23721040562979362
+   ],
+   "context": {
+    "price": 163999,
+    "originalPrice": 214999,
+    "marketMedian": 177999,
+    "marketMax": 177999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6cccdd20c9c0815d58c",
+   "title": "Lenovo Thinkbook 15 G2 15.6 Inches 11th Gen Core i7 DOS (8GB - 1TB)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo Thinkbook 15 G2 15.6 Inches 11th Gen Core i7 DOS (8GB - 1TB)",
+   "groupSize": 2,
+   "features": [
+    0.49141002660952837,
+    0.49141002660952837,
+    0.2633514559486987,
+    0.20392236832301303
+   ],
+   "context": {
+    "price": 202999,
+    "originalPrice": 254999,
+    "marketMedian": 155999,
+    "marketMax": 155999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6cccdd20c9c0815d5a8",
+   "title": "Lenovo ThinkPad E16 16\" Panther Lake Intel Core Ultra 7 355 Series 3 16GB RAM 512GB SSD Laptop 1 Year Warranty",
+   "platform": "shophive",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad E16 16\" Panther Lake Intel Core Ultra 7 355 Series 3 16GB RAM 512GB SSD Laptop 1 Year Warranty",
+   "groupSize": 2,
+   "features": [
+    0.0698239495656349,
+    0.0698239495656349,
+    0,
+    0.06744201730701699
+   ],
+   "context": {
+    "price": 400999,
+    "originalPrice": 429999,
+    "marketMedian": 400999,
+    "marketMax": 400999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abac958cdd20c9c0815d619",
+   "title": "Dell Pro 15 Essential PV15250 Laptop - Raptor Lake -13th Gen Core i5 1334U 10-Core Processor 8-GB 512-GB SSD Intel UHD Graphics 15.6\" Full HD 1080P IPS WVA 120Hz AG Display TPM (Carbon Black, NEW)",
+   "platform": "paklap",
+   "category": "laptop",
+   "group": "Dell Pro 15 Essential PV15250 Laptop - Raptor Lake -13th Gen Core i5 1334U 10-Core Processor 8-GB 512-GB SSD Intel UHD Graphics 15.6\" Full HD 1080P IPS WVA 120Hz AG Display TPM (Carbon Black, Brand New, Light Cosmetic Marks)",
+   "groupSize": 2,
+   "features": [
+    0.08096906253366709,
+    0.08096906253366709,
+    0.05279818556697083,
+    0.027777777777777776
+   ],
+   "context": {
+    "price": 175000,
+    "originalPrice": 180000,
+    "marketMedian": 166000,
+    "marketMax": 166000,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abad83dcdd20c9c0815d810",
+   "title": "Lenovo ThinkPad T14 Gen 1 | Core i5 | 10th Gen | 14 Inches Touch screen Display Pre-Owned Laptop With Warranty",
+   "platform": "telemart",
+   "category": "laptop",
+   "group": "Hp EliteBook 840 G7 | Core i5 | 10th Gen | 14 Inches Touch Screen Display Pre-Owned Laptop",
+   "groupSize": 2,
+   "features": [
+    0.03967681715289829,
+    0.03967681715289829,
+    -0.12285518432573929,
+    0.15001111111111112
+   ],
+   "context": {
+    "price": 76499,
+    "originalPrice": 90000,
+    "marketMedian": 86499,
+    "marketMax": 86499,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abad83dcdd20c9c0815d806",
+   "title": "Hp EliteBook 840 G7 | Core i5 | 10th Gen | 14 Inches Touch Screen Display Pre-Owned Laptop",
+   "platform": "telemart",
+   "category": "laptop",
+   "group": "Hp EliteBook 840 G7 | Core i5 | 10th Gen | 14 Inches Touch Screen Display Pre-Owned Laptop",
+   "groupSize": 2,
+   "features": [
+    0.4910360684506738,
+    0.4910360684506738,
+    0.12285518432573943,
+    0.308008
+   ],
+   "context": {
+    "price": 86499,
+    "originalPrice": 125000,
+    "marketMedian": 76499,
+    "marketMax": 76499,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abad83dcdd20c9c0815d80c",
+   "title": "HP EliteBook 840 G8 | Core i7 | 11th Gen | 14 Inches Display Pre-Owned Laptop With Warranty",
+   "platform": "telemart",
+   "category": "laptop",
+   "group": "HP EliteBook 840 G8 | Core i7 | 11th Gen | 14 Inches Display Pre-Owned Laptop With Warranty",
+   "groupSize": 2,
+   "features": [
+    0.09431800550540267,
+    0.09431800550540267,
+    -0.3111571026527621,
+    0.33334
+   ],
+   "context": {
+    "price": 99999,
+    "originalPrice": 150000,
+    "marketMedian": 136499,
+    "marketMax": 136499,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abad83dcdd20c9c0815d80e",
+   "title": "Dell Latitude 7420 | Core i7 | 11th Gen | 14 Inches Display Pre-Owned Laptop With Warranty",
+   "platform": "telemart",
+   "category": "laptop",
+   "group": "HP EliteBook 840 G8 | Core i7 | 11th Gen | 14 Inches Display Pre-Owned Laptop With Warranty",
+   "groupSize": 2,
+   "features": [
+    0.4700136292957359,
+    0.4700136292957359,
+    0.3111571026527621,
+    0.14688125
+   ],
+   "context": {
+    "price": 136499,
+    "originalPrice": 160000,
+    "marketMedian": 99999,
+    "marketMax": 99999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  }
+ ]
+}
