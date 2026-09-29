@@ -6,6 +6,7 @@ import { attachPriceHistory } from "../services/historyEnrichment.service.js";
 import { selectCandidates } from "../services/candidateSelection.service.js";
 import { normalizeTitle } from "../services/normalizeTitle.service.js";
 import { parsePagination } from "../services/pagination.service.js";
+import { textParam, numberParam } from "../services/queryParams.service.js";
 import { groupListingsByProduct } from "../services/productGrouping.service.js";
 import {
   getListingPriceHistory,
@@ -178,9 +179,9 @@ export async function getListingStats(req, res) {
 
 export async function searchListings(req, res) {
   try {
-    const { q } = req.query;
+    const q = textParam(req.query.q);
 
-    if (!q || q.trim() === "") {
+    if (!q) {
       return res.status(400).json({
         success: false,
         message:
@@ -208,7 +209,7 @@ console.log("[search]", refreshResult);
      * carousels use to request only phones or only laptops. When it is not
      * supplied it is inferred from the query text.
      */
-    const requestedCategory = req.query.category;
+    const requestedCategory = textParam(req.query.category);
     const queryCategory = requestedCategory || detectQueryCategory(trimmedQuery).category;
 
     /*
@@ -240,10 +241,14 @@ console.log("[search]", refreshResult);
     }
 
     // Optional filters supplied by the user
-    if (req.query.storage) searchFilter.storageGb = Number(req.query.storage);
-    if (req.query.colour) searchFilter.colour = req.query.colour;
-    if (req.query.condition) searchFilter.condition = req.query.condition;
-    if (req.query.pta) searchFilter.ptaStatus = req.query.pta;
+    const storage = numberParam(req.query.storage);
+    if (storage) searchFilter.storageGb = storage;
+    const colour = textParam(req.query.colour);
+    const condition = textParam(req.query.condition);
+    const pta = textParam(req.query.pta);
+    if (colour) searchFilter.colour = colour;
+    if (condition) searchFilter.condition = condition;
+    if (pta) searchFilter.ptaStatus = pta;
 
     let listings = await Listing.find(searchFilter).sort({
       price: 1,

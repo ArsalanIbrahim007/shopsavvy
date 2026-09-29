@@ -36,3 +36,11 @@ context.md
 
 # Per-machine scheduled-job bookkeeping
 backend/.scheduled-scrape-state.json
+
+# Local-only project guides (public repo: never commit these)
+architecture.md
+phases.md
+security.md
+error-handling.md
+context-*.md
+.git-commit-msg.txt

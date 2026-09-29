@@ -54,8 +54,8 @@ function PriceHistoryChart({ history }) {
   return (
     <div className={`history-chart history-chart-${tone}`}>
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Price history chart">
-        {[min, max].map((v) => (
-          <g key={v}>
+        {[min, max].map((v, i) => (
+          <g key={i}>
             <line
               x1={PAD.left}
               x2={W - PAD.right}
