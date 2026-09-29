@@ -8,12 +8,21 @@
 // evaluation set instead, to prove the ML path doesn't regress on cases the
 // rules already solve perfectly.
 //
+// The split is grouped (shared listing or product family) and stratified by category.
+// A first version shuffled pairs individually, so several pairs about one product
+// could land on both sides and the held-out score partly measured memorised
+// titles. Whole groups now go to one side only, and each category contributes
+// about a quarter of its pairs to the test set, so laptops, TVs and watches are
+// all tested rather than being swamped by phones.
+//
 // Usage: node src/scripts/ml/03-split-dataset.js
 // Output: src/ml/dataset/split.json
 
 import { readFileSync, writeFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
+
+import { pairComponents } from "../../ml/dataset/family.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATASET_DIR = join(__dirname, "..", "..", "ml", "dataset");
@@ -38,6 +47,7 @@ function shuffle(items) {
   return arr;
 }
 
+const CATEGORY_POOL = /^cat_/;
 const TRAINABLE_POOLS = new Set([
   "positive", "hard_negative_ambiguous", "easy_negative_same_category",
   // Targeted follow-up mining (_mine_gap_examples.js) for patterns the
@@ -48,34 +58,60 @@ const TRAINABLE_POOLS = new Set([
 
 const labeled = JSON.parse(readFileSync(join(DATASET_DIR, "pairs.labeled.json"), "utf8"));
 
-const trainable = labeled.filter((p) => TRAINABLE_POOLS.has(p.pool));
-const evalOnly = labeled.filter((p) => !TRAINABLE_POOLS.has(p.pool));
+const isTrainable = (p) => TRAINABLE_POOLS.has(p.pool) || CATEGORY_POOL.test(p.pool);
+const trainable = labeled.filter(isTrainable);
+const evalOnly = labeled.filter((p) => !isTrainable(p));
 
-const positives = shuffle(trainable.filter((p) => p.label === 1));
-const negatives = shuffle(trainable.filter((p) => p.label === 0));
+const TEST_RATIO = 0.25;
 
-function splitStratum(items, trainRatio = 0.75) {
-  const cut = Math.round(items.length * trainRatio);
-  return { train: items.slice(0, cut), test: items.slice(cut) };
+const byCategory = new Map();
+for (const pair of trainable) {
+  const category = pair.categoryA || "other";
+  if (!byCategory.has(category)) byCategory.set(category, []);
+  byCategory.get(category).push(pair);
 }
 
-const posSplit = splitStratum(positives);
-const negSplit = splitStratum(negatives);
+const train = [];
+const test = [];
+
+for (const [, pairs] of [...byCategory].sort()) {
+  const testTarget = Math.round(pairs.length * TEST_RATIO);
+  const trainTarget = pairs.length - testTarget;
+  let testCount = 0;
+  let trainCount = 0;
+
+  // Largest groups first, each to whichever side is further below its target,
+  // so one big connected group cannot push a side far past its share.
+  const groups = shuffle(pairComponents(pairs)).sort((x, y) => y[1].length - x[1].length);
+  for (const [, members] of groups) {
+    if (testTarget - testCount > trainTarget - trainCount) { test.push(...members); testCount += members.length; }
+    else { train.push(...members); trainCount += members.length; }
+  }
+}
+
+const count = (arr, label) => arr.filter((p) => p.label === label).length;
 
 const split = {
-  train: shuffle([...posSplit.train, ...negSplit.train]),
-  test: shuffle([...posSplit.test, ...negSplit.test]),
+  train: shuffle(train),
+  test: shuffle(test),
   evalOnly,
   meta: {
     seed: 20261120,
-    trainRatio: 0.75,
+    testRatio: TEST_RATIO,
+    grouping: "connected components of shared listings and product families, stratified by category",
     counts: {
-      trainPositive: posSplit.train.length,
-      trainNegative: negSplit.train.length,
-      testPositive: posSplit.test.length,
-      testNegative: negSplit.test.length,
+      trainPositive: count(train, 1),
+      trainNegative: count(train, 0),
+      testPositive: count(test, 1),
+      testNegative: count(test, 0),
       evalOnly: evalOnly.length,
     },
+    testByCategory: Object.fromEntries(
+      [...byCategory.keys()].sort().map((c) => {
+        const inTest = test.filter((p) => (p.categoryA || "other") === c);
+        return [c, { positive: count(inTest, 1), negative: count(inTest, 0) }];
+      })
+    ),
   },
 };
 

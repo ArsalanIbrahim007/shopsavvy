@@ -119,6 +119,11 @@ describe("series numbers", () => {
     ["Oppo Reno 4", "Oppo Reno 6"],
     ["Samsung Galaxy Buds 3", "Samsung Galaxy Buds 4"],
     ["WIWU Skin Pro 16'' Smart Stand Leather Sleeve", "WIWU Skin Pro 13'' Smart Stand Leather Sleeve"],
+    // Two-character model identifiers, too short to count as model codes.
+    ["Huawei Y6 Prime (2019)", "Huawei Y5 Prime (2019)"],
+    ["Huawei Honor 7X", "Huawei Honor 7i"],
+    ["Lenovo ThinkBook 16 G8 Core 7 240H 16GB 512GB", "Lenovo ThinkBook 16 G9 Core 7 240H 16GB 512GB"],
+    ["Apple MacBook Air 15 M4 Chip", "Apple MacBook Air 15 M5 Chip"],
   ])("separates %s / %s", (a, b) => {
     expect(attributeConflict(a, b)).toBe(true);
   });
@@ -130,6 +135,9 @@ describe("series numbers", () => {
     ["Apple iPhone 17", "Apple iPhone 17 PTA Approved With Official Warranty"],
     // Operating system numbers are not model numbers.
     ["Acer Aspire 8GB 256GB Windows 10", "Acer Aspire 8GB 256GB Windows 11"],
+    // 5G and 4K are markers, not model identifiers.
+    ["Xiaomi Redmi Note 14 5G", "Xiaomi Redmi Note 14 4G"],
+    ["Samsung 55 Inch 4K Smart TV (Q7F)", "Samsung 55 Inch Smart TV (Q7F)"],
   ])("does not veto %s / %s on numbers alone", (a, b) => {
     expect(attributeConflict(a, b)).toBe(false);
   });

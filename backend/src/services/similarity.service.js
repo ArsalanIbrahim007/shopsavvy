@@ -74,6 +74,30 @@ export function seriesNumbers(text = "") {
   return found;
 }
 
+// A trailing letter that is a unit or a connectivity/resolution marker, not part of
+// a model name: "5G", "4K", "65W", "1L", "10M", "5V", "50P".
+const UNIT_SUFFIX_LETTERS = new Set(["g", "k", "w", "l", "m", "h", "v", "p"]);
+
+/**
+ * Two-character model identifiers too short to count as model codes: a letter
+ * then digits ("Y6", "G8", "M5", "A3") or digits then a letter ("7X", "3A").
+ * Returned keyed by what distinguishes them: the leading letter for the first
+ * form, the digits for the second, so "g8" and "g9" (same letter, different
+ * digits) can be recognised as competing values of the same slot.
+ */
+export function shortModelIds(text = "") {
+  const slots = new Map();
+  const add = (slot, value) => {
+    if (!slots.has(slot)) slots.set(slot, new Set());
+    slots.get(slot).add(value);
+  };
+  tokenize(modelTokens(text)).forEach((token) => {
+    if (/^[a-z]\d{1,2}$/.test(token) && !/^[2-5]g$/.test(token)) add("letter:" + token[0], token.slice(1));
+    else if (/^\d{1,2}[a-z]$/.test(token) && !UNIT_SUFFIX_LETTERS.has(token.slice(-1))) add("digits:" + token.slice(0, -1), token.slice(-1));
+  });
+  return slots;
+}
+
 export function sameSet(a, b) {
   if (a.size !== b.size) return false;
   for (const value of a) if (!b.has(value)) return false;
@@ -157,6 +181,17 @@ export function attributeConflict(textA, textB, { ignoreUnstatedStorage = false 
     numbersB.size > 0 &&
     ![...numbersA].some((n) => numbersB.has(n))
   ) return true;
+
+  // The same slot holding different values is a different model: "G8" / "G9",
+  // "M4" / "M5", "Y6" / "Y5", "7X" / "7i". These are checked per slot rather than
+  // as a shared set because titles often share a size ("ThinkBook 16 G8" and
+  // "16 G9" both say 16), which would hide the difference.
+  const idsA = shortModelIds(textA);
+  const idsB = shortModelIds(textB);
+  for (const [slot, valuesA] of idsA) {
+    const valuesB = idsB.get(slot);
+    if (valuesB && ![...valuesA].some((v) => valuesB.has(v))) return true;
+  }
 
   if (!sameSet(extractVariants(textA), extractVariants(textB))) return true;
 

@@ -6,10 +6,20 @@
 // split, here is our model's accuracy vs. the old rule's accuracy on the
 // same test set."
 //
+// Also reports:
+//   - a per-category breakdown, so a strong phone score cannot hide a weak
+//     laptop or TV score;
+//   - the previous, phone-heavy model (model.artifact.v1-phone-heavy.json)
+//     scored on the pairs mined for the newer categories, which it never saw,
+//     to show what the extra data changed.
+//
+// Hand-written commentary lives in EVALUATION_NOTES.md and is appended
+// verbatim, so regenerating this report cannot delete it.
+//
 // Usage: node src/scripts/ml/05-evaluate.js
 // Output: prints metrics, writes src/ml/EVALUATION_REPORT.md
 
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync, writeFileSync, existsSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
@@ -21,29 +31,32 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATASET_DIR = join(__dirname, "..", "..", "ml", "dataset");
 const ML_DIR = join(__dirname, "..", "..", "ml");
 
-const { test, evalOnly, meta } = JSON.parse(readFileSync(join(DATASET_DIR, "split.json"), "utf8"));
-const model = JSON.parse(readFileSync(join(ML_DIR, "model.artifact.json"), "utf8"));
+const { train, test, evalOnly, meta } = JSON.parse(readFileSync(join(DATASET_DIR, "split.json"), "utf8"));
+// The model the live API loads, and a retrained candidate that is evaluated here but
+// only promoted after whole-database review (see EVALUATION_NOTES.md).
+const v1Model = JSON.parse(readFileSync(join(ML_DIR, "model.artifact.json"), "utf8"));
+const model = JSON.parse(readFileSync(join(ML_DIR, "model.artifact.v2-multicategory.json"), "utf8"));
 
 const evaluationSet = [...test, ...evalOnly];
 
-function classifyML(pair) {
-  // The attribute-constraint veto is an absolute pre-filter, not a model
-  // input (see the plan's "Hard-constraint policy") -- a known fact like
-  // "128GB and 64GB are different" is never left to the model to overrule.
-  // Using the lenient veto (ignoreUnstatedStorage) mirrors how the model was
-  // trained: unstated-capacity cases are exactly what it's meant to
-  // adjudicate, using priceProximity as a learned signal instead of the
-  // rule pipeline's fixed 15% cutoff.
-  if (attributeConflict(pair.titleA, pair.titleB, { ignoreUnstatedStorage: true })) return 0;
+function classifyWith(artifact) {
+  return (pair) => {
+    // The attribute-constraint veto is an absolute pre-filter, not a model
+    // input -- a known fact like "128GB and 64GB are different" is never left
+    // to the model to overrule. The lenient veto (ignoreUnstatedStorage)
+    // mirrors how the model was trained: unstated-capacity cases are exactly
+    // what it is meant to adjudicate, using priceProximity as a learned
+    // signal instead of the rule pipeline's fixed 15% cutoff.
+    if (attributeConflict(pair.titleA, pair.titleB, { ignoreUnstatedStorage: true })) return 0;
 
-  const features = buildFeatureVector({ titleA: pair.titleA, titleB: pair.titleB, priceA: pair.priceA, priceB: pair.priceB });
-  const probability = predictProba(features, model);
-  return probability >= model.threshold ? 1 : 0;
+    const features = buildFeatureVector({ titleA: pair.titleA, titleB: pair.titleB, priceA: pair.priceA, priceB: pair.priceB });
+    return predictProba(features, artifact) >= artifact.threshold ? 1 : 0;
+  };
 }
 
-function classifyRule(pair) {
-  return isSimilarProduct(pair.titleA, pair.titleB, 0.7) ? 1 : 0;
-}
+const classifyML = classifyWith(model);
+const classifyV1 = classifyWith(v1Model);
+const classifyRule = (pair) => (isSimilarProduct(pair.titleA, pair.titleB, 0.7) ? 1 : 0);
 
 function confusionMatrix(pairs, classify) {
   const cm = { tp: 0, fp: 0, fn: 0, tn: 0 };
@@ -58,7 +71,8 @@ function confusionMatrix(pairs, classify) {
 }
 
 function metricsFrom(cm) {
-  const accuracy = (cm.tp + cm.tn) / (cm.tp + cm.tn + cm.fp + cm.fn);
+  const total = cm.tp + cm.tn + cm.fp + cm.fn;
+  const accuracy = total === 0 ? 0 : (cm.tp + cm.tn) / total;
   const precision = cm.tp + cm.fp === 0 ? 0 : cm.tp / (cm.tp + cm.fp);
   const recall = cm.tp + cm.fn === 0 ? 0 : cm.tp / (cm.tp + cm.fn);
   const f1 = precision + recall === 0 ? 0 : (2 * precision * recall) / (precision + recall);
@@ -71,52 +85,96 @@ const mlMetrics = metricsFrom(mlCm);
 const ruleMetrics = metricsFrom(ruleCm);
 
 console.log(`Evaluation set: ${evaluationSet.length} pairs (${test.length} held-out test + ${evalOnly.length} eval-only, never trained on)`);
-console.log("\n=== Trained classifier ===");
+console.log("\n=== Candidate classifier (v2) ===");
 console.table(mlCm);
 console.table(mlMetrics);
 console.log("\n=== Rule-based baseline (isSimilarProduct, threshold 0.7) ===");
 console.table(ruleCm);
 console.table(ruleMetrics);
 
-const disagreements = evaluationSet
-  .map((p) => ({ ...p, mlPred: classifyML(p), rulePred: classifyRule(p) }))
-  .filter((p) => p.mlPred !== p.rulePred)
-  .slice(0, 10);
-
-console.log(`\nDisagreements (ML vs rule): ${evaluationSet.filter((p) => classifyML(p) !== classifyRule(p)).length} of ${evaluationSet.length}`);
-
 const pct = (n) => `${(n * 100).toFixed(1)}%`;
+
+// Per-category breakdown on the held-out test pairs (eval-only pairs are
+// veto/cross-category checks and are not attributed to a category here).
+const categories = [...new Set(test.map((p) => p.categoryA || "other"))].sort();
+const perCategory = categories.map((category) => {
+  const pairs = test.filter((p) => (p.categoryA || "other") === category);
+  const m = metricsFrom(confusionMatrix(pairs, classifyML));
+  const r = metricsFrom(confusionMatrix(pairs, classifyRule));
+  const positives = pairs.filter((p) => p.label === 1).length;
+  return { category, pairs: pairs.length, positives, ml: m, rule: r };
+});
+
+// The production model against the pairs mined for the newer categories. None
+// of these were in its training data, so this is a fair before/after.
+const newCategoryTest = test.filter((p) => /^cat_/.test(p.pool));
+const v1OnNew = metricsFrom(confusionMatrix(newCategoryTest, classifyV1));
+const v2OnNew = metricsFrom(confusionMatrix(newCategoryTest, classifyML));
+const ruleOnNew = metricsFrom(confusionMatrix(newCategoryTest, classifyRule));
+
+console.log("\n=== Per category (held-out test pairs) ===");
+console.table(perCategory.map((c) => ({
+  category: c.category, pairs: c.pairs, positives: c.positives,
+  mlF1: pct(c.ml.f1), ruleF1: pct(c.rule.f1), mlAcc: pct(c.ml.accuracy),
+})));
+console.log(`\nNewer categories only (${newCategoryTest.length} held-out pairs): production v1 F1 ${pct(v1OnNew.f1)}, candidate v2 F1 ${pct(v2OnNew.f1)}, rule F1 ${pct(ruleOnNew.f1)}`);
+
+const disagreementsAll = evaluationSet
+  .map((p) => ({ ...p, mlPred: classifyML(p), rulePred: classifyRule(p) }))
+  .filter((p) => p.mlPred !== p.rulePred);
+const disagreements = disagreementsAll.slice(0, 10);
+const mlErrors = evaluationSet
+  .map((p) => ({ ...p, mlPred: classifyML(p) }))
+  .filter((p) => p.mlPred !== p.label);
+
+console.log(`\nDisagreements (ML vs rule): ${disagreementsAll.length} of ${evaluationSet.length}`);
+console.log(`ML errors: ${mlErrors.length}`);
+
+const trainPositive = meta.counts.trainPositive;
+const trainNegative = meta.counts.trainNegative;
+const testPositive = meta.counts.testPositive;
+const testNegative = meta.counts.testNegative;
+const label = (v) => (v ? "match" : "no-match");
+
+const notesPath = join(ML_DIR, "EVALUATION_NOTES.md");
+const notes = existsSync(notesPath) ? readFileSync(notesPath, "utf8") : "";
 
 const report = `# Trained Matching Classifier — Evaluation Report
 
-Generated ${new Date().toISOString()}. Dataset: 150 pairs mined from the live 822-listing
-corpus, blocked by category (never all-pairs), labeled via a documented rubric with a 20-pair
-human spot-check. Train/test split seed: ${meta.seed}.
+Generated ${new Date().toISOString()}. Pairs are mined from the live listing database, blocked
+by category (never all-pairs), labelled by hand against a written rubric
+(\`dataset/LABELING_RUBRIC.md\`) before any model output was consulted, with a 20-pair
+independent spot-check per labelling round. Train/test split seed: ${meta.seed}.
 
 ## Dataset composition
 
 | Split | Positive | Negative | Total |
 |---|---|---|---|
-| Train | ${meta.counts.trainPositive} | ${meta.counts.trainNegative} | ${meta.counts.trainPositive + meta.counts.trainNegative} |
-| Test (held out) | ${meta.counts.testPositive} | ${meta.counts.testNegative} | ${meta.counts.testPositive + meta.counts.testNegative} |
+| Train | ${trainPositive} | ${trainNegative} | ${trainPositive + trainNegative} |
+| Test (held out) | ${testPositive} | ${testNegative} | ${testPositive + testNegative} |
 | Eval-only (never trained on: hard vetoes + cross-category) | 0 | ${meta.counts.evalOnly} | ${meta.counts.evalOnly} |
 
-Positive pairs are a genuine minority (${meta.counts.trainPositive + meta.counts.testPositive}
-of ${meta.counts.trainPositive + meta.counts.trainNegative + meta.counts.testPositive + meta.counts.testNegative}
-in the trainable pool) — real cross-platform product overlap is rare in an 822-listing,
-4-platform catalog. Class-weighted training was used rather than artificially balancing the
-dataset, to keep the numbers honest.
+The first dataset was 181 pairs and about 60% smartphones: laptops had no positive pairs,
+smartwatches none, TVs six. A second mining pass added 150 pairs across laptops, TVs,
+smartwatches, tablets and headphones, so the classifier is now trained and tested outside
+phones. Class-weighted training is used rather than artificially balancing the data.
+
+**The split is grouped, not random.** Pairs are split as whole groups: any two pairs that share
+a listing or a product family go to the same side, then each category contributes about a
+quarter of its pairs to the test set. This is checked: no listing and no product family
+appears on both sides. (An earlier random split let several pairs about one product straddle
+train and test, which flatters the score.)
 
 ## Results on the ${evaluationSet.length}-pair evaluation set (test + eval-only, none trained on)
 
-| Metric | Trained classifier | Rule baseline (Jaccard ≥ 0.70) |
+| Metric | Candidate classifier (v2, multi-category) | Rule baseline (Jaccard ≥ 0.70) |
 |---|---|---|
 | Accuracy | ${pct(mlMetrics.accuracy)} | ${pct(ruleMetrics.accuracy)} |
 | Precision | ${pct(mlMetrics.precision)} | ${pct(ruleMetrics.precision)} |
 | Recall | ${pct(mlMetrics.recall)} | ${pct(ruleMetrics.recall)} |
 | F1 | ${pct(mlMetrics.f1)} | ${pct(ruleMetrics.f1)} |
 
-### Confusion matrix — trained classifier
+### Confusion matrix — candidate classifier (v2)
 | | Predicted match | Predicted no-match |
 |---|---|---|
 | **Actually match** | ${mlCm.tp} (TP) | ${mlCm.fn} (FN) |
@@ -132,31 +190,43 @@ Both pipelines run behind the same attribute-constraint veto (\`attributeConflic
 comparison isolates the effect of replacing the fixed 0.70 Jaccard threshold with a trained
 decision, not the constraint layer itself, which stays identical in both.
 
-## Learned weights (standardized scale)
+## By category (held-out test pairs only)
+
+| Category | Pairs | Same-product pairs | Classifier F1 | Rule F1 | Classifier accuracy |
+|---|---|---|---|---|---|
+${perCategory.map((c) => `| ${c.category} | ${c.pairs} | ${c.positives} | ${c.positives ? pct(c.ml.f1) : "n/a"} | ${c.positives ? pct(c.rule.f1) : "n/a"} | ${pct(c.ml.accuracy)} |`).join("\n")}
+
+F1 is shown as n/a where a category has no same-product test pairs. Small per-category counts
+mean single pairs move these numbers a lot; read them as a check that no category collapses,
+not as precise estimates.
+
+## Production model vs candidate
+
+On the ${newCategoryTest.length} held-out pairs from the newer categories (laptops, TVs, smartwatches, tablets,
+headphones), which the production model never saw in training:
+
+| Model | Accuracy | Precision | Recall | F1 |
+|---|---|---|---|---|
+| Production model (v1, phone-heavy, ${v1Model.trainingSize} training pairs, threshold ${v1Model.threshold}) | ${pct(v1OnNew.accuracy)} | ${pct(v1OnNew.precision)} | ${pct(v1OnNew.recall)} | ${pct(v1OnNew.f1)} |
+| Candidate (v2, ${model.trainingSize} training pairs, threshold ${model.threshold}) | ${pct(v2OnNew.accuracy)} | ${pct(v2OnNew.precision)} | ${pct(v2OnNew.recall)} | ${pct(v2OnNew.f1)} |
+| Rule baseline | ${pct(ruleOnNew.accuracy)} | ${pct(ruleOnNew.precision)} | ${pct(ruleOnNew.recall)} | ${pct(ruleOnNew.f1)} |
+
+## Learned weights of the candidate (standardized scale)
 
 | Feature | Weight |
 |---|---|
 ${FEATURE_NAMES.map((name, i) => `| ${name} | ${model.weights[i].toFixed(4)} |`).join("\n")}
 | *(bias)* | ${model.bias.toFixed(4)} |
 
-\`jaccardRaw\` and \`priceProximity\` carry the largest positive weights — text similarity and
-price closeness are the dominant learned signals, consistent with what the rule-based design
-already assumed, but now the *boundary* is calibrated from data instead of a hand-picked 0.70.
+## Where the two pipelines disagree (first ${disagreements.length} of ${disagreementsAll.length})
 
-## Where the two pipelines disagree (first ${disagreements.length})
+${disagreements.map((p) => `- **"${p.titleA}"** vs **"${p.titleB}"** — true label: ${label(p.label)}, ML said ${label(p.mlPred)}, rule said ${label(p.rulePred)}. (${p.rationale})`).join("\n")}
 
-${disagreements.map((p) => `- **"${p.titleA}"** vs **"${p.titleB}"** — true label: ${p.label ? "match" : "no-match"}, ML said ${p.mlPred ? "match" : "no-match"}, rule said ${p.rulePred ? "match" : "no-match"}. (${p.rationale})`).join("\n")}
+## Where the candidate is wrong (${mlErrors.length} of ${evaluationSet.length})
 
-## Interpretation
+${mlErrors.length ? mlErrors.map((p) => `- **"${p.titleA}"** (${p.priceA}) vs **"${p.titleB}"** (${p.priceB}) — true label: ${label(p.label)}, ML said ${label(p.mlPred)}. (${p.rationale})`).join("\n") : "None."}
 
-This is a small dataset (${meta.counts.trainPositive + meta.counts.trainNegative} training
-pairs) by the standards of a typical ML paper, but it is a real one: every pair traces back to
-an actual scraped listing, labels followed a fixed rubric, and a sample was independently
-spot-checked. The honest takeaway for the defense is not "this beats the rule system by N
-points" in isolation — it's that the team can now show a genuine train/test methodology,
-quantified accuracy, and a reasoned interpretation of what the model learned, which is exactly
-what the mid-defense panel said was missing.
-`;
+${notes}`;
 
 writeFileSync(join(ML_DIR, "EVALUATION_REPORT.md"), report);
 console.log(`\nWrote ${join(ML_DIR, "EVALUATION_REPORT.md")}`);
