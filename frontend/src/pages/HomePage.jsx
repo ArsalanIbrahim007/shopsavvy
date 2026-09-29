@@ -276,11 +276,10 @@ function HomePage() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const response = await fetch(`${BASE_URL}/listings`);
+        const response = await fetch(`${BASE_URL}/listings/stats`);
         const data = await response.json();
         if (data.success) {
-          const platforms = [...new Set(data.data.map((p) => p.platform))];
-          setStats({ products: data.count, platforms: platforms.length });
+          setStats({ products: data.products, platforms: data.platforms });
           setStatsLoaded(true);
         }
       } catch {

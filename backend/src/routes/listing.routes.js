@@ -3,6 +3,7 @@ import express from "express";
 import {
   createListing,
   getListings,
+  getListingStats,
   searchListings,
   getListingDetails,
   addListingPriceHistory,
@@ -60,9 +61,24 @@ router.post(
  * /api/listings:
  *   get:
  *     summary: List stored listings
- *     description: Returns every stored listing, newest first. No pagination is currently applied -- large collections return in full.
+ *     description: Returns stored listings, newest first. Without `limit` the whole collection is returned, as before. With `limit` the response is paginated and also carries total, page, limit and totalPages.
  *     tags:
  *       - Listings
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 200
+ *         description: Page size. Enables pagination; values above 200 are clamped.
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: 1-based page number, used together with limit.
  *     responses:
  *       200:
  *         description: Stored listings.
@@ -83,6 +99,34 @@ router.post(
  *                     $ref: '#/components/schemas/Listing'
  */
 router.get("/", getListings);
+
+/**
+ * @swagger
+ * /api/listings/stats:
+ *   get:
+ *     summary: Headline counts
+ *     description: Total number of stored listings and the number of distinct platforms, without returning the listings themselves.
+ *     tags:
+ *       - Listings
+ *     responses:
+ *       200:
+ *         description: Counts.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 products:
+ *                   type: integer
+ *                   example: 2727
+ *                 platforms:
+ *                   type: integer
+ *                   example: 8
+ */
+router.get("/stats", getListingStats);
 
 /**
  * @swagger

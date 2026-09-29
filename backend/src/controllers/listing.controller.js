@@ -4,6 +4,7 @@ import { detectCategory, detectQueryCategory } from "../scrapers/productCategory
 import { attachPriceHistory } from "../services/historyEnrichment.service.js";
 import { selectCandidates } from "../services/candidateSelection.service.js";
 import { normalizeTitle } from "../services/normalizeTitle.service.js";
+import { parsePagination } from "../services/pagination.service.js";
 import { groupListingsByProduct } from "../services/productGrouping.service.js";
 import {
   getListingPriceHistory,
@@ -128,13 +129,25 @@ export async function createListing(req, res) {
 
 export async function getListings(req, res) {
   try {
-    const listings = await Listing.find().sort({
-      createdAt: -1,
-    });
+    const paging = parsePagination(req.query);
+
+    let query = Listing.find().sort({ createdAt: -1 });
+    if (paging) query = query.skip(paging.skip).limit(paging.limit);
+
+    const [listings, total] = await Promise.all([
+      query,
+      paging ? Listing.countDocuments() : null,
+    ]);
 
     res.json({
       success: true,
       count: listings.length,
+      ...(paging && {
+        total,
+        page: paging.page,
+        limit: paging.limit,
+        totalPages: Math.ceil(total / paging.limit),
+      }),
       data: listings,
     });
   } catch (error) {
@@ -142,6 +155,23 @@ export async function getListings(req, res) {
       success: false,
       message: error.message,
     });
+  }
+}
+
+/**
+ * Headline numbers for the homepage. Counting on the server means the page
+ * no longer downloads every listing just to show two figures.
+ */
+export async function getListingStats(req, res) {
+  try {
+    const [products, platforms] = await Promise.all([
+      Listing.countDocuments(),
+      Listing.distinct("platform"),
+    ]);
+
+    res.json({ success: true, products, platforms: platforms.length });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 }
 
