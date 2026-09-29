@@ -8,6 +8,7 @@
 // majority redundant with each other, and enough load to risk getting the
 // scrapers rate-limited or blocked by the source sites.
 
+import { VISIBLE_PLATFORMS_FILTER } from "../config/platforms.js";
 import Listing from "../models/listing.model.js";
 import { groupListingsByProduct } from "./productGrouping.service.js";
 import { modelTokens } from "./normalizeTitle.service.js";
@@ -61,7 +62,7 @@ export function deriveQuery(title) {
  * @returns {Promise<string[]>}
  */
 export async function buildScheduledQueryList({ minOffers = 2 } = {}) {
-  const listings = await Listing.find().lean();
+  const listings = await Listing.find(VISIBLE_PLATFORMS_FILTER).lean();
 
   const byCategory = new Map();
   for (const listing of listings) {

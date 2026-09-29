@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { VISIBLE_PLATFORMS_FILTER } from "../config/platforms.js";
 import Listing from "../models/listing.model.js";
 import { detectCategory, detectQueryCategory } from "../scrapers/productCategory.js";
 import { attachPriceHistory } from "../services/historyEnrichment.service.js";
@@ -131,12 +132,12 @@ export async function getListings(req, res) {
   try {
     const paging = parsePagination(req.query);
 
-    let query = Listing.find().sort({ createdAt: -1 });
+    let query = Listing.find(VISIBLE_PLATFORMS_FILTER).sort({ createdAt: -1 });
     if (paging) query = query.skip(paging.skip).limit(paging.limit);
 
     const [listings, total] = await Promise.all([
       query,
-      paging ? Listing.countDocuments() : null,
+      paging ? Listing.countDocuments(VISIBLE_PLATFORMS_FILTER) : null,
     ]);
 
     res.json({
@@ -165,8 +166,8 @@ export async function getListings(req, res) {
 export async function getListingStats(req, res) {
   try {
     const [products, platforms] = await Promise.all([
-      Listing.countDocuments(),
-      Listing.distinct("platform"),
+      Listing.countDocuments(VISIBLE_PLATFORMS_FILTER),
+      Listing.distinct("platform", VISIBLE_PLATFORMS_FILTER),
     ]);
 
     res.json({ success: true, products, platforms: platforms.length });
@@ -225,6 +226,7 @@ console.log("[search]", refreshResult);
      * only added once there is still something left to match on.
      */
     const searchFilter = {
+      ...VISIBLE_PLATFORMS_FILTER,
       $or: [
         { title: { $regex: buildSpaceTolerantPattern(trimmedQuery), $options: "i" } },
         ...(normalizedQuery
@@ -423,7 +425,7 @@ export async function getListingDetails(req, res) {
       });
     }
 
-    const listing = await Listing.findById(id);
+    const listing = await Listing.findOne({ _id: id, ...VISIBLE_PLATFORMS_FILTER });
 
     if (!listing) {
       return res.status(404).json({
@@ -438,6 +440,7 @@ export async function getListingDetails(req, res) {
      * shares the coarse "Electronics" category. See selectCandidates.
      */
     const categoryPool = await Listing.find({
+      ...VISIBLE_PLATFORMS_FILTER,
       productCategory: listing.productCategory || "other",
       _id: { $ne: listing._id },
     }).sort({ price: 1 });

@@ -10,6 +10,7 @@
 // This makes ShopSavvy a "live" system — searches always return
 // up-to-date prices, not just whatever was last seeded manually.
 
+import { VISIBLE_PLATFORMS_FILTER } from "../config/platforms.js";
 import Listing from "../models/listing.model.js";
 import PriceHistory from "../models/priceHistory.model.js";
 import { normalizeTitle } from "./normalizeTitle.service.js";
@@ -62,6 +63,7 @@ async function hasFreshData(query) {
   // search filter. Skipping the clause here keeps a freshness check for
   // "apple" from being satisfied by literally any recently scraped listing.
   const count = await Listing.countDocuments({
+    ...VISIBLE_PLATFORMS_FILTER,
     $or: [
       { title: { $regex: escapeRegex(trimmed), $options: "i" } },
       ...(normalizedQuery
