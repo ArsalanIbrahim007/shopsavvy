@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Listing from "../models/listing.model.js";
 import { detectCategory, detectQueryCategory } from "../scrapers/productCategory.js";
 import { attachPriceHistory } from "../services/historyEnrichment.service.js";
+import { selectCandidates } from "../services/candidateSelection.service.js";
 import { normalizeTitle } from "../services/normalizeTitle.service.js";
 import { groupListingsByProduct } from "../services/productGrouping.service.js";
 import {
@@ -401,34 +402,17 @@ export async function getListingDetails(req, res) {
       });
     }
 
-    const normalizedQuery = normalizeTitle(
-      listing.normalizedTitle || listing.title
-    );
+    /*
+     * Candidates for "the same product elsewhere": listings in the same
+     * product category whose titles overlap this one, not every listing that
+     * shares the coarse "Electronics" category. See selectCandidates.
+     */
+    const categoryPool = await Listing.find({
+      productCategory: listing.productCategory || "other",
+      _id: { $ne: listing._id },
+    }).sort({ price: 1 });
 
-    const firstTitleWord =
-      listing.title?.split(" ")[0] || "";
-
-    const possibleMatches = await Listing.find({
-      $or: [
-        {
-          normalizedTitle: {
-            $regex: normalizedQuery,
-            $options: "i",
-          },
-        },
-        {
-          title: {
-            $regex: firstTitleWord,
-            $options: "i",
-          },
-        },
-        {
-          category: listing.category,
-        },
-      ],
-    }).sort({
-      price: 1,
-    });
+    const possibleMatches = selectCandidates(listing, categoryPool);
 
     /*
      * Price history must be attached before grouping so the

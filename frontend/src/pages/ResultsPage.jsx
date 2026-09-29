@@ -3,7 +3,6 @@ import { useState, useMemo, useEffect } from "react";
 import { searchProducts } from "../api/api";
 import Sidebar from "../components/Sidebar";
 import SummaryCards from "../components/SummaryCards";
-import ProductHeader from "../components/ProductHeader";
 import ComparisonTable from "../components/ComparisonTable";
 
 const CATEGORY_NAMES = {
@@ -97,12 +96,15 @@ function ResultsPage() {
   const [selectedScreen, setSelectedScreen] = useState([]);
   const [selectedResolution, setSelectedResolution] = useState([]);
 
+  // Seeds the filter state from the URL once the platform list is known. The
+  // state is deliberately a copy: the sidebar edits it and writes back to the URL.
   useEffect(() => {
     if (allPlatforms.length > 0) {
       const urlPlatforms = searchParams.get("platforms");
       const urlMinPrice = searchParams.get("minPrice");
       const urlMaxPrice = searchParams.get("maxPrice");
 
+      /* eslint-disable react-hooks/set-state-in-effect */
       setSelectedPlatforms(urlPlatforms ? urlPlatforms.split(",") : allPlatforms);
       setPriceRange([
         urlMinPrice ? Number(urlMinPrice) : minPrice,
@@ -110,6 +112,7 @@ function ResultsPage() {
       ]);
       setShowBestDeal(searchParams.get("bestDeal") === "true");
       setShowTopRated(searchParams.get("topRated") === "true");
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [allPlatforms, minPrice, maxPrice]);
 

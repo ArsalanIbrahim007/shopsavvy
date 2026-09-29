@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { RECOMMENDATION_LABELS, DISCOUNT_LABELS } from "./dealLabels";
 
 const PLATFORM_LOGOS = {
   priceoye: "https://priceoye.pk/favicon.ico",
@@ -25,24 +26,6 @@ const PLATFORM_COLORS = {
 function canonical(platform = "") {
   return String(platform).toLowerCase().replace(/[^a-z0-9]/g, "").replace(/pk$|com$/, "");
 }
-
-const RECOMMENDATION_LABELS = {
-  BUY_NOW: { text: "Buy Now", cls: "rec-buy" },
-  GOOD_DEAL: { text: "Good Deal", cls: "rec-good" },
-  FAIR_PRICE: { text: "Fair Price", cls: "rec-fair" },
-  WAIT: { text: "Wait", cls: "rec-wait" },
-  OVERPRICED: { text: "Overpriced", cls: "rec-over" },
-  NO_HISTORY: { text: "No History", cls: "rec-none" },
-};
-
-const DISCOUNT_LABELS = {
-  likely_fake: { text: "Fake Discount", cls: "disc-fake" },
-  suspicious: { text: "Suspicious", cls: "disc-suspicious" },
-  genuine_discount: { text: "Verified", cls: "disc-genuine" },
-  possibly_genuine: { text: "Likely Genuine", cls: "disc-likely" },
-  unverified_discount: { text: "Unverified", cls: "disc-unverified" },
-  no_claimed_discount: { text: "", cls: "" },
-};
 
 function PlatformLogo({ platform }) {
   const key = canonical(platform);
@@ -220,7 +203,6 @@ function ComparisonTable({ products }) {
             const rec = RECOMMENDATION_LABELS[product.recommendation?.action] ||
               RECOMMENDATION_LABELS.NO_HISTORY;
             const disc = DISCOUNT_LABELS[analysis.classification] || { text: "", cls: "" };
-            const historyCount = (product.priceHistory || []).length;
 
             return (
               <tr key={product._id} className={isBest ? "best-deal-row" : ""}>

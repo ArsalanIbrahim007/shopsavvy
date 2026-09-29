@@ -10,8 +10,8 @@ function ProductCard({ product }) {
       )}
       <div className="product-card-inner">
         <img
-          src={listing.imageUrl}
-          alt={listing.title}
+          src={product.imageUrl}
+          alt={product.title}
           referrerPolicy="no-referrer"
           className="detail-image"
           onError={(e) => {

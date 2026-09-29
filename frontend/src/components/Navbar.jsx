@@ -30,6 +30,8 @@ function Navbar() {
 
   useEffect(() => {
     if (isResultsPage) {
+      // Keeps the search box in step with the URL when the user navigates.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setQuery(searchParams.get("q") || "");
     }
   }, [isResultsPage, searchParams]);

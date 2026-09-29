@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "../components/SearchBar";
+import { BASE_URL } from "../api/api";
 
 const POPULAR_SEARCHES = [
   "iPhone 17",
@@ -247,7 +248,13 @@ function Carousel({ title, sectionBg, products, loading, brandFilters, onBrandSe
 function HomePage() {
   const [query, setQuery] = useState("");
   const [selectedBrowseCategory, setSelectedBrowseCategory] = useState(null);
-  const [recentSearches, setRecentSearches] = useState([]);
+  const [recentSearches, setRecentSearches] = useState(() => {
+    try {
+      return JSON.parse(sessionStorage.getItem("recentSearches")) || [];
+    } catch {
+      return [];
+    }
+  });
   const [stats, setStats] = useState({ products: 0, platforms: 0 });
   const [statsLoaded, setStatsLoaded] = useState(false);
   const [animateStats, setAnimateStats] = useState(false);
@@ -267,14 +274,9 @@ function HomePage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const saved = sessionStorage.getItem("recentSearches");
-    if (saved) setRecentSearches(JSON.parse(saved));
-  }, []);
-
-  useEffect(() => {
     async function fetchStats() {
       try {
-        const response = await fetch("http://localhost:5000/api/listings");
+        const response = await fetch(`${BASE_URL}/listings`);
         const data = await response.json();
         if (data.success) {
           const platforms = [...new Set(data.data.map((p) => p.platform))];
@@ -295,7 +297,7 @@ function HomePage() {
         const searches = ["iphone", "samsung", "laptop"];
         const results = await Promise.all(
           searches.map((q) =>
-            fetch(`http://localhost:5000/api/listings/search?q=${q}`)
+            fetch(`${BASE_URL}/listings/search?q=${q}`)
               .then((r) => r.json())
               .then((d) => (d.success ? d.data : []))
               .catch(() => [])
@@ -327,7 +329,7 @@ function HomePage() {
       setPhonesLoading(true);
       try {
         const response = await fetch(
-          `http://localhost:5000/api/listings/search?q=${encodeURIComponent(activeBrandPhone)}`
+          `${BASE_URL}/listings/search?q=${encodeURIComponent(activeBrandPhone)}`
         );
         const data = await response.json();
         const products = data.success ? data.data.slice(0, 12) : [];
@@ -346,7 +348,7 @@ function HomePage() {
       setLaptopsLoading(true);
       try {
         const response = await fetch(
-          `http://localhost:5000/api/listings/search?q=${encodeURIComponent(activeBrandLaptop)}`
+          `${BASE_URL}/listings/search?q=${encodeURIComponent(activeBrandLaptop)}`
         );
         const data = await response.json();
         const products = data.success ? data.data.slice(0, 12) : [];

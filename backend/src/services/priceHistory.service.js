@@ -1,4 +1,4 @@
-import PriceHistory from "../models/priceHistory.model.js";
+import PriceHistory, { shouldAppendEntry } from "../models/priceHistory.model.js";
 import Listing from "../models/listing.model.js";
 
 function parsePositiveNumber(value) {
@@ -108,10 +108,7 @@ export async function recordPriceSnapshot(
 
   const lastEntry = document.entries[document.entries.length - 1];
 
-  const unchanged =
-    lastEntry &&
-    lastEntry.price === validPrice &&
-    (lastEntry.originalPrice ?? null) === validOriginalPrice;
+  const unchanged = !shouldAppendEntry(lastEntry, newEntry);
 
   if (skipDuplicate && unchanged) {
     await document.save();

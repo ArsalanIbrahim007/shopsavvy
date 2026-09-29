@@ -1,5 +1,9 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { BASE_URL } from "../api/api";
+import PriceHistoryChart from "../components/PriceHistoryChart";
+import DealVerdict from "../components/DealVerdict";
+import PriceAlertForm from "../components/PriceAlertForm";
 
 const PLATFORM_COLORS = {
   priceoye: "#e8401c",
@@ -136,7 +140,7 @@ function ProductDetailPage() {
   useEffect(() => {
     async function fetchProduct() {
       try {
-        const response = await fetch(`http://localhost:5000/api/listings/${id}`);
+        const response = await fetch(`${BASE_URL}/listings/${id}`);
         const data = await response.json();
 
         if (data.success && data.listing) {
@@ -294,6 +298,23 @@ function ProductDetailPage() {
             </div>
           </div>
         )}
+      </div>
+
+      <div className="detail-analysis">
+        <section className="detail-panel">
+          <h2 className="detail-panel-title">Deal verdict</h2>
+          <DealVerdict listing={listing} />
+        </section>
+
+        <section className="detail-panel">
+          <h2 className="detail-panel-title">Price history</h2>
+          <PriceHistoryChart history={listing.priceHistory} />
+        </section>
+
+        <section className="detail-panel">
+          <h2 className="detail-panel-title">Price alert</h2>
+          <PriceAlertForm listing={listing} />
+        </section>
       </div>
 
       {offers && offers.length > 1 && (

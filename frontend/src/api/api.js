@@ -1,4 +1,6 @@
-const BASE_URL = "http://localhost:5000/api";
+// Set VITE_API_URL at build time for a deployed backend; local dev falls back
+// to the Express server on port 5000.
+export const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export async function searchProducts(query) {
   try {
