@@ -36,6 +36,10 @@ const swaggerOptions = {
         name: "Analytics",
         description: "Listing and platform analytics",
       },
+      {
+        name: "Price Alerts",
+        description: "Email-based price-drop alerts (accountless -- no login, an alert is identified by listing + email)",
+      },
     ],
 
     components: {

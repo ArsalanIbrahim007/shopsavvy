@@ -189,6 +189,9 @@
 .disc-genuine    { background: var(--ss-green-soft); color: var(--ss-green); border-color: #b3ddc7; }
 .disc-likely     { background: var(--ss-blue-soft);  color: var(--ss-blue);  border-color: #c2d3ff; }
 .disc-unverified { background: #f3f5f8;              color: var(--ss-ink-mute); border-color: var(--ss-line); }
+/* Cross-store check: the "was" price isn't supported by what other stores
+   charge. Amber, not red -- a warning about the claim, not proof it's fake. */
+.disc-market     { background: var(--ss-amber-soft); color: var(--ss-amber); border-color: #f3d19e; cursor: help; }
 
 .fake-alert-strip {
   background: var(--ss-amber-soft);
@@ -508,4 +511,24 @@
   border-color: var(--ss-blue);
   color: #fff;
   font-weight: 600;
+}
+
+/* ── Comparison table on narrow screens (NFR-07) ─────────────────────────
+   .comparison-table-wrapper is "overflow: visible" (see the rule above,
+   line ~397) so the score-breakdown hover popover isn't clipped -- but
+   that also means the table has nothing to constrain or scroll it, so on
+   a phone-width screen it was overflowing the page instead of scrolling,
+   confirmed live at 390px (2026-09-29): only Store/Price/Discount stayed
+   visible, everything from Deal Score onward was clipped off-screen with
+   no way to reach it.
+   Scoped to the same 900px breakpoint the rest of the results page already
+   uses (App.css) so desktop is completely unaffected. Below that, hover
+   isn't a real interaction anyway (touch has no hover), so trading the
+   popover's edge-case vertical clipping for a scrollable table is a clear
+   improvement, not a regression. */
+@media (max-width: 900px) {
+  .comparison-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }

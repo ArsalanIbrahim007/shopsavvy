@@ -3,6 +3,7 @@ import { calculateFreshnessScore } from "./scores/freshnessScore.js";
 import { calculateAvailabilityScore } from "./scores/availabilityScore.js";
 import { calculateTrustScore } from "./scores/trustScore.js";
 import { calculateFakeDiscountScore } from "./scores/fakeDiscountScore.js";
+import { analyzeDiscountAnomaly } from "../services/discountAnomaly.service.js";
 import { SCORE_WEIGHTS } from "./scoreWeights.js";
 
 /**
@@ -101,6 +102,12 @@ export function calculateDealScores(offers = []) {
         priceHistory: getOfferPriceHistory(plainOffer),
       });
 
+      // Cross-store check: judges the claim against the other offers in this
+      // same product group (always one product -- the only caller is
+      // productGrouping.service.js). Extra evidence alongside the history-based
+      // analysis above; it does not change isFakeDiscount or the deal score.
+      const discountAnomaly = analyzeDiscountAnomaly(plainOffer, plainOffers);
+
       const scoreBreakdown = {
         price: priceScore,
         trust: trustScore,
@@ -124,6 +131,8 @@ export function calculateDealScores(offers = []) {
         scoreWeights: SCORE_WEIGHTS,
 
         discountAnalysis,
+
+        discountAnomaly,
       };
     })
     .sort((a, b) => b.dealScore - a.dealScore);

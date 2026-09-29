@@ -1,46 +1,20 @@
 // ishopping.scraper.js
 //
 // Dedicated scraper for iShopping.pk.
-// iShopping uses Magento and serves static HTML — Axios + Cheerio works.
-// However it returns 403 without proper browser simulation.
-// Fix: visit homepage first to get session cookies, then hit search page
-// with realistic browser headers including sec-fetch and sec-ch-ua headers.
+// iShopping uses Magento and serves static HTML, but 403s every plain axios
+// request -- even with a full browser-like header set and a homepage-first
+// cookie handshake (both tried and confirmed still blocked, 2026-09-29).
+// Whatever the bot check inspects, axios can't fake it. Fetches go through
+// a real headless browser instead (playwrightFetch.js); everything below
+// this point (selectors, parsing) is unchanged from the axios version.
 
-import axios from "axios";
 import * as cheerio from "cheerio";
+import { fetchHtmlWithBrowser } from "./playwrightFetch.js";
 import { parsePrice, cleanText, safeMap } from "./scraper.utils.js";
 import { makeListing } from "./scraper.schema.js";
 
 const PLATFORM = "ishopping";
 const BASE_URL = "https://www.ishopping.pk";
-
-// Full browser-like headers including sec-fetch headers that real Chrome sends
-const HEADERS = {
-  "User-Agent":
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-    "AppleWebKit/537.36 (KHTML, like Gecko) " +
-    "Chrome/124.0.0.0 Safari/537.36",
-  "Accept":
-    "text/html,application/xhtml+xml,application/xml;q=0.9," +
-    "image/avif,image/webp,image/apng,*/*;q=0.8",
-  "Accept-Language": "en-US,en;q=0.9",
-  "Accept-Encoding": "gzip, deflate, br",
-  "Cache-Control": "no-cache",
-  "Pragma": "no-cache",
-  "Upgrade-Insecure-Requests": "1",
-  "Sec-Fetch-Dest": "document",
-  "Sec-Fetch-Mode": "navigate",
-  "Sec-Fetch-Site": "same-origin",
-  "Sec-Fetch-User": "?1",
-  "Sec-Ch-Ua": '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
-  "Sec-Ch-Ua-Mobile": "?0",
-  "Sec-Ch-Ua-Platform": '"Windows"',
-  "Connection": "keep-alive",
-};
-
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 function toAbsoluteUrl(value) {
   if (!value) return null;
@@ -51,65 +25,8 @@ function toAbsoluteUrl(value) {
   }
 }
 
-/**
- * Fetches iShopping HTML with proper browser simulation.
- * Step 1: Visit homepage to collect session cookies
- * Step 2: Wait briefly (like a real user)
- * Step 3: Request search page with cookies + Referer
- */
 async function fetchIShoppingHtml(url) {
-  const client = axios.create({
-    timeout: 20000,
-    maxRedirects: 5,
-    responseType: "text",
-    // Keep cookies across requests
-    withCredentials: true,
-  });
-
-  let cookieHeader = "";
-
-  // Step 1: Visit homepage to get session cookies
-  try {
-    const homeResponse = await client.get(`${BASE_URL}/`, {
-      headers: {
-        ...HEADERS,
-        "Sec-Fetch-Site": "none", // first navigation has no referrer site
-      },
-    });
-
-    const setCookies = homeResponse.headers["set-cookie"] || [];
-    cookieHeader = setCookies
-      .map((cookie) => cookie.split(";")[0])
-      .join("; ");
-
-  } catch (err) {
-    console.warn(`[${PLATFORM}] homepage visit failed: ${err.message}`);
-    // Continue anyway — some servers set cookies via JS, not headers
-  }
-
-  // Step 2: Small delay to look like a real user browsing
-  await sleep(800 + Math.random() * 400);
-
-  // Step 3: Request search page with cookies + Referer
-  try {
-    const response = await client.get(url, {
-      headers: {
-        ...HEADERS,
-        "Referer": `${BASE_URL}/`,
-        "Sec-Fetch-Site": "same-origin",
-        ...(cookieHeader ? { "Cookie": cookieHeader } : {}),
-      },
-    });
-
-    return response.data;
-  } catch (err) {
-    const status = err.response?.status;
-    throw new Error(
-      status
-        ? `iShopping returned HTTP ${status} for: ${url}`
-        : `iShopping request failed: ${err.message}`
-    );
-  }
+  return fetchHtmlWithBrowser(url, { waitForSelector: ".product-item" });
 }
 
 function readPrice(card, selectors) {
@@ -153,6 +70,11 @@ function getStockStatus(card) {
 
 function getProductCards($) {
   const selectors = [
+    // Confirmed live 2026-09-29 via headless-browser fetch — the card
+    // wrapper is .product-item-info, not .product-item (the classes below
+    // don't match current markup at all, kept as a fallback in case the
+    // site reverts).
+    ".product-item-info",
     "li.item.product.product-item",
     "li.product-item",
     ".products-grid .product-item",

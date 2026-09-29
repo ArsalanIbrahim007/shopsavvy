@@ -4,9 +4,11 @@
 
 const PLATFORM_TRUST_SCORES = {
   priceoye: 0.95,
+  daraz: 0.93,
   mega: 0.9,
   shophive: 0.88,
   telemart: 0.85,
+  ishopping: 0.85,
   homeshopping: 0.82,
   paklap: 0.8,
   czone: 0.8,

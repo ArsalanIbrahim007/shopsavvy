@@ -1,10 +1,14 @@
 // paklap.scraper.js
 // STATUS: WORKING (selectors confirmed via DevTools inspection)
-// Paklap.pk is a Magento storefront serving static HTML.
+// Paklap.pk is a Magento storefront serving static HTML, but 403s every
+// plain axios request (confirmed 2026-09-29, no header combination gets
+// past it). Fetches go through a real headless browser instead
+// (playwrightFetch.js); selectors/parsing below are unchanged.
 // Search URL pattern: https://www.paklap.pk/catalogsearch/result/index/?cat=0&q={query}
 
 import * as cheerio from "cheerio";
-import { fetchHtml, parsePrice, cleanText, safeMap } from "./scraper.utils.js";
+import { fetchHtmlWithBrowser } from "./playwrightFetch.js";
+import { parsePrice, cleanText, safeMap } from "./scraper.utils.js";
 import { makeListing } from "./scraper.schema.js";
 
 const PLATFORM = "paklap";
@@ -12,7 +16,13 @@ const BASE_URL = "https://www.paklap.pk";
 
 async function scrapePaklapSearch(searchUrl) {
   const allListings = [];
-  const MAX_PAGES = 5;
+  // Was 5 -- each page is a full Playwright navigation serialized against
+  // iShopping/Daraz through one shared browser (see playwrightFetch.js).
+  // Confirmed live 2026-09-29 that several concurrent live searches (e.g.
+  // the homepage's background category fetches) piling up on that queue
+  // made a single search take minutes. 2 pages keeps most of the coverage
+  // at under half the serialized cost.
+  const MAX_PAGES = 2;
 
   for (let page = 1; page <= MAX_PAGES; page++) {
     const pageUrl =
@@ -20,7 +30,7 @@ async function scrapePaklapSearch(searchUrl) {
         ? searchUrl
         : `${searchUrl}&p=${page}`;
 
-    const html = await fetchHtml(pageUrl);
+    const html = await fetchHtmlWithBrowser(pageUrl, { waitForSelector: ".product-item" });
     const $ = cheerio.load(html);
 
     // Magento product grid items
@@ -44,9 +54,12 @@ async function scrapePaklapSearch(searchUrl) {
           ? href
           : `${BASE_URL}${href}`;
 
-        // Price — Magento exposes clean numeric via data-price-amount
+        // Price — Magento exposes clean numeric via data-price-amount.
+        // data-price-amount and data-price-type live on the SAME element
+        // (confirmed live 2026-09-29), not parent/child, so this must be a
+        // compound selector, not a descendant one.
         const priceEl = card
-          .find("[data-price-type='finalPrice'] [data-price-amount]")
+          .find("[data-price-type='finalPrice'][data-price-amount]")
           .first();
         const priceAmount = priceEl.attr("data-price-amount");
         const price = priceAmount ? parsePrice(priceAmount) : null;
@@ -55,7 +68,7 @@ async function scrapePaklapSearch(searchUrl) {
 
         // Original price (if discounted)
         const originalPriceEl = card
-          .find("[data-price-type='oldPrice'] [data-price-amount]")
+          .find("[data-price-type='oldPrice'][data-price-amount]")
           .first();
         const originalPriceAmount = originalPriceEl.attr("data-price-amount");
         const originalPrice =

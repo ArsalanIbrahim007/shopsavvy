@@ -16,8 +16,11 @@ config({
 import { scrapePriceOyeSearch } from "./priceoye.scraper.js";
 import { scrapeMegaSearch } from "./mega.scraper.js";
 import { scrapeShophiveSearch } from "./shophive.scraper.js";
-// import { scrapePaklapSearch } from "./paklap.scraper.js";
+import { scrapePaklapSearch } from "./paklap.scraper.js";
 import { scrapeW11StopSearch } from "./w11stop.scraper.js";
+import { scrapeTelemartSearch } from "./telemart.scraper.js";
+import { scrapeIShoppingSearch } from "./ishopping.scraper.js";
+import { scrapeDarazSearch } from "./daraz.scraper.js";
 import { detectCategory, detectQueryCategory } from "./productCategory.js";
 
 // Query aliases — map shorthand searches to what actually appears in titles
@@ -91,19 +94,44 @@ async function scrapeFixedPlatforms(query) {
     },
     {
       platform: "mega",
-      fn: () => scrapeMegaSearch(`https://www.mega.pk/search/${query.replace(/\s+/g, "-")}/`),
+      // Mega's own search backend throws a 500 (empty body, confirmed via
+      // direct request) for any hyphenated multi-word path -- every query
+      // of more than one word was failing, not intermittently, on every
+      // single scrape. A literal "+" in the path works instead (verified
+      // returning real, relevant result cards); their server evidently
+      // does its own space substitution on "+" but not "-".
+      fn: () => scrapeMegaSearch(`https://www.mega.pk/search/${query.trim().replace(/\s+/g, "+")}/`),
     },
     {
       platform: "shophive",
       fn: () => scrapeShophiveSearch(`https://www.shophive.com/catalogsearch/result/?q=${encoded}`),
     },
-    // {
-    //   platform: "paklap",
-    //   fn: () => scrapePaklapSearch(`https://www.paklap.pk/catalogsearch/result/index/?cat=0&q=${encoded}`),
-    // },
+    {
+      platform: "paklap",
+      // Paklap 403s every plain axios request -- goes through a headless
+      // browser instead (see paklap.scraper.js / playwrightFetch.js).
+      fn: () => scrapePaklapSearch(`https://www.paklap.pk/catalogsearch/result/index/?cat=0&q=${encoded}`),
+    },
     {
       platform: "w11stop",
       fn: () => scrapeW11StopSearch(`https://w11stop.com/search?search=${encoded}`),
+    },
+    {
+      platform: "telemart",
+      fn: () => scrapeTelemartSearch(`https://www.telemart.pk/search?q=${encoded}`),
+    },
+    {
+      platform: "ishopping",
+      // Same 403-without-a-real-browser issue as Paklap.
+      fn: () => scrapeIShoppingSearch(`https://www.ishopping.pk/catalogsearch/result/?q=${encoded}`),
+    },
+    {
+      platform: "daraz",
+      // React SPA, needs a headless browser like Paklap/iShopping. Unlike
+      // those two, Daraz's robots.txt explicitly disallows /catalog/ (this
+      // path) -- doesn't trigger a CAPTCHA or block page, but is a
+      // deliberate signal, see daraz.scraper.js for the full note.
+      fn: () => scrapeDarazSearch(`https://www.daraz.pk/catalog/?q=${encoded}`),
     },
   ];
 

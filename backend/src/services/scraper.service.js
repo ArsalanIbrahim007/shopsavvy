@@ -19,19 +19,54 @@ import { extractAttributes } from "./productAttributes.service.js";
 // Set to 30 minutes so rapid repeated searches don't hammer sites
 const STALE_THRESHOLD_MINUTES = 30;
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+// Query parameters that identify a *search session*, not a product. Telemart
+// (Shopify) appends _pos/_sid/_ss to every result link, and they change on
+// every search -- because listings and price history are keyed on
+// platform + sourceUrl, each search inserted the same product again. Found
+// 2026-09-29: 182 of 248 Telemart listings were duplicates of 66 products,
+// and none of them could accumulate price history. Only known tracking
+// params are stripped; anything else (e.g. a Shopify ?variant=) can identify
+// a genuinely different product and is kept.
+const TRACKING_PARAMS = new Set(["_pos", "_sid", "_ss", "_fid", "fbclid", "gclid"]);
+
+export function canonicalSourceUrl(url) {
+  if (!url) return url;
+  try {
+    const parsed = new URL(url);
+    for (const key of [...parsed.searchParams.keys()]) {
+      if (TRACKING_PARAMS.has(key) || key.startsWith("utm_")) parsed.searchParams.delete(key);
+    }
+    parsed.hash = "";
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}
+
 /**
  * Checks if we have fresh listings in MongoDB for a given query.
  * "Fresh" means scraped within the last STALE_THRESHOLD_MINUTES.
  */
 async function hasFreshData(query) {
+  const trimmed = query.trim();
+  const normalizedQuery = normalizeTitle(trimmed);
   const threshold = new Date(
     Date.now() - STALE_THRESHOLD_MINUTES * 60 * 1000
   );
 
+  // A query made only of words normalizeTitle strips (e.g. "apple" alone)
+  // normalises to an empty string, and an empty regex matches every
+  // document -- see listing.controller.js for the same guard on the actual
+  // search filter. Skipping the clause here keeps a freshness check for
+  // "apple" from being satisfied by literally any recently scraped listing.
   const count = await Listing.countDocuments({
     $or: [
-      { title: { $regex: query, $options: "i" } },
-      { normalizedTitle: { $regex: normalizeTitle(query), $options: "i" } },
+      { title: { $regex: escapeRegex(trimmed), $options: "i" } },
+      ...(normalizedQuery
+        ? [{ normalizedTitle: { $regex: escapeRegex(normalizedQuery), $options: "i" } }]
+        : []),
     ],
     lastScrapedAt: { $gte: threshold },
   });
@@ -92,8 +127,11 @@ async function runScrapersAndSave(query, opts = {}) {
 
   let saved = 0;
 
-  for (const item of scraped) {
-    if (!item.price) continue;
+  for (const scrapedItem of scraped) {
+    if (!scrapedItem.price) continue;
+
+    // Canonicalise before both writes below, which key on sourceUrl.
+    const item = { ...scrapedItem, sourceUrl: canonicalSourceUrl(scrapedItem.sourceUrl) };
 
     try {
       // Upsert listing
@@ -116,6 +154,17 @@ async function runScrapersAndSave(query, opts = {}) {
   return saved;
 }
 
+// Tracks scrapes currently in progress, keyed by a normalized query, so a
+// second request for the same query while the first is still running joins
+// it instead of starting its own redundant scrape. Confirmed live
+// 2026-09-29: without this, a slow query (~20s now, was worse before
+// today's Playwright page-count fix) that gets requested twice before the
+// first finishes -- a double-click, an impatient reload, two of the
+// homepage's background fetches racing -- looks "not fresh yet" to both
+// requests and each kicks off its own full 8-platform scrape, multiplying
+// the load on the shared Playwright queue instead of just waiting.
+const inFlightScrapes = new Map();
+
 /**
  * Main entry point called by the search controller.
  * Checks freshness and runs scrapers if needed before returning.
@@ -135,7 +184,21 @@ async function fetchAndRefreshListings(query, opts = {}) {
     return { scraped: false, reason: "fresh_data" };
   }
 
-  const saved = await runScrapersAndSave(query, { dynamic });
+  const dedupeKey = query.trim().toLowerCase();
+  const inFlight = inFlightScrapes.get(dedupeKey);
+
+  if (inFlight) {
+    console.log(`[scraperService] Scrape already in flight for "${query}", joining it`);
+    const saved = await inFlight;
+    return { scraped: true, saved, reason: "joined_in_flight" };
+  }
+
+  const scrapePromise = runScrapersAndSave(query, { dynamic }).finally(() => {
+    inFlightScrapes.delete(dedupeKey);
+  });
+  inFlightScrapes.set(dedupeKey, scrapePromise);
+
+  const saved = await scrapePromise;
   return { scraped: true, saved, reason: fresh ? "force_refresh" : "stale_or_missing" };
 }
 
