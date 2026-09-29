@@ -4,8 +4,9 @@
 // Labels live in the LABELS array below, assigned from titles and prices alone
 // against LABELING_RUBRIC.md, before any model output was consulted.
 //
-// Usage: node src/scripts/ml/_merge_category_labels.js <labels.json>
-//   where labels.json is an array of [index, label, rationale].
+// Usage: node src/scripts/ml/_merge_category_labels.js <labels.json> [raw.json] [spotCheck.json]
+//   labels.json is an array of [index, label, rationale]; raw.json defaults to
+//   category_pairs.raw.json (the disagreement pass uses disagreement_pairs.raw.json).
 
 import { readFileSync, writeFileSync } from "fs";
 import { fileURLToPath } from "url";
@@ -14,7 +15,9 @@ import { dirname, join } from "path";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATASET_DIR = join(__dirname, "..", "..", "ml", "dataset");
 
-const raw = JSON.parse(readFileSync(join(DATASET_DIR, "category_pairs.raw.json"), "utf8"));
+const RAW_FILE = process.argv[3] || "category_pairs.raw.json";
+const SPOT_FILE = process.argv[4] || "spot_check_category.json";
+const raw = JSON.parse(readFileSync(join(DATASET_DIR, RAW_FILE), "utf8"));
 const labels = JSON.parse(readFileSync(process.argv[2], "utf8"));
 const labeled = JSON.parse(readFileSync(join(DATASET_DIR, "pairs.labeled.json"), "utf8"));
 
@@ -48,7 +51,7 @@ const sample = (items, n) => [...items].sort(() => rng() - 0.5).slice(0, n);
 const check = [...sample(fresh.filter((p) => p.label === 1), 10), ...sample(fresh.filter((p) => p.label === 0), 10)];
 
 writeFileSync(
-  join(DATASET_DIR, "spot_check_category.json"),
+  join(DATASET_DIR, SPOT_FILE),
   JSON.stringify(check.map((p, n) => ({
     n: n + 1, idA: p.idA, idB: p.idB, category: p.categoryA,
     titleA: p.titleA, priceA: p.priceA, titleB: p.titleB, priceB: p.priceB,
@@ -57,4 +60,4 @@ writeFileSync(
 );
 
 console.log(`Added ${fresh.length} pairs (${fresh.filter((p) => p.label === 1).length} positive, ${fresh.filter((p) => p.label === 0).length} negative).`);
-console.log(`Wrote spot_check_category.json with ${check.length} pairs.`);
+console.log(`Wrote ${SPOT_FILE} with ${check.length} pairs.`);

@@ -24,43 +24,51 @@ real listing has a price — so this is a property of the hand-written test harn
 deployment-relevant weakness, and it wasn't chased further to avoid overfitting to an
 artificial no-price scenario at the expense of the model's calibration on real data.
 
-## Why the retrained candidate is not the production model
+## Why no retrained candidate is the production model yet
 
-The candidate (v2) was trained on the expanded, multi-category dataset. On the held-out pairs it
-is clearly better than the production model outside phones (see "Production model vs candidate"
-above). It is nevertheless **not deployed**, because a pair-level score is not the same as
-system-level precision, and the difference showed up when both were checked properly.
+Three retrained candidates were built and evaluated, and none is deployed. The first (v2) beat
+the production model on the held-out pairs of its own, easier test set. The later test set includes
+the hard negatives, and on it the latest candidate has better recall and F1 than the production
+model but lower precision (54% against 71% on the newer categories) and lower accuracy. Since a
+wrong merge is worse than a missed one, that is not an upgrade. Pair-level scores also do not
+predict system-level behaviour, so each candidate was additionally checked by regrouping the whole
+2,727-listing database and comparing against the production grouping.
 
-Regrouping the whole 2,727-listing database with each model and reviewing the changes by hand:
+| Model | Training pairs | Groups formed | Merges vs production | Judgement of the merges |
+|---|---|---|---|---|
+| Production (v1, phone-heavy) | 106 | 2,205 | n/a | n/a |
+| v2: multi-category data | 218 | 2,051 | 163 | about 12 of 30 sampled correct |
+| v3: plus 199 hard-negative pairs | 366 | 2,191 | 58 | about half of the first 48 correct |
+| v3 with four extra features | 366 | 2,176 | 69 | not reviewed in full |
 
-| | Production model (v1) | Candidate (v2, threshold 0.55) |
-|---|---|---|
-| Groups formed | 2,205 | 2,051 |
-| Merges relative to production | n/a | 163 |
-| Sample of 30 candidate merges judged correct | n/a | about 12 |
+**What worked.** The hard negatives were the right data: taking the pairs where v2 and the
+production model disagreed on the live catalogue, hand-labelling them (167 different products,
+32 the same), and retraining cut the extra merges from 163 to 58 without the threshold moving much.
 
-Most wrong merges join products that differ only in a short model identifier or a wording
-variant: Honor 7 with 8X, Huawei Y5/Y6/Y7 Prime, Oppo Reno Z with Reno 4, Buds 2a with Buds 2,
-Galaxy Watch 8 with 8 Classic, RTX 5060 with RTX 5070. Two reasons explain the gap:
+**What did not.** The remaining wrong merges are laptops and TVs whose titles share almost all
+their words but name different models: ThinkBook 16 with ThinkPad E16, ThinkPad T480 with Latitude
+5400, S26 Ultra with Z Fold 8 Ultra. A logistic regression on text-overlap and price features has
+no way to see "same specification, different brand or model". Four extra features that count
+how many filler-free and digit-bearing tokens differ moved the cross-validated F0.5 only from
+0.696 to 0.706, and made the whole-database result slightly worse, so they are not used.
+The production model's strongly negative bias, learned from phone-dominated data, happens to be
+the safer behaviour on these comparisons.
 
-1. **The training pairs are richer in same-product pairs than the live catalogue.** They were
-   mined from high-similarity bands (34% positive in training). Grouping compares each listing
-   against many groups, and almost all of those comparisons are different products, so a model
-   with modest precision on a balanced sample produces many false merges at scale. Selecting the
-   threshold by cross-validation and weighting precision (F0.5) moved it only from 0.50 to 0.55;
-   the negatives seen in training are not the ones the live system meets.
-2. **Whole categories the live system groups were never in training**: accessories, appliances,
-   older phones. The production model's strongly negative bias, learned from phone-dominated
-   data, happens to be the safer behaviour there.
+**What would change this.** A model that compares brand and model identifiers directly (for
+example a per-token difference model, or a small sequence model), or a much larger set of
+hard negatives. Both are out of scope for this project; the candidates and their scripts are
+kept as a documented, reproducible result rather than deployed.
 
-The candidate is kept, with its training and evaluation scripts, as a documented result. Two
-follow-ups are planned before it can replace the production model: add hard negatives mined
-from the categories above, and evaluate at the grouping level (precision of merges on a
-hand-reviewed sample) rather than only on pairs.
+The regrouping checks also produced rule changes that improve the live system whichever model is
+used, and were kept:
 
-The regrouping check also led to two rule changes that improve both models and were kept:
-a veto when titles state different bare series numbers (Z Fold 5 vs 7), and a veto when they
-state different values in the same short-identifier slot (ThinkBook G8 vs G9, MacBook M4 vs M5,
-Honor 7X vs 7i). Each was measured on the live data before being added: the first affected
-5 of 319 existing groups and the second 2 of 318, every one a genuine error and none a false
-alarm.
+- a veto when titles state different bare series numbers (Z Fold 5 vs 7);
+- a veto when they state different values in the same short-identifier slot (ThinkBook G8 vs G9,
+  MacBook M4 vs M5, Honor 7X vs 7i).
+
+Each was measured on the live data before being added (5 of 319 and 2 of 318 existing groups
+affected, every one a genuine error, none a false alarm).
+
+**A check on the veto layer.** Across all 331 labelled pairs, none of the 142 same-product pairs
+is blocked by the attribute veto. Every hard negative that reaches the classifier passes the
+veto, which is what makes them hard.

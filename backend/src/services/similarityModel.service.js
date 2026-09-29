@@ -11,12 +11,15 @@ import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
 import { buildFeatureVector } from "../ml/features.js";
+import { FILLER_WORDS } from "../ml/fillerWords.js";
 import { predictProba } from "../ml/logisticRegression.js";
 import { attributeConflict, tokenize, sameSet } from "./similarity.service.js";
 import { modelTokens, extractStorage } from "./normalizeTitle.service.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const ARTIFACT_PATH = join(__dirname, "..", "ml", "model.artifact.json");
+// The live model. SHOPSAVVY_MATCH_MODEL names another artifact in src/ml/ to try a
+// candidate against the whole database without replacing this file.
+const ARTIFACT_PATH = join(__dirname, "..", "ml", process.env.SHOPSAVVY_MATCH_MODEL || "model.artifact.json");
 
 let model = null;
 function loadModel() {
@@ -42,28 +45,19 @@ export function classifyPairML(itemA, itemB) {
   }
 
   const loadedModel = loadModel();
-  const features = buildFeatureVector({
-    titleA: itemA.title,
-    titleB: itemB.title,
-    priceA: itemA.price ?? null,
-    priceB: itemB.price ?? null,
-  });
+  const features = buildFeatureVector(
+    {
+      titleA: itemA.title,
+      titleB: itemB.title,
+      priceA: itemA.price ?? null,
+      priceB: itemB.price ?? null,
+    },
+    loadedModel.featureNames
+  );
   const probability = predictProba(features, loadedModel);
 
   return { isMatch: probability >= loadedModel.threshold, probability };
 }
-
-// Words a store adds without saying anything about which product it is:
-// colours, warranty and SIM wording, connectivity, and generic "storage".
-// "titanium" is included because on watches it is a colour ("Titanium Blue").
-const FILLER_WORDS = new Set([
-  "black", "white", "blue", "green", "red", "silver", "gold", "grey", "gray", "pink",
-  "purple", "orange", "yellow", "titanium", "midnight", "starlight", "graphite", "cream",
-  "lavender", "mint", "navy", "sky", "cobalt", "violet", "marine", "phantom",
-  "dual", "sim", "esim", "physical", "official", "warranty", "mercantile", "brand", "year",
-  "one", "with", "wifi", "wi", "fi", "ram", "rom", "storage", "pta", "non", "approved",
-  "new", "box", "pack", "the", "and", "for", "in", "pakistan",
-]);
 
 // Price tolerance when a capacity is missing on either side, matching the rule
 // strategy's tiebreak: a different capacity of one model differs by tens of

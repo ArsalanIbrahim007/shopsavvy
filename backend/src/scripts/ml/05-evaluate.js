@@ -16,14 +16,14 @@
 // Hand-written commentary lives in EVALUATION_NOTES.md and is appended
 // verbatim, so regenerating this report cannot delete it.
 //
-// Usage: node src/scripts/ml/05-evaluate.js
+// Usage: node src/scripts/ml/05-evaluate.js [candidateArtifactFile]
 // Output: prints metrics, writes src/ml/EVALUATION_REPORT.md
 
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
-import { buildFeatureVector, FEATURE_NAMES } from "../../ml/features.js";
+import { buildFeatureVector } from "../../ml/features.js";
 import { predictProba } from "../../ml/logisticRegression.js";
 import { isSimilarProduct, attributeConflict } from "../../services/similarity.service.js";
 
@@ -35,7 +35,8 @@ const { train, test, evalOnly, meta } = JSON.parse(readFileSync(join(DATASET_DIR
 // The model the live API loads, and a retrained candidate that is evaluated here but
 // only promoted after whole-database review (see EVALUATION_NOTES.md).
 const v1Model = JSON.parse(readFileSync(join(ML_DIR, "model.artifact.json"), "utf8"));
-const model = JSON.parse(readFileSync(join(ML_DIR, "model.artifact.v2-multicategory.json"), "utf8"));
+const CANDIDATE_FILE = process.argv[2] || "model.artifact.v3-hardneg.json";
+const model = JSON.parse(readFileSync(join(ML_DIR, CANDIDATE_FILE), "utf8"));
 
 const evaluationSet = [...test, ...evalOnly];
 
@@ -49,7 +50,7 @@ function classifyWith(artifact) {
     // signal instead of the rule pipeline's fixed 15% cutoff.
     if (attributeConflict(pair.titleA, pair.titleB, { ignoreUnstatedStorage: true })) return 0;
 
-    const features = buildFeatureVector({ titleA: pair.titleA, titleB: pair.titleB, priceA: pair.priceA, priceB: pair.priceB });
+    const features = buildFeatureVector({ titleA: pair.titleA, titleB: pair.titleB, priceA: pair.priceA, priceB: pair.priceB }, artifact.featureNames);
     return predictProba(features, artifact) >= artifact.threshold ? 1 : 0;
   };
 }
@@ -85,7 +86,7 @@ const mlMetrics = metricsFrom(mlCm);
 const ruleMetrics = metricsFrom(ruleCm);
 
 console.log(`Evaluation set: ${evaluationSet.length} pairs (${test.length} held-out test + ${evalOnly.length} eval-only, never trained on)`);
-console.log("\n=== Candidate classifier (v2) ===");
+console.log("\n=== Candidate classifier ===");
 console.table(mlCm);
 console.table(mlMetrics);
 console.log("\n=== Rule-based baseline (isSimilarProduct, threshold 0.7) ===");
@@ -117,7 +118,7 @@ console.table(perCategory.map((c) => ({
   category: c.category, pairs: c.pairs, positives: c.positives,
   mlF1: pct(c.ml.f1), ruleF1: pct(c.rule.f1), mlAcc: pct(c.ml.accuracy),
 })));
-console.log(`\nNewer categories only (${newCategoryTest.length} held-out pairs): production v1 F1 ${pct(v1OnNew.f1)}, candidate v2 F1 ${pct(v2OnNew.f1)}, rule F1 ${pct(ruleOnNew.f1)}`);
+console.log(`\nNewer categories only (${newCategoryTest.length} held-out pairs): production v1 F1 ${pct(v1OnNew.f1)}, candidate F1 ${pct(v2OnNew.f1)}, rule F1 ${pct(ruleOnNew.f1)}`);
 
 const disagreementsAll = evaluationSet
   .map((p) => ({ ...p, mlPred: classifyML(p), rulePred: classifyRule(p) }))
@@ -157,7 +158,10 @@ independent spot-check per labelling round. Train/test split seed: ${meta.seed}.
 The first dataset was 181 pairs and about 60% smartphones: laptops had no positive pairs,
 smartwatches none, TVs six. A second mining pass added 150 pairs across laptops, TVs,
 smartwatches, tablets and headphones, so the classifier is now trained and tested outside
-phones. Class-weighted training is used rather than artificially balancing the data.
+phones. A third pass (\`06-mine-disagreements.js\`) added 199 pairs taken from where two models
+disagreed about the live catalogue, mostly near-identical titles that name different models
+(Reno 5K/5Z, ThinkBook G8/G9): 167 of them are different products, which is the class the
+earlier data lacked. Class-weighted training is used rather than artificially balancing the data.
 
 **The split is grouped, not random.** Pairs are split as whole groups: any two pairs that share
 a listing or a product family go to the same side, then each category contributes about a
@@ -167,14 +171,14 @@ train and test, which flatters the score.)
 
 ## Results on the ${evaluationSet.length}-pair evaluation set (test + eval-only, none trained on)
 
-| Metric | Candidate classifier (v2, multi-category) | Rule baseline (Jaccard ≥ 0.70) |
+| Metric | Candidate classifier (${CANDIDATE_FILE}) | Rule baseline (Jaccard ≥ 0.70) |
 |---|---|---|
 | Accuracy | ${pct(mlMetrics.accuracy)} | ${pct(ruleMetrics.accuracy)} |
 | Precision | ${pct(mlMetrics.precision)} | ${pct(ruleMetrics.precision)} |
 | Recall | ${pct(mlMetrics.recall)} | ${pct(ruleMetrics.recall)} |
 | F1 | ${pct(mlMetrics.f1)} | ${pct(ruleMetrics.f1)} |
 
-### Confusion matrix — candidate classifier (v2)
+### Confusion matrix — candidate classifier
 | | Predicted match | Predicted no-match |
 |---|---|---|
 | **Actually match** | ${mlCm.tp} (TP) | ${mlCm.fn} (FN) |
@@ -208,14 +212,14 @@ headphones), which the production model never saw in training:
 | Model | Accuracy | Precision | Recall | F1 |
 |---|---|---|---|---|
 | Production model (v1, phone-heavy, ${v1Model.trainingSize} training pairs, threshold ${v1Model.threshold}) | ${pct(v1OnNew.accuracy)} | ${pct(v1OnNew.precision)} | ${pct(v1OnNew.recall)} | ${pct(v1OnNew.f1)} |
-| Candidate (v2, ${model.trainingSize} training pairs, threshold ${model.threshold}) | ${pct(v2OnNew.accuracy)} | ${pct(v2OnNew.precision)} | ${pct(v2OnNew.recall)} | ${pct(v2OnNew.f1)} |
+| Candidate (${CANDIDATE_FILE}, ${model.trainingSize} training pairs, threshold ${model.threshold}) | ${pct(v2OnNew.accuracy)} | ${pct(v2OnNew.precision)} | ${pct(v2OnNew.recall)} | ${pct(v2OnNew.f1)} |
 | Rule baseline | ${pct(ruleOnNew.accuracy)} | ${pct(ruleOnNew.precision)} | ${pct(ruleOnNew.recall)} | ${pct(ruleOnNew.f1)} |
 
 ## Learned weights of the candidate (standardized scale)
 
 | Feature | Weight |
 |---|---|
-${FEATURE_NAMES.map((name, i) => `| ${name} | ${model.weights[i].toFixed(4)} |`).join("\n")}
+${model.featureNames.map((name, i) => `| ${name} | ${model.weights[i].toFixed(4)} |`).join("\n")}
 | *(bias)* | ${model.bias.toFixed(4)} |
 
 ## Where the two pipelines disagree (first ${disagreements.length} of ${disagreementsAll.length})

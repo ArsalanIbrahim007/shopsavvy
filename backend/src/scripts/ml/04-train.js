@@ -10,7 +10,8 @@
 // default 0.5 the retrained model merged far too readily when regrouping the
 // whole database.
 //
-// Usage: node src/scripts/ml/04-train.js [outputFile]
+// Usage: node src/scripts/ml/04-train.js [outputFile] [extended]
+// Pass "extended" as the second argument to train on EXTENDED_FEATURE_NAMES.
 // Output: src/ml/<outputFile>, default model.artifact.json (the model the live API
 // loads). Train candidates to a different file, e.g.
 //   node src/scripts/ml/04-train.js model.artifact.v2-multicategory.json
@@ -20,7 +21,7 @@ import { readFileSync, writeFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
-import { buildFeatureVector, FEATURE_NAMES } from "../../ml/features.js";
+import { buildFeatureVector, FEATURE_NAMES, EXTENDED_FEATURE_NAMES } from "../../ml/features.js";
 import { trainLogisticRegression, predictProba } from "../../ml/logisticRegression.js";
 import { pairComponents } from "../../ml/dataset/family.js";
 
@@ -28,11 +29,13 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATASET_DIR = join(__dirname, "..", "..", "ml", "dataset");
 const ARTIFACT_PATH = join(__dirname, "..", "..", "ml", process.argv[2] || "model.artifact.json");
 
+const FEATURES = process.argv[3] === "extended" ? EXTENDED_FEATURE_NAMES : FEATURE_NAMES;
+
 const { train } = JSON.parse(readFileSync(join(DATASET_DIR, "split.json"), "utf8"));
 
 const X = train.map((p) => buildFeatureVector({
   titleA: p.titleA, titleB: p.titleB, priceA: p.priceA, priceB: p.priceB,
-}));
+}, FEATURES));
 const y = train.map((p) => p.label);
 
 const positiveCount = y.filter((v) => v === 1).length;
@@ -77,7 +80,7 @@ groups
     folds[smallest].push(...group);
   });
 
-const featuresOf = (p) => buildFeatureVector({ titleA: p.titleA, titleB: p.titleB, priceA: p.priceA, priceB: p.priceB });
+const featuresOf = (p) => buildFeatureVector({ titleA: p.titleA, titleB: p.titleB, priceA: p.priceA, priceB: p.priceB }, FEATURES);
 const outOfFold = [];
 folds.forEach((holdout, k) => {
   const fit = folds.filter((_, i) => i !== k).flat();
@@ -112,7 +115,7 @@ console.table(sweep.map((r) => ({ threshold: r.threshold, precision: r.precision
 console.log(`Chosen threshold: ${chosen.threshold}`);
 
 const artifact = {
-  featureNames: FEATURE_NAMES,
+  featureNames: FEATURES,
   weights: model.weights,
   bias: model.bias,
   means: model.means,
@@ -132,7 +135,7 @@ writeFileSync(ARTIFACT_PATH, JSON.stringify(artifact, null, 2));
 
 console.log("\nLearned weights (standardized scale):");
 console.table(
-  FEATURE_NAMES.map((name, i) => ({ feature: name, weight: model.weights[i].toFixed(4) }))
+  FEATURES.map((name, i) => ({ feature: name, weight: model.weights[i].toFixed(4) }))
 );
 console.log("bias:", model.bias.toFixed(4));
 console.log(`\nWrote ${ARTIFACT_PATH}`);

@@ -22,6 +22,7 @@ import {
   calculateJaccardSimilarity,
   VARIANT_TOKENS,
 } from "../services/similarity.service.js";
+import { FILLER_WORDS } from "./fillerWords.js";
 
 export const FEATURE_NAMES = [
   "jaccardBase",
@@ -34,6 +35,57 @@ export const FEATURE_NAMES = [
   "priceProximity",
   "titleLenDiff",
 ];
+
+// Features added for the multi-category candidate models. They target the failure
+// the original nine cannot see: two titles that are almost identical apart from
+// one model identifier ("Reno 5K" / "Reno 5Z", "Honor 7X" / "Honor 7i") score a
+// high Jaccard, so text similarity alone says "same product".
+//   coreJaccard    Jaccard over tokens with store filler (colours, warranty
+//                  wording) removed, so filler stops inflating or hiding overlap
+//   coreOverlap    shared filler-free tokens over the shorter title's, which a
+//                  long padded title does not dilute
+//   coreDiffCount  how many filler-free tokens are in one title but not the
+//                  other (capped, scaled to 0..1)
+//   idDiffCount    the same, counting only tokens that contain a digit and are
+//                  not capacities or sizes: these are the model identifiers
+export const EXTENDED_FEATURE_NAMES = [
+  ...["jaccardBase", "jaccardRaw", "storageMatch", "ramMatch", "screenMatch", "ptaMatch", "modelCodeMatch", "priceProximity", "titleLenDiff"],
+  "coreJaccard",
+  "coreOverlap",
+  "coreDiffCount",
+  "idDiffCount",
+];
+
+const SPEC_TOKEN = /^\d+(gb|tb|mm|inch|hz|mah|mp|w|kg|ton|k|p|g)$/;
+
+function coreTokens(title) {
+  return new Set(tokenize(modelTokens(title)).filter((t) => !FILLER_WORDS.has(t)));
+}
+
+function symmetricDifference(a, b) {
+  const out = [];
+  for (const t of a) if (!b.has(t)) out.push(t);
+  for (const t of b) if (!a.has(t)) out.push(t);
+  return out;
+}
+
+function coreFeatures(titleA, titleB) {
+  const a = coreTokens(titleA);
+  const b = coreTokens(titleB);
+  let shared = 0;
+  for (const t of a) if (b.has(t)) shared++;
+  const union = a.size + b.size - shared;
+  const smaller = Math.min(a.size, b.size);
+  const diff = symmetricDifference(a, b);
+  const idDiff = diff.filter((t) => /\d/.test(t) && !SPEC_TOKEN.test(t));
+
+  return {
+    coreJaccard: union ? shared / union : 0,
+    coreOverlap: smaller ? shared / smaller : 0,
+    coreDiffCount: Math.min(diff.length, 6) / 6,
+    idDiffCount: Math.min(idDiff.length, 4) / 4,
+  };
+}
 
 function baseTokensFor(title) {
   return tokenize(modelTokens(title))
@@ -78,9 +130,21 @@ function priceProximity(priceA, priceB) {
 
 /**
  * @param {{titleA:string, titleB:string, priceA?:number, priceB?:number}} pair
- * @returns {number[]} feature vector in FEATURE_NAMES order
+ * @param {string[]} [featureNames] which features to build, in order. Defaults to
+ *   the original nine, so the production model's inputs are unchanged; a model
+ *   trained on the extended set records its own list in its artifact.
+ * @returns {number[]} feature vector in featureNames order
  */
-export function buildFeatureVector({ titleA, titleB, priceA = null, priceB = null }) {
+export function buildFeatureVector(pair, featureNames = FEATURE_NAMES) {
+  const base = buildBaseFeatures(pair);
+  if (featureNames === FEATURE_NAMES) return base;
+
+  const named = Object.fromEntries(FEATURE_NAMES.map((name, i) => [name, base[i]]));
+  Object.assign(named, coreFeatures(pair.titleA, pair.titleB));
+  return featureNames.map((name) => named[name]);
+}
+
+function buildBaseFeatures({ titleA, titleB, priceA = null, priceB = null }) {
   const baseA = baseTokensFor(titleA);
   const baseB = baseTokensFor(titleB);
   const lenA = tokenize(titleA).length;
