@@ -1,5 +1,5 @@
 {
- "builtAt": "2026-09-29T04:58:52.597Z",
+ "builtAt": "2026-09-29T05:24:54.987Z",
  "featureNames": [
   "logOriginalVsMedian",
   "logOriginalVsMax",
@@ -830,29 +830,6 @@
     "originalPrice": 78000,
     "marketMedian": 72999,
     "marketMax": 78399,
-    "comparators": 4
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6ab87b1e7b2d0415f0561986",
-   "title": "Huawei GT6 46mm Watch with Black Stainless Steel Strap",
-   "platform": "mega",
-   "category": "smartphone",
-   "group": "Huawei GT6 46mm Watch with Black Stainless Steel Strap",
-   "groupSize": 5,
-   "features": [
-    0.18233973877742773,
-    0.18233973877742773,
-    0.1670568819129103,
-    0.015166666666666667
-   ],
-   "context": {
-    "price": 64999,
-    "originalPrice": 66000,
-    "marketMedian": 54999,
-    "marketMax": 54999,
     "comparators": 4
    },
    "historyCount": 1,
@@ -2147,6 +2124,29 @@
    "ruleClassification": "unverified_discount"
   },
   {
+   "id": "6a825cd27fed3db412e980b1",
+   "title": "Vivo X300 FE",
+   "platform": "priceoye",
+   "category": "smartphone",
+   "group": "Vivo X300 FE - LTPO AMOLED LCD - 6.31 Inches Display - 12GB RAM 256GB ROM - 50MP Front Camera - 50MP+50MP+8MP Rear Camera - Dual SIM -. 6500mAh Battery",
+   "groupSize": 3,
+   "features": [
+    0.023420361973918027,
+    -0.050552461740433964,
+    -0.041612357163355394,
+    0.06296319615998577
+   ],
+   "context": {
+    "price": 252999,
+    "originalPrice": 269999,
+    "marketMedian": 263749,
+    "marketMax": 283999,
+    "comparators": 2
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
    "id": "6a825cd27fed3db412e980b2",
    "title": "Vivo Y05e",
    "platform": "priceoye",
@@ -2256,75 +2256,6 @@
     "originalPrice": 20000,
     "marketMedian": 11149,
     "marketMax": 12399,
-    "comparators": 2
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6ab87b1e7b2d0415f0561988",
-   "title": "Huawei GT5 Pro 46mm Titanium",
-   "platform": "mega",
-   "category": "smartphone",
-   "group": "Huawei GT6 Pro 46mm Titanium",
-   "groupSize": 3,
-   "features": [
-    -0.03838457046244618,
-    -0.10709901871583073,
-    -0.1293571768330671,
-    0.08695727788937295
-   ],
-   "context": {
-    "price": 104999,
-    "originalPrice": 114999,
-    "marketMedian": 119499,
-    "marketMax": 127999,
-    "comparators": 2
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6ab87b1e7b2d0415f056198f",
-   "title": "Huawei Watch GT6 Pro 46mm",
-   "platform": "shophive",
-   "category": "smartphone",
-   "group": "Huawei GT6 Pro 46mm Titanium",
-   "groupSize": 3,
-   "features": [
-    0.10964406884037617,
-    0.015504306729204758,
-    -0.048361497015184225,
-    0.14615497042284942
-   ],
-   "context": {
-    "price": 110999,
-    "originalPrice": 129999,
-    "marketMedian": 116499,
-    "marketMax": 127999,
-    "comparators": 2
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6ab87b1e7b2d0415f0561987",
-   "title": "Huawei GT6 Pro 46mm Titanium",
-   "platform": "mega",
-   "category": "smartphone",
-   "group": "Huawei GT6 Pro 46mm Titanium",
-   "groupSize": 3,
-   "features": [
-    0.1854124826334892,
-    0.15801325819283868,
-    0.16990048356700616,
-    0.015392307692307693
-   ],
-   "context": {
-    "price": 127999,
-    "originalPrice": 130000,
-    "marketMedian": 107999,
-    "marketMax": 110999,
     "comparators": 2
    },
    "historyCount": 1,
@@ -2995,29 +2926,6 @@
     "comparators": 1
    },
    "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6a825cd27fed3db412e980b1",
-   "title": "Vivo X300 FE",
-   "platform": "priceoye",
-   "category": "smartphone",
-   "group": "Vivo X300 FE",
-   "groupSize": 2,
-   "features": [
-    0.10330541954978141,
-    0.10330541954978141,
-    0.038272700412507944,
-    0.06296319615998577
-   ],
-   "context": {
-    "price": 252999,
-    "originalPrice": 269999,
-    "marketMedian": 243499,
-    "marketMax": 243499,
-    "comparators": 1
-   },
-   "historyCount": 2,
    "ruleClassification": "unverified_discount"
   },
   {
@@ -4286,26 +4194,164 @@
    "ruleClassification": "unverified_discount"
   },
   {
+   "id": "6a7b74ca9de462208cfb9613",
+   "title": "Samsung Watch 8 Classic 46mm",
+   "platform": "priceoye",
+   "category": "smartwatch",
+   "group": "Samsung Watch 8 Classic 46mm",
+   "groupSize": 7,
+   "features": [
+    0.5302258291697024,
+    0.441836720569226,
+    -0.07282542872590549,
+    0.4528603775741255
+   ],
+   "context": {
+    "price": 76599,
+    "originalPrice": 139999,
+    "marketMedian": 82385.5,
+    "marketMax": 89999,
+    "comparators": 6
+   },
+   "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abb478277eed84b8d2a1d55",
+   "title": "Samsung Galaxy Watch 8 Classic 46mm",
+   "platform": "telemart",
+   "category": "smartwatch",
+   "group": "Samsung Watch 8 Classic 46mm",
+   "groupSize": 7,
+   "features": [
+    0.11037912649209149,
+    0.02199001789161524,
+    -0.016972641639730873,
+    0.11957608695652173
+   ],
+   "context": {
+    "price": 80999,
+    "originalPrice": 92000,
+    "marketMedian": 82385.5,
+    "marketMax": 89999,
+    "comparators": 6
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa4ddcdd20c9c0815d40b",
+   "title": "Samsung Galaxy Watch 8 46MM Classic",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Watch 8 Classic 46mm",
+   "groupSize": 7,
+   "features": [
+    0.5332649572132089,
+    0.441836720569226,
+    -0.007779572280551869,
+    0.4178601275723398
+   ],
+   "context": {
+    "price": 81499,
+    "originalPrice": 139999,
+    "marketMedian": 82135.5,
+    "marketMax": 89999,
+    "comparators": 6
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b74ca9de462208cfb9661",
+   "title": "Samsung Galaxy Watch 8 46MM Classic - Black",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Watch 8 Classic 46mm",
+   "groupSize": 7,
+   "features": [
+    0.5441167662848523,
+    0.441836720569226,
+    0.10228004571562625,
+    0.357145408181487
+   ],
+   "context": {
+    "price": 89999,
+    "originalPrice": 139999,
+    "marketMedian": 81249,
+    "marketMax": 89999,
+    "comparators": 6
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b74ca9de462208cfb9662",
+   "title": "Samsung Galaxy Watch 8 46MM Classic - White",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Watch 8 Classic 46mm",
+   "groupSize": 7,
+   "features": [
+    0.5441167662848523,
+    0.441836720569226,
+    0.10228004571562625,
+    0.357145408181487
+   ],
+   "context": {
+    "price": 89999,
+    "originalPrice": 139999,
+    "marketMedian": 81249,
+    "marketMax": 89999,
+    "comparators": 6
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
    "id": "6a78eaedc60a7969ca34abb9",
    "title": "Samsung Galaxy Watch 7 44mm",
    "platform": "priceoye",
    "category": "smartwatch",
    "group": "Samsung Galaxy Watch 7 44mm",
-   "groupSize": 8,
+   "groupSize": 6,
    "features": [
-    0.47001696266795856,
-    0.21279107361015465,
-    -0.44629460275654664,
+    0.8266785731844679,
+    0.6443728895323639,
+    -0.08963299224003736,
     0.6000083333333334
    ],
    "context": {
     "price": 47999,
     "originalPrice": 120000,
-    "marketMedian": 74999,
-    "marketMax": 96999,
-    "comparators": 7
+    "marketMedian": 52500,
+    "marketMax": 62999,
+    "comparators": 5
    },
    "historyCount": 2,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abb478277eed84b8d2a1d57",
+   "title": "Samsung Galaxy Watch 7 44mm (R-L310)",
+   "platform": "telemart",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch 7 44mm",
+   "groupSize": 6,
+   "features": [
+    0.09962984094884134,
+    -0.08267584270326273,
+    -0.04881016436943469,
+    0.13794827586206895
+   ],
+   "context": {
+    "price": 49999,
+    "originalPrice": 58000,
+    "marketMedian": 52500,
+    "marketMax": 62999,
+    "comparators": 5
+   },
+   "historyCount": 1,
    "ruleClassification": "unverified_discount"
   },
   {
@@ -4314,156 +4360,64 @@
    "platform": "shophive",
    "category": "smartwatch",
    "group": "Samsung Galaxy Watch 7 44mm",
-   "groupSize": 8,
+   "groupSize": 6,
    "features": [
-    -0.2231468846975438,
-    -0.4803727737553478,
-    -0.3472017346644954,
+    0.1335147258189655,
+    -0.0487909578331384,
+    0.009459875852013943,
     0.11666861114351906
    ],
    "context": {
     "price": 52999,
     "originalPrice": 59999,
-    "marketMedian": 74999,
-    "marketMax": 96999,
-    "comparators": 7
+    "marketMedian": 52500,
+    "marketMax": 62999,
+    "comparators": 5
    },
    "historyCount": 1,
    "ruleClassification": "unverified_discount"
   },
   {
-   "id": "6a7a374bdc7ea9aa971ccccb",
-   "title": "Samsung Watch 8 44mm",
-   "platform": "priceoye",
+   "id": "6a7b7bec9de462208cfb96a3",
+   "title": "Samsung Galaxy Watch 7 44mm L310F",
+   "platform": "mega",
    "category": "smartwatch",
    "group": "Samsung Galaxy Watch 7 44mm",
-   "groupSize": 8,
+   "groupSize": 6,
    "features": [
-    0.6931538472932793,
-    0.43592795823547537,
-    -0.15082506030851595,
-    0.5700038000253335
+    0.2135587155643301,
+    0.20409883971231613,
+    0.18230568365210395,
+    0.030769704149294603
    ],
    "context": {
-    "price": 64499,
-    "originalPrice": 149999,
-    "marketMedian": 74999,
-    "marketMax": 96999,
-    "comparators": 7
+    "price": 62999,
+    "originalPrice": 64999,
+    "marketMedian": 52500,
+    "marketMax": 52999,
+    "comparators": 5
    },
    "historyCount": 1,
    "ruleClassification": "unverified_discount"
   },
   {
-   "id": "6abaa4ddcdd20c9c0815d40a",
-   "title": "Samsung Galaxy Watch 8 44MM - Wifi",
-   "platform": "shophive",
-   "category": "smartwatch",
-   "group": "Samsung Galaxy Watch 7 44mm",
-   "groupSize": 8,
-   "features": [
-    0.20430292731066133,
-    -0.052922961747142554,
-    -0.15082506030851595,
-    0.29891629256839747
-   ],
-   "context": {
-    "price": 64499,
-    "originalPrice": 91999,
-    "marketMedian": 74999,
-    "marketMax": 96999,
-    "comparators": 7
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6a7b74ca9de462208cfb9660",
-   "title": "Samsung Galaxy Watch 8 44MM Graphite - Wifi",
-   "platform": "shophive",
-   "category": "smartwatch",
-   "group": "Samsung Galaxy Watch 7 44mm",
-   "groupSize": 8,
-   "features": [
-    0.3551279876191773,
-    -0.052922961747142554,
-    0.15082506030851597,
-    0.18478461722410025
-   ],
-   "context": {
-    "price": 74999,
-    "originalPrice": 91999,
-    "marketMedian": 64499,
-    "marketMax": 96999,
-    "comparators": 7
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6a7b74ca9de462208cfb9664",
-   "title": "Samsung Galaxy Watch 8 44MM Silver - Wifi",
-   "platform": "shophive",
-   "category": "smartwatch",
-   "group": "Samsung Galaxy Watch 7 44mm",
-   "groupSize": 8,
-   "features": [
-    0.3551279876191773,
-    -0.052922961747142554,
-    0.15082506030851597,
-    0.18478461722410025
-   ],
-   "context": {
-    "price": 74999,
-    "originalPrice": 91999,
-    "marketMedian": 64499,
-    "marketMax": 96999,
-    "comparators": 7
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6a7b37279de462208cfb95b0",
-   "title": "Samsung Galaxy Watch 9 44mm",
-   "platform": "priceoye",
-   "category": "smartwatch",
-   "group": "Samsung Galaxy Watch 7 44mm",
-   "groupSize": 8,
-   "features": [
-    1.0537006998527387,
-    0.8636544135637224,
-    0.4080509493663198,
-    0.47567824690944277
-   ],
-   "context": {
-    "price": 96999,
-    "originalPrice": 184999,
-    "marketMedian": 64499,
-    "marketMax": 77999,
-    "comparators": 7
-   },
-   "historyCount": 2,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6abaa4ddcdd20c9c0815d40c",
-   "title": "Samsung Galaxy Watch 8 40mm Black - Wifi",
-   "platform": "shophive",
+   "id": "6abb478277eed84b8d2a1d54",
+   "title": "Samsung Galaxy Watch 8 40mm",
+   "platform": "telemart",
    "category": "smartwatch",
    "group": "Samsung Watch 8 40mm",
    "groupSize": 5,
    "features": [
-    0.2513176029243936,
-    -0.021979148267323653,
-    -0.12136270035027219,
-    0.31111456793964376
+    0.022320795221348902,
+    -0.057144524854608254,
+    -0.10285901453821414,
+    0.11766176470588235
    ],
    "context": {
-    "price": 61999,
-    "originalPrice": 89999,
-    "marketMedian": 69999,
-    "marketMax": 91999,
+    "price": 59999,
+    "originalPrice": 68000,
+    "marketMedian": 66499,
+    "marketMax": 71999,
     "comparators": 4
    },
    "historyCount": 1,
@@ -4477,16 +4431,16 @@
    "group": "Samsung Watch 8 40mm",
    "groupSize": 5,
    "features": [
-    0.4519903186089713,
-    0.178693567417254,
-    -0.07410907107112338,
+    0.5138590353237966,
+    0.4238190448112878,
+    -0.012240354356298017,
     0.40909462813298303
    ],
    "context": {
     "price": 64999,
     "originalPrice": 109999,
-    "marketMedian": 69999,
-    "marketMax": 91999,
+    "marketMedian": 65799.5,
+    "marketMax": 71999,
     "comparators": 4
    },
    "historyCount": 1,
@@ -4500,226 +4454,157 @@
    "group": "Samsung Watch 8 40mm",
    "groupSize": 5,
    "features": [
-    0.27297941253595115,
-    -0.021979148267323653,
-    -0.007326147435852709,
+    0.3362467039938517,
+    0.22314632912671026,
+    0.055941144022047924,
     0.24444716052400584
    ],
    "context": {
     "price": 67999,
     "originalPrice": 89999,
-    "marketMedian": 68499,
-    "marketMax": 91999,
+    "marketMedian": 64299.5,
+    "marketMax": 71999,
     "comparators": 4
    },
    "historyCount": 1,
    "ruleClassification": "unverified_discount"
   },
   {
-   "id": "6abaa4ddcdd20c9c0815d411",
-   "title": "Samsung Galaxy Watch Ultra 47MM Titanium Gray With Marine Orange (2025)",
-   "platform": "shophive",
-   "category": "smartwatch",
-   "group": "Samsung Galaxy Watch Ultra 47MM Titanium Silver (2025)",
-   "groupSize": 5,
-   "features": [
-    0.04255997674072142,
-    -0.18924343643107877,
-    -0.24512487351584358,
-    0.25000208335069457
-   ],
-   "context": {
-    "price": 89999,
-    "originalPrice": 119999,
-    "marketMedian": 114999,
-    "marketMax": 144999,
-    "comparators": 4
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6abaa4ddcdd20c9c0815d412",
-   "title": "Samsung Galaxy Watch Ultra 47MM Titanium White With Marine White (2025)",
-   "platform": "shophive",
-   "category": "smartwatch",
-   "group": "Samsung Galaxy Watch Ultra 47MM Titanium Silver (2025)",
-   "groupSize": 5,
-   "features": [
-    0.04255997674072142,
-    -0.18924343643107877,
-    -0.24512487351584358,
-    0.25000208335069457
-   ],
-   "context": {
-    "price": 89999,
-    "originalPrice": 119999,
-    "marketMedian": 114999,
-    "marketMax": 144999,
-    "comparators": 4
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6abaa4ddcdd20c9c0815d408",
-   "title": "Samsung Galaxy Watch Ultra 47MM",
-   "platform": "shophive",
-   "category": "smartwatch",
-   "group": "Samsung Galaxy Watch Ultra 47MM Titanium Silver (2025)",
-   "groupSize": 5,
-   "features": [
-    0.15763036698067942,
-    -0.18924343643107877,
-    0.11507039023995798,
-    0.04166701389178243
-   ],
-   "context": {
-    "price": 114999,
-    "originalPrice": 119999,
-    "marketMedian": 102499,
-    "marketMax": 144999,
-    "comparators": 4
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6a7b7bec9de462208cfb96c2",
-   "title": "Samsung Galaxy Watch Ultra 47MM Titanium Silver (2025)",
-   "platform": "shophive",
-   "category": "smartwatch",
-   "group": "Samsung Galaxy Watch Ultra 47MM Titanium Silver (2025)",
-   "groupSize": 5,
-   "features": [
-    0.15763036698067942,
-    -0.18924343643107877,
-    0.11507039023995798,
-    0.04166701389178243
-   ],
-   "context": {
-    "price": 114999,
-    "originalPrice": 119999,
-    "marketMedian": 102499,
-    "marketMax": 144999,
-    "comparators": 4
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6abaa573cdd20c9c0815d435",
-   "title": "Samsung Galaxy Watch Ultra 2 (47MM)",
+   "id": "6a7a374bdc7ea9aa971ccccb",
+   "title": "Samsung Watch 8 44mm",
    "platform": "priceoye",
    "category": "smartwatch",
-   "group": "Samsung Galaxy Watch Ultra 47MM Titanium Silver (2025)",
-   "groupSize": 5,
-   "features": [
-    0.6171657665554301,
-    0.5020953763154722,
-    0.3468738034117581,
-    0.23684335180711477
-   ],
-   "context": {
-    "price": 144999,
-    "originalPrice": 189999,
-    "marketMedian": 102499,
-    "marketMax": 114999,
-    "comparators": 4
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6a7b74ca9de462208cfb9613",
-   "title": "Samsung Watch 8 Classic 46mm",
-   "platform": "priceoye",
-   "category": "smartwatch",
-   "group": "Samsung Watch 8 Classic 46mm",
+   "group": "Samsung Watch 8 44mm",
    "groupSize": 4,
    "features": [
-    0.441836720569226,
-    0.441836720569226,
-    -0.16121453732638177,
-    0.4528603775741255
+    0.8362567422454587,
+    0.653932621312779,
+    -0.007722165356336624,
+    0.5700038000253335
    ],
    "context": {
-    "price": 76599,
-    "originalPrice": 139999,
-    "marketMedian": 89999,
-    "marketMax": 89999,
+    "price": 64499,
+    "originalPrice": 149999,
+    "marketMedian": 64999,
+    "marketMax": 77999,
     "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa4ddcdd20c9c0815d40a",
+   "title": "Samsung Galaxy Watch 8 44MM - Wifi",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Watch 8 44mm",
+   "groupSize": 4,
+   "features": [
+    0.3474058222628406,
+    0.1650817013301611,
+    -0.007722165356336624,
+    0.29891629256839747
+   ],
+   "context": {
+    "price": 64499,
+    "originalPrice": 91999,
+    "marketMedian": 64999,
+    "marketMax": 77999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abb478277eed84b8d2a1d56",
+   "title": "Samsung Galaxy Watch 8 44mm",
+   "platform": "telemart",
+   "category": "smartwatch",
+   "group": "Samsung Watch 8 44mm",
+   "groupSize": 4,
+   "features": [
+    0.1508383937307389,
+    -0.039207892558277356,
+    0.007722165356336613,
+    0.13334666666666667
+   ],
+   "context": {
+    "price": 64999,
+    "originalPrice": 75000,
+    "marketMedian": 64499,
+    "marketMax": 77999,
+    "comparators": 3
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abb478277eed84b8d2a1d59",
+   "title": "Samsung Galaxy Watch 9 44mm",
+   "platform": "telemart",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch 9 44mm",
+   "groupSize": 3,
+   "features": [
+    0.11333401865455875,
+    0.07925968098563206,
+    -0.008037591095691238,
+    0.11429523809523809
+   ],
+   "context": {
+    "price": 92999,
+    "originalPrice": 105000,
+    "marketMedian": 93749.5,
+    "marketMax": 96999,
+    "comparators": 2
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b37279de462208cfb95b0",
+   "title": "Samsung Galaxy Watch 9 44mm",
+   "platform": "priceoye",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch 9 44mm",
+   "groupSize": 3,
+   "features": [
+    0.7012883823297603,
+    0.6877616792510368,
+    0.05563863184334134,
+    0.47567824690944277
+   ],
+   "context": {
+    "price": 96999,
+    "originalPrice": 184999,
+    "marketMedian": 91749.5,
+    "marketMax": 92999,
+    "comparators": 2
    },
    "historyCount": 2,
    "ruleClassification": "unverified_discount"
   },
   {
-   "id": "6abaa4ddcdd20c9c0815d40b",
-   "title": "Samsung Galaxy Watch 8 46MM Classic",
-   "platform": "shophive",
+   "id": "6a7b7bec9de462208cfb968b",
+   "title": "Samsung Galaxy Watch 8 Classic",
+   "platform": "mega",
    "category": "smartwatch",
-   "group": "Samsung Watch 8 Classic 46mm",
-   "groupSize": 4,
+   "group": "Samsung Galaxy Watch 8 Classic",
+   "groupSize": 3,
    "features": [
-    0.441836720569226,
-    0.441836720569226,
-    -0.09920780892453465,
-    0.4178601275723398
-   ],
-   "context": {
-    "price": 81499,
-    "originalPrice": 139999,
-    "marketMedian": 89999,
-    "marketMax": 89999,
-    "comparators": 3
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6a7b74ca9de462208cfb9661",
-   "title": "Samsung Galaxy Watch 8 46MM Classic - Black",
-   "platform": "shophive",
-   "category": "smartwatch",
-   "group": "Samsung Watch 8 Classic 46mm",
-   "groupSize": 4,
-   "features": [
-    0.5410445294937607,
-    0.441836720569226,
-    0.09920780892453461,
-    0.357145408181487
+    0.09402731881194856,
+    0.04852704089466038,
+    0.03994898636883283,
+    0.05264210526315789
    ],
    "context": {
     "price": 89999,
-    "originalPrice": 139999,
-    "marketMedian": 81499,
-    "marketMax": 89999,
-    "comparators": 3
+    "originalPrice": 95000,
+    "marketMedian": 86474.5,
+    "marketMax": 90500,
+    "comparators": 2
    },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6a7b74ca9de462208cfb9662",
-   "title": "Samsung Galaxy Watch 8 46MM Classic - White",
-   "platform": "shophive",
-   "category": "smartwatch",
-   "group": "Samsung Watch 8 Classic 46mm",
-   "groupSize": 4,
-   "features": [
-    0.5410445294937607,
-    0.441836720569226,
-    0.09920780892453461,
-    0.357145408181487
-   ],
-   "context": {
-    "price": 89999,
-    "originalPrice": 139999,
-    "marketMedian": 81499,
-    "marketMax": 89999,
-    "comparators": 3
-   },
-   "historyCount": 1,
+   "historyCount": 2,
    "ruleClassification": "unverified_discount"
   },
   {
@@ -4786,6 +4671,98 @@
     "originalPrice": 17000,
     "marketMedian": 14499,
     "marketMax": 14499,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b6aee9de462208cfb95ec",
+   "title": "Samsung Watch Ultra SM-L705F",
+   "platform": "priceoye",
+   "category": "smartwatch",
+   "group": "Samsung Watch Ultra SM-L705F",
+   "groupSize": 2,
+   "features": [
+    0.340336616806451,
+    0.340336616806451,
+    0.07796235228895951,
+    0.23077692307692307
+   ],
+   "context": {
+    "price": 99999,
+    "originalPrice": 130000,
+    "marketMedian": 92499,
+    "marketMax": 92499,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b74ca9de462208cfb9660",
+   "title": "Samsung Galaxy Watch 8 44MM Graphite - Wifi",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch 8 44MM Graphite - Wifi",
+   "groupSize": 2,
+   "features": [
+    0.20430292731066133,
+    0.20430292731066133,
+    0,
+    0.18478461722410025
+   ],
+   "context": {
+    "price": 74999,
+    "originalPrice": 91999,
+    "marketMedian": 74999,
+    "marketMax": 74999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6a7b74ca9de462208cfb9664",
+   "title": "Samsung Galaxy Watch 8 44MM Silver - Wifi",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch 8 44MM Graphite - Wifi",
+   "groupSize": 2,
+   "features": [
+    0.20430292731066133,
+    0.20430292731066133,
+    0,
+    0.18478461722410025
+   ],
+   "context": {
+    "price": 74999,
+    "originalPrice": 91999,
+    "marketMedian": 74999,
+    "marketMax": 74999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa4ddcdd20c9c0815d408",
+   "title": "Samsung Galaxy Watch Ultra 47MM",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch Ultra 47mm L705",
+   "groupSize": 2,
+   "features": [
+    0.08701213457198749,
+    0.08701213457198749,
+    0.04445215783126599,
+    0.04166701389178243
+   ],
+   "context": {
+    "price": 114999,
+    "originalPrice": 119999,
+    "marketMedian": 109999,
+    "marketMax": 109999,
     "comparators": 1
    },
    "historyCount": 1,
@@ -4907,6 +4884,75 @@
    "ruleClassification": "unverified_discount"
   },
   {
+   "id": "6abaa4ddcdd20c9c0815d40c",
+   "title": "Samsung Galaxy Watch 8 40mm Black - Wifi",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch 8 40mm Black - Wifi",
+   "groupSize": 2,
+   "features": [
+    0.3646480025430707,
+    0.3646480025430707,
+    -0.008032300731595244,
+    0.31111456793964376
+   ],
+   "context": {
+    "price": 61999,
+    "originalPrice": 89999,
+    "marketMedian": 62499,
+    "marketMax": 62499,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa4ddcdd20c9c0815d411",
+   "title": "Samsung Galaxy Watch Ultra 47MM Titanium Gray With Marine Orange (2025)",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch Ultra 47MM Titanium Gray With Marine Orange (2025)",
+   "groupSize": 2,
+   "features": [
+    0.2876848502565652,
+    0.2876848502565652,
+    0,
+    0.25000208335069457
+   ],
+   "context": {
+    "price": 89999,
+    "originalPrice": 119999,
+    "marketMedian": 89999,
+    "marketMax": 89999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa4ddcdd20c9c0815d412",
+   "title": "Samsung Galaxy Watch Ultra 47MM Titanium White With Marine White (2025)",
+   "platform": "shophive",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch Ultra 47MM Titanium Gray With Marine Orange (2025)",
+   "groupSize": 2,
+   "features": [
+    0.2876848502565652,
+    0.2876848502565652,
+    0,
+    0.25000208335069457
+   ],
+   "context": {
+    "price": 89999,
+    "originalPrice": 119999,
+    "marketMedian": 89999,
+    "marketMax": 89999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
    "id": "6abaa4ddcdd20c9c0815d414",
    "title": "Samsung Galaxy Watch 7 44mm Silver With Green Sport Band - SM-L310NZ",
    "platform": "shophive",
@@ -4947,6 +4993,29 @@
     "originalPrice": 79999,
     "marketMedian": 50999,
     "marketMax": 50999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abb478277eed84b8d2a1d5a",
+   "title": "Samsung Galaxy Watch 9 40mm Smartwatch",
+   "platform": "telemart",
+   "category": "smartwatch",
+   "group": "Samsung Galaxy Watch 9 40mm",
+   "groupSize": 2,
+   "features": [
+    0.3065360298775523,
+    0.3065360298775523,
+    -0.021979148267323653,
+    0.280008
+   ],
+   "context": {
+    "price": 89999,
+    "originalPrice": 125000,
+    "marketMedian": 91999,
+    "marketMax": 91999,
     "comparators": 1
    },
    "historyCount": 1,
@@ -5229,185 +5298,24 @@
    "ruleClassification": "unverified_discount"
   },
   {
-   "id": "6abaa6bacdd20c9c0815d55a",
-   "title": "Lenovo ThinkBook 16 G8 Intel Core Ultra 5 225U",
-   "platform": "priceoye",
-   "category": "laptop",
-   "group": "Lenovo ThinkPad E14 Gen 7 14\" Intel Core Ultra 5 225U 8GB 512GB SSD Laptop",
-   "groupSize": 6,
-   "features": [
-    0.11778343248311869,
-    0.04214575810631005,
-    -0.09352640815219133,
-    0.19047679516442909
-   ],
-   "context": {
-    "price": 254999,
-    "originalPrice": 314999,
-    "marketMedian": 279999,
-    "marketMax": 301999,
-    "comparators": 5
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6abaa6cbcdd20c9c0815d57a",
-   "title": "Lenovo ThinkPad E14 Gen 7 Core Ultra 5 225U (8GB RAM - 512GB SSD)",
-   "platform": "priceoye",
-   "category": "laptop",
-   "group": "Lenovo ThinkPad E14 Gen 7 14\" Intel Core Ultra 5 225U 8GB 512GB SSD Laptop",
-   "groupSize": 6,
-   "features": [
-    0.22314426560221998,
-    0.14750659122541124,
-    -0.003577834148749028,
-    0.20285772245063557
-   ],
-   "context": {
-    "price": 278999,
-    "originalPrice": 349999,
-    "marketMedian": 279999,
-    "marketMax": 301999,
-    "comparators": 5
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
    "id": "6abaa6cbcdd20c9c0815d579",
    "title": "Lenovo ThinkPad E16 G3 Ultra 5 225U (8GB-512GB SSD)",
    "platform": "priceoye",
    "category": "laptop",
-   "group": "Lenovo ThinkPad E14 Gen 7 14\" Intel Core Ultra 5 225U 8GB 512GB SSD Laptop",
-   "groupSize": 6,
+   "group": "Lenovo ThinkPad E16 Gen 3 16\" Intel Core Ultra 5 225U 8GB 512GB SSD Laptop",
+   "groupSize": 3,
    "features": [
-    0.19773447884385956,
+    0.12433054603273302,
     0.11851897031830193,
-    0.0035778341487491382,
+    -0.06982609866237759,
     0.17647110726796256
    ],
    "context": {
     "price": 279999,
     "originalPrice": 339999,
-    "marketMedian": 278999,
+    "marketMedian": 300249,
     "marketMax": 301999,
-    "comparators": 5
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6abaa6bacdd20c9c0815d55e",
-   "title": "Lenovo ThinkBook 14 G8 IAL Core Ultra 7 255H (16GB Ram - 512GB SSD)",
-   "platform": "priceoye",
-   "category": "laptop",
-   "group": "Lenovo ThinkPad E14 Gen 7 14\" Intel Core Ultra 7 255H 16GB 512GB SSD Laptop",
-   "groupSize": 4,
-   "features": [
-    0.0754586076891434,
-    0.04879028948303722,
-    -0.1327598735641018,
-    0.18797039591577924
-   ],
-   "context": {
-    "price": 323999,
-    "originalPrice": 398999,
-    "marketMedian": 369999,
-    "marketMax": 379999,
-    "comparators": 3
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6abaa6cbcdd20c9c0815d578",
-   "title": "Lenovo ThinkPad E16 G3 Ultra 7 255H (16GB-512GB SSD)",
-   "platform": "priceoye",
-   "category": "laptop",
-   "group": "Lenovo ThinkPad E14 Gen 7 14\" Intel Core Ultra 7 255H 16GB 512GB SSD Laptop",
-   "groupSize": 4,
-   "features": [
-    0.07796174417294191,
-    0.05129342596683547,
-    -0.010869701774718556,
-    0.08500021250053125
-   ],
-   "context": {
-    "price": 365999,
-    "originalPrice": 399999,
-    "marketMedian": 369999,
-    "marketMax": 379999,
-    "comparators": 3
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6abaa6cbcdd20c9c0815d572",
-   "title": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 5 226V (16GB RAM - 512GB SSD)",
-   "platform": "priceoye",
-   "category": "laptop",
-   "group": "Lenovo ThinkPad T14 Gen 6 Core Ultra 5 226V 16GB Ram 512GB SSD Laptop - 3 Year Warranty",
-   "groupSize": 4,
-   "features": [
-    0.20037892439804048,
-    -0.2040148670625751,
-    0.02852817404890834,
-    0.1578951523556641
-   ],
-   "context": {
-    "price": 319999,
-    "originalPrice": 379999,
-    "marketMedian": 310999,
-    "marketMax": 465999,
-    "comparators": 3
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6abaa6cbcdd20c9c0815d573",
-   "title": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 7 256V (16GB RAM - 512GB SSD)",
-   "platform": "priceoye",
-   "category": "laptop",
-   "group": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 7 256V (16GB RAM - 512GB SSD)",
-   "groupSize": 4,
-   "features": [
-    0.16749273613028245,
-    0.1589820223182135,
-    -0.002853077122437827,
-    0.15662688343827336
-   ],
-   "context": {
-    "price": 349999,
-    "originalPrice": 414999,
-    "marketMedian": 350999,
-    "marketMax": 353999,
-    "comparators": 3
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6abaa6cbcdd20c9c0815d57c",
-   "title": "Lenovo ThinkPad E14 Gen 7 Intel Core Ultra 7 256V (16GB RAM - 512GB SSD)",
-   "platform": "priceoye",
-   "category": "laptop",
-   "group": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 7 256V (16GB RAM - 512GB SSD)",
-   "groupSize": 4,
-   "features": [
-    0.18232203298567792,
-    0.1794689558632402,
-    0.011363790934506908,
-    0.15714323129340785
-   ],
-   "context": {
-    "price": 353999,
-    "originalPrice": 419999,
-    "marketMedian": 349999,
-    "marketMax": 350999,
-    "comparators": 3
+    "comparators": 2
    },
    "historyCount": 1,
    "ruleClassification": "unverified_discount"
@@ -5459,115 +5367,92 @@
    "ruleClassification": "unverified_discount"
   },
   {
-   "id": "6abaa6bacdd20c9c0815d559",
-   "title": "Lenovo ThinkBook 16 G8 Intel Core 7 240H",
+   "id": "6abaa6bacdd20c9c0815d55a",
+   "title": "Lenovo ThinkBook 16 G8 Intel Core Ultra 5 225U",
    "platform": "priceoye",
    "category": "laptop",
-   "group": "Lenovo ThinkBook 16 G8 Arrow Lake Intel Core 7 240H 16GB Ram 512GB SSD Laptop 1 Year Warranty",
+   "group": "Lenovo ThinkBook 16 G8 16\" Intel Core Ultra 5 225U 16GB RAM 512GB SSD Laptop - 1 Year Warranty",
    "groupSize": 3,
    "features": [
-    0.035627298541661676,
-    0.020202775344959373,
-    -0.1709877158515028,
-    0.18666728889096296
+    0.11386076503294697,
+    0.07855914789488844,
+    -0.09744907560236304,
+    0.19047679516442909
    ],
    "context": {
-    "price": 243999,
-    "originalPrice": 299999,
-    "marketMedian": 289499,
-    "marketMax": 293999,
+    "price": 254999,
+    "originalPrice": 314999,
+    "marketMedian": 281099.5,
+    "marketMax": 291200,
     "comparators": 2
    },
    "historyCount": 1,
    "ruleClassification": "unverified_discount"
   },
   {
-   "id": "6abaa6bacdd20c9c0815d55b",
-   "title": "LENOVO THINKBOOK 16 G9 CORE 7 240H (16GB RAM - 512GB SSD)",
+   "id": "6abaa6cbcdd20c9c0815d573",
+   "title": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 7 256V (16GB RAM - 512GB SSD)",
    "platform": "priceoye",
    "category": "laptop",
-   "group": "Lenovo ThinkBook 16 G8 Arrow Lake Intel Core 7 240H 16GB Ram 512GB SSD Laptop 1 Year Warranty",
+   "group": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 7 256V (16GB RAM - 512GB SSD)",
    "groupSize": 3,
    "features": [
-    0.28009282676364994,
-    0.20544462584595566,
-    0.105738895399482,
-    0.16000045714416328
+    0.16322832522037417,
+    0.1589820223182135,
+    -0.00711748803234624,
+    0.15662688343827336
    ],
    "context": {
-    "price": 293999,
-    "originalPrice": 349999,
-    "marketMedian": 264499,
-    "marketMax": 284999,
+    "price": 349999,
+    "originalPrice": 414999,
+    "marketMedian": 352499,
+    "marketMax": 353999,
     "comparators": 2
    },
    "historyCount": 1,
    "ruleClassification": "unverified_discount"
   },
   {
-   "id": "6abaa6cbcdd20c9c0815d576",
-   "title": "Lenovo ThinkPad E16 G1 14 Inches 13th Gen Core i5 (8GB - 512GB)",
+   "id": "6abaa6cbcdd20c9c0815d57c",
+   "title": "Lenovo ThinkPad E14 Gen 7 Intel Core Ultra 7 256V (16GB RAM - 512GB SSD)",
    "platform": "priceoye",
    "category": "laptop",
-   "group": "Lenovo ThinkPad E16 G1 14 Inches 13th Gen Core i7 (8GB - 512GB)",
+   "group": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 7 256V (16GB RAM - 512GB SSD)",
    "groupSize": 3,
    "features": [
-    -0.2881789489881869,
-    -0.4421158550588083,
-    -0.33737339486845785,
-    0.048004
+    0.1808944769186709,
+    0.1794689558632402,
+    0.009936234867499711,
+    0.15714323129340785
    ],
    "context": {
-    "price": 237999,
-    "originalPrice": 250000,
-    "marketMedian": 333499,
-    "marketMax": 388999,
+    "price": 353999,
+    "originalPrice": 419999,
+    "marketMedian": 350499,
+    "marketMax": 350999,
     "comparators": 2
    },
    "historyCount": 1,
    "ruleClassification": "unverified_discount"
   },
   {
-   "id": "6abaa6cbcdd20c9c0815d575",
-   "title": "Lenovo ThinkPad E16 G1 14 Inches 13th Gen Core i7 (8GB - 512GB)",
-   "platform": "priceoye",
+   "id": "6abac958cdd20c9c0815d619",
+   "title": "Dell Pro 15 Essential PV15250 Laptop - Raptor Lake -13th Gen Core i5 1334U 10-Core Processor 8-GB 512-GB SSD Intel UHD Graphics 15.6\" Full HD 1080P IPS WVA 120Hz AG Display TPM (Carbon Black, NEW)",
+   "platform": "paklap",
    "category": "laptop",
-   "group": "Lenovo ThinkPad E16 G1 14 Inches 13th Gen Core i7 (8GB - 512GB)",
+   "group": "Dell Pro 15 Essential PV15250 15.6\" Raptor Lake 13th Gen Core i5-1334U 8GB RAM 512GB SSD Laptop",
    "groupSize": 3,
    "features": [
-    -0.04401369561902347,
-    -0.2597942982648536,
-    -0.12017865371335931,
-    0.07333666666666666
+    0.05129621836843354,
+    0.022478537686382027,
+    0.023125341401737328,
+    0.027777777777777776
    ],
    "context": {
-    "price": 277999,
-    "originalPrice": 300000,
-    "marketMedian": 313499,
-    "marketMax": 388999,
-    "comparators": 2
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6abaa6cccdd20c9c0815d57e",
-   "title": "Lenovo Thinkpad T14 13th Gen Core I7 DOS",
-   "platform": "priceoye",
-   "category": "laptop",
-   "group": "Lenovo ThinkPad E16 G1 14 Inches 13th Gen Core i7 (8GB - 512GB)",
-   "groupSize": 3,
-   "features": [
-    0.43850883816286834,
-    0.3638470305461168,
-    0.410621063975941,
-    0.0275025
-   ],
-   "context": {
-    "price": 388999,
-    "originalPrice": 400000,
-    "marketMedian": 257999,
-    "marketMax": 277999,
+    "price": 175000,
+    "originalPrice": 180000,
+    "marketMedian": 170999.5,
+    "marketMax": 175999,
     "comparators": 2
    },
    "historyCount": 1,
@@ -5620,6 +5505,29 @@
    "ruleClassification": "unverified_discount"
   },
   {
+   "id": "6abaa6cbcdd20c9c0815d57a",
+   "title": "Lenovo ThinkPad E14 Gen 7 Core Ultra 5 225U (8GB RAM - 512GB SSD)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad E14 Gen 7 14\" Intel Core Ultra 5 225U 8GB 512GB SSD Laptop",
+   "groupSize": 2,
+   "features": [
+    0.17095833083295464,
+    0.17095833083295464,
+    -0.055763768918014274,
+    0.20285772245063557
+   ],
+   "context": {
+    "price": 278999,
+    "originalPrice": 349999,
+    "marketMedian": 294999,
+    "marketMax": 294999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
    "id": "6abaa6bacdd20c9c0815d558",
    "title": "Lenovo ThinkBook 16 G8 Ultra 7 255H",
    "platform": "priceoye",
@@ -5637,6 +5545,29 @@
     "originalPrice": 389999,
     "marketMedian": 298999,
     "marketMax": 298999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6bacdd20c9c0815d55b",
+   "title": "LENOVO THINKBOOK 16 G9 CORE 7 240H (16GB RAM - 512GB SSD)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkBook 16 G8 Arrow Lake Intel Core 7 240H 16GB Ram 512GB SSD Laptop 1 Year Warranty",
+   "groupSize": 2,
+   "features": [
+    0.20544462584595566,
+    0.20544462584595566,
+    0.03109069448178789,
+    0.16000045714416328
+   ],
+   "context": {
+    "price": 293999,
+    "originalPrice": 349999,
+    "marketMedian": 284999,
+    "marketMax": 284999,
     "comparators": 1
    },
    "historyCount": 1,
@@ -5666,69 +5597,92 @@
    "ruleClassification": "unverified_discount"
   },
   {
-   "id": "6abaa6bacdd20c9c0815d55d",
-   "title": "Lenovo ThinkBook 14 G8 IAL Core Ultra 5 225U (16GB Ram - 512GB SSD)",
+   "id": "6a824d267fed3db412e97fe3",
+   "title": "Acer Aspire GO 15 AG15-72P-71MA Intel Core 7-150U (1 Year Warranty)",
    "platform": "priceoye",
    "category": "laptop",
-   "group": "Lenovo ThinkBook 14 G8 IAL Core Ultra 5 225U (16GB Ram - 512GB SSD)",
+   "group": "Acer Aspire Go 15 Intel Core 7 150U 8GB RAM 512GB SSD Laptop - 1 Year Warranty",
    "groupSize": 2,
    "features": [
-    0.2558151665005283,
-    0.2558151665005283,
-    0.046855586192253974,
-    0.18857196734847814
+    0.0686771803553925,
+    0.0686771803553925,
+    -0.022526821372628153,
+    0.08716852729436855
    ],
    "context": {
-    "price": 283999,
-    "originalPrice": 349999,
-    "marketMedian": 270999,
-    "marketMax": 270999,
+    "price": 206299,
+    "originalPrice": 225999,
+    "marketMedian": 210999,
+    "marketMax": 210999,
     "comparators": 1
    },
    "historyCount": 1,
    "ruleClassification": "unverified_discount"
   },
   {
-   "id": "6abaa6cbcdd20c9c0815d574",
-   "title": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 7 258V (32GB RAM - 512GB SSD)",
+   "id": "6abaa6bacdd20c9c0815d559",
+   "title": "Lenovo ThinkBook 16 G8 Intel Core 7 240H",
    "platform": "priceoye",
    "category": "laptop",
-   "group": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 7 258V (32GB RAM - 512GB SSD)",
+   "group": "Lenovo ThinkBook 16 G8 16\" Intel Core 7 240H 8GB RAM 512GB SSD Laptop 1 Year Warranty",
    "groupSize": 2,
    "features": [
-    -0.2537810188613735,
-    -0.2537810188613735,
-    -0.37406746877998903,
-    0.11333358518574485
+    0.13926256541958315,
+    0.13926256541958315,
+    -0.06735244897358114,
+    0.18666728889096296
    ],
    "context": {
-    "price": 398999,
-    "originalPrice": 449999,
-    "marketMedian": 579999,
-    "marketMax": 579999,
+    "price": 243999,
+    "originalPrice": 299999,
+    "marketMedian": 260999,
+    "marketMax": 260999,
     "comparators": 1
    },
    "historyCount": 1,
    "ruleClassification": "unverified_discount"
   },
   {
-   "id": "6abaa6cbcdd20c9c0815d577",
-   "title": "Lenovo ThinkPad E16 G1 15.6 Inches 13th Gen Core i5 (8GB - 512GB)",
+   "id": "6abaa6bacdd20c9c0815d55e",
+   "title": "Lenovo ThinkBook 14 G8 IAL Core Ultra 7 255H (16GB Ram - 512GB SSD)",
    "platform": "priceoye",
    "category": "laptop",
-   "group": "Lenovo ThinkPad E16 G1 15.6 Inches 13th Gen Core i5 (8GB - 512GB)",
+   "group": "Lenovo ThinkBook 14 G8 IAL Core Ultra 7 255H (16GB Ram - 512GB SSD)",
    "groupSize": 2,
    "features": [
-    -0.09748962127725709,
-    -0.09748962127725709,
-    -0.14668406715752821,
-    0.048004
+    0.20206459674371832,
+    0.20206459674371832,
+    -0.006153884509526998,
+    0.18797039591577924
    ],
    "context": {
-    "price": 237999,
-    "originalPrice": 250000,
-    "marketMedian": 275600,
-    "marketMax": 275600,
+    "price": 323999,
+    "originalPrice": 398999,
+    "marketMedian": 325999,
+    "marketMax": 325999,
+    "comparators": 1
+   },
+   "historyCount": 1,
+   "ruleClassification": "unverified_discount"
+  },
+  {
+   "id": "6abaa6cbcdd20c9c0815d572",
+   "title": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 5 226V (16GB RAM - 512GB SSD)",
+   "platform": "priceoye",
+   "category": "laptop",
+   "group": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 5 226V (16GB RAM - 512GB SSD)",
+   "groupSize": 2,
+   "features": [
+    0.2035995494704841,
+    0.2035995494704841,
+    0.031748799121352075,
+    0.1578951523556641
+   ],
+   "context": {
+    "price": 319999,
+    "originalPrice": 379999,
+    "marketMedian": 309999,
+    "marketMax": 309999,
     "comparators": 1
    },
    "historyCount": 1,
@@ -5781,52 +5735,6 @@
    "ruleClassification": "unverified_discount"
   },
   {
-   "id": "6abaa6cccdd20c9c0815d580",
-   "title": "Lenovo ThinkPad E14 G4 14 Inches 12th Gen Core i5 DOS (8GB - 512GB)",
-   "platform": "priceoye",
-   "category": "laptop",
-   "group": "Lenovo ThinkPad E14 G4 14 Inches 12th Gen Core i7 DOS (8GB - 512GB)",
-   "groupSize": 2,
-   "features": [
-    0.11826824950743345,
-    0.11826824950743345,
-    -0.004338420420437729,
-    0.11538846153846154
-   ],
-   "context": {
-    "price": 229999,
-    "originalPrice": 260000,
-    "marketMedian": 230999,
-    "marketMax": 230999,
-    "comparators": 1
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6abaa6cccdd20c9c0815d57f",
-   "title": "Lenovo ThinkPad E14 G4 14 Inches 12th Gen Core i7 DOS (8GB - 512GB)",
-   "platform": "priceoye",
-   "category": "laptop",
-   "group": "Lenovo ThinkPad E14 G4 14 Inches 12th Gen Core i7 DOS (8GB - 512GB)",
-   "groupSize": 2,
-   "features": [
-    0.29849411057988084,
-    0.29849411057988084,
-    0.004338420420437836,
-    0.25483953174042495
-   ],
-   "context": {
-    "price": 230999,
-    "originalPrice": 309999,
-    "marketMedian": 229999,
-    "marketMax": 229999,
-    "comparators": 1
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
    "id": "6abaa6cccdd20c9c0815d581",
    "title": "Lenovo ThinkPad E14 Intel Core Ultra 5 (8GB-512GB)",
    "platform": "priceoye",
@@ -5850,52 +5758,6 @@
    "ruleClassification": "unverified_discount"
   },
   {
-   "id": "6abaa6cccdd20c9c0815d58a",
-   "title": "Lenovo Ideapad Slim 3 13th Gen Core i3 DOS",
-   "platform": "priceoye",
-   "category": "laptop",
-   "group": "Lenovo IdeaPad Slim 3 Core i5 13th Gen",
-   "groupSize": 2,
-   "features": [
-    0.18885544465527926,
-    0.18885544465527926,
-    -0.0819176020541436,
-    0.23721040562979362
-   ],
-   "context": {
-    "price": 163999,
-    "originalPrice": 214999,
-    "marketMedian": 177999,
-    "marketMax": 177999,
-    "comparators": 1
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6abaa6cccdd20c9c0815d58c",
-   "title": "Lenovo Thinkbook 15 G2 15.6 Inches 11th Gen Core i7 DOS (8GB - 1TB)",
-   "platform": "priceoye",
-   "category": "laptop",
-   "group": "Lenovo Thinkbook 15 G2 15.6 Inches 11th Gen Core i7 DOS (8GB - 1TB)",
-   "groupSize": 2,
-   "features": [
-    0.49141002660952837,
-    0.49141002660952837,
-    0.2633514559486987,
-    0.20392236832301303
-   ],
-   "context": {
-    "price": 202999,
-    "originalPrice": 254999,
-    "marketMedian": 155999,
-    "marketMax": 155999,
-    "comparators": 1
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
    "id": "6abaa6cccdd20c9c0815d5a8",
    "title": "Lenovo ThinkPad E16 16\" Panther Lake Intel Core Ultra 7 355 Series 3 16GB RAM 512GB SSD Laptop 1 Year Warranty",
    "platform": "shophive",
@@ -5913,121 +5775,6 @@
     "originalPrice": 429999,
     "marketMedian": 400999,
     "marketMax": 400999,
-    "comparators": 1
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6abac958cdd20c9c0815d619",
-   "title": "Dell Pro 15 Essential PV15250 Laptop - Raptor Lake -13th Gen Core i5 1334U 10-Core Processor 8-GB 512-GB SSD Intel UHD Graphics 15.6\" Full HD 1080P IPS WVA 120Hz AG Display TPM (Carbon Black, NEW)",
-   "platform": "paklap",
-   "category": "laptop",
-   "group": "Dell Pro 15 Essential PV15250 Laptop - Raptor Lake -13th Gen Core i5 1334U 10-Core Processor 8-GB 512-GB SSD Intel UHD Graphics 15.6\" Full HD 1080P IPS WVA 120Hz AG Display TPM (Carbon Black, Brand New, Light Cosmetic Marks)",
-   "groupSize": 2,
-   "features": [
-    0.08096906253366709,
-    0.08096906253366709,
-    0.05279818556697083,
-    0.027777777777777776
-   ],
-   "context": {
-    "price": 175000,
-    "originalPrice": 180000,
-    "marketMedian": 166000,
-    "marketMax": 166000,
-    "comparators": 1
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6abad83dcdd20c9c0815d810",
-   "title": "Lenovo ThinkPad T14 Gen 1 | Core i5 | 10th Gen | 14 Inches Touch screen Display Pre-Owned Laptop With Warranty",
-   "platform": "telemart",
-   "category": "laptop",
-   "group": "Hp EliteBook 840 G7 | Core i5 | 10th Gen | 14 Inches Touch Screen Display Pre-Owned Laptop",
-   "groupSize": 2,
-   "features": [
-    0.03967681715289829,
-    0.03967681715289829,
-    -0.12285518432573929,
-    0.15001111111111112
-   ],
-   "context": {
-    "price": 76499,
-    "originalPrice": 90000,
-    "marketMedian": 86499,
-    "marketMax": 86499,
-    "comparators": 1
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6abad83dcdd20c9c0815d806",
-   "title": "Hp EliteBook 840 G7 | Core i5 | 10th Gen | 14 Inches Touch Screen Display Pre-Owned Laptop",
-   "platform": "telemart",
-   "category": "laptop",
-   "group": "Hp EliteBook 840 G7 | Core i5 | 10th Gen | 14 Inches Touch Screen Display Pre-Owned Laptop",
-   "groupSize": 2,
-   "features": [
-    0.4910360684506738,
-    0.4910360684506738,
-    0.12285518432573943,
-    0.308008
-   ],
-   "context": {
-    "price": 86499,
-    "originalPrice": 125000,
-    "marketMedian": 76499,
-    "marketMax": 76499,
-    "comparators": 1
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6abad83dcdd20c9c0815d80c",
-   "title": "HP EliteBook 840 G8 | Core i7 | 11th Gen | 14 Inches Display Pre-Owned Laptop With Warranty",
-   "platform": "telemart",
-   "category": "laptop",
-   "group": "HP EliteBook 840 G8 | Core i7 | 11th Gen | 14 Inches Display Pre-Owned Laptop With Warranty",
-   "groupSize": 2,
-   "features": [
-    0.09431800550540267,
-    0.09431800550540267,
-    -0.3111571026527621,
-    0.33334
-   ],
-   "context": {
-    "price": 99999,
-    "originalPrice": 150000,
-    "marketMedian": 136499,
-    "marketMax": 136499,
-    "comparators": 1
-   },
-   "historyCount": 1,
-   "ruleClassification": "unverified_discount"
-  },
-  {
-   "id": "6abad83dcdd20c9c0815d80e",
-   "title": "Dell Latitude 7420 | Core i7 | 11th Gen | 14 Inches Display Pre-Owned Laptop With Warranty",
-   "platform": "telemart",
-   "category": "laptop",
-   "group": "HP EliteBook 840 G8 | Core i7 | 11th Gen | 14 Inches Display Pre-Owned Laptop With Warranty",
-   "groupSize": 2,
-   "features": [
-    0.4700136292957359,
-    0.4700136292957359,
-    0.3111571026527621,
-    0.14688125
-   ],
-   "context": {
-    "price": 136499,
-    "originalPrice": 160000,
-    "marketMedian": 99999,
-    "marketMax": 99999,
     "comparators": 1
    },
    "historyCount": 1,

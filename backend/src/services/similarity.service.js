@@ -4,6 +4,7 @@ import {
   extractScreenInches,
   extractPtaStatus,
   extractModelCodes,
+  extractSpecs,
 } from "./normalizeTitle.service.js";
 import { extractRamGb, extractCondition } from "./productAttributes.service.js";
 
@@ -88,6 +89,18 @@ export function attributeConflict(textA, textB, { ignoreUnstatedStorage = false 
   const codesA = extractModelCodes(textA);
   const codesB = extractModelCodes(textB);
   if (codesA.size > 0 && codesB.size > 0 && !sameSet(codesA, codesB)) return true;
+
+  // A specification both titles state must share a value: a 40mm and a 44mm
+  // watch, or a 12th- and 13th-gen laptop, are different products. Disjoint
+  // rather than unequal, because one store may list more values for the same
+  // unit ("50MP" vs "50MP + 12MP") while describing the same phone. A spec
+  // only one title mentions proves nothing either way.
+  const specsA = extractSpecs(textA);
+  const specsB = extractSpecs(textB);
+  for (const [unit, valuesA] of specsA) {
+    const valuesB = specsB.get(unit);
+    if (valuesB && ![...valuesA].some((v) => valuesB.has(v))) return true;
+  }
 
   if (!sameSet(extractVariants(textA), extractVariants(textB))) return true;
 

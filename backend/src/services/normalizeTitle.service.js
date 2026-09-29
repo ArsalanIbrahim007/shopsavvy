@@ -102,20 +102,99 @@ export function extractPtaStatus(title = "") {
   return "unknown";
 }
 
+/*
+ * Title tokens that mix letters and digits fall into two kinds, and treating
+ * them alike was a real matching bug (found 2026-09-30):
+ *
+ *   - Model codes (QN70F, L320, S2721DGF) name *this product*. Two titles
+ *     sharing one is strong evidence they are the same product.
+ *   - Specifications (40mm, 144hz, 5000mah, 13th gen, a 13620h CPU, an RTX
+ *     4060 GPU, a Core i7) describe a property that *many different
+ *     products* share. Two different watches can both be 44mm; an IdeaPad and
+ *     a ThinkPad can both have a 155H CPU.
+ *
+ * When specs were counted as model codes, two failures followed: a store
+ * listing one extra spec made the code sets differ and vetoed a genuine
+ * match (the same Galaxy Watch 8 from iShopping and PriceOye never grouped),
+ * and a shared spec looked like a shared model code, so the trained
+ * classifier merged different products (Galaxy Watch 7/8/9, all 44mm, as
+ * one group; an HP ProBook with a Lenovo ThinkPad, both "13th gen").
+ *
+ * So specs are pulled out and compared as constraints -- when both titles
+ * state one, they must agree -- and only what is left counts as a model code.
+ */
+
+// Number + unit. "p" is resolution only for real resolutions, because Intel
+// CPUs also end in P (i7-1260P).
+const UNIT_TOKEN = /^(\d+)(mm|cm|khz|ghz|hz|mah|wh|mp|kw|w|inches|inch|in|th|st|nd|rd|nits|fps)$/;
+const UNIT_KEY = { inches: "inch", in: "inch", th: "gen", st: "gen", nd: "gen", rd: "gen" };
+const RESOLUTION_TOKEN = /^(480|720|1080|1440|2160)p$/;
+
+// Laptop/desktop CPU model numbers: 1334u, 13620h, 1135g7, 7735hs, 258v, 12400f.
+const CPU_TOKEN = /^\d{3,5}(u|h|hs|hx|g\d|v|k|kf|f|x|p)$/;
+
+// GPU and CPU-tier are two-token phrases after normalisation: "rtx 4060",
+// "core i7" -> "i7", "ultra 7", "ryzen 5".
+const GPU_PREFIX = new Set(["rtx", "gtx", "rx", "mx", "arc"]);
+const CPU_TIER_TOKEN = /^c?i[3579]$/;
+const CPU_TIER_PREFIX = new Set(["core", "ultra", "ryzen"]);
+
+function classifyTitleTokens(title) {
+  const tokens = normalizeTitle(title).split(" ").filter(Boolean);
+  const specs = new Map();
+  const codes = new Set();
+  const consumed = new Set();
+
+  const addSpec = (key, value) => {
+    if (!specs.has(key)) specs.set(key, new Set());
+    specs.get(key).add(value);
+  };
+
+  tokens.forEach((token, i) => {
+    const next = tokens[i + 1];
+    let m;
+
+    if ((m = token.match(UNIT_TOKEN))) {
+      addSpec(UNIT_KEY[m[2]] || m[2], Number(m[1]));
+    } else if (RESOLUTION_TOKEN.test(token)) {
+      addSpec("resolution", token);
+    } else if (CPU_TOKEN.test(token)) {
+      addSpec("cpu", token);
+    } else if (CPU_TIER_TOKEN.test(token)) {
+      addSpec("cputier", token.replace(/^c/, "").slice(1)); // "ci7"/"i7" -> "7"
+    } else if (CPU_TIER_PREFIX.has(token) && /^[3579]$/.test(next ?? "")) {
+      addSpec("cputier", next); // "ultra 7", "core 5", "ryzen 7"
+      consumed.add(i + 1);
+    } else if (GPU_PREFIX.has(token) && /^\d{3,4}$/.test(next ?? "")) {
+      addSpec("gpu", `${token}${next}`);
+      consumed.add(i + 1);
+    } else if (!consumed.has(i) && !/^\d+(gb|tb|mb)$/.test(token) &&
+               /^(?=.*[a-z])(?=.*\d)[a-z0-9]{4,}$/.test(token)) {
+      // Capacities are handled separately and are not model codes either.
+      codes.add(token);
+    }
+  });
+
+  return { codes, specs };
+}
+
 /**
  * Manufacturer model codes such as QN70F, S85F or FA2787NR. These mix letters
  * and digits and are frequently the only token distinguishing two otherwise
  * identically described products, so they cannot be left to compete with every
- * other word in a similarity score.
+ * other word in a similarity score. Specifications are excluded -- see above.
  */
 export function extractModelCodes(title = "") {
-  const codes = new Set();
+  return classifyTitleTokens(title).codes;
+}
 
-  normalizeTitle(title).split(" ").forEach((token) => {
-   // Capacities are handled separately and must not be read as model codes.
-    if (/^\d+(gb|tb|mb)$/.test(token)) return;
-    if (/^(?=.*[a-z])(?=.*\d)[a-z0-9]{4,}$/.test(token)) codes.add(token);
-  });
-
-  return codes;
+/**
+ * Specifications stated in a title, by kind: e.g. "Samsung Watch 8 44mm" ->
+ * { mm: {44} }, "Core i7 13th Gen" -> { cputier: {"7"}, gen: {13} }. A title
+ * can state several values for one kind ("50MP + 12MP" cameras), hence sets.
+ *
+ * @returns {Map<string, Set<number|string>>}
+ */
+export function extractSpecs(title = "") {
+  return classifyTitleTokens(title).specs;
 }
