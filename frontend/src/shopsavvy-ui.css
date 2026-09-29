@@ -509,3 +509,23 @@
   color: #fff;
   font-weight: 600;
 }
+
+/* ── Comparison table on narrow screens (NFR-07) ─────────────────────────
+   .comparison-table-wrapper is "overflow: visible" (see the rule above,
+   line ~397) so the score-breakdown hover popover isn't clipped -- but
+   that also means the table has nothing to constrain or scroll it, so on
+   a phone-width screen it was overflowing the page instead of scrolling,
+   confirmed live at 390px (2026-09-29): only Store/Price/Discount stayed
+   visible, everything from Deal Score onward was clipped off-screen with
+   no way to reach it.
+   Scoped to the same 900px breakpoint the rest of the results page already
+   uses (App.css) so desktop is completely unaffected. Below that, hover
+   isn't a real interaction anyway (touch has no hover), so trading the
+   popover's edge-case vertical clipping for a scrollable table is a clear
+   improvement, not a regression. */
+@media (max-width: 900px) {
+  .comparison-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
