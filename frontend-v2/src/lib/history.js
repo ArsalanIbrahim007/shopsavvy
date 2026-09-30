@@ -5,6 +5,7 @@
 // single point. That is reported as what it is; nothing is interpolated or invented. Prices HOLD until
 // they change, so lines are steps, not slopes (a slope would imply a gradual fall that never happened).
 
+import { formatAxisDate } from "./format.js";
 import { platformName } from "./platforms.js";
 
 const DAY_MS = 24 * 3600 * 1000;
@@ -83,10 +84,81 @@ export function stepPath(coords) {
 }
 
 /**
- * Scales for drawing every series on one set of axes.
+ * Round axis values: about `target` ticks, each a multiple of 1, 2 or 5 times a power of ten, that cover
+ * [min, max]. A flat range (min = max) gets a band of 5% either side, so a single price still has an axis.
+ * @returns {{ticks: number[], min: number, max: number}} min and max are the first and last tick
+ */
+export function niceTicks(min, max, target = 5) {
+  if (!(max > min)) {
+    const band = Math.max(Math.abs(min) * 0.05, 1);
+    return niceTicks(min - band, max + band, target);
+  }
+  const rough = (max - min) / Math.max(target - 1, 1);
+  const power = 10 ** Math.floor(Math.log10(rough));
+  const fraction = rough / power;
+  const step = (fraction <= 1 ? 1 : fraction <= 2 ? 2 : fraction <= 5 ? 5 : 10) * power;
+  const first = Math.max(Math.floor(min / step) * step, 0); // prices are never negative
+  const last = Math.ceil(max / step) * step;
+  const ticks = [];
+  for (let i = 0; first + i * step <= last + step / 1000; i++) ticks.push(Math.round((first + i * step) / step) * step);
+  return { ticks, min: ticks[0], max: ticks[ticks.length - 1] };
+}
+
+const DATE_STEPS_DAYS = [1, 2, 3, 7, 14, 30, 60, 90, 180, 365];
+
+/**
+ * Dates for the bottom axis: local midnights, a whole number of days apart (the smallest step that keeps
+ * the count at or under `target`), starting at the first midnight inside the range. A range shorter than
+ * two days gets its two ends.
+ */
+export function dateTicks(from, to, target = 6) {
+  const span = to.getTime() - from.getTime();
+  if (span < 2 * DAY_MS) return [from, to];
+
+  const stepDays = DATE_STEPS_DAYS.find((days) => span / (days * DAY_MS) <= target) ?? DATE_STEPS_DAYS.at(-1);
+  const first = new Date(from.getFullYear(), from.getMonth(), from.getDate());
+  if (first < from) first.setDate(first.getDate() + 1);
+
+  const ticks = [];
+  for (let at = new Date(first); at <= to; at = new Date(at.getFullYear(), at.getMonth(), at.getDate() + stepDays)) ticks.push(at);
+  return ticks;
+}
+
+/** The price a series held at `time` (ms): its last recorded price at or before then, or null before its first. */
+export function priceAtTime(points, time) {
+  let price = null;
+  for (const point of points) {
+    if (point.at.getTime() <= time) price = point.price;
+    else break;
+  }
+  return price;
+}
+
+/**
+ * What every store charged at `time`, cheapest first, for the hover readout. A store with no recorded
+ * price yet at that time is left out rather than shown as zero.
+ */
+export function hoverRows(series, time) {
+  const rows = series
+    .map((s) => ({ id: s.id, name: s.name, platform: s.platform, isCurrent: s.isCurrent, price: priceAtTime(s.points, time) }))
+    .filter((row) => row.price !== null)
+    .sort((a, b) => a.price - b.price || a.name.localeCompare(b.name));
+
+  // A store that lists one product in several colours has several identical lines: one row for them, not four.
+  // (Where the listing the shopper opened is one of them, its row is the one kept.)
+  const seen = new Map();
+  for (const row of rows) {
+    const key = `${row.platform}|${row.price}`;
+    if (!seen.has(key) || (row.isCurrent && !seen.get(key).isCurrent)) seen.set(key, row);
+  }
+  return rows.filter((row) => seen.get(`${row.platform}|${row.price}`) === row);
+}
+
+/**
+ * Scales for drawing every series on one set of axes, with labelled ticks on both.
  * Returns null when there is nothing to draw; a chart needs at least two recorded days somewhere.
  */
-export function chartModel(series, { width = 640, height = 240, pad = { top: 16, right: 16, bottom: 30, left: 64 } } = {}) {
+export function chartModel(series, { width = 720, height = 340, pad = { top: 14, right: 18, bottom: 56, left: 78 }, xTarget = 6, yTarget = 5 } = {}) {
   const all = series.flatMap((s) => s.points);
   if (all.length === 0) return null;
 
@@ -100,9 +172,14 @@ export function chartModel(series, { width = 640, height = 240, pad = { top: 16,
 
   const innerW = width - pad.left - pad.right;
   const innerH = height - pad.top - pad.bottom;
-  const flat = hi === lo;
+  // a little room above and below, so the highest and lowest prices do not sit on the frame
+  const room = (hi - lo) * 0.05;
+  const axis = niceTicks(lo - room, hi + room, yTarget);
   const x = (at) => pad.left + ((at.getTime() - t0) / (t1 - t0)) * innerW;
-  const y = (price) => (flat ? pad.top + innerH / 2 : pad.top + innerH - ((price - lo) / (hi - lo)) * innerH);
+  const y = (price) => pad.top + innerH - ((price - axis.min) / (axis.max - axis.min)) * innerH;
+  const from = new Date(t0);
+  const to = new Date(t1);
+  const withYear = from.getFullYear() !== to.getFullYear();
 
   return {
     width,
@@ -110,10 +187,14 @@ export function chartModel(series, { width = 640, height = 240, pad = { top: 16,
     pad,
     min: lo,
     max: hi,
-    from: new Date(t0),
-    to: new Date(t1),
+    from,
+    to,
     x,
     y,
+    /** the time under a horizontal position in the chart, kept inside the drawn range */
+    timeAt: (px) => new Date(t0 + (Math.min(Math.max(px, pad.left), pad.left + innerW) - pad.left) / innerW * (t1 - t0)),
+    yTicks: axis.ticks.map((value) => ({ value, y: y(value), label: value.toLocaleString("en-US") })),
+    xTicks: dateTicks(from, to, xTarget).map((at) => ({ at, x: x(at), label: formatAxisDate(at, { withYear }) })),
     lines: series.map((s) => {
       const coords = s.points.map((point) => [x(point.at), y(point.price)]);
       // Extend the last price to the right edge: it is still the price today.

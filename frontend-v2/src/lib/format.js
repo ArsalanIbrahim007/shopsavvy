@@ -63,6 +63,13 @@ export function timeAgo(value, now = Date.now()) {
   return new Date(time).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
+/** "12 Sep" for an axis label; with the year ("12 Sep 2026") when the chart spans more than one year. */
+export function formatAxisDate(value, { withYear = false } = {}) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("en-GB", withYear ? { day: "numeric", month: "short", year: "numeric" } : { day: "numeric", month: "short" });
+}
+
 export function formatDate(value) {
   const date = new Date(value);
   return Number.isNaN(date.getTime())

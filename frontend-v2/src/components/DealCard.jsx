@@ -17,7 +17,7 @@ export default function DealCard({ deal }) {
 
   return (
     <article className="product-card card">
-      <Link to={`/product/${lowest._id}`} className="product-card__link" aria-label={`${deal.productName}, ${formatPrice(lowest.price)} at ${platformName(lowest.platform)}`}>
+      <Link to={`/product/${lowest._id}`} className="product-card__link">
         <ProductImage src={deal.imageUrl} alt="" />
         <p className="product-card__kicker small muted">{categoryName(deal.category)}</p>
         <h3 className="product-card__name">{deal.productName}</h3>

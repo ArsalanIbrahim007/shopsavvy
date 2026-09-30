@@ -11,6 +11,7 @@ import { scoreOf } from "../lib/score.js";
 import { StoreMark } from "./StoreLogo.jsx";
 import { cardBadges } from "../lib/verdicts.js";
 import { summarizeOffers } from "../lib/summary.js";
+import { ColourStrip } from "./ColourPicker.jsx";
 import ProductImage from "./ProductImage.jsx";
 import VerdictBadge from "./VerdictBadge.jsx";
 import "./cards.css";
@@ -31,7 +32,7 @@ export default function ProductCard({ group }) {
     <article className="product-card card">
       {/* `from` lets the product page's back link return to this exact list, filters included; `name` keeps the
           title the shopper clicked (the page re-groups the product, and its first title can differ) */}
-      <Link to={`/product/${best._id}`} state={{ from: `${pathname}${search}`, name: group.productName }} className="product-card__link" aria-label={`${group.productName}, from ${formatPrice(best.price)}`}>
+      <Link to={`/product/${best._id}`} state={{ from: `${pathname}${search}`, name: group.productName }} className="product-card__link">
         <ProductImage src={best.imageUrl} alt="" />
         <h3 className="product-card__name">{group.productName}</h3>
       </Link>
@@ -50,6 +51,8 @@ export default function ProductCard({ group }) {
           <VerdictBadge key={badge.id} tone={badge.tone} label={badge.label} title={badge.reason} />
         ))}
       </div>
+
+      <ColourStrip offers={offers} />
 
       <p className="small muted">
         {summary.count} {summary.count === 1 ? "offer" : "offers"} from {summary.platformCount} {summary.platformCount === 1 ? "store" : "stores"}

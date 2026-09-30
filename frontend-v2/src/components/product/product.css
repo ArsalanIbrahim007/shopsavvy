@@ -13,9 +13,28 @@
 .history .chip[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: var(--on-brand); }
 /* a store's chart colour: its brand colour (--store, set inline), lightened in dark mode by --chart-lift */
 .history__swatch { width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; background: color-mix(in srgb, var(--store, var(--ink-faint)), white var(--chart-lift)); }
-.history__chart { width: 100%; height: auto; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-card); }
+.history__plot { position: relative; }
+.history__plot[hidden] { display: none; }
+.history__chart { display: block; width: 100%; height: auto; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-card); touch-action: pan-y; cursor: crosshair; }
 .history__grid { stroke: var(--line); stroke-dasharray: 4 4; }
-.history__axis { font-size: 11px; fill: var(--ink-faint); }
+.history__axis { font-size: 12px; fill: var(--ink-faint); font-variant-numeric: tabular-nums; }
+.history__axis-title { font-size: 12px; font-weight: 600; fill: var(--ink-soft); }
+.history__axis-line, .history__tick { stroke: var(--ink-mute); stroke-width: 1; }
+.history__crosshair { stroke: var(--ink-faint); stroke-width: 1; stroke-dasharray: 3 3; }
+.history__marker-group { color: color-mix(in srgb, var(--store, var(--ink-faint)), white var(--chart-lift)); }
+.history__marker { fill: currentColor; stroke: var(--paper); stroke-width: 2; }
+/* the reading that follows the pointer: date, then each store's price, the store nearest the pointer in bold */
+.history__tooltip {
+  position: absolute; z-index: 5; pointer-events: none; min-width: 190px; max-width: 260px;
+  padding: var(--space-2) var(--space-3); display: grid; gap: 2px;
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-control);
+  box-shadow: var(--shadow-pop); font-size: 0.8125rem;
+}
+.history__tooltip-date { font-weight: 700; padding-bottom: 4px; margin-bottom: 2px; border-bottom: 1px solid var(--line-soft); }
+.history__tooltip-row { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); color: var(--ink-soft); }
+.history__tooltip-row.is-near { color: var(--ink); font-weight: 700; }
+.history__tooltip-store { display: inline-flex; align-items: center; }
+.history__tooltip-store .history__swatch { flex: none; }
 .history__line { color: color-mix(in srgb, var(--store, var(--ink-faint)), white var(--chart-lift)); }
 .history__line path { stroke: currentColor; stroke-width: 1.5; opacity: 0.45; }
 .history__line--current path { stroke-width: 2.75; opacity: 1; }

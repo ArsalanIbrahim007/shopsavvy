@@ -6,6 +6,7 @@ import { buildSpecs } from "../src/lib/specs.js";
 import { getRecentSearches, addRecentSearch, clearRecentSearches, MAX_RECENT } from "../src/lib/recentSearches.js";
 import {
   historyPoints, historyStats, pointsInRange, buildSeries, stepPath, chartModel, sparklineModel, RANGES,
+  niceTicks, dateTicks, priceAtTime, hoverRows,
 } from "../src/lib/history.js";
 
 const DAY = 24 * 3600 * 1000;
@@ -222,8 +223,15 @@ describe("history: series and chart model", () => {
     const model = chartModel(buildSeries(offers, "all", { now: NOW }), { width: 640, height: 240 });
     expect(model).toMatchObject({ min: 90, max: 110 });
     const { pad } = model;
-    expect(model.y(90)).toBeCloseTo(240 - pad.bottom);
-    expect(model.y(110)).toBeCloseTo(pad.top);
+    const top = model.yTicks.at(-1);
+    const bottom = model.yTicks[0];
+    expect(bottom.value).toBeLessThanOrEqual(90); // the scale covers every price, with a little room
+    expect(top.value).toBeGreaterThanOrEqual(110);
+    expect(bottom.y).toBeCloseTo(240 - pad.bottom); // the lowest tick is the bottom of the plot, the highest the top
+    expect(top.y).toBeCloseTo(pad.top);
+    expect(model.y(90)).toBeLessThan(bottom.y);
+    expect(model.y(110)).toBeGreaterThan(top.y);
+    expect(model.y(110)).toBeLessThan(model.y(90)); // dearer is higher on the chart
     expect(model.x(model.from)).toBeCloseTo(pad.left);
     expect(model.x(model.to)).toBeCloseTo(640 - pad.right);
     expect(model.lines).toHaveLength(2);
@@ -235,7 +243,7 @@ describe("history: series and chart model", () => {
     const a = model.lines.find((l) => l.id === "a");
     // a's last point is 10 days ago, b's is 5 days ago: a's line runs on to b's date
     expect(a.path.split("H").length).toBe(3); // one step plus the extension
-    expect(a.path).toContain(`H${(640 - model.pad.right).toFixed(1)}`);
+    expect(a.path).toContain(`H${(model.width - model.pad.right).toFixed(1)}`);
   });
 
   it("has nothing to draw for no data or a single moment, and centres a flat line", () => {
@@ -243,7 +251,9 @@ describe("history: series and chart model", () => {
     const single = buildSeries([{ _id: "a", platform: "mega", priceHistory: [point(100, 3)] }], "all", { now: NOW });
     expect(chartModel(single)).toBeNull();
     const flat = chartModel(buildSeries([{ _id: "a", platform: "mega", priceHistory: [point(100, 30), point(100, 1)] }], "all", { now: NOW }), { height: 240 });
-    expect(flat.y(100)).toBeCloseTo(240 / 2 - (30 - 16) / 2 + 0, 0); // middle of the drawing area
+    const { pad } = flat;
+    expect(flat.y(100)).toBeCloseTo(pad.top + (240 - pad.top - pad.bottom) / 2, 0); // middle of the drawing area
+    expect(flat.yTicks.map((t) => t.value)).toContain(100); // and the axis still has a scale around it
   });
 });
 
@@ -265,5 +275,99 @@ describe("history: sparkline", () => {
     const ys = model.polyline.split(" ").map((p) => Number(p.split(",")[1]));
     expect(ys).toEqual([0, 20]);
     expect(model.endY).toBe(20);
+  });
+});
+
+describe("history: axis ticks", () => {
+  it("niceTicks gives round, evenly spaced values that cover the range", () => {
+    expect(niceTicks(64000, 72000)).toEqual({ ticks: [64000, 66000, 68000, 70000, 72000], min: 64000, max: 72000 });
+    const t = niceTicks(284999, 398000);
+    expect(t.min).toBeLessThanOrEqual(284999);
+    expect(t.max).toBeGreaterThanOrEqual(398000);
+    const steps = t.ticks.slice(1).map((v, i) => v - t.ticks[i]);
+    expect(new Set(steps).size).toBe(1); // evenly spaced
+    expect(t.ticks.every((v) => v % steps[0] === 0)).toBe(true); // round multiples of the step
+    expect([1, 2, 5]).toContain(Number(String(steps[0]).replace(/0+$/, "")));
+    expect(t.ticks.length).toBeGreaterThanOrEqual(4);
+    expect(t.ticks.length).toBeLessThanOrEqual(7);
+  });
+
+  it("niceTicks gives a flat range a band around the value, and never goes below zero", () => {
+    const flat = niceTicks(100, 100);
+    expect(flat.min).toBeLessThan(100);
+    expect(flat.max).toBeGreaterThan(100);
+    expect(flat.ticks).toContain(100);
+    expect(niceTicks(0.5, 3).min).toBeGreaterThanOrEqual(0);
+    expect(niceTicks(10, 12).ticks.every((v) => v >= 0)).toBe(true);
+  });
+
+  it("dateTicks puts a label on a whole number of days, about six at most, inside the range", () => {
+    const from = new Date(NOW - 90 * DAY);
+    const to = new Date(NOW);
+    const ticks = dateTicks(from, to, 6);
+    expect(ticks.length).toBeGreaterThanOrEqual(3);
+    expect(ticks.length).toBeLessThanOrEqual(7);
+    for (const tick of ticks) {
+      expect(tick.getTime()).toBeGreaterThanOrEqual(from.getTime());
+      expect(tick.getTime()).toBeLessThanOrEqual(to.getTime());
+      expect([tick.getHours(), tick.getMinutes()]).toEqual([0, 0]); // calendar days
+    }
+    const gaps = ticks.slice(1).map((t, i) => Math.round((t - ticks[i]) / DAY));
+    expect(new Set(gaps).size).toBe(1);
+    expect(dateTicks(from, to, 3).length).toBeLessThan(dateTicks(from, to, 12).length); // fewer labels on a narrow chart
+  });
+
+  it("dateTicks labels the two ends of a range shorter than two days", () => {
+    const from = new Date(NOW - 20 * 3600 * 1000);
+    const to = new Date(NOW);
+    expect(dateTicks(from, to)).toEqual([from, to]);
+  });
+
+  it("the chart model carries labelled ticks for both axes, and the year only when the range spans two", () => {
+    const model = chartModel(buildSeries([{ _id: "a", platform: "mega", priceHistory: [point(369999, 60), point(389999, 2)] }], "all", { now: NOW }), { width: 640, height: 300 });
+    expect(model.yTicks.length).toBeGreaterThanOrEqual(4);
+    expect(model.yTicks.every((t) => /^[\d,]+$/.test(t.label))).toBe(true);
+    expect(model.yTicks[0].label).toBe(model.yTicks[0].value.toLocaleString("en-US"));
+    expect(model.xTicks.every((t) => /^\d{1,2} [A-Z][a-z]{2,3}$/.test(t.label))).toBe(true);
+    for (const t of model.xTicks) expect(t.x).toBeCloseTo(model.x(t.at));
+
+    const longer = chartModel(buildSeries([{ _id: "a", platform: "mega", priceHistory: [point(1, 500), point(2, 2)] }], "all", { now: NOW }));
+    expect(longer.xTicks.every((t) => /\d{4}$/.test(t.label))).toBe(true);
+  });
+
+  it("timeAt turns a horizontal position back into a date, kept inside the chart", () => {
+    const model = chartModel(buildSeries([{ _id: "a", platform: "mega", priceHistory: [point(100, 40), point(90, 10)] }], "all", { now: NOW }));
+    expect(model.timeAt(model.pad.left).getTime()).toBe(model.from.getTime());
+    expect(model.timeAt(model.width - model.pad.right).getTime()).toBe(model.to.getTime());
+    expect(model.timeAt(-500).getTime()).toBe(model.from.getTime());
+    expect(model.timeAt(99999).getTime()).toBe(model.to.getTime());
+    const middle = model.timeAt((model.pad.left + model.width - model.pad.right) / 2).getTime();
+    expect(middle).toBeCloseTo((model.from.getTime() + model.to.getTime()) / 2, -2);
+  });
+});
+
+describe("history: what a store charged on a date", () => {
+  const offers = [
+    { _id: "a", platform: "priceoye", priceHistory: [point(100, 40), point(90, 10)] },
+    { _id: "b", platform: "mega", priceHistory: [point(110, 30), point(105, 5)] },
+  ];
+  const series = buildSeries(offers, "all", { currentId: "a", now: NOW });
+  const at = (days) => NOW - days * DAY;
+
+  it("priceAtTime is the last recorded price at or before the time, and nothing before the first", () => {
+    const a = series[0].points;
+    expect(priceAtTime(a, at(50))).toBeNull();
+    expect(priceAtTime(a, at(40))).toBe(100);
+    expect(priceAtTime(a, at(20))).toBe(100); // held until it changed
+    expect(priceAtTime(a, at(10))).toBe(90);
+    expect(priceAtTime(a, at(0))).toBe(90);
+  });
+
+  it("hoverRows lists every store with a price on that date, cheapest first, and leaves out stores with none yet", () => {
+    expect(hoverRows(series, at(35)).map((r) => [r.name, r.price])).toEqual([["PriceOye", 100]]); // Mega starts 30 days ago
+    expect(hoverRows(series, at(20)).map((r) => [r.name, r.price])).toEqual([["PriceOye", 100], ["Mega.pk", 110]]);
+    expect(hoverRows(series, at(1)).map((r) => [r.name, r.price])).toEqual([["PriceOye", 90], ["Mega.pk", 105]]);
+    expect(hoverRows(series, at(60))).toEqual([]);
+    expect(hoverRows(series, at(1))[0]).toMatchObject({ platform: "priceoye", isCurrent: true });
   });
 });

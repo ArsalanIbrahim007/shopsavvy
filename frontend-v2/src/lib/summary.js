@@ -1,6 +1,7 @@
 // summary.js — the headline numbers for a set of offers.
 
 import { canonicalPlatform } from "./platforms.js";
+import { offerCount } from "./colours.js";
 import { isDiscountDoubtful } from "./filters.js";
 
 /**
@@ -40,7 +41,7 @@ export function summarizeOffers(offers) {
   const bestDeal = [...pool].sort((a, b) => (b.dealScore || 0) - (a.dealScore || 0))[0] || lowest;
 
   return {
-    count: offers.length,
+    count: offerCount(offers), // colour variants of one store at one price are one offer
     platformCount: new Set(offers.map((o) => canonicalPlatform(o.platform))).size,
     lowest,
     average: Math.round(offers.reduce((sum, o) => sum + o.price, 0) / offers.length),

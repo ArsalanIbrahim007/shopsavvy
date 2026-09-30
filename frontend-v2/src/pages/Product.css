@@ -1,1 +1,1 @@
-.product { padding-block: var(--space-6); display: grid; gap: var(--space-4); }
+.product { padding-block: var(--space-6); display: grid; gap: var(--space-4); align-content: start; min-height: 100vh; }

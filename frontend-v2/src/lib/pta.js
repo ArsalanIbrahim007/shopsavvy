@@ -27,8 +27,10 @@ const NOT_STATED = {
 export function ptaFlag(offer) {
   if (offer?.ptaAssessment === "likely_non_pta") return LIKELY_NON_PTA;
   if (offer?.ptaAssessment === "not_stated") return NOT_STATED;
-  if (offer?.ptaStatus === "pta_approved") return APPROVED;
-  if (offer?.ptaStatus === "non_pta") return NON_PTA;
+  // A status read from the store's product page (the title said nothing) says so, so the shopper knows where it comes from.
+  const fromPage = offer?.ptaSource === "product_page";
+  if (offer?.ptaStatus === "pta_approved") return fromPage ? { ...APPROVED, reason: "The store's product page says this phone is PTA approved." } : APPROVED;
+  if (offer?.ptaStatus === "non_pta") return fromPage ? { ...NON_PTA, reason: NON_PTA.reason.replace("The store says", "The store's product page says") } : NON_PTA;
   return null;
 }
 

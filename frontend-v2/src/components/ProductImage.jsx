@@ -5,7 +5,9 @@
 import { useState } from "react";
 import { safeExternalUrl } from "../lib/safeLink.js";
 
-export default function ProductImage({ src, alt = "", height = 140 }) {
+// `priority`: the main picture of a page (the one that decides how fast the page looks ready) loads straight away
+// and first; every other picture waits until it is near the screen.
+export default function ProductImage({ src, alt = "", height = 140, priority = false }) {
   const [failedSrc, setFailedSrc] = useState(null);
   const safe = safeExternalUrl(src);
   const usable = safe && safe !== failedSrc;
@@ -21,7 +23,10 @@ export default function ProductImage({ src, alt = "", height = 140 }) {
         <img
           src={safe}
           alt={alt}
-          loading="lazy"
+          width={height}
+          height={height}
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : undefined}
           referrerPolicy="no-referrer"
           style={{ maxHeight: "100%", maxWidth: "100%", objectFit: "contain" }}
           onError={() => setFailedSrc(safe)}

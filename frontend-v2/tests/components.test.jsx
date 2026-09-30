@@ -307,7 +307,7 @@ describe("Home", () => {
   it("shows verified deals with the server's saving, linked to the product page", async () => {
     renderAt("/", <Home />);
     expect(await screen.findByRole("heading", { name: /verified deals/i })).toBeInTheDocument();
-    const card = screen.getByRole("link", { name: /Galaxy Band Fit 3, PKR 10,799 at Telemart/ });
+    const card = screen.getByRole("link", { name: /Galaxy Band Fit 3/ });
     expect(card).toHaveAttribute("href", "/product/d1");
     expect(screen.getByText(/26% below typical/)).toBeInTheDocument();
     expect(screen.getByText(/save about PKR 3,700/i)).toBeInTheDocument();

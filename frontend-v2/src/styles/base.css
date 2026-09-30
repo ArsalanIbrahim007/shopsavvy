@@ -118,3 +118,7 @@ a.chip:hover, button.chip:hover { border-color: var(--brand); color: var(--brand
   .skeleton { animation: none; }
   * { scroll-behavior: auto !important; transition: none !important; }
 }
+
+/* Pages whose content arrives after a skeleton: tall from the start, so the footer is not in view and
+   does not jump down when the content replaces the skeleton. */
+.page-tall { min-height: 100vh; align-content: start; }

@@ -50,11 +50,12 @@
   /* verdicts: meaning, not decoration */
   --good: #0e7c4a;
   --good-soft: #e7f5ee;
-  --caution: #b45309;
+  --caution: #a94a08; /* 5.1:1 on the green "lowest price" row as well as on white */
   --caution-soft: #fdf3e3;
   --bad: #b42318;
   --bad-soft: #fdecea;
   --on-caution: #ffffff; /* text on a solid --caution fill */
+  --logo-accent: #b86e00; /* the amber of "Savvy" as text on a light page: 4.0:1 (the amber itself is 2.0:1) */
   --good-line: #bfe3cf;
   --caution-line: #f3d9ac;
   --neutral-fill: #7c8db5; /* a chart segment with no verdict meaning */
@@ -124,6 +125,7 @@
     --bad: #ff8a80;
     --bad-soft: #3b1714;
     --on-caution: #1a1206;
+    --logo-accent: #f5a623;
     --good-line: #1f5a3d;
     --caution-line: #5b4318;
     --header-bg: rgba(11, 21, 36, 0.92);
@@ -161,6 +163,7 @@
   --bad: #ff8a80;
   --bad-soft: #3b1714;
   --on-caution: #1a1206;
+  --logo-accent: #f5a623;
   --good-line: #1f5a3d;
   --caution-line: #5b4318;
   --header-bg: rgba(11, 21, 36, 0.92);

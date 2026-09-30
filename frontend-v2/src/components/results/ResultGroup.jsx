@@ -6,11 +6,13 @@
 // The results list shows the compact ProductCard instead; clicking one leads here.
 
 import { categoryName } from "../../lib/categories.js";
+import { coloursOf, offersInColour, unstatedColourCount } from "../../lib/colours.js";
 import { formatPrice } from "../../lib/format.js";
 import { platformName } from "../../lib/platforms.js";
 import { ptaFlag, ptaNotice } from "../../lib/pta.js";
 import { summarizeOffers } from "../../lib/summary.js";
 import { cardBadges } from "../../lib/verdicts.js";
+import ColourPicker from "../ColourPicker.jsx";
 import ProductImage from "../ProductImage.jsx";
 import VerdictBadge from "../VerdictBadge.jsx";
 import OfferTable from "./OfferTable.jsx";
@@ -18,8 +20,12 @@ import "./results.css";
 
 const isSuspect = (offer) => offer?.priceCheck?.status?.startsWith("suspect");
 
-export default function ResultGroup({ group, currentId }) {
-  const offers = group.offers ?? [];
+export default function ResultGroup({ group, currentId, colour = null, onColour }) {
+  const allOffers = group.offers ?? [];
+  // A colour that none of the offers has (an old link) is ignored rather than showing an empty page.
+  const chosen = colour && coloursOf(allOffers).some((c) => c.colour === colour) ? colour : null;
+  const offers = offersInColour(allOffers, chosen);
+  const unstated = chosen ? unstatedColourCount(offers) : 0;
   const summary = summarizeOffers(offers);
   const best = summary.lowest;
   if (!best) return null;
@@ -36,7 +42,7 @@ export default function ResultGroup({ group, currentId }) {
     <article className="result-group card">
       <div className="result-group__head">
         <div className="result-group__image">
-          <ProductImage src={best.imageUrl} alt={group.productName} height={140} />
+          <ProductImage src={best.imageUrl} alt={group.productName} height={140} priority />
         </div>
 
         <div className="result-group__info">
@@ -60,7 +66,14 @@ export default function ResultGroup({ group, currentId }) {
 
       {notice && <p className="result-group__pta small" role="note">{notice}</p>}
 
-      <OfferTable offers={offers} name={group.productName} currentId={currentId} />
+      {onColour && <ColourPicker offers={allOffers} value={chosen} onChange={onColour} />}
+      {chosen && unstated > 0 && (
+        <p className="colour-picker__note small muted">
+          {unstated === 1 ? "1 offer does" : `${unstated} offers do`} not say which colour, so {unstated === 1 ? "it stays" : "they stay"} in the list.
+        </p>
+      )}
+
+      <OfferTable offers={offers} name={group.productName} currentId={currentId} colour={chosen} />
     </article>
   );
 }

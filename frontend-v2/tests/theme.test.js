@@ -73,8 +73,10 @@ describe("tokens.css dark mode", () => {
     ["--bad", "--bad-soft"], ["--bad", "--paper"], ["--bad", "--canvas"],
     ["--ink-soft", "--line-soft"],
     ["--on-caution", "--caution"],
+    ["--caution", "--good-soft"], ["--bad", "--good-soft"], ["--ink", "--good-soft"], ["--ink-soft", "--good-soft"], // the lowest-price row
+    ["--ink", "--caution-soft"], ["--ink", "--bad-soft"], ["--ink-soft", "--caution-soft"],
     ["--on-navy", "--hero-top"], ["--on-navy", "--hero-mid"], ["--on-navy-soft", "--hero-mid"], ["--on-navy-soft", "--hero-bottom"],
-    ["--on-navy-soft", "--brand-deep"], ["--accent", "--brand-deep"], ["--on-navy", "--brand-deep"],
+    ["--on-navy-soft", "--hero-top"], ["--on-navy-soft", "--brand-deep"], ["--accent", "--brand-deep"], ["--on-navy", "--brand-deep"],
   ];
 
   for (const [name, tokens] of [["light", light], ["dark", dark]]) {
@@ -92,7 +94,7 @@ describe("tokens.css dark mode", () => {
 
   it("lightens store colours enough to read as chart lines on a dark card, and leaves them alone in light mode", () => {
     const lift = parseInt(dark["--chart-lift"], 10) / 100;
-    for (const hex of ["#6a1b9a", "#1976d2", "#b71c1c", "#00695c", "#2e7d32", "#ff6b00", "#d32f2f"]) {
+    for (const hex of ["#6a1b9a", "#1976d2", "#b71c1c", "#00695c", "#2e7d32", "#ff6b00", "#d32f2f", "#795548"]) {
       const lifted = "#" + rgb(hex).map((c) => Math.round(c * (1 - lift) + 255 * lift).toString(16).padStart(2, "0")).join("");
       expect(contrast(lifted, dark["--paper"])).toBeGreaterThanOrEqual(4.5);
     }

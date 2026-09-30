@@ -304,6 +304,126 @@ describe("PriceHistoryChart", () => {
     expect(container.querySelectorAll(".history__line")).toHaveLength(2);
   });
 
+  it("labels both axes: a price scale with its title on the left, dates with their title along the bottom", () => {
+    const { container } = chart();
+    const svg = screen.getByRole("img", { name: "Price history" });
+    const texts = [...svg.querySelectorAll("text")].map((t) => t.textContent);
+    expect(texts).toContain("Price (PKR)");
+    expect(texts).toContain("Date");
+    const yLabels = [...svg.querySelectorAll(".history__grid")].length;
+    expect(yLabels).toBeGreaterThanOrEqual(4); // a gridline and a label per price step
+    expect(texts.filter((t) => /^\d{2},\d{3}$/.test(t)).length).toBe(yLabels);
+    expect(texts.filter((t) => /^\d{1,2} [A-Z][a-z]{2,3}$/.test(t)).length).toBeGreaterThanOrEqual(3); // dates along the bottom
+    expect(container.querySelectorAll(".history__tick").length).toBeGreaterThanOrEqual(3);
+    expect(container.querySelectorAll(".history__axis-line")).toHaveLength(2);
+  });
+
+  describe("reading the chart", () => {
+    // jsdom has no layout, so the chart is given a size and a position of its own to convert pointer positions.
+    const readable = () => {
+      const view = chart();
+      const svg = screen.getByRole("img", { name: "Price history" });
+      svg.getBoundingClientRect = () => ({ left: 0, top: 0, width: 720, height: 340, right: 720, bottom: 340 });
+      return { ...view, svg };
+    };
+    const at = (svg, x, y = 100) => fireEvent.pointerMove(svg, { clientX: x, clientY: y, pointerType: "mouse" });
+    const tooltip = (container) => container.querySelector(".history__tooltip");
+
+    it("shows nothing until the pointer is on the chart", () => {
+      const { container } = readable();
+      expect(tooltip(container)).toBeNull();
+      expect(container.querySelector(".history__crosshair")).toBeNull();
+    });
+
+    it("shows the date and what each store charged then, with a dot on each line", () => {
+      const { container, svg } = readable();
+      at(svg, 702); // the right-hand end: the newest recorded price, PriceOye's, 3 days ago
+      const box = tooltip(container);
+      expect(box).not.toBeNull();
+      expect(box.querySelector(".history__tooltip-date")).toHaveTextContent(formatDate(new Date(NOW - 3 * DAY)));
+      const rows = [...box.querySelectorAll(".history__tooltip-row")].map((r) => r.textContent);
+      expect(rows).toEqual([expect.stringMatching(/PriceOye.*PKR 64,000/), expect.stringMatching(/Mega.pk.*PKR 65,500/)]); // cheapest first
+      expect(container.querySelectorAll(".history__marker")).toHaveLength(2);
+      expect(container.querySelector(".history__crosshair")).not.toBeNull();
+    });
+
+    it("shows the price that held on an earlier date, and only the stores that had a price by then", () => {
+      const { container, svg } = readable();
+      // PriceOye's history starts 100 days ago and Mega's too (72,000): hover near the start, where they were 70,000 and 72,000
+      at(svg, 80);
+      const rows = [...tooltip(container).querySelectorAll(".history__tooltip-row")].map((r) => r.textContent);
+      expect(rows[0]).toMatch(/PriceOye.*PKR 70,000/);
+      expect(rows[1]).toMatch(/Mega.pk.*PKR 72,000/);
+    });
+
+    it("puts the store whose line is nearest the pointer in bold", () => {
+      const { container, svg } = readable();
+      const model = { top: 14, height: 340 - 14 - 56 };
+      at(svg, 702, model.top + 2); // near the top of the plot: the dearer line (Mega)
+      expect(tooltip(container).querySelector(".is-near")).toHaveTextContent("Mega.pk");
+      at(svg, 702, model.top + model.height - 2); // near the bottom: the cheaper line (PriceOye)
+      expect(tooltip(container).querySelector(".is-near")).toHaveTextContent("PriceOye");
+    });
+
+    it("keeps the box on the side with room: to the right of the pointer on the left half, to its left on the right half", () => {
+      const { container, svg } = readable();
+      at(svg, 100);
+      expect(tooltip(container).style.left).not.toBe("");
+      expect(tooltip(container).style.right).toBe("");
+      at(svg, 650);
+      expect(tooltip(container).style.right).not.toBe("");
+      expect(tooltip(container).style.left).toBe("");
+    });
+
+    it("leaves out a store that is hidden", () => {
+      const { container, svg } = readable();
+      fireEvent.click(screen.getByRole("button", { name: /mega.pk/i }));
+      at(svg, 702);
+      expect([...tooltip(container).querySelectorAll(".history__tooltip-row")]).toHaveLength(1);
+    });
+
+    it("goes away when the mouse leaves, but stays after a touch (so it can be read)", () => {
+      const { container, svg } = readable();
+      at(svg, 702);
+      fireEvent.pointerLeave(svg, { pointerType: "touch" });
+      expect(tooltip(container)).not.toBeNull();
+      fireEvent.pointerLeave(svg, { pointerType: "mouse" });
+      expect(tooltip(container)).toBeNull();
+    });
+
+    it("can be read with the keyboard: arrows move a day, Shift a week, Home and End to the ends, Escape to stop; and it is announced", () => {
+      const { container } = readable();
+      const plot = screen.getByRole("group", { name: /price history chart/i });
+      expect(plot).toHaveAttribute("tabindex", "0");
+      fireEvent.keyDown(plot, { key: "ArrowLeft" });
+      const day = (n) => formatDate(new Date(NOW - n * DAY));
+      expect(tooltip(container).querySelector(".history__tooltip-date")).toHaveTextContent(day(4)); // from the end (3 days ago), one day back
+      fireEvent.keyDown(plot, { key: "ArrowLeft", shiftKey: true });
+      expect(tooltip(container).querySelector(".history__tooltip-date")).toHaveTextContent(day(11));
+      fireEvent.keyDown(plot, { key: "ArrowRight" });
+      expect(tooltip(container).querySelector(".history__tooltip-date")).toHaveTextContent(day(10));
+      fireEvent.keyDown(plot, { key: "Home" });
+      expect(tooltip(container).querySelector(".history__tooltip-date")).toHaveTextContent(day(90)); // the 90 day window's start
+      fireEvent.keyDown(plot, { key: "End" });
+      expect(tooltip(container).querySelector(".history__tooltip-date")).toHaveTextContent(day(3)); // the newest recorded price
+      expect(container.querySelector("[aria-live]")).toHaveTextContent(/PriceOye PKR 64,000, Mega.pk PKR 65,500/);
+      fireEvent.keyDown(plot, { key: "Escape" });
+      expect(tooltip(container)).toBeNull();
+      expect(container.querySelector("[aria-live]")).toBeEmptyDOMElement();
+    });
+
+    it("does not move past either end of the chart", () => {
+      const { container } = readable();
+      const plot = screen.getByRole("group", { name: /price history chart/i });
+      fireEvent.keyDown(plot, { key: "End" });
+      fireEvent.keyDown(plot, { key: "ArrowRight" });
+      expect(tooltip(container).querySelector(".history__tooltip-date")).toHaveTextContent(formatDate(new Date(NOW - 3 * DAY)));
+      fireEvent.keyDown(plot, { key: "Home" });
+      fireEvent.keyDown(plot, { key: "ArrowLeft", shiftKey: true });
+      expect(tooltip(container).querySelector(".history__tooltip-date")).toHaveTextContent(formatDate(new Date(NOW - 90 * DAY)));
+    });
+  });
+
   it("offers the recorded prices as a table, newest first", () => {
     chart();
     const details = screen.getByText("Show the recorded prices").closest("details");

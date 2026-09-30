@@ -3,7 +3,7 @@
 // Below it, about the listing the shopper opened: the three checks behind its verdict (with the server's
 // reasons), every store's price history, the price alert form, the specifications, and the cross-store summary.
 
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useLocation, useParams, useSearchParams } from "react-router-dom";
 
 import { getListing } from "../api/endpoints.js";
 import { useAsync } from "../hooks/useAsync.js";
@@ -38,6 +38,16 @@ export default function Product() {
   const { id } = useParams();
   const { state } = useLocation();
   const product = useAsync((signal) => getListing(id, { signal }), [id]);
+
+  // The chosen colour lives in the address (?colour=Blue), so a colour can be shared and survives a reload.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const colour = searchParams.get("colour");
+  const chooseColour = (next) => setSearchParams((params) => {
+    const updated = new URLSearchParams(params);
+    if (next) updated.set("colour", next);
+    else updated.delete("colour");
+    return updated;
+  }, { replace: true, state });
 
   // The card that led here remembers the list it was in (filters and all), so "Back" returns to it.
   // Only a path inside this site is followed ("//host" and full addresses are not).
@@ -76,7 +86,7 @@ export default function Product() {
   return (
     <div className="container product">
       {back}
-      <ResultGroup group={group} currentId={listing._id} />
+      <ResultGroup group={group} currentId={listing._id} colour={colour} onColour={chooseColour} />
 
       <section className="product-section" aria-labelledby="verdict-heading">
         <h2 id="verdict-heading">Deal verdict for {platformName(listing.platform)}</h2>

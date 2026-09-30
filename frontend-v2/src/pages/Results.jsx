@@ -113,7 +113,7 @@ function ResultsView({ groups, total, query, browseCategory, filters, searchPara
   const heading = query ? `Results for "${query}"` : categoryName(browseCategory);
 
   return (
-    <div className="container" style={{ paddingBlock: "var(--space-6)", display: "grid", gap: "var(--space-5)" }}>
+    <div className="container page-tall" style={{ paddingBlock: "var(--space-6)", display: "grid", gap: "var(--space-5)" }}>
       <header style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "end", gap: "var(--space-3)" }}>
         <div>
           <h1 style={{ fontSize: "1.75rem" }}>{heading}</h1>
@@ -159,7 +159,11 @@ function ResultsView({ groups, total, query, browseCategory, filters, searchPara
               <button type="button" className="btn btn-primary" style={{ marginTop: "var(--space-4)" }} onClick={reset}>Reset filters</button>
             </div>
           ) : (
-            <GroupList key={searchParams.toString()} groups={shown} />
+            <>
+              {/* the product names below are h3s; this keeps the heading levels in order (h1, h2, h3) */}
+              <h2 className="visually-hidden">Products</h2>
+              <GroupList key={searchParams.toString()} groups={shown} />
+            </>
           )}
         </div>
       </div>
@@ -178,7 +182,7 @@ export default function Results() {
 
   if (!query && !browseCategory) {
     return (
-      <div className="container" style={{ paddingBlock: "var(--space-6)" }}>
+      <div className="container page-tall" style={{ paddingBlock: "var(--space-6)" }}>
         <Empty query="" />
       </div>
     );
@@ -186,7 +190,7 @@ export default function Results() {
 
   if (results.status === "loading") {
     return (
-      <div className="container" style={{ paddingBlock: "var(--space-6)", display: "grid", gap: "var(--space-5)" }}>
+      <div className="container page-tall" style={{ paddingBlock: "var(--space-6)", display: "grid", gap: "var(--space-5)" }}>
         <h1 style={{ fontSize: "1.75rem" }}>{query ? `Results for "${query}"` : categoryName(browseCategory)}</h1>
         <p className="muted" role="status">
           Getting the latest prices. A search nobody has made recently can take up to a minute.
@@ -200,7 +204,7 @@ export default function Results() {
 
   if (results.status === "error") {
     return (
-      <div className="container" style={{ paddingBlock: "var(--space-6)", display: "grid", gap: "var(--space-4)" }}>
+      <div className="container page-tall" style={{ paddingBlock: "var(--space-6)", display: "grid", gap: "var(--space-4)" }}>
         <h1 style={{ fontSize: "1.75rem" }}>{query ? `Results for "${query}"` : categoryName(browseCategory)}</h1>
         <ErrorState error={results.error} onRetry={results.reload} />
       </div>
@@ -209,7 +213,7 @@ export default function Results() {
 
   if (results.data.groups.length === 0) {
     return (
-      <div className="container" style={{ paddingBlock: "var(--space-6)", display: "grid", gap: "var(--space-4)" }}>
+      <div className="container page-tall" style={{ paddingBlock: "var(--space-6)", display: "grid", gap: "var(--space-4)" }}>
         <h1 style={{ fontSize: "1.75rem" }}>{query ? `Results for "${query}"` : categoryName(browseCategory)}</h1>
         <Empty query={query} />
       </div>

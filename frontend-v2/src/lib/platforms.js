@@ -2,10 +2,10 @@
 // platform ids ("priceoye") and older seeded data used display casing
 // ("PriceOye"); canonicalPlatform() makes both the same key.
 
-// `color` is the store's own brand colour, used for its monogram badge when no logo file is available.
+// `color` tells the stores apart: their monogram badge when there is no logo file, and their line on the price chart. It follows the brand where that keeps them distinguishable (Mega.pk is brown, not its orange, so it does not look like PriceOye on a chart).
 const STORES = {
   priceoye: { name: "PriceOye", domain: "priceoye.pk", color: "#ff6b00" },
-  mega: { name: "Mega.pk", domain: "mega.pk", color: "#e65100" },
+  mega: { name: "Mega.pk", domain: "mega.pk", color: "#795548" },
   shophive: { name: "Shophive", domain: "shophive.com", color: "#d32f2f" },
   w11stop: { name: "W11Stop", domain: "w11stop.com", color: "#6a1b9a" },
   telemart: { name: "Telemart", domain: "telemart.pk", color: "#1976d2" },

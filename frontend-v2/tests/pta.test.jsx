@@ -32,6 +32,13 @@ describe("ptaFlag", () => {
     expect(ptaFlag(offer("l", "mega", 1, { ptaAssessment: "likely_non_pta" }))).toMatchObject({ label: "May be non-PTA", tone: "caution" });
   });
 
+  it("says when the status was read from the store's product page rather than its title", () => {
+    expect(ptaFlag(approved("a", "ishopping", 1, { ptaSource: "product_page" })).reason).toBe("The store's product page says this phone is PTA approved.");
+    expect(ptaFlag(approved("a", "mega", 1, { ptaSource: "title" })).reason).toBe("The store says this phone is PTA approved.");
+    expect(ptaFlag(offer("n", "mega", 1, { ptaStatus: "non_pta", ptaSource: "product_page" })).reason).toMatch(/^The store's product page says this phone is not PTA approved/);
+    expect(ptaFlag(approved("a", "mega", 1, { ptaSource: "product_page" })).label).toBe("PTA approved");
+  });
+
   it("explains every label, and says nothing when there is nothing to say", () => {
     for (const over of [{ ptaStatus: "pta_approved" }, { ptaStatus: "non_pta" }, { ptaAssessment: "not_stated" }, { ptaAssessment: "likely_non_pta" }]) {
       expect(ptaFlag(offer("x", "mega", 1, over)).reason.length).toBeGreaterThan(20);
