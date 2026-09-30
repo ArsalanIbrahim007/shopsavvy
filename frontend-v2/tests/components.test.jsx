@@ -185,6 +185,42 @@ describe("Layout", () => {
     expect(screen.queryByRole("combobox")).toBeNull();
   });
 
+  describe("theme button", () => {
+    afterEach(() => {
+      window.localStorage.clear();
+      document.documentElement.removeAttribute("data-theme");
+    });
+
+    it("cycles device -> light -> dark -> device, sets the page theme, and says what a click does", () => {
+      renderAt("/x", <p>page</p>, { withLayout: true });
+      const button = () => screen.getByRole("button", { name: /colour theme/i });
+      const root = document.documentElement;
+
+      expect(button()).toHaveAccessibleName("Colour theme: Device setting. Switch to Light.");
+      expect(root.hasAttribute("data-theme")).toBe(false);
+
+      fireEvent.click(button());
+      expect(button()).toHaveAccessibleName("Colour theme: Light. Switch to Dark.");
+      expect(root.getAttribute("data-theme")).toBe("light");
+
+      fireEvent.click(button());
+      expect(button()).toHaveAccessibleName("Colour theme: Dark. Switch to Device setting.");
+      expect(root.getAttribute("data-theme")).toBe("dark");
+      expect(window.localStorage.getItem("shopsavvy:theme:v1")).toBe("dark");
+
+      fireEvent.click(button());
+      expect(root.hasAttribute("data-theme")).toBe(false);
+      expect(window.localStorage.getItem("shopsavvy:theme:v1")).toBeNull();
+    });
+
+    it("starts from the saved choice", () => {
+      window.localStorage.setItem("shopsavvy:theme:v1", "dark");
+      renderAt("/x", <p>page</p>, { withLayout: true });
+      expect(screen.getByRole("button", { name: /colour theme/i })).toHaveAccessibleName("Colour theme: Dark. Switch to Device setting.");
+      expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+    });
+  });
+
   it("still renders the footer when the health check fails", async () => {
     vi.mocked(api.getHealth).mockRejectedValue(new ApiError({ status: 503, code: "DATABASE_UNAVAILABLE" }));
     renderAt("/x", <p>page</p>, { withLayout: true });

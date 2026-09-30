@@ -5,6 +5,15 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="ShopSavvy - Compare prices across Pakistani ecommerce stores in one place" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0b1524" media="(prefers-color-scheme: dark)" />
+    <!-- Applies a saved light/dark choice before the first paint, so there is no flash. Key: see src/lib/theme.js -->
+    <script>
+      try {
+        var t = localStorage.getItem("shopsavvy:theme:v1");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    </script>
     <title>ShopSavvy - Compare Prices in Pakistan</title>
   </head>
   <body>

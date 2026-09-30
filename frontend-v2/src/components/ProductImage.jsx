@@ -14,7 +14,7 @@ export default function ProductImage({ src, alt = "", height = 140 }) {
     <div
       style={{
         height, display: "grid", placeItems: "center", overflow: "hidden",
-        background: "var(--canvas)", borderRadius: "var(--radius-control)",
+        background: "var(--photo-tile)", borderRadius: "var(--radius-control)",
       }}
     >
       {usable ? (

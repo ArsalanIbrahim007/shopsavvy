@@ -55,14 +55,15 @@ export async function getDeals({ category, limit, signal } = {}) {
 
 /**
  * Browse one category without searching: its products, most compared first. The server groups a
- * category once and caches it, so the very first request after a server restart can take half a
- * minute; every later one is instant, hence the longer time limit.
+ * category once and caches it in the background (shoppers' searches and product pages go first), so the
+ * very first request after a server restart can take over a minute; every later one is instant, hence
+ * the long time limit (the server gives up on a job at 90 s).
  * @param {object} options
  * @param {string} options.category  smartphone, laptop, tv, tablet, smartwatch or headphones
  * @returns {Promise<{groups: object[], total: number, offset: number, generatedAt: string|null}>}
  */
 export async function getCatalog({ category, limit, offset, signal }) {
-  const body = await request("/listings/catalog", { params: { category, limit, offset }, signal, timeoutMs: 45000 });
+  const body = await request("/listings/catalog", { params: { category, limit, offset }, signal, timeoutMs: 100000 });
   return { groups: body.data ?? [], total: body.total ?? 0, offset: body.offset ?? 0, generatedAt: body.generatedAt ?? null };
 }
 

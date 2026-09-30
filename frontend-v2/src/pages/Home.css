@@ -1,29 +1,29 @@
 .hero {
-  background: linear-gradient(180deg, var(--brand) 0%, #143159 55%, var(--brand-deep) 100%);
-  color: #fff;
+  background: linear-gradient(180deg, var(--hero-top) 0%, var(--hero-mid) 55%, var(--hero-bottom) 100%);
+  color: var(--on-navy);
 }
 .hero__inner { padding-block: var(--space-7) var(--space-8); display: grid; gap: var(--space-4); justify-items: center; text-align: center; }
 .hero__eyebrow {
   display: inline-flex; align-items: center; gap: var(--space-2);
   padding: 4px 14px; border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.1); color: #cfd9ea; font-size: 0.8125rem; font-weight: 600;
+  background: rgba(255, 255, 255, 0.1); color: var(--on-navy-soft); font-size: 0.8125rem; font-weight: 600;
 }
 .hero__title { font-size: clamp(1.875rem, 6vw, 3.25rem); line-height: 1.12; letter-spacing: -0.03em; max-width: 18ch; }
 .hero__accent { color: var(--accent); }
-.hero__lead { font-size: 1.0625rem; max-width: 56ch; color: #cfd9ea; }
+.hero__lead { font-size: 1.0625rem; max-width: 56ch; color: var(--on-navy-soft); }
 .hero__search { width: 100%; max-width: 640px; }
-.hero__popular { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: var(--space-2); color: #cfd9ea; }
-.hero .chip { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.25); color: #fff; }
-.hero__clear { background: none; border: 0; color: #cfd9ea; text-decoration: underline; cursor: pointer; font: inherit; padding: var(--space-1); }
-.hero__clear:hover { color: #fff; }
-.hero a.chip:hover { background: rgba(255, 255, 255, 0.18); border-color: #fff; color: #fff; }
+.hero__popular { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: var(--space-2); color: var(--on-navy-soft); }
+.hero .chip { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.25); color: var(--on-navy); }
+.hero__clear { background: none; border: 0; color: var(--on-navy-soft); text-decoration: underline; cursor: pointer; font: inherit; padding: var(--space-1); }
+.hero__clear:hover { color: var(--on-navy); }
+.hero a.chip:hover { background: rgba(255, 255, 255, 0.18); border-color: var(--on-navy); color: var(--on-navy); }
 
 /* the trust row overlaps the hero's lower edge */
 .trust { margin-top: calc(-1 * var(--space-6)); position: relative; z-index: 1; }
 .trust__grid {
   display: grid; gap: var(--space-3); padding: var(--space-4);
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  box-shadow: 0 8px 24px rgba(15, 27, 45, 0.08);
+  box-shadow: var(--shadow-soft);
 }
 .trust__item { display: grid; gap: 2px; padding: var(--space-2) var(--space-3); }
 .trust__value { font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; color: var(--brand); }

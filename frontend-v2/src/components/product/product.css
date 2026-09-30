@@ -11,10 +11,12 @@
 .history__controls { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-3); }
 .history__ranges, .history__legend { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .history .chip[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: var(--on-brand); }
-.history__swatch { width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+/* a store's chart colour: its brand colour (--store, set inline), lightened in dark mode by --chart-lift */
+.history__swatch { width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; background: color-mix(in srgb, var(--store, var(--ink-faint)), white var(--chart-lift)); }
 .history__chart { width: 100%; height: auto; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-card); }
 .history__grid { stroke: var(--line); stroke-dasharray: 4 4; }
 .history__axis { font-size: 11px; fill: var(--ink-faint); }
+.history__line { color: color-mix(in srgb, var(--store, var(--ink-faint)), white var(--chart-lift)); }
 .history__line path { stroke: currentColor; stroke-width: 1.5; opacity: 0.45; }
 .history__line--current path { stroke-width: 2.75; opacity: 1; }
 .history__line--current circle { fill: currentColor; }
@@ -35,7 +37,7 @@
 .alert-form input[aria-invalid="true"] { border-color: var(--bad); }
 .alert-form__error { color: var(--bad); font-size: 0.875rem; }
 .alert-form .btn { margin-top: var(--space-3); justify-self: start; }
-.alert-form--done { background: var(--good-soft); border-color: #bfe3cf; }
+.alert-form--done { background: var(--good-soft); border-color: var(--good-line); }
 
 /* specs and summary */
 .product-facts { display: grid; gap: var(--space-4); }

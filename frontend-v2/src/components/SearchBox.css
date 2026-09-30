@@ -29,7 +29,7 @@
 .searchbox__list {
   position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 6px);
   margin: 0; padding: var(--space-1); list-style: none;
-  box-shadow: 0 8px 24px rgba(15, 27, 45, 0.12);
+  box-shadow: var(--shadow-pop);
 }
 .searchbox__option {
   display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3);

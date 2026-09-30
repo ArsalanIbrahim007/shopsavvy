@@ -2,6 +2,6 @@
 .store-logo__name { font-weight: 600; }
 .store-mark {
   flex: none; display: inline-grid; place-items: center;
-  border-radius: 8px; color: #fff; font-family: var(--font-display); font-weight: 800; line-height: 1;
+  border-radius: 8px; color: var(--on-navy); font-family: var(--font-display); font-weight: 800; line-height: 1;
 }
-.store-mark--logo { object-fit: contain; background: var(--paper); border: 1px solid var(--line); padding: 3px; box-sizing: border-box; }
+.store-mark--logo { object-fit: contain; background: var(--mark-tile); border: 1px solid var(--line); padding: 3px; box-sizing: border-box; }

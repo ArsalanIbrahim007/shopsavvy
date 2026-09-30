@@ -5,7 +5,12 @@
    navy brand, amber accent for the main action, Inter for text and Plus Jakarta Sans for headings.
    Green / amber-brown / red are kept for verdicts only (good price, above market, unusual price), so
    colour still carries meaning. The amber ACCENT is a fill for buttons; the verdict "caution" is a
-   brown-on-cream badge that also carries an icon and a word. */
+   brown-on-cream badge that also carries an icon and a word.
+
+   Dark mode: the same names with different values, in two identical blocks at the bottom (one for a device
+   set to dark, one for the shopper's own choice). The navy brand is too dark to read as text on a dark page,
+   so in dark mode --brand becomes a light blue and --on-brand flips to dark, the same way the amber button
+   always has dark text. tests/theme.test.js checks the contrast of every pair and that both blocks match. */
 
 :root {
   color-scheme: light;
@@ -28,6 +33,14 @@
   --brand-deep: #0f2547;
   --brand-soft: #e8eef8;
   --on-brand: #ffffff;
+  --on-brand-soft: #cfd9ea; /* quieter text on a --brand fill */
+
+  /* surfaces that stay navy in both themes (hero, footer) and the text on them */
+  --hero-top: #1a3c6e;
+  --hero-mid: #143159;
+  --hero-bottom: #0f2547;
+  --on-navy: #ffffff;
+  --on-navy-soft: #cfd9ea;
 
   /* accent: amber, for the main action (search, view deal). Text on it is dark (9.2:1); white would fail. */
   --accent: #feae2c;
@@ -41,6 +54,21 @@
   --caution-soft: #fdf3e3;
   --bad: #b42318;
   --bad-soft: #fdecea;
+  --on-caution: #ffffff; /* text on a solid --caution fill */
+  --good-line: #bfe3cf;
+  --caution-line: #f3d9ac;
+  --neutral-fill: #7c8db5; /* a chart segment with no verdict meaning */
+
+  /* chrome */
+  --header-bg: rgba(255, 255, 255, 0.96);
+  --shadow-soft: 0 8px 24px rgba(15, 27, 45, 0.08);
+  --shadow-pop: 0 8px 24px rgba(15, 27, 45, 0.14);
+  --logo-tile: #1a3c6e;
+  --logo-ring: transparent;
+  --photo-tile: #f8fafc; /* store photos usually have white backgrounds, so their tile stays light */
+  --mark-tile: #ffffff; /* store logos are drawn for white */
+  /* how much white is mixed into a store's brand colour where it is used as a chart line, so dark brand colours stay visible */
+  --chart-lift: 0%;
 
   /* shape */
   --radius-card: 12px;
@@ -63,4 +91,82 @@
 
   --page-width: 1200px;
   --gutter: 16px; /* side padding; widened on larger screens in base.css */
+}
+
+/* ---- dark mode ----
+   The two blocks below must stay identical (tests/theme.test.js compares them): CSS cannot share one
+   declaration list between a media query and an attribute selector. Colours that are the same in both
+   themes (accent, the navy surfaces' text, --neutral-fill, --mark-tile, --logo-tile) are not repeated. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ink: #e8eef8;
+    --ink-soft: #aab8cc;
+    --ink-mute: #66758c;
+    --ink-faint: #8f9eb4;
+    --line: #2a3a52;
+    --line-soft: #1c2a40;
+    --paper: #121f33;
+    --canvas: #0b1524;
+    --brand: #8db4f2;
+    --brand-hover: #b0cdf7;
+    --brand-deep: #07101d;
+    --brand-soft: #1b2f50;
+    --on-brand: #0b1524;
+    --on-brand-soft: #2c4468;
+    --hero-top: #173662;
+    --hero-mid: #102a4d;
+    --hero-bottom: #0a1b35;
+    --good: #5ed39c;
+    --good-soft: #0f2f21;
+    --caution: #f4b860;
+    --caution-soft: #33260f;
+    --bad: #ff8a80;
+    --bad-soft: #3b1714;
+    --on-caution: #1a1206;
+    --good-line: #1f5a3d;
+    --caution-line: #5b4318;
+    --header-bg: rgba(11, 21, 36, 0.92);
+    --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.35);
+    --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.5);
+    --logo-ring: #46699f;
+    --photo-tile: #ffffff;
+    --chart-lift: 45%;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #e8eef8;
+  --ink-soft: #aab8cc;
+  --ink-mute: #66758c;
+  --ink-faint: #8f9eb4;
+  --line: #2a3a52;
+  --line-soft: #1c2a40;
+  --paper: #121f33;
+  --canvas: #0b1524;
+  --brand: #8db4f2;
+  --brand-hover: #b0cdf7;
+  --brand-deep: #07101d;
+  --brand-soft: #1b2f50;
+  --on-brand: #0b1524;
+  --on-brand-soft: #2c4468;
+  --hero-top: #173662;
+  --hero-mid: #102a4d;
+  --hero-bottom: #0a1b35;
+  --good: #5ed39c;
+  --good-soft: #0f2f21;
+  --caution: #f4b860;
+  --caution-soft: #33260f;
+  --bad: #ff8a80;
+  --bad-soft: #3b1714;
+  --on-caution: #1a1206;
+  --good-line: #1f5a3d;
+  --caution-line: #5b4318;
+  --header-bg: rgba(11, 21, 36, 0.92);
+  --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --logo-ring: #46699f;
+  --photo-tile: #ffffff;
+  --chart-lift: 45%;
 }

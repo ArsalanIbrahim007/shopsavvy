@@ -11,6 +11,7 @@ import { platformName } from "../lib/platforms.js";
 import ErrorBoundary from "./ErrorBoundary.jsx";
 import Logo from "./Logo.jsx";
 import SearchBox from "./SearchBox.jsx";
+import ThemeToggle from "./ThemeToggle.jsx";
 import "./Layout.css";
 
 const STORES = ["priceoye", "shophive", "ishopping", "telemart", "mega", "paklap", "w11stop"];
@@ -60,6 +61,7 @@ function Header() {
           </div>
         )}
         <MainNav pathname={pathname} category={category} hash={hash} />
+        <ThemeToggle />
       </div>
     </header>
   );

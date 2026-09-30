@@ -4,11 +4,11 @@
 .summary-card__value { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; color: var(--brand); line-height: 1.2; }
 
 /* integrity strip */
-.integrity { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4); background: var(--caution-soft); border-color: #f3d9ac; }
+.integrity { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4); background: var(--caution-soft); border-color: var(--caution-line); }
 .integrity__icon {
   flex: none; width: 24px; height: 24px; border-radius: 50%;
   display: grid; place-items: center;
-  background: var(--caution); color: #fff; font-weight: 800; font-size: 0.875rem;
+  background: var(--caution); color: var(--on-caution); font-weight: 800; font-size: 0.875rem;
 }
 .integrity__title { font-weight: 600; color: var(--ink); }
 
@@ -38,7 +38,7 @@
 }
 .filter-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .filter-chips .chip[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: var(--on-brand); }
-.filter-chips .chip[aria-pressed="true"] .muted { color: #cfd9ea; }
+.filter-chips .chip[aria-pressed="true"] .muted { color: var(--on-brand-soft); }
 .filter-reset { width: 100%; }
 
 /* one product */
@@ -89,11 +89,11 @@
 .seg-price { background: var(--brand); }
 .seg-trust { background: var(--good); }
 .seg-freshness { background: var(--accent-hover); }
-.seg-availability { background: #7c8db5; }
+.seg-availability { background: var(--neutral-fill); }
 .score-popover {
   display: none; position: absolute; z-index: 10; left: 0; top: calc(100% + 6px); width: 260px; padding: var(--space-3);
   background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-control);
-  box-shadow: 0 8px 24px rgba(15, 27, 45, 0.16); text-align: left;
+  box-shadow: var(--shadow-pop); text-align: left;
 }
 .score-cell:hover .score-popover, .score-cell:focus .score-popover, .score-cell:focus-within .score-popover { display: grid; gap: var(--space-2); }
 .score-popover__head { font-weight: 700; font-size: 0.8125rem; }

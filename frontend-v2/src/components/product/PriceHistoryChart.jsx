@@ -42,7 +42,7 @@ export default function PriceHistoryChart({ offers, currentId, now }) {
           <div role="group" aria-label="Stores shown" className="history__legend">
             {stores.map(([id, platform]) => (
               <button key={id} type="button" className="chip history__store" aria-pressed={!hidden.includes(id)} onClick={() => toggleStore(id)}>
-                <span className="history__swatch" style={{ background: platformColor(platform) }} aria-hidden="true" />
+                <span className="history__swatch" style={{ "--store": platformColor(platform) }} aria-hidden="true" />
                 {platformName(platform)}
               </button>
             ))}
@@ -71,7 +71,7 @@ export default function PriceHistoryChart({ offers, currentId, now }) {
           {model.lines.map((line) => {
             const series = visible.find((s) => s.id === line.id);
             return (
-              <g key={line.id} className={line.isCurrent ? "history__line history__line--current" : "history__line"} style={{ color: platformColor(series.platform) }}>
+              <g key={line.id} className={line.isCurrent ? "history__line history__line--current" : "history__line"} style={{ "--store": platformColor(series.platform) }}>
                 <path d={line.path} fill="none" />
                 {line.isCurrent && line.dots.map((dot) => (
                   <circle key={dot.at.getTime()} cx={dot.cx} cy={dot.cy} r="3.5">

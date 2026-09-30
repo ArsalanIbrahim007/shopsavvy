@@ -1,25 +1,34 @@
 .logo { display: inline-flex; align-items: center; gap: var(--space-2); }
 .logo__word { font-family: var(--font-display); font-weight: 800; font-size: 1.375rem; letter-spacing: -0.02em; color: var(--ink); }
 .logo__accent { color: var(--accent-hover); }
-.logo--inverse .logo__word { color: #fff; }
+.logo__tile { fill: var(--logo-tile); stroke: var(--logo-ring); stroke-width: 1; }
+.logo--inverse .logo__word { color: var(--on-navy); }
 .logo--inverse .logo__accent { color: var(--accent); }
 
 .site-header {
   position: sticky; top: 0; z-index: 30;
-  background: rgba(255, 255, 255, 0.96); backdrop-filter: blur(12px);
+  background: var(--header-bg); backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--line);
 }
 /* Mobile: logo on the first row, the search box full width under it, then the category links. */
 .site-header__inner {
   display: grid;
-  grid-template-columns: 1fr;
-  grid-template-areas: "brand" "search" "nav";
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "brand toggle" "search search" "nav nav";
   align-items: center; gap: var(--space-2);
   padding-block: var(--space-3);
 }
 .site-header__logo { grid-area: brand; justify-self: start; }
 .site-header__logo:hover { text-decoration: none; }
 .site-header__search { grid-area: search; }
+
+.theme-toggle {
+  grid-area: toggle; justify-self: end;
+  display: grid; place-items: center; width: 40px; height: 40px;
+  border: 1px solid var(--line); border-radius: var(--radius-pill);
+  background: var(--paper); color: var(--ink-soft); cursor: pointer;
+}
+.theme-toggle:hover { color: var(--ink); border-color: var(--ink-mute); }
 
 .site-nav {
   grid-area: nav;
@@ -36,8 +45,8 @@
 
 @media (min-width: 900px) {
   .site-header__inner {
-    grid-template-columns: auto minmax(240px, 480px) 1fr;
-    grid-template-areas: "brand search nav";
+    grid-template-columns: auto minmax(240px, 480px) 1fr auto;
+    grid-template-areas: "brand search nav toggle";
     gap: var(--space-5);
   }
   .site-nav { justify-content: flex-end; }
@@ -48,7 +57,7 @@
 .site-footer {
   margin-top: var(--space-8);
   padding-block: var(--space-6);
-  background: var(--brand-deep); color: #cfd9ea;
+  background: var(--brand-deep); color: var(--on-navy-soft);
   font-size: 0.9375rem;
 }
 .site-footer a { color: var(--accent); }
