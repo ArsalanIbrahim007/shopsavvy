@@ -16,7 +16,7 @@ body {
 }
 
 h1, h2, h3, p { margin: 0; }
-h1, h2, h3 { font-weight: 600; line-height: 1.2; letter-spacing: -0.01em; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; }
 h2 { font-size: 1.375rem; }
 h3 { font-size: 1.0625rem; }
 
@@ -70,6 +70,9 @@ img { max-width: 100%; display: block; }
 .btn:hover { text-decoration: none; }
 .btn-primary { background: var(--brand); color: var(--on-brand); }
 .btn-primary:hover { background: var(--brand-hover); }
+/* the main action on a page: search, view deal. Dark text on amber (9.2:1); white would fail. */
+.btn-accent { background: var(--accent); color: var(--on-accent); }
+.btn-accent:hover { background: var(--accent-hover); }
 .btn-ghost { background: var(--paper); color: var(--ink); border-color: var(--line); }
 .btn-ghost:hover { border-color: var(--ink-mute); }
 .btn[aria-disabled="true"], .btn:disabled { opacity: 0.55; cursor: not-allowed; }

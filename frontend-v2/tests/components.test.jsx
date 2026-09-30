@@ -20,7 +20,6 @@ import ProductImage from "../src/components/ProductImage.jsx";
 import VerdictBadge from "../src/components/VerdictBadge.jsx";
 import Layout from "../src/components/Layout.jsx";
 import Home from "../src/pages/Home.jsx";
-import Results from "../src/pages/Results.jsx";
 import Product from "../src/pages/Product.jsx";
 
 const NOW = new Date().toISOString();
@@ -265,7 +264,9 @@ describe("Home", () => {
     expect(tile).toHaveAttribute("href", "/results?category=smartphone");
     expect(screen.getByRole("link", { name: /tvs.*571/i })).toBeInTheDocument();
     expect(screen.queryByText(/accessor/i)).toBeNull();
-    expect(screen.getByText(/3,219 listings from 7 stores/i)).toBeInTheDocument();
+    // the trust row uses the same stats: real store and listing counts, not invented ones
+    expect(screen.getByText("7 stores")).toBeInTheDocument();
+    expect(screen.getByText("3,219 listings")).toBeInTheDocument();
   });
 
   it("shows verified deals with the server's saving, linked to the product page", async () => {
@@ -311,95 +312,7 @@ describe("Home", () => {
   });
 });
 
-describe("Results", () => {
-  const twoGroups = [
-    group("Samsung Galaxy A17", [offer("p1", "priceoye", 64000), offer("p2", "mega", 65500)]),
-    group("Samsung Galaxy A57", [offer("p3", "priceoye", 110000)]),
-  ];
-
-  beforeEach(() => {
-    vi.mocked(api.searchListings).mockReset().mockResolvedValue({ offers: [], groups: twoGroups, groupCount: 2, summary: null });
-    vi.mocked(api.getCatalog).mockReset().mockResolvedValue({ groups: twoGroups, total: 2, offset: 0, generatedAt: NOW });
-  });
-
-  it("searches, shows the count, and one card per product with the best price and the store count", async () => {
-    renderAt("/results?q=galaxy", <Results />);
-    expect(await screen.findByRole("heading", { level: 1, name: /results for "galaxy"/i })).toBeInTheDocument();
-    expect(await screen.findByText("2 products")).toBeInTheDocument();
-    expect(api.searchListings).toHaveBeenCalledWith(expect.objectContaining({ q: "galaxy" }));
-
-    const cards = screen.getAllByRole("article");
-    expect(cards).toHaveLength(2);
-    expect(cards[0]).toHaveTextContent("PKR 64,000");
-    expect(cards[0]).toHaveTextContent("2 offers from 2 stores");
-    expect(cards[1]).toHaveTextContent("1 offer from 1 store");
-    expect(within(cards[0]).getByRole("link", { name: /Samsung Galaxy A17/ })).toHaveAttribute("href", "/product/p1");
-  });
-
-  it("browses a category from the catalog when there is no search text", async () => {
-    renderAt("/results?category=smartphone", <Results />);
-    expect(await screen.findByRole("heading", { level: 1, name: "Smartphones" })).toBeInTheDocument();
-    await screen.findAllByRole("article");
-    expect(api.getCatalog).toHaveBeenCalledWith(expect.objectContaining({ category: "smartphone" }));
-    expect(api.searchListings).not.toHaveBeenCalled();
-  });
-
-  it("does not ask the server anything for a missing, unknown or non-browsable category", async () => {
-    for (const path of ["/results", "/results?category=toaster", "/results?category=accessory", "/results?q="]) {
-      const { unmount } = renderAt(path, <Results />);
-      expect(screen.getByText(/no products found/i), path).toBeInTheDocument();
-      unmount();
-    }
-    expect(api.searchListings).not.toHaveBeenCalled();
-    expect(api.getCatalog).not.toHaveBeenCalled();
-  });
-
-  it("says so when nothing matches, and offers a way back", async () => {
-    vi.mocked(api.searchListings).mockResolvedValue({ offers: [], groups: [], groupCount: 0, summary: null });
-    renderAt("/results?q=zzzz", <Results />);
-    expect(await screen.findByRole("heading", { name: /no products found for "zzzz"/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /home page/i })).toHaveAttribute("href", "/");
-  });
-
-  it("shows the reason and a retry when the request fails, and works after retrying", async () => {
-    vi.mocked(api.searchListings).mockRejectedValueOnce(new ApiError({ status: 429, code: "RATE_LIMITED", message: "Too many searches from this address.", requestId: "r-3" }));
-    renderAt("/results?q=iphone", <Results />);
-    const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent("Too many searches from this address.");
-    expect(alert).toHaveTextContent("Reference: r-3");
-    expect(within(alert).queryByRole("button", { name: /try again/i })).toBeNull(); // a rate limit is not fixed by retrying at once
-  });
-
-  it("retries a failed search when the failure is temporary", async () => {
-    vi.mocked(api.searchListings).mockRejectedValueOnce(new ApiError({ status: 0, code: "NETWORK_ERROR" }));
-    renderAt("/results?q=iphone", <Results />);
-    fireEvent.click(await screen.findByRole("button", { name: /try again/i }));
-    expect(await screen.findByText("2 products")).toBeInTheDocument();
-  });
-
-  it("shows a loading state with an honest note about slow first searches", () => {
-    vi.mocked(api.searchListings).mockReturnValue(new Promise(() => {}));
-    renderAt("/results?q=iphone", <Results />);
-    expect(screen.getByRole("status")).toHaveTextContent(/can take up to a minute/i);
-  });
-
-  it("draws at most 48 cards and says how many products there are", async () => {
-    const many = Array.from({ length: 60 }, (_, i) => group(`Phone ${i}`, [offer(`id${i}`, "priceoye", 1000 + i)]));
-    vi.mocked(api.searchListings).mockResolvedValue({ offers: [], groups: many, groupCount: 734, summary: null });
-    renderAt("/results?q=samsung", <Results />);
-    expect(await screen.findByText(/734 products, showing the 48 with the most offers/)).toBeInTheDocument();
-    expect(screen.getAllByRole("article")).toHaveLength(48);
-  });
-
-  it("does not show a good-deal badge next to a fake-discount warning on a card", async () => {
-    const fake = offer("f1", "priceoye", 90000, { discountAnalysis: { classification: "likely_fake", reason: "never sold at the claimed price" } });
-    vi.mocked(api.searchListings).mockResolvedValue({ offers: [], groups: [group("Samsung Galaxy S26 Plus", [fake])], groupCount: 1, summary: null });
-    renderAt("/results?q=s26", <Results />);
-    const card = await screen.findByRole("article");
-    expect(card).toHaveTextContent("Fake discount");
-    expect(card).not.toHaveTextContent("Good deal");
-  });
-});
+// The results page (filters, sorting, comparison table, URL state) is covered in results.test.jsx.
 
 describe("Product", () => {
   const renderProduct = (id = "p1") =>

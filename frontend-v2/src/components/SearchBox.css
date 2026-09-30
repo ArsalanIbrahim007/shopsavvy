@@ -19,9 +19,9 @@
   width: 34px; height: 34px;
   display: grid; place-items: center;
   border: 0; border-radius: var(--radius-pill);
-  background: var(--brand); color: var(--on-brand); cursor: pointer;
+  background: var(--accent); color: var(--on-accent); cursor: pointer;
 }
-.searchbox__button:hover { background: var(--brand-hover); }
+.searchbox__button:hover { background: var(--accent-hover); }
 
 .searchbox--large .searchbox__input { height: 56px; font-size: 1.0625rem; padding-left: var(--space-5); padding-right: 68px; }
 .searchbox--large .searchbox__button { width: 44px; height: 44px; right: 6px; top: 6px; }

@@ -1,8 +1,11 @@
 /* tokens.css — every colour, size and font in the app is one of these. Change a value here and
    the whole UI follows; nothing else in the code hard-codes a colour.
 
-   The palette is the original ShopSavvy one (frontend/src/shopsavvy-ui.css): navy ink, blue brand,
-   and green / amber / red used ONLY for meaning (good price, above market, unusual price). */
+   Palette and type follow the Stitch design Arsalan provided (stitch_shopsavvy_price_comparison_frontend):
+   navy brand, amber accent for the main action, Inter for text and Plus Jakarta Sans for headings.
+   Green / amber-brown / red are kept for verdicts only (good price, above market, unusual price), so
+   colour still carries meaning. The amber ACCENT is a fill for buttons; the verdict "caution" is a
+   brown-on-cream badge that also carries an icon and a word. */
 
 :root {
   color-scheme: light;
@@ -12,16 +15,24 @@
   --ink-soft: #47566b;
   /* Decorative only (icons, dividers): 3.1:1 on white, below the 4.5:1 needed for text. */
   --ink-mute: #8593a5;
-  --line: #dfe4ea;
-  --line-soft: #eef1f5;
+  /* Quietest text that is still readable (5.0:1 on white and on the canvas). */
+  --ink-faint: #5f6d82;
+  --line: #e2e8f0;
+  --line-soft: #eef2f6;
   --paper: #ffffff;
-  --canvas: #f4f6f9;
+  --canvas: #f8fafc;
 
-  /* brand */
-  --brand: #1d4ed8;
-  --brand-hover: #1a44bd;
-  --brand-soft: #eaf0ff;
+  /* brand: navy */
+  --brand: #1a3c6e;
+  --brand-hover: #143159;
+  --brand-deep: #0f2547;
+  --brand-soft: #e8eef8;
   --on-brand: #ffffff;
+
+  /* accent: amber, for the main action (search, view deal). Text on it is dark (9.2:1); white would fail. */
+  --accent: #feae2c;
+  --accent-hover: #f5a623;
+  --on-accent: #0f1b2d;
 
   /* verdicts: meaning, not decoration */
   --good: #0e7c4a;
@@ -36,9 +47,9 @@
   --radius-control: 8px;
   --radius-pill: 999px;
 
-  /* type: system fonts, so nothing is downloaded and the demo works offline */
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-voice: ui-serif, "Iowan Old Style", Georgia, "Times New Roman", serif;
+  /* type: fonts are bundled with the app (@fontsource), nothing is fetched from Google at runtime */
+  --font-sans: "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Plus Jakarta Sans Variable", "Inter Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
 
   /* spacing scale */
   --space-1: 4px;
@@ -50,6 +61,6 @@
   --space-7: 48px;
   --space-8: 72px;
 
-  --page-width: 1120px;
+  --page-width: 1200px;
   --gutter: 16px; /* side padding; widened on larger screens in base.css */
 }

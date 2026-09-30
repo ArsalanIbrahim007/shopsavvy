@@ -31,6 +31,8 @@ export const FACET_DEFS = {
   pta: { title: "PTA status", field: "ptaStatus", order: "count", format: formatPta, exclude: ["unknown"] },
 };
 const FACET_KEYS = Object.keys(FACET_DEFS);
+/** The facet keys, for clearing every facet choice at once (when the category changes). */
+export const FACET_KEYS_FOR_RESET = FACET_KEYS;
 
 export function emptyFilters() {
   return {

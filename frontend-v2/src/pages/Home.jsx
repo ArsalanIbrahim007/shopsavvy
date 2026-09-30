@@ -5,7 +5,8 @@
 // failing request never blanks the page. The deals block hides itself when there are none: the
 // server only reports savings it can verify, so the list is short by design and is never padded.
 
-import { Link } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 
 import { getCatalog, getDeals, getStats } from "../api/endpoints.js";
 import { useAsync } from "../hooks/useAsync.js";
@@ -22,27 +23,27 @@ import "./Home.css";
 const POPULAR_SEARCHES = ["iPhone 17 Pro Max", "Samsung Galaxy A17", "Redmi Note 15", "MacBook Air", "Samsung TV"];
 
 const HOW_WE_CHECK = [
-  { title: "The same product, matched", text: "We compare storage, RAM, screen size and PTA status, so a 128 GB phone is never priced against a 256 GB one." },
-  { title: "Every discount, checked", text: "A \"was\" price only counts if the price history and the other stores back it up. Otherwise we say so." },
-  { title: "Odd prices, flagged", text: "A price far out of line with other stores is marked as unusual, and never counted as a saving." },
+  { step: "Step 1", title: "The same product, matched", text: "We compare storage, RAM, screen size and PTA status, so a 128 GB phone is never priced against a 256 GB one." },
+  { step: "Step 2", title: "Every discount, checked", text: "A \"was\" price only counts if the price history and the other stores back it up. Otherwise we say so." },
+  { step: "Step 3", title: "Odd prices, flagged", text: "A price far out of line with other stores is marked as unusual, and never counted as a saving." },
 ];
 
 function Hero() {
   return (
     <section className="hero">
       <div className="container hero__inner">
+        <span className="hero__eyebrow">Price comparison for Pakistan</span>
         <h1 className="hero__title">
-          Know if the price is real,
-          <span className="hero__voice"> before you buy.</span>
+          Know if the price is real, <span className="hero__accent">before you buy.</span>
         </h1>
-        <p className="hero__lead muted">
+        <p className="hero__lead">
           Compare electronics across Pakistani stores. We check every discount against price history and other stores.
         </p>
         <div className="hero__search">
           <SearchBox size="large" />
         </div>
         <p className="hero__popular small">
-          <span className="muted">Popular:</span>
+          <span>Popular:</span>
           {POPULAR_SEARCHES.map((term) => (
             <Link key={term} className="chip" to={`/results?q=${encodeURIComponent(term)}`}>{term}</Link>
           ))}
@@ -52,12 +53,37 @@ function Hero() {
   );
 }
 
-function Categories() {
-  const stats = useAsync((signal) => getStats({ signal }), []);
+// Only claims we can back with data: the store count and listing count come from the API, and the
+// other two describe checks the backend really runs.
+function TrustRow({ stats }) {
+  const items = [
+    { value: stats.status === "success" ? `${stats.data.platforms} stores` : "Stores", label: "compared on every search" },
+    { value: stats.status === "success" ? `${formatNumber(stats.data.products)} listings` : "Listings", label: "tracked, each with its update time" },
+    { value: "Discount checks", label: "against price history and other stores" },
+    { value: "Unusual prices", label: "flagged, never counted as savings" },
+  ];
 
   return (
+    <section className="trust container" aria-label="What ShopSavvy checks">
+      <div className="trust__grid card">
+        {items.map((item) => (
+          <div key={item.value} className="trust__item">
+            <span className="trust__value">{item.value}</span>
+            <span className="trust__label">{item.label}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function Categories({ stats }) {
+  return (
     <section className="home-section container" aria-labelledby="cat-heading" aria-busy={stats.status === "loading"}>
-      <h2 id="cat-heading">Browse by category</h2>
+      <div>
+        <p className="eyebrow">Catalog</p>
+        <h2 id="cat-heading">Browse by category</h2>
+      </div>
       {stats.status === "loading" && (
         <div className="tiles">{Array.from({ length: 6 }, (_, i) => <Skeleton key={i} height={84} style={{ borderRadius: "var(--radius-card)" }} />)}</div>
       )}
@@ -72,9 +98,6 @@ function Categories() {
               </Link>
             ))}
           </div>
-          <p className="small muted">
-            {formatNumber(stats.data.products)} listings from {stats.data.platforms} stores.
-          </p>
         </>
       )}
     </section>
@@ -84,11 +107,18 @@ function Categories() {
 function Deals() {
   const deals = useAsync((signal) => getDeals({ limit: 8, signal }), []);
 
+  const { hash } = useLocation();
+  const loaded = deals.status === "success";
+  // The header's "Deals" link is /#deals; the section only exists once the data has arrived, so scroll then.
+  useEffect(() => {
+    if (loaded && hash === "#deals") document.getElementById("deals")?.scrollIntoView();
+  }, [loaded, hash]);
+
   if (deals.status === "error") return null; // the section is a bonus; the rest of the page does not depend on it
   if (deals.status === "success" && deals.data.deals.length === 0) return null;
 
   return (
-    <section className="home-section container" aria-labelledby="deals-heading" aria-busy={deals.status === "loading"}>
+    <section id="deals" className="home-section container" aria-labelledby="deals-heading" aria-busy={deals.status === "loading"}>
       <div className="home-section__head">
         <h2 id="deals-heading">Verified deals</h2>
         {deals.status === "success" && deals.data.generatedAt && (
@@ -135,6 +165,7 @@ function HowWeCheck() {
       <div className="how-grid">
         {HOW_WE_CHECK.map((item) => (
           <div key={item.title} className="card how-card">
+            <p className="how-card__step">{item.step.toUpperCase()}</p>
             <h3>{item.title}</h3>
             <p className="muted">{item.text}</p>
           </div>
@@ -145,10 +176,13 @@ function HowWeCheck() {
 }
 
 export default function Home() {
+  const stats = useAsync((signal) => getStats({ signal }), []);
+
   return (
     <>
       <Hero />
-      <Categories />
+      <TrustRow stats={stats} />
+      <Categories stats={stats} />
       <Deals />
       <MostComparedPhones />
       <HowWeCheck />
