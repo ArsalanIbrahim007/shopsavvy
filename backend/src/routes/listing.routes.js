@@ -4,6 +4,8 @@ import {
   createListing,
   getListings,
   getListingStats,
+  getDeals,
+  suggestListings,
   searchListings,
   getListingDetails,
   addListingPriceHistory,
@@ -14,7 +16,7 @@ import {
   validateCreateListing,
 } from "../middleware/validation.middleware.js";
 import { requireAdminKey } from "../middleware/adminKey.middleware.js";
-import { searchLimiter } from "../middleware/rateLimit.middleware.js";
+import { searchLimiter, dealsLimiter, suggestLimiter } from "../middleware/rateLimit.middleware.js";
 
 const router = express.Router();
 
@@ -136,6 +138,128 @@ router.get("/", getListings);
  *                   example: 8
  */
 router.get("/stats", getListingStats);
+
+/**
+ * @swagger
+ * /api/listings/deals:
+ *   get:
+ *     summary: Top deals
+ *     description: Products where the cheapest store beats the typical price by a real margin, ranked by saving. Built from stored data only (no scraping) and cached for ten minutes. The saving is measured against the median price of the offers considered, never against a store's own "was" price. Conservative on purpose, so only new offers scraped in the last 72 hours, in stock, not flagged as an unusual price and not labelled non-PTA are considered; a product needs at least three such offers from at least two stores whose prices are within 1.6x of each other; and for phones and tablets the cheapest offer must be explicitly PTA-approved (a cheap phone with PTA status unstated looks the same as a non-PTA one). A saving must be at least 5% and PKR 1,000.
+ *     tags:
+ *       - Listings
+ *     parameters:
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *           enum: [smartphone, laptop, tv, tablet, smartwatch, headphones]
+ *         description: Restrict to one category. Omitted means all of them.
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 50
+ *           default: 12
+ *     responses:
+ *       200:
+ *         description: Deals, biggest percentage saving first.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 count:
+ *                   type: integer
+ *                 generatedAt:
+ *                   type: string
+ *                   format: date-time
+ *                   description: When the (oldest) cached category was computed.
+ *                 maxAgeHours:
+ *                   type: integer
+ *                   example: 72
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       productName: { type: string }
+ *                       category: { type: string }
+ *                       imageUrl: { type: string }
+ *                       offerCount: { type: integer }
+ *                       storeCount: { type: integer }
+ *                       lowest:
+ *                         type: object
+ *                         properties:
+ *                           _id: { type: string }
+ *                           platform: { type: string }
+ *                           price: { type: number }
+ *                           productUrl: { type: string }
+ *                       referencePrice: { type: number, description: Median price of the offers considered. }
+ *                       savingAmount: { type: number }
+ *                       savingPercent: { type: number }
+ *                       verifiedDiscountPercent: { type: integer, nullable: true, description: The lowest offer's claimed discount, only when no check doubts it. }
+ *                       recommendation: { type: string, nullable: true }
+ *                       dealScore: { type: number, nullable: true }
+ *                       updatedAt: { type: string, format: date-time }
+ *       400:
+ *         description: Unknown category.
+ *       429:
+ *         description: Too many requests.
+ */
+router.get("/deals", dealsLimiter, getDeals);
+
+/**
+ * @swagger
+ * /api/listings/suggest:
+ *   get:
+ *     summary: Search suggestions
+ *     description: Product names matching what the user has typed, built from the listings we hold and ranked by how many listings share each name. Under two characters answers an empty list. Accessories and uncategorised items are left out.
+ *     tags:
+ *       - Listings
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         required: true
+ *         schema:
+ *           type: string
+ *           maxLength: 100
+ *         example: galaxy a
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 15
+ *           default: 8
+ *     responses:
+ *       200:
+ *         description: Suggestions, best first.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 count:
+ *                   type: integer
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       text: { type: string, example: Samsung Galaxy A17 }
+ *                       category: { type: string, example: smartphone }
+ *                       count: { type: integer, description: Listings that share this name. }
+ *       400:
+ *         description: Query longer than 100 characters.
+ *       429:
+ *         description: Too many requests.
+ */
+router.get("/suggest", suggestLimiter, suggestListings);
 
 /**
  * @swagger

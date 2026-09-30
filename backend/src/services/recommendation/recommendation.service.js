@@ -377,6 +377,38 @@ export const attachRecommendations = (listings = []) => {
   return listings.map((listing) => attachRecommendation(listing));
 };
 
+/**
+ * Adds recommendations after product grouping and deal ranking.
+ *
+ * Recommendations must be generated after groupListingsByProduct()
+ * because the grouping service adds deal scores and ranking details.
+ */
+export function attachRecommendationsToGroups(groups = []) {
+  if (!Array.isArray(groups)) {
+    return [];
+  }
+
+  return groups.map((group) => {
+    const recommendedOffers = attachRecommendations(group.offers || []);
+
+    const bestDealId = group.bestDeal?._id?.toString();
+
+    const recommendedBestDeal =
+      recommendedOffers.find(
+        (offer) => offer._id?.toString() === bestDealId
+      ) ||
+      (group.bestDeal
+        ? attachRecommendation(group.bestDeal)
+        : null);
+
+    return {
+      ...group,
+      offers: recommendedOffers,
+      bestDeal: recommendedBestDeal,
+    };
+  });
+}
+
 export {
   RECOMMENDATION_ACTIONS,
   RECOMMENDATION_THRESHOLDS,

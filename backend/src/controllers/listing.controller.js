@@ -10,6 +10,9 @@ import { parsePagination } from "../services/pagination.service.js";
 import { textParam, numberParam } from "../services/queryParams.service.js";
 import { hasAdminKey } from "../middleware/adminKey.middleware.js";
 import { isSuspectPrice } from "../services/pricePlausibility.service.js";
+import { getTopDeals, isDealCategory, DEAL_CATEGORIES } from "../services/dealsFeed.service.js";
+import { DEFAULT_MAX_AGE_HOURS } from "../services/dealsRanking.service.js";
+import { getSuggestions } from "../services/suggestions.service.js";
 
 // Longest search text accepted. Real product searches are a handful of words;
 // anything longer is a paste or an attack, and it would only be fed to
@@ -23,6 +26,7 @@ import {
 import {
   attachRecommendation,
   attachRecommendations,
+  attachRecommendationsToGroups,
 } from "../services/recommendation/recommendation.service.js";
 import {
   fetchAndRefreshListings,
@@ -45,38 +49,6 @@ import { mlMatchStrategy } from "../services/similarityModel.service.js";
 function resolveMatchStrategy(req) {
   return req.query.matching === "rule" ? undefined : mlMatchStrategy;
 }
-/**
- * Adds recommendations after product grouping and deal ranking.
- *
- * Recommendations must be generated after groupListingsByProduct()
- * because the grouping service adds deal scores and ranking details.
- */
-function attachRecommendationsToGroups(groups = []) {
-  if (!Array.isArray(groups)) {
-    return [];
-  }
-
-  return groups.map((group) => {
-    const recommendedOffers = attachRecommendations(group.offers || []);
-
-    const bestDealId = group.bestDeal?._id?.toString();
-
-    const recommendedBestDeal =
-      recommendedOffers.find(
-        (offer) => offer._id?.toString() === bestDealId
-      ) ||
-      (group.bestDeal
-        ? attachRecommendation(group.bestDeal)
-        : null);
-
-    return {
-      ...group,
-      offers: recommendedOffers,
-      bestDeal: recommendedBestDeal,
-    };
-  });
-}
-
 /**
  * Creates a flat listing array from the recommended grouped offers.
  * This keeps the existing "data" field available in the search response.
@@ -173,6 +145,38 @@ export async function getListingStats(req, res) {
   ]);
 
   res.json({ success: true, products, platforms: platforms.length });
+}
+
+/**
+ * Top deals from stored data: products where the cheapest store beats the typical
+ * price by a real margin. No scraping; served from a cache refreshed every ten
+ * minutes (see dealsFeed.service.js).
+ */
+export async function getDeals(req, res) {
+  const category = textParam(req.query.category);
+  if (category && !isDealCategory(category)) {
+    throw AppError.badRequest(`category must be one of: ${DEAL_CATEGORIES.join(", ")}`);
+  }
+
+  const limit = Math.min(Math.floor(numberParam(req.query.limit) ?? 12), 50);
+  const { deals, generatedAt } = await getTopDeals({ category, limit });
+
+  res.set("Cache-Control", "public, max-age=60");
+  res.json({ success: true, count: deals.length, generatedAt, maxAgeHours: DEFAULT_MAX_AGE_HOURS, data: deals });
+}
+
+/** Search-box suggestions from the listings we hold. Under two characters answers an empty list. */
+export async function suggestListings(req, res) {
+  const q = textParam(req.query.q) ?? "";
+  if (q.length > MAX_QUERY_LENGTH) {
+    throw AppError.badRequest(`Search query is too long (maximum ${MAX_QUERY_LENGTH} characters).`);
+  }
+
+  const limit = Math.min(Math.floor(numberParam(req.query.limit) ?? 8), 15);
+  const data = await getSuggestions(q, { limit });
+
+  res.set("Cache-Control", "public, max-age=30");
+  res.json({ success: true, count: data.length, data });
 }
 
 export async function searchListings(req, res) {
