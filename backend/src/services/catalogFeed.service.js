@@ -49,7 +49,8 @@ async function computeCategory(category) {
 
   const enriched = await attachPriceHistory(listings);
   // threshold 0: always in the worker pool, however few listings there are, so this never blocks the API.
-  const groups = await groupListings(enriched, { strategy: "ml", recommend: true, threshold: 0 });
+  // Background: the catalog is cached and warmed at start-up, so it yields the last worker to interactive requests.
+  const groups = await groupListings(enriched, { strategy: "ml", recommend: true, threshold: 0, priority: "background" });
   return groups.sort(mostCompared).map(withoutHistory);
 }
 

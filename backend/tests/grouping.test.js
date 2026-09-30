@@ -1,6 +1,6 @@
 import { describe, it, expect, afterAll } from "vitest";
 
-import { groupListings, OFFLOAD_THRESHOLD, closeGroupingPool, groupingPoolStats } from "../src/services/grouping.service.js";
+import { groupListings, OFFLOAD_THRESHOLD, closeGroupingPool, groupingPoolStats, computeDealsOffThread, getGroupingPool } from "../src/services/grouping.service.js";
 import { groupAndRecommend } from "../src/services/groupingJob.service.js";
 
 const NOW = Date.now();
@@ -104,5 +104,30 @@ describe("main-thread responsiveness", () => {
 
     expect(blocked).toBeGreaterThan(300); // proves the test would notice a freeze
     expect(offloaded).toBeLessThan(150);
+  }, 60000);
+});
+
+describe("grouping lanes", () => {
+  it("runs cache warm-ups in the background lane, leaving a worker for a shopper's search", async () => {
+    await closeGroupingPool();
+    getGroupingPool().warm();
+    await groupListings(realistic(), { threshold: 0 }); // wait until the workers are up
+
+    const warmups = [groupListings(unrelated(120), { threshold: 0, priority: "background" }), groupListings(unrelated(120), { threshold: 0, priority: "background" })];
+    expect(groupingPoolStats()).toMatchObject({ running: 1, runningBackground: 1, queued: 1 });
+
+    const shopper = groupListings(realistic(), { threshold: 0 }); // interactive by default
+    expect(groupingPoolStats()).toMatchObject({ running: 2, runningBackground: 1 });
+    await Promise.all([shopper, ...warmups]);
+  }, 60000);
+
+  it("treats the deals feed as background work too", async () => {
+    await closeGroupingPool();
+    getGroupingPool().warm();
+    await groupListings(realistic(), { threshold: 0 });
+
+    const deals = [computeDealsOffThread(unrelated(100), { now: NOW }), computeDealsOffThread(unrelated(100), { now: NOW })];
+    expect(groupingPoolStats()).toMatchObject({ running: 1, runningBackground: 1, queued: 1 });
+    await Promise.all(deals);
   }, 60000);
 });

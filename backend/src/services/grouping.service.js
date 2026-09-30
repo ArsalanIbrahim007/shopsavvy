@@ -69,18 +69,20 @@ const withStringIds = (listings) => listings.map((listing) => ({ ...listing, _id
  * @param {"ml"|"rule"} [options.strategy]
  * @param {boolean}  [options.recommend]  attach recommendations to each group (default true)
  * @param {number}   [options.threshold]  listings above this many go to a worker (default OFFLOAD_THRESHOLD)
+ * @param {"interactive"|"background"} [options.priority]  background work (cache warm-ups) never takes the last worker
  * @returns {Promise<object[]>} groups, best-supported first
  */
-export async function groupListings(listings = [], { strategy = "ml", recommend = true, threshold = OFFLOAD_THRESHOLD } = {}) {
+export async function groupListings(listings = [], { strategy = "ml", recommend = true, threshold = OFFLOAD_THRESHOLD, priority = "interactive" } = {}) {
   const plain = withStringIds(listings);
 
   if (plain.length <= threshold) {
     return groupAndRecommend(plain, { strategy, recommend });
   }
-  return getGroupingPool().run("group", { listings: plain, strategy, recommend });
+  return getGroupingPool().run("group", { listings: plain, strategy, recommend }, { priority });
 }
 
 /** Ranks a category's top deals in a worker (see dealsRanking.service.js). */
 export function computeDealsOffThread(listings, options = {}, { timeoutMs } = {}) {
-  return getGroupingPool().run("deals", { listings: withStringIds(listings), options }, { timeoutMs });
+  // The deals feed is computed ahead of time and cached: no shopper waits on it, so it yields to searches and product pages.
+  return getGroupingPool().run("deals", { listings: withStringIds(listings), options }, { timeoutMs, priority: "background" });
 }

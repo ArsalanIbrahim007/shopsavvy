@@ -7,7 +7,7 @@ vi.mock("../src/services/historyEnrichment.service.js", () => ({
 import Listing from "../src/models/listing.model.js";
 import { createApp } from "../src/createApp.js";
 import { getCatalog, clearCatalogCache, isCatalogCategory, CATALOG_CATEGORIES } from "../src/services/catalogFeed.service.js";
-import { closeGroupingPool, groupingPoolStats } from "../src/services/grouping.service.js";
+import { closeGroupingPool, groupingPoolStats, getGroupingPool } from "../src/services/grouping.service.js";
 
 const NOW = Date.now();
 const row = (id, platform, price, title, over = {}) => ({
@@ -49,6 +49,12 @@ describe("getCatalog", () => {
     await closeGroupingPool();
     await getCatalog({ category: "smartphone" });
     expect(groupingPoolStats().workers).toBeGreaterThan(0);
+  });
+
+  it("groups in the background lane, so a shopper's search is never stuck behind a cache warm-up", async () => {
+    const run = vi.spyOn(getGroupingPool(), "run");
+    await getCatalog({ category: "smartphone" });
+    expect(run).toHaveBeenCalledWith("group", expect.anything(), { priority: "background" });
   });
 
   it("leaves each offer's price history out of the cards", async () => {
