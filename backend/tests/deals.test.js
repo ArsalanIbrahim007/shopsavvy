@@ -227,7 +227,13 @@ describe("the full pipeline", () => {
   });
 
   it("gives up and rejects when the worker takes too long", async () => {
-    await expect(computeDealsInWorker(listings, { now: NOW }, { timeoutMs: 1 })).rejects.toThrow(/timed out/);
+    // 300 similar-looking phones take over a second to compare pairwise, far longer than the limit.
+    const many = Array.from({ length: 300 }, (_, i) => ({
+      ...offer(`m${i}`, "priceoye", 60000 + i),
+      title: `Samsung Galaxy A${10 + i} 5G Smartphone 8GB 256GB Black`,
+      normalizedTitle: `samsung galaxy a${10 + i} 5g smartphone 256gb black`,
+    }));
+    await expect(computeDealsInWorker(many, { now: NOW }, { timeoutMs: 50 })).rejects.toThrow(/timed out/);
   });
 });
 

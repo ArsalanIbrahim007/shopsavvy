@@ -4,19 +4,18 @@
 // can trigger live scraping and counts against the search rate limit. This serves
 // the same idea from data already stored: no scraping, no per-request grouping.
 //
-//   category deals = load fresh listings -> (worker thread) group + rank -> cache 10 min
+//   category deals = load fresh listings -> (grouping worker pool) group + rank -> cache 10 min
 //
 // A request that finds a category cached answers instantly; the first one after a
 // restart waits for the computation (seconds), and warmDealsCache() at start-up
 // makes even that rare. Concurrent requests for the same category share one
 // computation.
 
-import { Worker } from "node:worker_threads";
-
 import Listing from "../models/listing.model.js";
 import { VISIBLE_PLATFORMS_FILTER } from "../config/platforms.js";
 import { attachPriceHistory } from "./historyEnrichment.service.js";
 import { DEFAULT_MAX_AGE_HOURS } from "./dealsRanking.service.js";
+import { computeDealsOffThread } from "./grouping.service.js";
 
 // Categories where "the same product at several stores" is the point of the site.
 export const DEAL_CATEGORIES = ["smartphone", "laptop", "tv", "tablet", "smartwatch", "headphones"];
@@ -34,32 +33,11 @@ export function clearDealsCache() {
 }
 
 /**
- * Runs computeCategoryDeals in a worker thread. Listings are sent as plain data
- * (ids as strings): a Mongo ObjectId does not survive being copied to a worker.
+ * Runs computeCategoryDeals in the shared grouping worker pool (ids become strings:
+ * a Mongo ObjectId does not survive being copied to a worker).
  */
 export function computeDealsInWorker(listings, options = {}, { timeoutMs = WORKER_TIMEOUT_MS } = {}) {
-  const plain = listings.map((listing) => ({ ...listing, _id: String(listing._id) }));
-
-  return new Promise((resolve, reject) => {
-    const worker = new Worker(new URL("../workers/dealsWorker.js", import.meta.url), {
-      workerData: { listings: plain, options },
-    });
-
-    const timer = setTimeout(() => {
-      worker.terminate();
-      reject(new Error("Deals computation timed out"));
-    }, timeoutMs);
-
-    worker.once("message", (message) => {
-      clearTimeout(timer);
-      worker.terminate();
-      message.ok ? resolve(message.deals) : reject(new Error(message.error));
-    });
-    worker.once("error", (error) => {
-      clearTimeout(timer);
-      reject(error);
-    });
-  });
+  return computeDealsOffThread(listings, options, { timeoutMs });
 }
 
 async function computeCategory(category, now) {

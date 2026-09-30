@@ -10,7 +10,7 @@
 
 import { VISIBLE_PLATFORMS_FILTER } from "../config/platforms.js";
 import Listing from "../models/listing.model.js";
-import { groupListingsByProduct } from "./productGrouping.service.js";
+import { groupListings } from "./grouping.service.js";
 import { modelTokens } from "./normalizeTitle.service.js";
 import { runScrapersAndSave } from "./scraper.service.js";
 
@@ -73,7 +73,9 @@ export async function buildScheduledQueryList({ minOffers = 2 } = {}) {
 
   const queries = new Set();
   for (const [, items] of byCategory) {
-    const groups = groupListingsByProduct(items);
+    // Rule strategy, no recommendations: this only needs the product clusters. Runs in a
+    // worker thread for large categories so the API stays responsive.
+    const groups = await groupListings(items, { strategy: "rule", recommend: false });
     groups
       .filter((group) => (group.offerCount || 0) >= minOffers)
       .forEach((group) => {

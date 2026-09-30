@@ -13,12 +13,7 @@ import { isSuspectPrice } from "../services/pricePlausibility.service.js";
 import { getTopDeals, isDealCategory, DEAL_CATEGORIES } from "../services/dealsFeed.service.js";
 import { DEFAULT_MAX_AGE_HOURS } from "../services/dealsRanking.service.js";
 import { getSuggestions } from "../services/suggestions.service.js";
-
-// Longest search text accepted. Real product searches are a handful of words;
-// anything longer is a paste or an attack, and it would only be fed to
-// regex-building and scraping.
-const MAX_QUERY_LENGTH = 100;
-import { groupListingsByProduct } from "../services/productGrouping.service.js";
+import { groupListings } from "../services/grouping.service.js";
 import {
   getListingPriceHistory,
   recordPriceSnapshot,
@@ -26,7 +21,6 @@ import {
 import {
   attachRecommendation,
   attachRecommendations,
-  attachRecommendationsToGroups,
 } from "../services/recommendation/recommendation.service.js";
 import {
   fetchAndRefreshListings,
@@ -36,7 +30,11 @@ import {
   buildSpaceTolerantPattern,
   fuzzyMatchIds,
 } from "../services/searchMatching.service.js";
-import { mlMatchStrategy } from "../services/similarityModel.service.js";
+
+// Longest search text accepted. Real product searches are a handful of words;
+// anything longer is a paste or an attack, and it would only be fed to
+// regex-building and scraping.
+const MAX_QUERY_LENGTH = 100;
 
 /**
  * The trained classifier is the default matching strategy as of 2026-09-28
@@ -47,7 +45,7 @@ import { mlMatchStrategy } from "../services/similarityModel.service.js";
  * against or rolled back live without a code change.
  */
 function resolveMatchStrategy(req) {
-  return req.query.matching === "rule" ? undefined : mlMatchStrategy;
+  return req.query.matching === "rule" ? "rule" : "ml";
 }
 /**
  * Creates a flat listing array from the recommended grouped offers.
@@ -326,11 +324,9 @@ console.log("[search]", refreshResult);
   const enrichedListings =
     await attachPriceHistory(listings);
 
-  const rankedGroups =
-    groupListingsByProduct(enrichedListings, { matchStrategy: resolveMatchStrategy(req) });
-
+  // Runs in a worker thread when the result set is large (see grouping.service.js).
   const groups =
-    attachRecommendationsToGroups(rankedGroups);
+    await groupListings(enrichedListings, { strategy: resolveMatchStrategy(req) });
 
   const recommendedListings =
     createRecommendedListingArray(
@@ -450,11 +446,8 @@ export async function getListingDetails(req, res) {
   const enrichedMatches =
     await attachPriceHistory(possibleMatches);
 
-  const rankedGroups =
-    groupListingsByProduct(enrichedMatches, { matchStrategy: resolveMatchStrategy(req) });
-
   const recommendedGroups =
-    attachRecommendationsToGroups(rankedGroups);
+    await groupListings(enrichedMatches, { strategy: resolveMatchStrategy(req) });
 
   const selectedGroup =
     recommendedGroups.find((group) =>

@@ -3,6 +3,8 @@ import mongoose from "mongoose";
 
 import Listing from "../models/listing.model.js";
 import { VISIBLE_PLATFORMS_FILTER } from "../config/platforms.js";
+import { eventLoopStats } from "../services/runtimeStats.service.js";
+import { groupingPoolStats } from "../services/grouping.service.js";
 
 const router = express.Router();
 
@@ -57,6 +59,27 @@ async function databaseIsUp() {
  *                   format: date-time
  *                   nullable: true
  *                   description: Most recent time any listing was scraped, or null if unknown.
+ *                 eventLoop:
+ *                   type: object
+ *                   nullable: true
+ *                   description: How late timers ran on the main thread over the last few minutes (p99 and max, in milliseconds). Near 0 is healthy; hundreds or thousands mean something blocked the server.
+ *                   properties:
+ *                     p99Ms:
+ *                       type: number
+ *                     maxMs:
+ *                       type: number
+ *                     windowSeconds:
+ *                       type: integer
+ *                 workers:
+ *                   type: object
+ *                   description: The worker threads that do heavy grouping work off the main thread.
+ *                   properties:
+ *                     running:
+ *                       type: integer
+ *                     queued:
+ *                       type: integer
+ *                     workers:
+ *                       type: integer
  *       503:
  *         description: The process is up but the database is unreachable (status "degraded", db "down").
  */
@@ -82,6 +105,8 @@ router.get("/", async (req, res) => {
     db: dbUp ? "up" : "down",
     uptimeSeconds: Math.round(process.uptime()),
     lastScrapeAt,
+    eventLoop: eventLoopStats(),
+    workers: groupingPoolStats(),
     requestId: req.id,
   });
 });
