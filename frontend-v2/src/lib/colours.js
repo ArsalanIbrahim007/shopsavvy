@@ -1,15 +1,21 @@
-// colours.js — colour variants of one product. Stores often list the same phone or tablet once per colour
-// (Paklap has the iPad Air in Space Grey, Starlight, Purple and Blue, each at PKR 275,000), and the backend
-// groups them as one product because a colour is not a different product. Shown as they arrive, that read as
-// "4 offers from 1 store". This file turns them into what a shopper means:
+// colours.js — the colours a product comes in, and choosing one. Two kinds of evidence reach us:
+//
+//  - a listing that IS one colour: the store lists the iPad Air once per colour and the title says which (Paklap), so
+//    `offer.colour` is set and `offer.imageUrl` shows that colour;
+//  - a listing that OFFERS several colours: the title names none ("Samsung Galaxy A17") but the store's product page lists
+//    them, each with a picture, and the backend reads that into `offer.colourOptions` ([{colour, image}]).
+//
+// The backend groups every colour of a product together, because a colour is not a different product. Shown as they
+// arrive, the colour copies read as "4 offers from 1 store". This file turns them into what a shopper means:
 //
 //  - collapseVariants: one row per store and price, carrying the colours it is sold in;
-//  - coloursOf / offersInColour: the colours to choose from, and what choosing one keeps.
+//  - coloursOf / offersInColour: the colours to choose from (with a picture where we have one), and what choosing one keeps.
 //
-// A store that does not say which colour (most of PriceOye and Mega's titles) keeps its offer while a colour is
-// chosen: the colour is usually picked at checkout there, and hiding the offer would hide real prices. It is marked.
+// A store that says nothing about colour keeps its offer while a colour is chosen: the colour is usually picked at checkout
+// there, and hiding the offer would hide real prices. It is marked "Colour not stated".
 
 import { canonicalPlatform } from "./platforms.js";
+import { safeExternalUrl } from "./safeLink.js";
 
 // Approximate colour for a small swatch next to the colour's name. The name is always shown too, so the swatch
 // only helps; it never carries the meaning alone.
@@ -26,35 +32,62 @@ export function swatchFor(name) {
   return SWATCHES[String(name ?? "").toLowerCase()] ?? null;
 }
 
-/** The colour an offer states, or null. */
+/** The colour an offer's own title states, or null. */
 export const colourOf = (offer) => (offer?.colour ? String(offer.colour) : null);
 
-/**
- * The colours the offers come in: [{colour, count}], most offers first, then by name. Offers that state no colour
- * are not counted.
- */
-export function coloursOf(offers) {
-  const counts = new Map();
-  for (const offer of offers ?? []) {
-    const colour = colourOf(offer);
-    if (colour) counts.set(colour, (counts.get(colour) ?? 0) + 1);
-  }
-  return [...counts.entries()]
-    .map(([colour, count]) => ({ colour, count }))
-    .sort((a, b) => b.count - a.count || a.colour.localeCompare(b.colour));
+/** The colours a store's page says an offer comes in: [{colour, image}]; tolerates older data (plain names) and junk. */
+function optionsOf(offer) {
+  const options = Array.isArray(offer?.colourOptions) ? offer.colourOptions : [];
+  return options
+    .map((option) => (typeof option === "string" ? { colour: option, image: null } : { colour: option?.colour, image: option?.image ?? null }))
+    .filter((option) => typeof option.colour === "string" && option.colour.trim() !== "")
+    .map((option) => ({ colour: option.colour.trim(), image: safeExternalUrl(option.image) || null }));
+}
+
+/** Every colour one offer is sold in: the ones its page lists, plus its own title's. */
+export function coloursOfOffer(offer) {
+  const names = optionsOf(offer).map((option) => option.colour);
+  const own = colourOf(offer);
+  if (own && !names.includes(own)) names.push(own);
+  return names;
 }
 
 /**
- * What choosing `colour` keeps: offers in that colour, and offers that state none. No colour chosen keeps everything.
+ * The colours the offers come in: [{colour, count, image}] where count is the number of offers sold in it and image is
+ * a picture of that colour (from a store's page, else from the listing that is that colour), or null.
+ * Most offers first, then by name. Offers that state no colour are not counted.
+ */
+export function coloursOf(offers) {
+  const found = new Map();
+  const add = (colour, image) => {
+    if (!found.has(colour)) found.set(colour, { colour, count: 0, image: null });
+    if (!found.get(colour).image && image) found.get(colour).image = image;
+  };
+
+  for (const offer of offers ?? []) {
+    for (const option of optionsOf(offer)) add(option.colour, option.image);
+    const own = colourOf(offer);
+    if (own) add(own, safeExternalUrl(offer.imageUrl) || null);
+    for (const name of coloursOfOffer(offer)) found.get(name).count += 1;
+  }
+  return [...found.values()].sort((a, b) => b.count - a.count || a.colour.localeCompare(b.colour));
+}
+
+/**
+ * What choosing `colour` keeps: offers sold in that colour, and offers that say nothing about colour. An offer whose page
+ * lists colours without this one is left out: the store does not sell it. No colour chosen keeps everything.
  */
 export function offersInColour(offers, colour) {
   if (!colour) return offers ?? [];
-  return (offers ?? []).filter((offer) => !colourOf(offer) || colourOf(offer) === colour);
+  return (offers ?? []).filter((offer) => {
+    const sold = coloursOfOffer(offer);
+    return sold.length === 0 || sold.includes(colour);
+  });
 }
 
-/** How many offers state no colour (they stay when a colour is chosen, and the page says so). */
+/** How many offers state no colour at all (they stay when a colour is chosen, and the page says so). */
 export function unstatedColourCount(offers) {
-  return (offers ?? []).filter((offer) => !colourOf(offer)).length;
+  return (offers ?? []).filter((offer) => coloursOfOffer(offer).length === 0).length;
 }
 
 /**
@@ -79,7 +112,7 @@ export function collapseVariants(offers, { colour = null, currentId = null } = {
       variants.find((v) => v._id === currentId) ??
       (colour ? variants.find((v) => colourOf(v) === colour) : null) ??
       variants[0];
-    const colours = [...new Set(variants.map(colourOf).filter(Boolean))];
+    const colours = [...new Set(variants.flatMap(coloursOfOffer))];
     return { offer: representative, variants, colours };
   });
 }

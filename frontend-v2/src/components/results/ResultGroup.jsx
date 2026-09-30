@@ -23,7 +23,10 @@ const isSuspect = (offer) => offer?.priceCheck?.status?.startsWith("suspect");
 export default function ResultGroup({ group, currentId, colour = null, onColour }) {
   const allOffers = group.offers ?? [];
   // A colour that none of the offers has (an old link) is ignored rather than showing an empty page.
-  const chosen = colour && coloursOf(allOffers).some((c) => c.colour === colour) ? colour : null;
+  const choices = coloursOf(allOffers);
+  const chosen = colour && choices.some((c) => c.colour === colour) ? colour : null;
+  // The main picture follows the colour: the picture a store gives for it, else the usual one.
+  const chosenImage = chosen ? choices.find((c) => c.colour === chosen)?.image ?? null : null;
   const offers = offersInColour(allOffers, chosen);
   const unstated = chosen ? unstatedColourCount(offers) : 0;
   const summary = summarizeOffers(offers);
@@ -42,7 +45,7 @@ export default function ResultGroup({ group, currentId, colour = null, onColour 
     <article className="result-group card">
       <div className="result-group__head">
         <div className="result-group__image">
-          <ProductImage src={best.imageUrl} alt={group.productName} height={140} priority />
+          <ProductImage src={chosenImage ?? best.imageUrl} alt={chosen ? `${group.productName}, ${chosen}` : group.productName} height={140} priority />
         </div>
 
         <div className="result-group__info">

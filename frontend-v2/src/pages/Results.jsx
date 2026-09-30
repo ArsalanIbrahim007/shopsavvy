@@ -17,10 +17,12 @@ import {
   groupKey, isFiltered, parseFilters, platformOptions, priceBounds, sortGroups,
 } from "../lib/filters.js";
 import { formatNumber, timeAgo } from "../lib/format.js";
+import { linkStoreName } from "../lib/productLink.js";
 import { newestScrape, summarizeOffers } from "../lib/summary.js";
 import ErrorState from "../components/ErrorState.jsx";
 import FilterPanel from "../components/results/FilterPanel.jsx";
 import IntegrityStrip from "../components/results/IntegrityStrip.jsx";
+import LinkNotice from "../components/results/LinkNotice.jsx";
 import ProductCard from "../components/ProductCard.jsx";
 import SummaryCards from "../components/results/SummaryCards.jsx";
 import { CardSkeleton } from "../components/Skeleton.jsx";
@@ -102,11 +104,21 @@ function ResultsView({ groups, total, query, browseCategory, filters, searchPara
     if (patch.category !== undefined && patch.category !== filters.category) {
       for (const key of FACET_KEYS_FOR_RESET) next[key] = [];
     }
-    setSearchParams(filtersToParams(next, query));
+    setSearchParams(withLinkOrigin(filtersToParams(next, query)));
   }
 
   function reset() {
-    setSearchParams(filtersToParams({ ...emptyFilters(), category: browseCategory || "all" }, query));
+    setSearchParams(withLinkOrigin(filtersToParams({ ...emptyFilters(), category: browseCategory || "all" }, query)));
+  }
+
+  // The search came from a pasted link (?from=amazon.com): keep saying so while the shopper filters.
+  const linkHost = searchParams.get("from");
+  const linkStore = linkStoreName(linkHost);
+  const linkCapacity = searchParams.get("cap");
+  function withLinkOrigin(params) {
+    if (linkHost) params.set("from", linkHost);
+    if (linkHost && linkCapacity) params.set("cap", linkCapacity);
+    return params;
   }
 
   const platformCount = new Set(allOffers.map((offer) => offer.platform)).size;
@@ -126,6 +138,8 @@ function ResultsView({ groups, total, query, browseCategory, filters, searchPara
         </div>
         {updated && <p className="small muted">Last updated {timeAgo(updated)}</p>}
       </header>
+
+      {linkHost && query && <LinkNotice store={linkStore} query={query} capacity={linkCapacity} />}
 
       {allOffers.length > 0 && <SummaryCards summary={summary} />}
       <IntegrityStrip offers={keptOffers} />

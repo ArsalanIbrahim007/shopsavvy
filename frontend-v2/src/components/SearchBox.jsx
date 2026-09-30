@@ -4,6 +4,10 @@
 // searches (the highlighted suggestion, or what was typed), Escape closes the list, a
 // click outside closes it. It follows the combobox pattern so screen readers announce the
 // list. Searching goes to /results?q=..., so the URL is the source of truth.
+//
+// A product link pasted from another site (Amazon, AliExpress, Temu...) is read for the product's name and searched:
+// "is this cheaper in Pakistan?" (see lib/productLink.js). Nothing is fetched from the link. One with no name in it
+// says so and keeps what was pasted, so nothing is lost.
 
 import { useEffect, useId, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -12,11 +16,14 @@ import { getSuggestions } from "../api/endpoints.js";
 import { useAsync } from "../hooks/useAsync.js";
 import { useDebouncedValue } from "../hooks/useDebouncedValue.js";
 import { categoryName } from "../lib/categories.js";
+import { looksLikeLink, parseProductLink, unreadableMessage } from "../lib/productLink.js";
 import { addRecentSearch } from "../lib/recentSearches.js";
 import "./SearchBox.css";
 
-// The server refuses longer text anyway (400); stopping it here saves a round trip.
+// The server refuses longer search text (400), so a search is cut to this. The box itself takes more, because a pasted
+// link is much longer than anything typed.
 const MAX_QUERY_LENGTH = 100;
+const MAX_INPUT_LENGTH = 2000;
 
 export default function SearchBox({ initialQuery = "", autoFocus = false, size = "normal" }) {
   const navigate = useNavigate();
@@ -26,6 +33,7 @@ export default function SearchBox({ initialQuery = "", autoFocus = false, size =
   const [text, setText] = useState(initialQuery);
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
+  const [notice, setNotice] = useState("");
 
   const typed = text.trim();
   const debounced = useDebouncedValue(typed, 200);
@@ -45,12 +53,26 @@ export default function SearchBox({ initialQuery = "", autoFocus = false, size =
   }, []);
 
   function search(term) {
-    const query = term.trim();
+    let query = term.trim();
     if (!query) return;
     setOpen(false);
     setActive(-1);
+    setNotice("");
+
+    const params = {};
+    const link = parseProductLink(query);
+    if (link.kind === "unreadable") {
+      setNotice(unreadableMessage(link));
+      return;
+    }
+    if (link.kind === "link") {
+      query = link.query;
+      params.from = link.host; // the results page says where the name came from
+      if (link.capacities.length > 0) params.cap = link.capacities.join(",");
+    }
+    query = query.slice(0, MAX_QUERY_LENGTH);
     addRecentSearch(query);
-    navigate(`/results?${new URLSearchParams({ q: query }).toString()}`);
+    navigate(`/results?${new URLSearchParams({ q: query, ...params }).toString()}`);
   }
 
   function onKeyDown(event) {
@@ -88,13 +110,14 @@ export default function SearchBox({ initialQuery = "", autoFocus = false, size =
           aria-activedescendant={showList && active >= 0 ? `${listId}-${active}` : undefined}
           autoComplete="off"
           autoFocus={autoFocus}
-          maxLength={MAX_QUERY_LENGTH}
-          placeholder="Search a phone, laptop, TV…"
+          maxLength={MAX_INPUT_LENGTH}
+          placeholder="Search a phone, laptop, TV… or paste a product link"
           value={text}
           onChange={(event) => {
             setText(event.target.value);
-            setOpen(true);
+            setOpen(!looksLikeLink(event.target.value));
             setActive(-1);
+            setNotice("");
           }}
           onFocus={() => setOpen(true)}
           onKeyDown={onKeyDown}
@@ -105,6 +128,8 @@ export default function SearchBox({ initialQuery = "", autoFocus = false, size =
           </svg>
         </button>
       </form>
+
+      {notice && <p className="searchbox__notice small" role="alert">{notice}</p>}
 
       {showList && (
         <ul className="searchbox__list card" id={listId} role="listbox" aria-label="Suggestions">

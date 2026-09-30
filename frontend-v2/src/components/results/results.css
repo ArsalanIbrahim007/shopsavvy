@@ -109,3 +109,6 @@
 .sparkline circle { fill: var(--ink-faint); }
 .sparkline--down polyline { stroke: var(--good); } .sparkline--down circle { fill: var(--good); }
 .sparkline--up polyline { stroke: var(--bad); } .sparkline--up circle { fill: var(--bad); }
+
+/* a search that began with a pasted link */
+.link-notice { padding: var(--space-4); display: grid; gap: var(--space-2); border-color: var(--brand); background: var(--brand-soft); }

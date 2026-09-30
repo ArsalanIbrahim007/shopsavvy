@@ -37,3 +37,5 @@
 }
 .searchbox__option.is-active { background: var(--brand-soft); }
 .searchbox__meta { color: var(--ink-soft); font-size: 0.8125rem; white-space: nowrap; }
+
+.searchbox__notice { margin-top: var(--space-2); padding: var(--space-2) var(--space-3); border-radius: var(--radius-control); background: var(--caution-soft); border: 1px solid var(--caution-line); color: var(--ink); text-align: left; }

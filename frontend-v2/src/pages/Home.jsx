@@ -46,6 +46,9 @@ function Hero() {
         <div className="hero__search">
           <SearchBox size="large" />
         </div>
+        <p className="hero__lead small">
+          Seen it on Amazon, AliExpress or Temu? Paste the link above to see what it costs in Pakistan.
+        </p>
         <p className="hero__popular small">
           <span>Popular:</span>
           {POPULAR_SEARCHES.map((term) => (

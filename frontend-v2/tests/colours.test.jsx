@@ -28,7 +28,7 @@ describe("colours library", () => {
   it("lists the colours with how many offers have each, most first, leaving out offers that state none", () => {
     const offers = [...ipad(), offer("x", "mega", 280000, "Blue"), offer("y", "priceoye", 281000, null), offer("z", "shophive", 282000, undefined)];
     expect(coloursOf(offers)).toEqual([
-      { colour: "Blue", count: 2 }, { colour: "Purple", count: 1 }, { colour: "Space grey", count: 1 }, { colour: "Starlight", count: 1 },
+      { colour: "Blue", count: 2, image: null }, { colour: "Purple", count: 1, image: null }, { colour: "Space grey", count: 1, image: null }, { colour: "Starlight", count: 1, image: null },
     ]);
     expect(coloursOf([])).toEqual([]);
     expect(coloursOf(undefined)).toEqual([]);
@@ -89,22 +89,42 @@ describe("colours library", () => {
 });
 
 describe("ColourPicker", () => {
-  it("offers 'All colours' and each colour with its count, and reports the choice", () => {
+  it("shows a tile for each colour with its offer count, says 'All colours' until one is chosen, and reports the choice", () => {
     const seen = [];
-    inRouter(<ColourPicker offers={[...ipad(), offer("x", "mega", 280000, "Blue")]} value={null} onChange={(c) => seen.push(c)} />);
-    expect(screen.getByRole("button", { name: "All colours" })).toHaveAttribute("aria-pressed", "true");
+    const offers = [...ipad(), offer("x", "mega", 280000, "Blue")];
+    const { rerender } = inRouter(<ColourPicker offers={offers} value={null} onChange={(c) => seen.push(c)} />);
+    expect(screen.getByRole("group", { name: "Colour" })).toHaveTextContent("All colours");
+    expect(screen.queryByRole("button", { name: /show all colours/i })).toBeNull();
     const blue = screen.getByRole("button", { name: /^Blue/ });
-    expect(blue).toHaveTextContent("2");
+    expect(blue).toHaveTextContent("2 offers");
     expect(blue).toHaveAttribute("aria-pressed", "false");
     fireEvent.click(blue);
-    fireEvent.click(screen.getByRole("button", { name: "All colours" }));
-    expect(seen).toEqual(["Blue", null]);
+    expect(seen).toEqual(["Blue"]);
+
+    rerender(<MemoryRouter><ColourPicker offers={offers} value="Blue" onChange={(c) => seen.push(c)} /></MemoryRouter>);
+    expect(screen.getByRole("group", { name: "Colour" })).toHaveTextContent("Blue");
+    fireEvent.click(screen.getByRole("button", { name: /^Blue/ })); // choosing the chosen colour again goes back to all
+    fireEvent.click(screen.getByRole("button", { name: /show all colours/i }));
+    expect(seen).toEqual(["Blue", null, null]);
   });
 
-  it("marks the chosen colour", () => {
+  it("marks the chosen colour and says which it is", () => {
     inRouter(<ColourPicker offers={ipad()} value="Purple" onChange={() => {}} />);
     expect(screen.getByRole("button", { name: /^Purple/ })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("button", { name: "All colours" })).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByRole("button", { name: /^Blue/ })).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByRole("group", { name: "Colour" }).querySelector("strong")).toHaveTextContent("Purple");
+  });
+
+  it("shows the store's picture of each colour, and a swatch for one without a picture or whose picture will not load", () => {
+    const offers = [offer("a", "telemart", 70000, null, { colourOptions: [
+      { colour: "Black", image: "https://cdn.example/black.jpg" }, { colour: "Blue", image: null }, { colour: "Grey", image: "https://cdn.example/grey.jpg" },
+    ] })];
+    const { container } = inRouter(<ColourPicker offers={offers} value={null} onChange={() => {}} />);
+    const images = [...container.querySelectorAll("img.colour-tile__image")].map((img) => img.getAttribute("src"));
+    expect(images.sort()).toEqual(["https://cdn.example/black.jpg", "https://cdn.example/grey.jpg"]);
+    expect(container.querySelectorAll(".colour-tile__fill")).toHaveLength(1); // Blue has none
+    fireEvent.error(container.querySelector("img.colour-tile__image"));
+    expect(container.querySelectorAll(".colour-tile__fill")).toHaveLength(2); // a picture that fails becomes a swatch
   });
 
   it("is not shown when there is nothing to choose between", () => {
@@ -173,7 +193,7 @@ describe("ResultGroup colour choice", () => {
     const purple = screen.getAllByRole("row").slice(1);
     expect(purple).toHaveLength(2); // paklap and mega; shophive has no Purple
     expect(purple.map((r) => r.textContent).join(" ")).not.toContain("Shophive");
-    fireEvent.click(screen.getByRole("button", { name: "All colours" }));
+    fireEvent.click(screen.getByRole("button", { name: /show all colours/i }));
     expect(screen.getAllByRole("row").slice(1)).toHaveLength(3);
     expect(screen.queryByText(/not say which colour/)).toBeNull();
   });
@@ -185,7 +205,8 @@ describe("ResultGroup colour choice", () => {
 
   it("an old link with a colour nobody sells shows everything", () => {
     mount([...ipad(), offer("m", "mega", 290000, null)], "/?colour=Chartreuse");
-    expect(screen.getByRole("button", { name: "All colours" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("group", { name: "Colour" })).toHaveTextContent("All colours");
+    expect(screen.queryByRole("button", { name: /show all colours/i })).toBeNull();
     expect(screen.getAllByRole("row").slice(1)).toHaveLength(2);
   });
 
@@ -206,5 +227,65 @@ describe("ProductCard colours", () => {
   it("shows no colour line for a single colour or none", () => {
     const { container } = inRouter(<ColourStrip offers={[offer("a", "paklap", 1, "Blue"), offer("b", "mega", 1, null)]} />);
     expect(container).toBeEmptyDOMElement();
+  });
+});
+
+describe("colours a store's page lists (colourOptions)", () => {
+  const phone = (id, platform, price, options, over = {}) => offer(id, platform, price, null, { productCategory: "smartphone", colourOptions: options, imageUrl: "https://img.example/" + id + ".jpg", ...over });
+  const telemart = () => phone("t", "telemart", 67999, [{ colour: "Black", image: "https://cdn.example/t-black.jpg" }, { colour: "Blue", image: "https://cdn.example/t-blue.jpg" }, { colour: "Grey", image: null }]);
+  const priceoye = () => phone("p", "priceoye", 65699, [{ colour: "Black", image: "https://img.example/p-black.webp" }, { colour: "Grey", image: "https://img.example/p-grey.webp" }]);
+  const shophive = () => phone("s", "shophive", 67500, []); // says nothing
+
+  it("counts an offer in every colour its page lists, with the first picture found for each", () => {
+    expect(coloursOf([telemart(), priceoye(), shophive()])).toEqual([
+      { colour: "Black", count: 2, image: "https://cdn.example/t-black.jpg" },
+      { colour: "Grey", count: 2, image: "https://img.example/p-grey.webp" }, // Telemart has none for Grey: PriceOye's is used
+      { colour: "Blue", count: 1, image: "https://cdn.example/t-blue.jpg" },
+    ]);
+  });
+
+  it("uses the listing's own picture for a colour named in its title", () => {
+    const paklap = offer("pk", "paklap", 275000, "Blue", { imageUrl: "https://paklap.example/blue.jpg" });
+    expect(coloursOf([paklap, offer("pk2", "paklap", 275000, "Purple", { imageUrl: "https://paklap.example/purple.jpg" })])).toEqual([
+      { colour: "Blue", count: 1, image: "https://paklap.example/blue.jpg" }, { colour: "Purple", count: 1, image: "https://paklap.example/purple.jpg" },
+    ]);
+  });
+
+  it("keeps the offers that sell the chosen colour and those that say nothing, and drops those whose page lists other colours", () => {
+    const offers = [telemart(), priceoye(), shophive()];
+    expect(offersInColour(offers, "Blue").map((o) => o._id)).toEqual(["t", "s"]); // PriceOye sells Black and Grey only
+    expect(offersInColour(offers, "Black").map((o) => o._id)).toEqual(["t", "p", "s"]);
+    expect(unstatedColourCount(offers)).toBe(1);
+  });
+
+  it("tolerates older data (plain colour names) and junk, and never a picture that is not a web address", () => {
+    const old = phone("o", "mega", 1, ["Black", "Blue"]);
+    expect(coloursOf([old])).toEqual([{ colour: "Black", count: 1, image: null }, { colour: "Blue", count: 1, image: null }]);
+    const junk = phone("j", "mega", 2, [null, 5, { colour: "" }, { colour: "Red", image: "javascript:alert(1)" }, { image: "https://x.example/a.jpg" }]);
+    expect(coloursOf([junk])).toEqual([{ colour: "Red", count: 1, image: null }]);
+  });
+
+  it("one row lists every colour a store's page offers", () => {
+    const entries = collapseVariants([telemart()]);
+    expect(entries).toHaveLength(1);
+    expect(entries[0].colours).toEqual(["Black", "Blue", "Grey"]);
+  });
+
+  it("ResultGroup: choosing a colour switches the main picture to that colour and keeps only the stores that sell it", () => {
+    const offers = [telemart(), priceoye()];
+    const { container } = render(
+      <MemoryRouter><ResultGroup group={{ productName: "Samsung Galaxy A17", offers }} colour="Blue" onColour={() => {}} /></MemoryRouter>
+    );
+    const main = container.querySelector(".result-group__image img");
+    expect(main.getAttribute("src")).toBe("https://cdn.example/t-blue.jpg");
+    expect(main.getAttribute("alt")).toBe("Samsung Galaxy A17, Blue");
+    expect(screen.getAllByRole("row").slice(1)).toHaveLength(1); // PriceOye does not sell Blue
+  });
+
+  it("ResultGroup: without a colour chosen the usual picture is shown", () => {
+    const { container } = render(
+      <MemoryRouter><ResultGroup group={{ productName: "Samsung Galaxy A17", offers: [telemart(), priceoye()] }} onColour={() => {}} /></MemoryRouter>
+    );
+    expect(container.querySelector(".result-group__image img").getAttribute("src")).toBe("https://img.example/p.jpg"); // the lowest offer's picture
   });
 });

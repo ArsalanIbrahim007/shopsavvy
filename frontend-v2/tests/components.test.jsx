@@ -159,9 +159,10 @@ describe("SearchBox", () => {
     expect(screen.getByTestId("where")).toHaveTextContent("/results?q=Samsung+Galaxy+A17");
   });
 
-  it("stops the shopper typing more than the server accepts", () => {
+  it("takes a long pasted link, but never searches for more than the server accepts", () => {
     renderAt("/", <SearchBox />);
-    expect(screen.getByRole("combobox")).toHaveAttribute("maxlength", "100");
+    // the box takes a pasted link (much longer than a search); the search itself is cut to what the server accepts
+    expect(screen.getByRole("combobox")).toHaveAttribute("maxlength", "2000");
   });
 
   it("starts with the current search filled in", () => {
