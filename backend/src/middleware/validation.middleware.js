@@ -1,5 +1,7 @@
 import { body, validationResult } from "express-validator";
 
+import { AppError } from "../errors/AppError.js";
+
 export const validateCreateListing = [
   body("platform")
     .trim()
@@ -68,11 +70,7 @@ body("imageUrl")
       return next();
     }
 
-    return res.status(400).json({
-      success: false,
-      message: "Validation failed",
-      errors: errors.array(),
-    });
+    return next(AppError.validation(errors.array()));
   },
 ];
 
@@ -103,10 +101,6 @@ export const validateCreateAlert = [
       return next();
     }
 
-    return res.status(400).json({
-      success: false,
-      message: "Validation failed",
-      errors: errors.array(),
-    });
+    return next(AppError.validation(errors.array()));
   },
 ];

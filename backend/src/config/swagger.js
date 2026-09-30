@@ -54,14 +54,29 @@ const swaggerOptions = {
       schemas: {
         ErrorResponse: {
           type: "object",
+          description: "The shape of every error. Branch on `code`, not on the message text. For unexpected server errors the message is deliberately generic; the detail is in the server log under the same requestId.",
           properties: {
             success: {
               type: "boolean",
               example: false,
             },
+            code: {
+              type: "string",
+              enum: [
+                "BAD_REQUEST", "INVALID_ID", "INVALID_JSON", "VALIDATION_ERROR", "UNAUTHORIZED", "FORBIDDEN",
+                "NOT_FOUND", "CONFLICT", "PAYLOAD_TOO_LARGE", "RATE_LIMITED", "DATABASE_UNAVAILABLE",
+                "SERVICE_DISABLED", "INTERNAL_ERROR",
+              ],
+              example: "NOT_FOUND",
+            },
             message: {
               type: "string",
-              example: "An error occurred",
+              example: "Listing not found",
+            },
+            requestId: {
+              type: "string",
+              description: "Also returned in the x-request-id header; quote it when reporting a problem.",
+              example: "3f2a9c1e-7b1d-4c55-9a52-2f0d5e6b8a10",
             },
           },
         },
@@ -72,6 +87,13 @@ const swaggerOptions = {
             success: {
               type: "boolean",
               example: false,
+            },
+            code: {
+              type: "string",
+              example: "VALIDATION_ERROR",
+            },
+            requestId: {
+              type: "string",
             },
             message: {
               type: "string",

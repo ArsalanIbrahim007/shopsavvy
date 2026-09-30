@@ -1,5 +1,6 @@
 import PriceHistory, { shouldAppendEntry } from "../models/priceHistory.model.js";
 import Listing from "../models/listing.model.js";
+import { AppError } from "../errors/AppError.js";
 
 function parsePositiveNumber(value) {
   const parsedValue = Number(value);
@@ -47,7 +48,7 @@ export async function recordPriceSnapshot(
   const validPrice = parsePositiveNumber(price);
 
   if (validPrice === null) {
-    throw new Error("A valid non-negative price is required");
+    throw AppError.badRequest("A valid non-negative price is required");
   }
 
   const hasOriginalPrice =
@@ -60,7 +61,7 @@ export async function recordPriceSnapshot(
     : null;
 
   if (hasOriginalPrice && validOriginalPrice === null) {
-    throw new Error("Original price must be a valid non-negative number");
+    throw AppError.badRequest("Original price must be a valid non-negative number");
   }
 
   const sourceUrl = resolveSourceUrl(listing);

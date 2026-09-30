@@ -13,6 +13,9 @@
 
 import { createHash, timingSafeEqual } from "crypto";
 
+import { sendError } from "./error.middleware.js";
+import { ERROR_CODES } from "../errors/AppError.js";
+
 // Hashing first gives both sides the same length, which timingSafeEqual
 // requires, and avoids leaking the key's length through timing.
 const digest = (value) => createHash("sha256").update(String(value)).digest();
@@ -31,17 +34,11 @@ export function hasAdminKey(req) {
 /** Express middleware: 503 if no key is configured, 401 if the key is wrong. */
 export function requireAdminKey(req, res, next) {
   if (!process.env.ADMIN_API_KEY) {
-    return res.status(503).json({
-      success: false,
-      message: "This endpoint is disabled on this server.",
-    });
+    return sendError(res, 503, ERROR_CODES.SERVICE_DISABLED, "This endpoint is disabled on this server.");
   }
 
   if (!hasAdminKey(req)) {
-    return res.status(401).json({
-      success: false,
-      message: "A valid x-admin-key header is required.",
-    });
+    return sendError(res, 401, ERROR_CODES.UNAUTHORIZED, "A valid x-admin-key header is required.");
   }
 
   return next();

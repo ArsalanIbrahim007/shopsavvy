@@ -1,3 +1,5 @@
+import { maskEmail } from "./maskEmail.js";
+
 // notification.service.js — delivery for triggered price alerts.
 //
 // There is no email-sending infrastructure in this project (no SMTP/
@@ -20,8 +22,9 @@
  * @param {{price: number, productUrl?: string, platform?: string}} listing
  */
 export async function notifyAlert(alert, listing) {
+  // The address is masked: personal data does not belong in a log file.
   console.log(
-    `[notification] Price alert triggered for ${alert.email}: "${alert.title}" ` +
+    `[notification] Price alert triggered for ${maskEmail(alert.email)}: "${alert.title}" ` +
     `dropped to PKR ${listing.price} (target was PKR ${alert.targetPrice}).` +
     (listing.productUrl ? ` ${listing.productUrl}` : "")
   );

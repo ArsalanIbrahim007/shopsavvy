@@ -4,13 +4,16 @@
 import PriceAlert from "../models/priceAlert.model.js";
 import Listing from "../models/listing.model.js";
 import { notifyAlert } from "./notification.service.js";
+import { AppError } from "../errors/AppError.js";
 
 const MAX_ACTIVE_ALERTS_PER_EMAIL = 20;
 
-export class AlertServiceError extends Error {
+// An AppError, so the global handler gives it a stable code (NOT_FOUND,
+// FORBIDDEN, RATE_LIMITED, ...) from its status. Kept under its old name.
+export class AlertServiceError extends AppError {
   constructor(message, statusCode = 400) {
-    super(message);
-    this.statusCode = statusCode;
+    super(statusCode, message);
+    this.name = "AlertServiceError";
   }
 }
 

@@ -13,7 +13,8 @@ const CHECK_INTERVAL_CRON = "*/15 * * * *"; // every 15 minutes
 export function startAlertCheckJob() {
   console.log("[alertCheckJob] Checking active price alerts every 15 minutes");
 
-  cron.schedule(CHECK_INTERVAL_CRON, async () => {
+  // Returned so a shutdown can stop it.
+  return cron.schedule(CHECK_INTERVAL_CRON, async () => {
     try {
       const { checked, triggered } = await checkAlerts();
       if (triggered > 0) {

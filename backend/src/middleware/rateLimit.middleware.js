@@ -7,15 +7,19 @@
 
 import rateLimit from "express-rate-limit";
 
+import { sendError } from "./error.middleware.js";
+import { ERROR_CODES } from "../errors/AppError.js";
+
+// express-rate-limit calls this when a caller is over the limit. Answering
+// through sendError keeps the body identical to every other API error.
+const tooMany = (message) => (req, res) => sendError(res, 429, ERROR_CODES.RATE_LIMITED, message);
+
 export const createAlertLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  message: {
-    success: false,
-    message: "Too many alert requests from this address. Please try again in a few minutes.",
-  },
+  handler: tooMany("Too many alert requests from this address. Please try again in a few minutes."),
 });
 
 // Looser than the write limiter -- listing/cancelling isn't free either
@@ -26,10 +30,7 @@ export const alertReadLimiter = rateLimit({
   limit: 60,
   standardHeaders: true,
   legacyHeaders: false,
-  message: {
-    success: false,
-    message: "Too many requests. Please try again in a few minutes.",
-  },
+  handler: tooMany("Too many requests. Please try again in a few minutes."),
 });
 
 
@@ -50,10 +51,7 @@ export function createSearchLimiter({ windowMs = 15 * 60 * 1000, limit = 120 } =
     limit,
     standardHeaders: true,
     legacyHeaders: false,
-    message: {
-      success: false,
-      message: "Too many searches from this address. Please wait a few minutes and try again.",
-    },
+    handler: tooMany("Too many searches from this address. Please wait a few minutes and try again."),
   });
 }
 
