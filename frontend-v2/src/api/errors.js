@@ -64,6 +64,13 @@ export function describeError(error) {
         reference,
         canRetry: false,
       };
+    case "SERVICE_BUSY":
+      return {
+        title: "ShopSavvy is busy",
+        message: "Lots of people are searching right now. Please try again in a few seconds.",
+        reference,
+        canRetry: true,
+      };
     case "DATABASE_UNAVAILABLE":
     case "SERVICE_DISABLED":
       return {

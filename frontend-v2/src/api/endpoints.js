@@ -39,6 +39,34 @@ export async function getListing(id, { signal } = {}) {
   };
 }
 
+/**
+ * Top deals from stored data (no scraping, cached by the server for ten minutes). The list is
+ * short by design: the server only reports a saving it can stand behind, so the UI must look
+ * right with a handful of cards and hide the section when it is empty.
+ * @param {object} [options]
+ * @param {string} [options.category]  smartphone, laptop, tv, tablet, smartwatch or headphones; omitted means all
+ * @param {number} [options.limit]     1-50, default 12
+ * @returns {Promise<{deals: object[], generatedAt: string|null, maxAgeHours: number|null}>}
+ */
+export async function getDeals({ category, limit, signal } = {}) {
+  const body = await request("/listings/deals", { params: { category, limit }, signal });
+  return { deals: body.data ?? [], generatedAt: body.generatedAt ?? null, maxAgeHours: body.maxAgeHours ?? null };
+}
+
+// The server answers an empty list below this length; not asking saves a request per keystroke.
+export const MIN_SUGGEST_LENGTH = 2;
+
+/**
+ * Search-box suggestions: clean product names from the listings we hold, best first.
+ * @returns {Promise<{text: string, category: string, count: number}[]>}
+ */
+export async function getSuggestions(q, { limit, signal } = {}) {
+  const text = (q ?? "").trim();
+  if (text.length < MIN_SUGGEST_LENGTH) return [];
+  const body = await request("/listings/suggest", { params: { q: text, limit }, signal });
+  return body.data ?? [];
+}
+
 /** Homepage headline numbers, without downloading every listing. */
 export async function getStats({ signal } = {}) {
   const body = await request("/listings/stats", { signal });

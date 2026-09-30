@@ -56,3 +56,19 @@ export function createSearchLimiter({ windowMs = 15 * 60 * 1000, limit = 120 } =
 }
 
 export const searchLimiter = createSearchLimiter();
+
+// Read endpoints that only ever read stored data or a cache: no scraping, no heavy
+// work per request. Suggestions fire as the user types (the frontend debounces, but
+// a busy typist still makes several requests a second), so that limit is high.
+export function createReadLimiter({ windowMs = 15 * 60 * 1000, limit = 240 } = {}) {
+  return rateLimit({
+    windowMs,
+    limit,
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: tooMany("Too many requests. Please wait a few minutes and try again."),
+  });
+}
+
+export const dealsLimiter = createReadLimiter({ limit: 240 });
+export const suggestLimiter = createReadLimiter({ limit: 900 });

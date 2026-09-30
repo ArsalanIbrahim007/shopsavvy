@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { request } from "../src/api/client.js";
 import { ApiError, describeError, CLIENT_CODES } from "../src/api/errors.js";
-import { searchListings, createAlert, getStats } from "../src/api/endpoints.js";
+import { searchListings, createAlert, getStats, getDeals, getSuggestions } from "../src/api/endpoints.js";
 
 // A minimal Response stand-in: enough of the fetch API for the client.
 const respond = (status, body, headers = {}) => ({
@@ -139,6 +139,7 @@ describe("describeError", () => {
       DATABASE_UNAVAILABLE: /temporarily unavailable/i,
       NOT_FOUND: /couldn't find/i,
       INVALID_ID: /doesn't look right/i,
+      SERVICE_BUSY: /busy/i,
     };
     for (const [code, pattern] of Object.entries(cases)) {
       const info = describeError(new ApiError({ code, status: 500 }));
@@ -165,5 +166,48 @@ describe("describeError", () => {
 
   it("does not offer a retry when rate limited", () => {
     expect(describeError(new ApiError({ status: 429, code: "RATE_LIMITED" })).canRetry).toBe(false);
+  });
+});
+
+describe("getDeals", () => {
+  it("passes category and limit as query parameters and unwraps the response", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(respond(200, { success: true, count: 1, generatedAt: "2026-09-30T10:00:00Z", maxAgeHours: 72, data: [{ productName: "Galaxy A17" }] }));
+    vi.stubGlobal("fetch", fetchMock);
+    const result = await getDeals({ category: "smartphone", limit: 6 });
+    const url = new URL(fetchMock.mock.calls[0][0]);
+    expect(url.pathname).toBe("/api/listings/deals");
+    expect(url.searchParams.get("category")).toBe("smartphone");
+    expect(url.searchParams.get("limit")).toBe("6");
+    expect(result).toEqual({ deals: [{ productName: "Galaxy A17" }], generatedAt: "2026-09-30T10:00:00Z", maxAgeHours: 72 });
+  });
+
+  it("returns an empty list, not an error, when there are no deals", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(respond(200, { success: true, count: 0, data: [] })));
+    await expect(getDeals()).resolves.toEqual({ deals: [], generatedAt: null, maxAgeHours: null });
+  });
+
+  it("surfaces an unknown category as an ApiError", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(respond(400, { success: false, code: "BAD_REQUEST", message: "category must be one of: smartphone" })));
+    await expect(getDeals({ category: "toaster" })).rejects.toMatchObject({ code: "BAD_REQUEST", status: 400 });
+  });
+});
+
+describe("getSuggestions", () => {
+  it("asks the server with the trimmed text and returns the suggestions", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(respond(200, { success: true, count: 1, data: [{ text: "Samsung Galaxy A17", category: "smartphone", count: 9 }] }));
+    vi.stubGlobal("fetch", fetchMock);
+    const result = await getSuggestions("  galaxy a  ", { limit: 5 });
+    const url = new URL(fetchMock.mock.calls[0][0]);
+    expect(url.pathname).toBe("/api/listings/suggest");
+    expect(url.searchParams.get("q")).toBe("galaxy a");
+    expect(url.searchParams.get("limit")).toBe("5");
+    expect(result).toEqual([{ text: "Samsung Galaxy A17", category: "smartphone", count: 9 }]);
+  });
+
+  it("does not call the server for text shorter than two characters", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    for (const q of ["", " ", "a", " a ", undefined, null]) await expect(getSuggestions(q)).resolves.toEqual([]);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
