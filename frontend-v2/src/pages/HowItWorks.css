@@ -1,0 +1,12 @@
+.prose { max-width: 760px; padding-block: var(--space-7); display: grid; gap: var(--space-6); }
+.prose section { display: grid; gap: var(--space-3); }
+.prose h1 { font-size: clamp(1.75rem, 5vw, 2.5rem); }
+.prose .lead { font-size: 1.0625rem; margin-top: var(--space-3); }
+.prose ul { margin: 0; padding-left: var(--space-5); display: grid; gap: var(--space-2); }
+.prose .btn { justify-self: start; }
+
+.technical { border: 1px solid var(--line); border-radius: var(--radius-card); background: var(--paper); padding: var(--space-4) var(--space-5); }
+.technical summary { cursor: pointer; font-weight: 600; }
+.technical[open] summary { margin-bottom: var(--space-3); }
+.technical h3 { margin-top: var(--space-4); margin-bottom: var(--space-2); }
+.technical p + p { margin-top: var(--space-3); }

@@ -1,0 +1,117 @@
+/* base.css — reset, typography and the few shared building blocks (button, chip, card, badge, skeleton).
+   Components add their own small stylesheet; anything used by two or more lives here. */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { font-weight: 600; line-height: 1.2; letter-spacing: -0.01em; }
+h2 { font-size: 1.375rem; }
+h3 { font-size: 1.0625rem; }
+
+a { color: var(--brand); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+img { max-width: 100%; display: block; }
+
+/* Keyboard focus is always visible; mouse clicks do not draw it. */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0; border: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute; left: var(--space-3); top: -60px; z-index: 100;
+  background: var(--ink); color: var(--paper);
+  padding: var(--space-2) var(--space-4); border-radius: var(--radius-control);
+}
+.skip-link:focus { top: var(--space-3); text-decoration: none; }
+
+.container {
+  width: 100%;
+  max-width: calc(var(--page-width) + 2 * var(--gutter));
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+@media (min-width: 720px) { :root { --gutter: 24px; } }
+
+/* numbers line up in columns */
+.price, .num { font-variant-numeric: tabular-nums; }
+
+.muted { color: var(--ink-soft); }
+.small { font-size: 0.8125rem; }
+
+/* buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  min-height: 44px; padding: 0 var(--space-5);
+  border: 1px solid transparent; border-radius: var(--radius-control);
+  font: inherit; font-weight: 600; cursor: pointer; text-decoration: none;
+}
+.btn:hover { text-decoration: none; }
+.btn-primary { background: var(--brand); color: var(--on-brand); }
+.btn-primary:hover { background: var(--brand-hover); }
+.btn-ghost { background: var(--paper); color: var(--ink); border-color: var(--line); }
+.btn-ghost:hover { border-color: var(--ink-mute); }
+.btn[aria-disabled="true"], .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* chips: small pill labels and links */
+.chip {
+  display: inline-flex; align-items: center;
+  min-height: 32px; padding: 0 var(--space-3);
+  border: 1px solid var(--line); border-radius: var(--radius-pill);
+  background: var(--paper); color: var(--ink-soft); font-size: 0.875rem;
+  text-decoration: none; cursor: pointer;
+}
+a.chip:hover, button.chip:hover { border-color: var(--brand); color: var(--brand); text-decoration: none; }
+
+.card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+}
+
+/* verdict badges: colour AND an icon character AND a word, so meaning never depends on colour alone */
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 2px 10px; border-radius: var(--radius-pill);
+  font-size: 0.8125rem; font-weight: 600; line-height: 1.5;
+}
+.badge-good { background: var(--good-soft); color: var(--good); }
+.badge-caution { background: var(--caution-soft); color: var(--caution); }
+.badge-bad { background: var(--bad-soft); color: var(--bad); }
+.badge-neutral { background: var(--line-soft); color: var(--ink-soft); }
+
+/* loading placeholders */
+.skeleton {
+  display: block;
+  background: linear-gradient(90deg, var(--line-soft) 25%, var(--canvas) 50%, var(--line-soft) 75%);
+  background-size: 200% 100%;
+  border-radius: var(--radius-control);
+  animation: shimmer 1.4s linear infinite;
+}
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; }
+  * { scroll-behavior: auto !important; transition: none !important; }
+}

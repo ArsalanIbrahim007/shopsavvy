@@ -1,0 +1,38 @@
+.site-header {
+  position: sticky; top: 0; z-index: 30;
+  background: var(--paper); border-bottom: 1px solid var(--line);
+}
+/* Mobile: wordmark and nav on the first row, the search box full width under them. */
+.site-header__inner {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "brand nav" "search search";
+  align-items: center; gap: var(--space-2) var(--space-4);
+  padding-block: var(--space-3);
+}
+.wordmark { grid-area: brand; font-size: 1.375rem; font-weight: 700; letter-spacing: -0.02em; color: var(--ink); }
+.wordmark:hover { text-decoration: none; }
+.wordmark span { color: var(--brand); }
+.site-nav { grid-area: nav; display: flex; gap: var(--space-4); }
+.site-nav a { color: var(--ink-soft); font-weight: 600; padding: var(--space-2) 0; }
+.site-nav a:hover, .site-nav a[aria-current="page"] { color: var(--brand); text-decoration: none; }
+.site-header__search { grid-area: search; }
+
+@media (min-width: 720px) {
+  .site-header__inner {
+    grid-template-columns: auto minmax(240px, 520px) 1fr;
+    grid-template-areas: "brand search nav";
+    gap: var(--space-5);
+  }
+  .site-nav { justify-content: flex-end; }
+}
+
+.site-main { min-height: 60vh; }
+
+.site-footer {
+  margin-top: var(--space-8);
+  padding-block: var(--space-6);
+  background: var(--paper); border-top: 1px solid var(--line);
+  font-size: 0.9375rem;
+}
+.site-footer .container { display: grid; gap: var(--space-2); }

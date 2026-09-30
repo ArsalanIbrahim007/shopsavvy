@@ -1,15 +1,29 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import FoundationCheck from "./pages/FoundationCheck.jsx";
 
-// Placeholder shell. The real pages (Home, Results, Product) are built once the
-// design direction is agreed; until then this page proves the data layer works
-// against the live backend.
+import Layout from "./components/Layout.jsx";
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
+import Home from "./pages/Home.jsx";
+import Results from "./pages/Results.jsx";
+import Product from "./pages/Product.jsx";
+import HowItWorks from "./pages/HowItWorks.jsx";
+import NotFound from "./pages/NotFound.jsx";
+
+// Routes: / home, /results?q=|category=, /product/:id, /how-it-works. The outer boundary
+// catches a crash in the layout itself; each page is also wrapped inside the layout.
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="*" element={<FoundationCheck />} />
-      </Routes>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route index element={<Home />} />
+            <Route path="results" element={<Results />} />
+            <Route path="product/:id" element={<Product />} />
+            <Route path="how-it-works" element={<HowItWorks />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }

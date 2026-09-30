@@ -1,0 +1,39 @@
+.searchbox { position: relative; width: 100%; }
+
+.searchbox form { display: flex; align-items: center; }
+
+.searchbox__input {
+  flex: 1; min-width: 0;
+  height: 44px; padding: 0 56px 0 var(--space-4);
+  border: 1px solid var(--line); border-radius: var(--radius-pill);
+  background: var(--paper); color: var(--ink);
+  font: inherit;
+}
+.searchbox__input::placeholder { color: var(--ink-soft); }
+.searchbox__input:focus-visible { outline: 2px solid var(--brand); outline-offset: 0; border-color: var(--brand); }
+/* the browser's own clear button duplicates ours and looks different on every platform */
+.searchbox__input::-webkit-search-cancel-button { display: none; }
+
+.searchbox__button {
+  position: absolute; right: 5px; top: 5px;
+  width: 34px; height: 34px;
+  display: grid; place-items: center;
+  border: 0; border-radius: var(--radius-pill);
+  background: var(--brand); color: var(--on-brand); cursor: pointer;
+}
+.searchbox__button:hover { background: var(--brand-hover); }
+
+.searchbox--large .searchbox__input { height: 56px; font-size: 1.0625rem; padding-left: var(--space-5); padding-right: 68px; }
+.searchbox--large .searchbox__button { width: 44px; height: 44px; right: 6px; top: 6px; }
+
+.searchbox__list {
+  position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 6px);
+  margin: 0; padding: var(--space-1); list-style: none;
+  box-shadow: 0 8px 24px rgba(15, 27, 45, 0.12);
+}
+.searchbox__option {
+  display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3);
+  padding: 10px var(--space-3); border-radius: var(--radius-control); cursor: pointer;
+}
+.searchbox__option.is-active { background: var(--brand-soft); }
+.searchbox__meta { color: var(--ink-soft); font-size: 0.8125rem; white-space: nowrap; }

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { request } from "../src/api/client.js";
 import { ApiError, describeError, CLIENT_CODES } from "../src/api/errors.js";
-import { searchListings, createAlert, confirmAlert, cancelAlert, getStats, getDeals, getSuggestions } from "../src/api/endpoints.js";
+import { searchListings, createAlert, confirmAlert, cancelAlert, getStats, getDeals, getSuggestions, getCatalog } from "../src/api/endpoints.js";
 import * as endpoints from "../src/api/endpoints.js";
 
 // A minimal Response stand-in: enough of the fetch API for the client.
@@ -124,7 +124,7 @@ describe("endpoints", () => {
       .mockResolvedValueOnce(respond(201, { success: true, message: "Check your email", confirmationRequired: true, confirmationSent: true, data: { _id: "alert1", status: "pending" } }));
     vi.stubGlobal("fetch", fetchMock);
 
-    expect(await getStats()).toEqual({ products: 2727, platforms: 8 });
+    expect(await getStats()).toEqual({ products: 2727, platforms: 8, categories: [] });
     expect(await createAlert({ listingId: "L", email: "a@b.co", targetPrice: 100 })).toEqual({
       alert: { _id: "alert1", status: "pending" },
       message: "Check your email",
@@ -276,5 +276,28 @@ describe("getSuggestions", () => {
     vi.stubGlobal("fetch", fetchMock);
     for (const q of ["", " ", "a", " a ", undefined, null]) await expect(getSuggestions(q)).resolves.toEqual([]);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("getStats categories and getCatalog", () => {
+  it("getStats passes the category counts through", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(respond(200, { success: true, products: 3219, platforms: 7, categories: [{ category: "tv", count: 571 }] })));
+    expect(await getStats()).toEqual({ products: 3219, platforms: 7, categories: [{ category: "tv", count: 571 }] });
+  });
+
+  it("getCatalog asks for one category page, with a longer time limit, and unwraps the answer", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(respond(200, { success: true, total: 1034, offset: 24, generatedAt: "2026-09-30T10:00:00Z", data: [{ productName: "Galaxy A17", offers: [] }] }));
+    vi.stubGlobal("fetch", fetchMock);
+    const result = await getCatalog({ category: "smartphone", limit: 24, offset: 24 });
+    const url = new URL(fetchMock.mock.calls[0][0]);
+    expect(url.pathname).toBe("/api/listings/catalog");
+    expect(url.searchParams.get("category")).toBe("smartphone");
+    expect(url.searchParams.get("offset")).toBe("24");
+    expect(result).toEqual({ groups: [{ productName: "Galaxy A17", offers: [] }], total: 1034, offset: 24, generatedAt: "2026-09-30T10:00:00Z" });
+  });
+
+  it("getCatalog reports an unknown category as an ApiError", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(respond(400, { success: false, code: "BAD_REQUEST", message: "category is required and must be one of: smartphone" })));
+    await expect(getCatalog({ category: "toaster" })).rejects.toMatchObject({ status: 400, code: "BAD_REQUEST" });
   });
 });

@@ -56,6 +56,24 @@ export function offerFlags(offer) {
   return flags;
 }
 
+/**
+ * The badges for one offer on a card: its recommendation and its warnings, without contradicting
+ * each other. A "Good deal" next to "Fake discount" tells the shopper two opposite things, and the
+ * warning is the one that matters, so a bad-toned flag replaces a good-toned recommendation.
+ * Each item: { id, tone, label, reason }.
+ */
+export function cardBadges(offer, { maxFlags = 2 } = {}) {
+  const recommendation = recommendationOf(offer);
+  const flags = offerFlags(offer);
+  const hasBadFlag = flags.some((flag) => flag.tone === "bad");
+
+  const badges = [];
+  if (!(hasBadFlag && recommendation.tone === "good")) {
+    badges.push({ id: "recommendation", tone: recommendation.tone, label: recommendation.label, reason: offer?.recommendation?.reason || "" });
+  }
+  return [...badges, ...flags.slice(0, maxFlags)];
+}
+
 /** The single reading of the cross-store discount check, for the detail page. */
 export function marketVerdict(offer) {
   switch (offer?.discountAnomaly?.status) {

@@ -1,0 +1,18 @@
+.hero { background: var(--paper); border-bottom: 1px solid var(--line); }
+.hero__inner { padding-block: var(--space-7) var(--space-6); display: grid; gap: var(--space-4); max-width: 820px; }
+.hero__title { font-size: clamp(2rem, 6vw, 3.5rem); line-height: 1.1; letter-spacing: -0.03em; }
+.hero__voice { display: block; font-family: var(--font-voice); font-style: italic; font-weight: 400; color: var(--brand); }
+.hero__lead { font-size: 1.0625rem; max-width: 56ch; }
+.hero__search { max-width: 640px; }
+.hero__popular { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+
+.home-section { margin-top: var(--space-7); display: grid; gap: var(--space-4); }
+.home-section__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-2) var(--space-4); }
+
+.tiles { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+.tile { padding: var(--space-4); display: grid; gap: 2px; color: var(--ink); }
+.tile:hover { border-color: var(--brand); text-decoration: none; }
+.tile__name { font-weight: 600; font-size: 1.0625rem; }
+
+.how-grid { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.how-card { padding: var(--space-5); display: grid; gap: var(--space-2); align-content: start; }
