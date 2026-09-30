@@ -2,8 +2,8 @@
 // Removes accessory listings that were saved before the scraper-side filter
 // existed. Run with --dry first to preview, then without to delete.
 //
-//   node cleanup-accessories.js --dry
-//   node cleanup-accessories.js
+//   node src/scripts/maintenance/cleanup-accessories.js --dry
+//   node src/scripts/maintenance/cleanup-accessories.js
 
 import { config } from "dotenv";
 config();

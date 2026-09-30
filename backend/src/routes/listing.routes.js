@@ -353,6 +353,8 @@ router.get("/suggest", suggestLimiter, suggestListings);
  *         description: Missing, empty, non-text or over-long (more than 100 characters) q parameter.
  *       429:
  *         description: Too many searches from this address (120 per 15 minutes).
+ *       503:
+ *         description: The database is unreachable (code DATABASE_UNAVAILABLE), or the grouping workers are saturated and the request was refused (code SERVICE_BUSY). Retry shortly.
  */
 router.get("/search", searchLimiter, searchListings);
 
@@ -384,6 +386,8 @@ router.get("/search", searchLimiter, searchListings);
  *         description: Recorded price entries and summary statistics for the listing.
  *       404:
  *         description: No price history found for this listing.
+ *       400:
+ *         description: The id is not a valid listing id.
  *   post:
  *     summary: Record a price observation for a listing
  *     description: Appends a new price snapshot; normally called by the scraper service, exposed here for manual/testing use. Requires the x-admin-key header; the endpoint is disabled when the server has no ADMIN_API_KEY.
@@ -444,6 +448,10 @@ router.post("/:id/history", requireAdminKey, addListingPriceHistory);
  *         description: Listing with its grouped offers and summary.
  *       404:
  *         description: Listing not found.
+ *       400:
+ *         description: The id is not a valid listing id.
+ *       503:
+ *         description: The database is unreachable, or the grouping workers are saturated (code SERVICE_BUSY). Retry shortly.
  */
 router.get("/:id", getListingDetails);
 

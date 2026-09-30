@@ -1,5 +1,5 @@
 // test-categories.js — checks category classification against known cases
-import { detectCategory } from "./src/scrapers/productCategory.js";
+import { detectCategory } from "../../scrapers/productCategory.js";
 
 const CASES = [
   ["HP Victus 15-FA2787NR Core i7-13620H Gaming Laptop", "laptop"],

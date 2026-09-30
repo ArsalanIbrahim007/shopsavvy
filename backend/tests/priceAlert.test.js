@@ -14,7 +14,8 @@ describe("shouldTrigger", () => {
     expect(shouldTrigger({ status: "active", targetPrice: 1000 }, 1001)).toBe(false);
   });
 
-  it("does not trigger an alert that isn't active (already triggered or cancelled)", () => {
+  it("does not trigger an alert that isn't active (unconfirmed, already triggered or cancelled)", () => {
+    expect(shouldTrigger({ status: "pending", targetPrice: 1000 }, 900)).toBe(false);
     expect(shouldTrigger({ status: "triggered", targetPrice: 1000 }, 900)).toBe(false);
     expect(shouldTrigger({ status: "cancelled", targetPrice: 1000 }, 900)).toBe(false);
   });

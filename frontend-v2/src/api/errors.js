@@ -32,6 +32,10 @@ export class ApiError extends Error {
 
 const isApiError = (error) => error instanceof ApiError;
 
+// ApiError falls back to its code as the message when the server sent none, so "has text" means
+// text that is not just the code.
+const serverText = (error) => (error.message && error.message !== error.code ? error.message : "");
+
 /**
  * What to show a shopper. Never the raw server text for a 5xx (the backend already
  * makes it generic, but the client does not rely on that), and never a stack.
@@ -60,7 +64,9 @@ export function describeError(error) {
     case "RATE_LIMITED":
       return {
         title: "Slow down a little",
-        message: "You've made a lot of searches in a short time. Please wait a few minutes and try again.",
+        // The server's message says which limit was hit (searches, alert requests, alerts waiting
+        // for confirmation), and is written for shoppers; the fallback covers a missing body.
+        message: serverText(error) || "You've made a lot of requests in a short time. Please wait a few minutes and try again.",
         reference,
         canRetry: false,
       };
@@ -79,6 +85,9 @@ export function describeError(error) {
         reference,
         canRetry: true,
       };
+    case "CONFLICT":
+      // For example confirming an alert that was already cancelled: the server's text explains it.
+      return { title: "That can't be done", message: serverText(error) || "This was already changed. Please refresh.", reference, canRetry: false };
     case "NOT_FOUND":
       return { title: "Not found", message: "We couldn't find what you were looking for.", reference, canRetry: false };
     case "INVALID_ID":
@@ -89,7 +98,7 @@ export function describeError(error) {
       const fieldMessages = (error.details || []).map((d) => d.msg).filter(Boolean);
       return {
         title: "Please check your input",
-        message: fieldMessages.length ? fieldMessages.join(". ") : error.message || "That request wasn't valid.",
+        message: fieldMessages.length ? fieldMessages.join(". ") : serverText(error) || "That request wasn't valid.",
         reference,
         canRetry: false,
       };

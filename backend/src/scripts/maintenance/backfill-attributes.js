@@ -3,14 +3,14 @@
 // predate attribute extraction and therefore have no category, which would
 // exclude them from category-filtered searches.
 //
-//   node backfill-attributes.js --dry
-//   node backfill-attributes.js
+//   node src/scripts/maintenance/backfill-attributes.js --dry
+//   node src/scripts/maintenance/backfill-attributes.js
 
 import { config } from "dotenv";
 config({ quiet: true });
 import mongoose from "mongoose";
-import Listing from "./src/models/listing.model.js";
-import { extractAttributes } from "./src/services/productAttributes.service.js";
+import Listing from "../../models/listing.model.js";
+import { extractAttributes } from "../../services/productAttributes.service.js";
 
 const dryRun = process.argv.includes("--dry");
 

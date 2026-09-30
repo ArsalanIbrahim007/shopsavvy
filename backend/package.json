@@ -8,7 +8,11 @@
     "test:watch": "vitest",
     "dev": "nodemon src/app.js",
     "scrape": "node src/scrapers/index.js",
-    "postinstall": "playwright install chromium"
+    "postinstall": "playwright install chromium",
+    "check:grouping": "node src/scripts/checks/test-grouping.js",
+    "check:grouping-ml": "node src/scripts/checks/test-grouping-ml.js",
+    "check:categories": "node src/scripts/checks/test-categories.js",
+    "check:api": "node src/scripts/diagnostics/check-api.js"
   },
   "keywords": [],
   "author": "",

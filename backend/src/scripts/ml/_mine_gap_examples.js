@@ -1,6 +1,6 @@
 // _mine_gap_examples.js — targeted mining for three patterns the original
 // random sample (01-mine-pairs.js) under-represented, found by running the
-// trained model against the hand-crafted 18-case suite (test-grouping-ml.js
+// trained model against the hand-crafted 18-case suite (src/scripts/checks/test-grouping-ml.js
 // only scored 12/18 vs the rule's 18/18, concentrated in these patterns):
 //   A) quote-mark screen size (65") vs the word "inch" (65 Inch), same TV
 //   B) RAM+Storage stated on one side, Storage only on the other

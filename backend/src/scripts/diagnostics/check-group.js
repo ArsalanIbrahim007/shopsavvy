@@ -1,15 +1,15 @@
 // check-group.js — shows why two listings did or did not group
-//   node check-group.js "iphone 16 pro max"
+//   node src/scripts/diagnostics/check-group.js "iphone 16 pro max"
 
 import { config } from "dotenv";
 config({ quiet: true });
 import mongoose from "mongoose";
-import Listing from "./src/models/listing.model.js";
+import Listing from "../../models/listing.model.js";
 import {
   normalizeTitle, extractStorage, extractScreenInches,
   extractPtaStatus, extractModelCodes, modelTokens,
-} from "./src/services/normalizeTitle.service.js";
-import { isSimilarProduct, calculateJaccardSimilarity } from "./src/services/similarity.service.js";
+} from "../../services/normalizeTitle.service.js";
+import { isSimilarProduct, calculateJaccardSimilarity } from "../../services/similarity.service.js";
 
 const query = process.argv[2] || "iphone 16 pro max";
 

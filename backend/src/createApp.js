@@ -8,6 +8,7 @@ import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 
 import { swaggerSpec } from "./config/swagger.js";
+import { buildCorsOptions } from "./config/cors.js";
 import { requestId } from "./middleware/requestId.middleware.js";
 import { requestLogger } from "./middleware/requestLogger.middleware.js";
 import { notFoundHandler, globalErrorHandler } from "./middleware/error.middleware.js";
@@ -15,6 +16,7 @@ import healthRoutes from "./routes/health.routes.js";
 import listingRoutes from "./routes/listing.routes.js";
 import analyticsRoutes from "./routes/analytics.routes.js";
 import priceAlertRoutes from "./routes/priceAlert.routes.js";
+import alertPageRoutes from "./routes/alertPages.routes.js";
 
 export function createApp() {
   const app = express();
@@ -26,7 +28,8 @@ export function createApp() {
   app.use(requestId);
   app.use(requestLogger);
 
-  app.use(cors());
+  // Which websites may read responses from a browser: see config/cors.js (CORS_ORIGINS).
+  app.use(cors(buildCorsOptions()));
   // No endpoint takes a large body; a small explicit limit is cheaper than the
   // default being an accident.
   app.use(express.json({ limit: "100kb" }));
@@ -40,6 +43,8 @@ export function createApp() {
   app.use("/api/listings", listingRoutes);
   app.use("/api/analytics", analyticsRoutes);
   app.use("/api/alerts", priceAlertRoutes);
+  // The pages the links in alert emails open (confirm / cancel).
+  app.use("/alerts", alertPageRoutes);
 
   // Must stay last: anything nothing above answered, and every error thrown above.
   app.use(notFoundHandler);

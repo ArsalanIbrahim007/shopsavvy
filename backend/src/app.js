@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import { createApp } from "./createApp.js";
 import { connectDB } from "./config/db.js";
 import { installProcessHandlers } from "./config/process.js";
+import { describeCorsPolicy } from "./config/cors.js";
 import { warmDealsCache } from "./services/dealsFeed.service.js";
 import { startEventLoopMonitor } from "./services/runtimeStats.service.js";
 import { warmGroupingPool } from "./services/grouping.service.js";
@@ -12,6 +13,7 @@ import { startAlertCheckJob } from "./jobs/alertCheckJob.js";
 dotenv.config();
 
 startEventLoopMonitor();
+describeCorsPolicy().forEach((line) => console.log(line));
 const app = createApp();
 const PORT = process.env.PORT || 5000;
 

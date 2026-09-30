@@ -73,19 +73,39 @@ export async function getStats({ signal } = {}) {
   return { products: body.products, platforms: body.platforms };
 }
 
+/**
+ * Price alerts use double opt-in: a new alert is `pending` and does nothing until the link in the
+ * confirmation email is followed, because nothing proves the person typing an address owns it.
+ * Show `message`: it says whether the confirmation email was sent, or that this server cannot
+ * send email yet (the alert is then saved but inactive).
+ * @returns {Promise<{alert: object, message: string, confirmationRequired: boolean, confirmationSent: boolean}>}
+ */
 export async function createAlert({ listingId, email, targetPrice }, { signal } = {}) {
   const body = await request("/alerts", { method: "POST", body: { listingId, email, targetPrice }, signal });
-  return body.data;
+  return {
+    alert: body.data,
+    message: body.message ?? "",
+    confirmationRequired: body.confirmationRequired === true,
+    confirmationSent: body.confirmationSent === true,
+  };
 }
 
-export async function listAlerts(email, { signal } = {}) {
-  const body = await request("/alerts", { params: { email }, signal });
-  return body.data ?? [];
+// The links in alert emails open pages served by the API itself (/alerts/confirm and /alerts/cancel),
+// so these two are only needed if the frontend hosts those pages instead. The token is the secret
+// from the link. A forged, unknown or expired token is a 404 (the same answer for all three).
+// There is deliberately no "list my alerts" or "cancel by email": those let anyone enumerate or
+// cancel another person's alerts.
+
+/** Activates a pending alert. Safe to repeat. */
+export async function confirmAlert(token, { signal } = {}) {
+  const body = await request("/alerts/confirm", { method: "POST", body: { token }, signal });
+  return { alert: body.data, message: body.message ?? "" };
 }
 
-export async function cancelAlert(id, email, { signal } = {}) {
-  const body = await request(`/alerts/${encodeURIComponent(id)}`, { method: "DELETE", body: { email }, signal });
-  return body.data;
+/** Cancels an alert. Safe to repeat. */
+export async function cancelAlert(token, { signal } = {}) {
+  const body = await request("/alerts/cancel", { method: "POST", body: { token }, signal });
+  return { alert: body.data, message: body.message ?? "" };
 }
 
 /** Readiness: database state and when data was last scraped. Answers 503 (an ApiError) when degraded. */

@@ -1,7 +1,7 @@
 // repair-db.js — converts string _id / date fields back to proper BSON types
 //
-//   node repair-db.js --dry
-//   node repair-db.js
+//   node src/scripts/maintenance/repair-db.js --dry
+//   node src/scripts/maintenance/repair-db.js
 
 import { config } from "dotenv";
 config({ quiet: true });

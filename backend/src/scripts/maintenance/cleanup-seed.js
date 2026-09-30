@@ -3,8 +3,8 @@
 // homepages instead of product URLs, use different platform casing, and have
 // stale timestamps that depress the freshness score.
 //
-//   node cleanup-seed.js --dry
-//   node cleanup-seed.js
+//   node src/scripts/maintenance/cleanup-seed.js --dry
+//   node src/scripts/maintenance/cleanup-seed.js
 
 import { config } from "dotenv";
 config({ quiet: true });

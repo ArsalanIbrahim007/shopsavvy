@@ -5,14 +5,14 @@
 // "other" is deliberately NOT treated as junk: unrecognised but genuine
 // products, such as Galaxy Z foldables, land there when no keyword matches.
 //
-//   node purge-accessories.js --dry
-//   node purge-accessories.js
+//   node src/scripts/maintenance/purge-accessories.js --dry
+//   node src/scripts/maintenance/purge-accessories.js
 
 import { config } from "dotenv";
 config({ quiet: true });
 import mongoose from "mongoose";
-import Listing from "./src/models/listing.model.js";
-import { detectCategory } from "./src/scrapers/productCategory.js";
+import Listing from "../../models/listing.model.js";
+import { detectCategory } from "../../scrapers/productCategory.js";
 
 const dryRun = process.argv.includes("--dry");
 

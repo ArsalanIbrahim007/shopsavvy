@@ -19,7 +19,6 @@ vi.mock("../src/services/priceHistory.service.js", () => ({
 }));
 
 import Listing from "../src/models/listing.model.js";
-import PriceAlert from "../src/models/priceAlert.model.js";
 import { createApp } from "../src/createApp.js";
 import { fetchAndRefreshListings } from "../src/services/scraper.service.js";
 import { recordPriceSnapshot } from "../src/services/priceHistory.service.js";
@@ -291,68 +290,7 @@ describe("POST /api/listings (admin only)", () => {
   });
 });
 
-describe("price alerts", () => {
-  const listing = { _id: ID(1), title: "Samsung Galaxy A17", price: 60000 };
-  const valid = { listingId: ID(1), email: "Shopper@Example.com", targetPrice: 55000 };
-
-  it("creates an alert, normalising the email and returning 201", async () => {
-    vi.spyOn(Listing, "findById").mockResolvedValue(listing);
-    vi.spyOn(PriceAlert, "countDocuments").mockResolvedValue(0);
-    const create = vi.spyOn(PriceAlert, "create").mockImplementation(async (data) => ({ _id: ID(7), status: "active", ...data }));
-
-    const { res, body } = await send("POST", "/api/alerts", valid);
-    expect(res.status).toBe(201);
-    expect(body.data).toMatchObject({ targetPrice: 55000, priceAtCreation: 60000 });
-    expect(create.mock.calls[0][0].email).toBe("shopper@example.com");
-  });
-
-  it("refuses a target that is not below the current price, with 400", async () => {
-    vi.spyOn(Listing, "findById").mockResolvedValue(listing);
-    vi.spyOn(PriceAlert, "countDocuments").mockResolvedValue(0);
-    const create = vi.spyOn(PriceAlert, "create");
-
-    const { res, body } = await send("POST", "/api/alerts", { ...valid, targetPrice: 60000 });
-    expect(res.status).toBe(400);
-    expect(body.message).toMatch(/below the current price/);
-    expect(create).not.toHaveBeenCalled();
-  });
-
-  it("answers an alert on an unknown listing with 404 and a full mailbox with 429", async () => {
-    vi.spyOn(Listing, "findById").mockResolvedValueOnce(null);
-    const missing = await send("POST", "/api/alerts", valid);
-    expect(missing.res.status).toBe(404);
-
-    vi.spyOn(Listing, "findById").mockResolvedValue(listing);
-    vi.spyOn(PriceAlert, "countDocuments").mockResolvedValue(20);
-    const full = await send("POST", "/api/alerts", valid);
-    expect(full.res.status).toBe(429);
-    expect(full.body.code).toBe("RATE_LIMITED");
-  });
-
-  it("lists by email in lower case and ignores an operator smuggled into status", async () => {
-    const find = vi.spyOn(PriceAlert, "find").mockImplementation(() => chain([]));
-
-    const { res } = await jsonExtended("/api/alerts?email=Shopper@Example.com&status[$ne]=active");
-    expect(res.status).toBe(200);
-    expect(find).toHaveBeenCalledWith({ email: "shopper@example.com" });
-
-    await json("/api/alerts?email=shopper@example.com&status=active");
-    expect(find).toHaveBeenLastCalledWith({ email: "shopper@example.com", status: "active" });
-  });
-
-  it("cancels only for the email that created the alert", async () => {
-    const alert = { _id: ID(7), email: "shopper@example.com", status: "active", save: vi.fn(async function save() { return this; }) };
-    vi.spyOn(PriceAlert, "findById").mockResolvedValue(alert);
-
-    const stranger = await send("DELETE", `/api/alerts/${ID(7)}`, { email: "someone@else.com" });
-    expect(stranger.res.status).toBe(403);
-    expect(alert.save).not.toHaveBeenCalled();
-
-    const owner = await send("DELETE", `/api/alerts/${ID(7)}`, { email: "Shopper@Example.com" });
-    expect(owner.res.status).toBe(200);
-    expect(alert.status).toBe("cancelled");
-  });
-});
+// The alert endpoints (double opt-in, confirm/cancel links) are covered in api.alerts.test.js.
 
 describe("responses in general", () => {
   it("reuses a harmless x-request-id and replaces a harmful one", async () => {
@@ -368,13 +306,13 @@ describe("responses in general", () => {
   });
 
   it("logs the path of a request but never its query string (search text and email addresses)", async () => {
-    vi.spyOn(PriceAlert, "find").mockImplementation(() => chain([]));
     const log = console.log;
-    await json("/api/alerts?email=private.person@example.com");
+    await json("/api/no-such-route?email=private.person@example.com&token=secret-token-value");
     await new Promise((resolve) => setTimeout(resolve, 20));
 
     const lines = log.mock.calls.map((call) => call.join(" ")).join("\n");
-    expect(lines).toMatch(/GET \/api\/alerts 200/);
+    expect(lines).toMatch(/GET \/api\/no-such-route 404/);
+    expect(lines).not.toMatch(/secret-token-value/);
     expect(lines).not.toMatch(/private\.person|email=/);
   });
 

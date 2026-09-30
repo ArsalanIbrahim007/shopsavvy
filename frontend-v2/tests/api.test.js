@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { request } from "../src/api/client.js";
 import { ApiError, describeError, CLIENT_CODES } from "../src/api/errors.js";
-import { searchListings, createAlert, getStats, getDeals, getSuggestions } from "../src/api/endpoints.js";
+import { searchListings, createAlert, confirmAlert, cancelAlert, getStats, getDeals, getSuggestions } from "../src/api/endpoints.js";
+import * as endpoints from "../src/api/endpoints.js";
 
 // A minimal Response stand-in: enough of the fetch API for the client.
 const respond = (status, body, headers = {}) => ({
@@ -120,13 +121,64 @@ describe("endpoints", () => {
   it("stats and alerts hit the right endpoints", async () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(respond(200, { success: true, products: 2727, platforms: 8 }))
-      .mockResolvedValueOnce(respond(201, { success: true, data: { _id: "alert1" } }));
+      .mockResolvedValueOnce(respond(201, { success: true, message: "Check your email", confirmationRequired: true, confirmationSent: true, data: { _id: "alert1", status: "pending" } }));
     vi.stubGlobal("fetch", fetchMock);
 
     expect(await getStats()).toEqual({ products: 2727, platforms: 8 });
-    expect(await createAlert({ listingId: "L", email: "a@b.co", targetPrice: 100 })).toEqual({ _id: "alert1" });
+    expect(await createAlert({ listingId: "L", email: "a@b.co", targetPrice: 100 })).toEqual({
+      alert: { _id: "alert1", status: "pending" },
+      message: "Check your email",
+      confirmationRequired: true,
+      confirmationSent: true,
+    });
     expect(new URL(fetchMock.mock.calls[0][0]).pathname).toBe("/api/listings/stats");
     expect(new URL(fetchMock.mock.calls[1][0]).pathname).toBe("/api/alerts");
+  });
+});
+
+describe("alert confirmation", () => {
+  it("createAlert reports honestly that an email was not sent, and defaults safely if fields are missing", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(respond(201, { success: true, message: "Alert saved but not active yet.", confirmationRequired: true, confirmationSent: false, data: { _id: "a1", status: "pending" } })));
+    const result = await createAlert({ listingId: "L", email: "a@b.co", targetPrice: 100 });
+    expect(result).toMatchObject({ confirmationRequired: true, confirmationSent: false });
+    expect(result.alert.status).toBe("pending");
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(respond(201, { success: true, data: { _id: "a2" } })));
+    expect(await createAlert({ listingId: "L", email: "a@b.co", targetPrice: 100 })).toMatchObject({ confirmationRequired: false, confirmationSent: false, message: "" });
+  });
+
+  it("confirmAlert and cancelAlert post the token in the body, never in the URL", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(respond(200, { success: true, message: "Alert confirmed.", data: { _id: "a1", status: "active" } }))
+      .mockResolvedValueOnce(respond(200, { success: true, message: "Alert cancelled.", data: { _id: "a1", status: "cancelled" } }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    expect(await confirmAlert("abc.def")).toEqual({ alert: { _id: "a1", status: "active" }, message: "Alert confirmed." });
+    expect(await cancelAlert("abc.def")).toEqual({ alert: { _id: "a1", status: "cancelled" }, message: "Alert cancelled." });
+
+    const [confirmCall, cancelCall] = fetchMock.mock.calls;
+    expect(new URL(confirmCall[0]).pathname).toBe("/api/alerts/confirm");
+    expect(new URL(cancelCall[0]).pathname).toBe("/api/alerts/cancel");
+    for (const [url, init] of fetchMock.mock.calls) {
+      expect(url).not.toContain("abc.def");
+      expect(init.method).toBe("POST");
+      expect(JSON.parse(init.body)).toEqual({ token: "abc.def" });
+    }
+  });
+
+  it("a forged or expired link comes back as a NOT_FOUND ApiError and a cancelled alert as CONFLICT", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(respond(404, { success: false, code: "NOT_FOUND", message: "This link is invalid or has expired.", requestId: "r-1" })));
+    await expect(confirmAlert("forged.token")).rejects.toMatchObject({ status: 404, code: "NOT_FOUND" });
+
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(respond(409, { success: false, code: "CONFLICT", message: "This alert was cancelled, so it cannot be confirmed." })));
+    const error = await confirmAlert("cancelled.alert").catch((e) => e);
+    expect(describeError(error).message).toBe("This alert was cancelled, so it cannot be confirmed.");
+    expect(describeError(error).canRetry).toBe(false);
+  });
+
+  it("no longer offers a list-by-email or cancel-by-email call (the server removed them)", () => {
+    expect(endpoints.listAlerts).toBeUndefined();
+    expect(cancelAlert.length).toBeLessThanOrEqual(2); // (token, options), not (id, email)
   });
 });
 
@@ -166,6 +218,21 @@ describe("describeError", () => {
 
   it("does not offer a retry when rate limited", () => {
     expect(describeError(new ApiError({ status: 429, code: "RATE_LIMITED" })).canRetry).toBe(false);
+  });
+
+  it("does not show a bare error code as a message when the server sent no text", () => {
+    for (const code of ["BAD_REQUEST", "CONFLICT", "RATE_LIMITED"]) {
+      const info = describeError(new ApiError({ status: 400, code }));
+      expect(info.message, code).not.toBe(code);
+      expect(info.message.length, code).toBeGreaterThan(15);
+    }
+  });
+
+  it("shows the server's own words for a rate limit, so an alert limit is not called a search limit", () => {
+    const info = describeError(new ApiError({ status: 429, code: "RATE_LIMITED", message: "This address has alerts waiting to be confirmed.", requestId: "r-2" }));
+    expect(info.message).toBe("This address has alerts waiting to be confirmed.");
+    expect(info.reference).toBe("Reference: r-2");
+    expect(describeError(new ApiError({ status: 429, code: "RATE_LIMITED" })).message).toMatch(/wait a few minutes/i);
   });
 });
 
