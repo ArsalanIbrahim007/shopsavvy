@@ -48,9 +48,13 @@ describe("WorkerPool", () => {
 
   it("runs jobs in parallel up to its size, and queues the rest", async () => {
     makePool({ size: 2 });
-    const started = Date.now();
-    await Promise.all([pool.run("sleep", { ms: 300 }), pool.run("sleep", { ms: 300 })]);
-    expect(Date.now() - started).toBeLessThan(560); // two at once, not one after the other
+    await pool.run("echo", 0); // start both workers first, so start-up time is not part of the comparison
+    await Promise.all([pool.run("echo", 1), pool.run("echo", 2)]);
+
+    // Two jobs at once overlap in time (checked from the times the jobs report, not from a stopwatch that a busy machine distorts).
+    const [first, second] = await Promise.all([pool.run("span", { ms: 200 }), pool.run("span", { ms: 200 })]);
+    expect(second.start).toBeLessThan(first.end);
+    expect(first.start).toBeLessThan(second.end);
 
     const jobs = [pool.run("sleep", { ms: 50 }), pool.run("sleep", { ms: 50 }), pool.run("sleep", { ms: 50 })];
     expect(pool.stats()).toMatchObject({ running: 2, queued: 1 });

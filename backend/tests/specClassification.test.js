@@ -135,8 +135,9 @@ describe("series numbers", () => {
     ["Apple iPhone 17", "Apple iPhone 17 PTA Approved With Official Warranty"],
     // Operating system numbers are not model numbers.
     ["Acer Aspire 8GB 256GB Windows 10", "Acer Aspire 8GB 256GB Windows 11"],
-    // 5G and 4K are markers, not model identifiers.
-    ["Xiaomi Redmi Note 14 5G", "Xiaomi Redmi Note 14 4G"],
+    // 5G and 4K are markers, not model identifiers. (A 5G title against a 4G one IS a conflict, but for the
+    // network-generation rule, not this one: see networkGeneration.test.js.)
+    ["Xiaomi Redmi Note 14 5G", "Xiaomi Redmi Note 14"],
     ["Samsung 55 Inch 4K Smart TV (Q7F)", "Samsung 55 Inch Smart TV (Q7F)"],
   ])("does not veto %s / %s on numbers alone", (a, b) => {
     expect(attributeConflict(a, b)).toBe(false);

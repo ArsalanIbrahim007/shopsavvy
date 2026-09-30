@@ -1,6 +1,7 @@
 import { normalizeTitle, extractStorage } from "./normalizeTitle.service.js";
 import { isSimilarProduct, attributeConflict } from "./similarity.service.js";
 import { calculateDealScores } from "../ranking/dealScore.js";
+import { COLOURS, extractNetworkGeneration, networkFamilyKey } from "./productAttributes.service.js";
 
 /**
  * How far a listing's price may sit from a group's prices before it is treated
@@ -61,8 +62,59 @@ function ruleMatchStrategy(rawTitle, group, listing, listingStorage) {
  * unaffected. Passing a different strategy (same signature) swaps the
  * matching logic without changing the clustering loop.
  */
+/**
+ * A store that lists two phones whose titles differ only in "5G" / "4G" is telling us they are different
+ * products: Galaxy A17 and Galaxy A17 5G are both on PriceOye, at PKR 65,699 and PKR 96,599. That is evidence
+ * a title-only comparison cannot see when ANOTHER store leaves the generation out, so the titles that
+ * store used become "split families" for this grouping run: within a split family, listings that state a
+ * different generation (or one states it and the other does not) are never grouped together.
+ *
+ * A family is the title without its generation words (networkFamilyKey). A listing belongs to it when its
+ * own key is the same, or continues it only with store wording that does not name a different model:
+ * capacities, colours, "PTA approved", "dual sim with official warranty". "samsung galaxy a17" therefore
+ * covers "samsung galaxy a17 8gb ram 256gb pta approved", but "oppo reno" does NOT cover "oppo reno 15" (a
+ * different, newer phone): without that limit one store's "Reno" / "Reno 5G" pair split every Reno model.
+ */
+function splitNetworkFamilies(listings) {
+  const seen = new Map(); // "platform|familyKey" -> set of generations that store lists
+  for (const listing of listings) {
+    const title = listing.title || listing.normalizedTitle || "";
+    const key = `${listing.platform}|${networkFamilyKey(title)}`;
+    if (!seen.has(key)) seen.set(key, new Set());
+    seen.get(key).add(extractNetworkGeneration(title));
+  }
+  const families = new Set();
+  for (const [key, generations] of seen) {
+    if (generations.size > 1) families.add(key.slice(key.indexOf("|") + 1));
+  }
+  return [...families];
+}
+
+// Words stores add to a title that describe the listing, not which model it is.
+const WORDING = new Set([
+  "ram", "rom", "storage", "memory", "pta", "approved", "non", "with", "official", "warranty", "dual", "single", "sim",
+  "nano", "esim", "global", "version", "international", "edition", "official", "pakistan", "activated", "mobile", "phone",
+  "smartphone", "new", "brand", "original", "sealed", "box", "and", "free", "gift", "black", "white", "silver", "gold", "grey",
+  "gray", "blue", "green", "red", "pink", "purple", "yellow", "orange", "teal", "cream", "beige", "bronze", "copper", "navy",
+  "mint", "graphite", "midnight", "starlight", "titanium", "lavender", "ultramarine", "natural", "desert", "space",
+]);
+for (const colour of COLOURS) for (const word of colour.split(" ")) WORDING.add(word);
+const isWording = (token) => WORDING.has(token) || /^\d{1,4}(gb|tb)$/.test(token);
+
+const inFamily = (key, family) =>
+  key === family || (key.startsWith(`${family} `) && key.slice(family.length + 1).split(" ").every(isWording));
+
+function isNetworkSplit(titleA, titleB, families) {
+  if (families.length === 0) return false;
+  if (extractNetworkGeneration(titleA) === extractNetworkGeneration(titleB)) return false;
+  const keyA = networkFamilyKey(titleA);
+  const keyB = networkFamilyKey(titleB);
+  return families.some((family) => inFamily(keyA, family) && inFamily(keyB, family));
+}
+
 export function groupListingsByProduct(listings = [], { matchStrategy = ruleMatchStrategy } = {}) {
   const groups = [];
+  const networkFamilies = splitNetworkFamilies(listings);
 
   listings.forEach((listing) => {
     const rawTitle = listing.title || listing.normalizedTitle || "";
@@ -92,7 +144,8 @@ export function groupListingsByProduct(listings = [], { matchStrategy = ruleMatc
       if (
         matchStrategy(rawTitle, group, listing, listingStorage) &&
         !group.offers.some((member) =>
-          attributeConflict(rawTitle, member.title || member.normalizedTitle || "", { ignoreUnstatedStorage: true })
+          attributeConflict(rawTitle, member.title || member.normalizedTitle || "", { ignoreUnstatedStorage: true }) ||
+          isNetworkSplit(rawTitle, member.title || member.normalizedTitle || "", networkFamilies)
         )
       ) {
         matchedGroup = group;

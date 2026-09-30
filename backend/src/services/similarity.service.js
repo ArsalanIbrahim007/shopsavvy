@@ -6,7 +6,7 @@ import {
   extractModelCodes,
   extractSpecs,
 } from "./normalizeTitle.service.js";
-import { extractRamGb, extractCondition } from "./productAttributes.service.js";
+import { extractRamGb, extractCondition, extractNetworkGeneration } from "./productAttributes.service.js";
 
 /**
  * Words marking a distinct product tier rather than describing the same
@@ -143,6 +143,12 @@ export function attributeConflict(textA, textB, { ignoreUnstatedStorage = false 
   const ptaA = extractPtaStatus(textA);
   const ptaB = extractPtaStatus(textB);
   if (ptaA !== "unknown" && ptaB !== "unknown" && ptaA !== ptaB) return true;
+
+  // A 4G and a 5G version of a phone are different products at very different prices. Like approval status,
+  // this blocks a match only when BOTH titles state a generation and they differ: stores often omit "5G".
+  const networkA = extractNetworkGeneration(textA);
+  const networkB = extractNetworkGeneration(textB);
+  if (networkA !== null && networkB !== null && networkA !== networkB) return true;
 
   // Model codes conflict only when both titles state some and they share
   // none. Requiring identical sets split a store that appends a SKU ("S24
