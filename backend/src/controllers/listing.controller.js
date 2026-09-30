@@ -9,6 +9,7 @@ import { normalizeTitle } from "../services/normalizeTitle.service.js";
 import { parsePagination } from "../services/pagination.service.js";
 import { textParam, numberParam } from "../services/queryParams.service.js";
 import { hasAdminKey } from "../middleware/adminKey.middleware.js";
+import { isSuspectPrice } from "../services/pricePlausibility.service.js";
 
 // Longest search text accepted. Real product searches are a handful of words;
 // anything longer is a paste or an attack, and it would only be fed to
@@ -479,7 +480,10 @@ export async function getListingDetails(req, res) {
         listing._id.toString()
     ) || attachRecommendation(listing);
 
+  // An offer flagged as a probable listing error must not set the lowest price or
+  // the "you can save" figure.
   const prices = offers
+    .filter((offer) => !isSuspectPrice(offer))
     .map((offer) => Number(offer.price))
     .filter(
       (price) =>

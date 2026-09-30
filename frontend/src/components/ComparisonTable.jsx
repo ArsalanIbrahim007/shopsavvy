@@ -175,11 +175,14 @@ function ComparisonTable({ products }) {
   // A "best deal" only means something when there is more than one offer for
   // the same product. Marking the top score in a single-offer table implied a
   // comparison that had not taken place.
+  // An offer whose price the backend flagged as a probable listing error is never
+  // the best deal, however good its score looks.
+  const isSuspect = (p) => p.priceCheck?.status?.startsWith("suspect");
   const bestId =
     sorted.length > 1
-      ? [...sorted].sort(
-          (a, b) => Number(b.dealScore || 0) - Number(a.dealScore || 0)
-        )[0]._id
+      ? [...sorted]
+          .filter((p) => !isSuspect(p))
+          .sort((a, b) => Number(b.dealScore || 0) - Number(a.dealScore || 0))[0]?._id ?? null
       : null;
 
   return (
@@ -230,6 +233,11 @@ function ComparisonTable({ products }) {
                   {product.originalPrice > product.price && (
                     <span className="table-original">
                       PKR {product.originalPrice.toLocaleString()}
+                    </span>
+                  )}
+                  {isSuspect(product) && (
+                    <span className="disc-badge disc-market" title={product.priceCheck.reason}>
+                      {"⚠ "}Unusual price
                     </span>
                   )}
                 </td>

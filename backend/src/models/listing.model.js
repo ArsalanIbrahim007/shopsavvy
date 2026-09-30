@@ -108,6 +108,16 @@ const listingSchema = new mongoose.Schema(
   }
 );
 
+// One listing per platform and product URL. Scrapers upsert on exactly this pair,
+// but nothing enforced it, so a race or a URL variant could store the same product
+// twice (182 of 248 Telemart listings were duplicates before URLs were
+// canonicalised). Partial: listings created by hand without a URL are exempt, since
+// sourceUrl defaults to an empty string and two of those must not collide.
+listingSchema.index(
+  { platform: 1, sourceUrl: 1 },
+  { unique: true, partialFilterExpression: { sourceUrl: { $gt: "" } } }
+);
+
 // Indexes for grouping/matching/sorting
 listingSchema.index({ platform: 1, title: 1 });
 listingSchema.index({ platform: 1, platformProductId: 1 });

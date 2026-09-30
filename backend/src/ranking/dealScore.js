@@ -4,6 +4,7 @@ import { calculateAvailabilityScore } from "./scores/availabilityScore.js";
 import { calculateTrustScore } from "./scores/trustScore.js";
 import { calculateFakeDiscountScore } from "./scores/fakeDiscountScore.js";
 import { analyzeDiscountAnomaly } from "../services/discountAnomaly.service.js";
+import { analyzePricePlausibility } from "../services/pricePlausibility.service.js";
 import { SCORE_WEIGHTS } from "./scoreWeights.js";
 
 /**
@@ -69,17 +70,30 @@ export function calculateDealScores(offers = []) {
     }));
   }
 
-  const minPrice = Math.min(...validPrices);
-  const maxPrice = Math.max(...validPrices);
+  // Judge each price against the other stores first. An offer whose price looks
+  // like a listing error must neither win on price nor stretch the range that
+  // every honest store is scored against. (Flags nothing on today's catalogue;
+  // see pricePlausibility.service.js.)
+  const priceChecks = plainOffers.map((offer) => analyzePricePlausibility(offer, plainOffers));
+
+  const believablePrices = plainOffers
+    .filter((offer, index) => !priceChecks[index].status.startsWith("suspect"))
+    .map((offer) => Number(offer.price))
+    .filter((price) => Number.isFinite(price) && price > 0);
+
+  const scoringPrices = believablePrices.length > 0 ? believablePrices : validPrices;
+  const minPrice = Math.min(...scoringPrices);
+  const maxPrice = Math.max(...scoringPrices);
 
   return plainOffers
-    .map((plainOffer) => {
-      const priceScore = calculatePriceScore(
-        plainOffer.price,
-        minPrice,
-        maxPrice,
-        SCORE_WEIGHTS.price
-      );
+    .map((plainOffer, index) => {
+      const priceCheck = priceChecks[index];
+
+      // An implausibly cheap offer gets no price credit, so it cannot be crowned best deal.
+      const priceScore =
+        priceCheck.status === "suspect_low"
+          ? 0
+          : calculatePriceScore(plainOffer.price, minPrice, maxPrice, SCORE_WEIGHTS.price);
 
       const trustScore = calculateTrustScore(
         plainOffer.platform,
@@ -133,6 +147,8 @@ export function calculateDealScores(offers = []) {
         discountAnalysis,
 
         discountAnomaly,
+
+        priceCheck,
       };
     })
     .sort((a, b) => b.dealScore - a.dealScore);

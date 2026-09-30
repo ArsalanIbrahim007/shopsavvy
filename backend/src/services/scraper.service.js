@@ -17,6 +17,8 @@ import { normalizeTitle } from "./normalizeTitle.service.js";
 import { scrapeAllPlatforms } from "../scrapers/index.js";
 import { extractAttributes } from "./productAttributes.service.js";
 import { extractExtras } from "./scrapedExtras.service.js";
+import { retryOnDuplicateKey } from "./retryOnDuplicateKey.js";
+import { sanitizePrices } from "./priceSanity.service.js";
 // How old data can be before we re-scrape (in minutes)
 // Set to 30 minutes so rapid repeated searches don't hammer sites
 const STALE_THRESHOLD_MINUTES = 30;
@@ -130,19 +132,36 @@ async function runScrapersAndSave(query, opts = {}) {
   }
 
   let saved = 0;
+  let skippedPrices = 0;
 
   for (const scrapedItem of scraped) {
-    if (!scrapedItem.price) continue;
+    // A price that cannot be real is skipped, and a "was" price that is not above the
+    // current price is dropped (it is not a discount). See priceSanity.service.js.
+    const checked = sanitizePrices(scrapedItem);
+    if (!checked.ok) {
+      skippedPrices++;
+      continue;
+    }
 
     // Canonicalise before both writes below, which key on sourceUrl.
-    const item = { ...scrapedItem, sourceUrl: canonicalSourceUrl(scrapedItem.sourceUrl) };
+    const item = {
+      ...scrapedItem,
+      price: checked.price,
+      originalPrice: checked.originalPrice,
+      sourceUrl: canonicalSourceUrl(scrapedItem.sourceUrl),
+    };
 
     try {
       // Upsert listing
-      await Listing.findOneAndUpdate(
-        { platform: item.platform, sourceUrl: item.sourceUrl },
-        { $set: toListingDoc(item) },
-        { upsert: true, returnDocument: "after" }
+      // Retried once on a duplicate-key error: two searches saving the same new
+      // product at once can both try to insert it; the second attempt then finds
+      // and updates the one that won.
+      await retryOnDuplicateKey(() =>
+        Listing.findOneAndUpdate(
+          { platform: item.platform, sourceUrl: item.sourceUrl },
+          { $set: toListingDoc(item) },
+          { upsert: true, returnDocument: "after" }
+        )
       );
 
       // Record price history
@@ -154,7 +173,10 @@ async function runScrapersAndSave(query, opts = {}) {
     }
   }
 
-  console.log(`[scraperService] Saved ${saved}/${scraped.length} listings for "${query}"`);
+  console.log(
+    `[scraperService] Saved ${saved}/${scraped.length} listings for "${query}"` +
+    (skippedPrices ? ` (${skippedPrices} skipped for an implausible price)` : "")
+  );
   return saved;
 }
 

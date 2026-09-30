@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 
+import { ensureIndexes } from "./indexes.js";
+
 // While disconnected Mongoose holds database commands in a buffer and, by
 // default, waits 10 s for a reconnection before failing them, so every request
 // during an outage hung that long. Fail after 5 s instead; the error handler
@@ -24,6 +26,10 @@ export async function connectDB() {
     await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 10000 });
 
     console.log("MongoDB connected successfully");
+
+    // Wait for the indexes and report any that could not be built (for example a
+    // unique index over data that already contains duplicates). Not fatal.
+    await ensureIndexes();
   } catch (error) {
     console.error("MongoDB connection failed:", error.message);
     process.exit(1);
