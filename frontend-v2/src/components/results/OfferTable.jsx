@@ -11,6 +11,7 @@ import { claimedDiscount } from "../../lib/filters.js";
 import { formatPercent, formatPrice, timeAgo } from "../../lib/format.js";
 import { platformName } from "../../lib/platforms.js";
 import { offerLink } from "../../lib/safeLink.js";
+import { ptaFlag } from "../../lib/pta.js";
 import { bestDealOffer } from "../../lib/score.js";
 import { offerFlags, recommendationOf } from "../../lib/verdicts.js";
 import { summarizeOffers } from "../../lib/summary.js";
@@ -66,6 +67,7 @@ export default function OfferTable({ offers, name, currentId }) {
           {sorted.map((offer) => {
             const href = offerLink(offer);
             const isLowest = offer._id === lowestId;
+            const pta = ptaFlag(offer);
             return (
               <tr key={offer._id} className={isLowest ? "is-lowest" : undefined}>
                 <td>
@@ -75,6 +77,7 @@ export default function OfferTable({ offers, name, currentId }) {
                     {offer._id === bestId && <span className="offer-table__best small">Best deal</span>}
                     {offer._id === currentId && <span className="offer-table__current small muted">The one you opened</span>}
                   </div>
+                  {pta && <div className="offer-table__pta"><VerdictBadge tone={pta.tone} label={pta.label} title={pta.reason} /></div>}
                 </td>
                 <td className="num">
                   <span className="price offer-table__price">{formatPrice(offer.price)}</span>

@@ -8,6 +8,7 @@
 import { categoryName } from "../../lib/categories.js";
 import { formatPrice } from "../../lib/format.js";
 import { platformName } from "../../lib/platforms.js";
+import { ptaFlag, ptaNotice } from "../../lib/pta.js";
 import { summarizeOffers } from "../../lib/summary.js";
 import { cardBadges } from "../../lib/verdicts.js";
 import ProductImage from "../ProductImage.jsx";
@@ -23,11 +24,13 @@ export default function ResultGroup({ group, currentId }) {
   const best = summary.lowest;
   if (!best) return null;
 
-  // Only prices we believe count towards "you can save".
-  const believable = offers.filter((offer) => !isSuspect(offer)).map((offer) => offer.price);
+  // Only prices we believe, and that compare like with like, count towards "you can save".
+  const believable = offers.filter((offer) => !isSuspect(offer) && !offer.ptaAssessment).map((offer) => offer.price);
   const saving = believable.length > 1 ? Math.max(...believable) - Math.min(...believable) : 0;
   const badges = cardBadges(best);
   const category = best.productCategory;
+  const pta = ptaFlag(best);
+  const notice = ptaNotice(offers);
 
   return (
     <article className="result-group card">
@@ -39,6 +42,7 @@ export default function ResultGroup({ group, currentId }) {
         <div className="result-group__info">
           <div className="result-group__badges">
             {category && <span className="badge badge-neutral">{categoryName(category)}</span>}
+            {pta && <VerdictBadge tone={pta.tone} label={pta.label} title={pta.reason} />}
             {badges.map((badge) => <VerdictBadge key={badge.id} tone={badge.tone} label={badge.label} title={badge.reason} />)}
           </div>
           <h1 className="result-group__name">{group.productName}</h1>
@@ -53,6 +57,8 @@ export default function ResultGroup({ group, currentId }) {
           <p className="small muted">Lowest at {platformName(best.platform)}</p>
         </div>
       </div>
+
+      {notice && <p className="result-group__pta small" role="note">{notice}</p>}
 
       <OfferTable offers={offers} name={group.productName} currentId={currentId} />
     </article>

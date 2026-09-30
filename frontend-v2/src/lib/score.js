@@ -43,10 +43,16 @@ export function scoreParts(offer) {
 /**
  * The offer the shopper should be pointed to as "the best deal": highest score among the offers whose price
  * we believe, and only when there is more than one offer (a single offer has not been compared with anything).
+ *
+ * An offer the server has marked (`ptaAssessment`: it does not say whether the phone is PTA approved, or is priced
+ * like a non-PTA unit) cannot be the best deal: it cannot be told apart from a cheaper non-PTA unit. The server
+ * applies the same rule to the product's own `bestDeal`, and summarizeOffers to the lowest price.
  */
 export function bestDealOffer(offers) {
   if (!Array.isArray(offers) || offers.length < 2) return null;
   const believable = offers.filter((offer) => !offer?.priceCheck?.status?.startsWith("suspect"));
-  const ranked = [...believable].sort((a, b) => (scoreOf(b) ?? 0) - (scoreOf(a) ?? 0));
+  const unmarked = believable.filter((offer) => !offer?.ptaAssessment);
+  const pool = unmarked.length > 0 ? unmarked : believable;
+  const ranked = [...pool].sort((a, b) => (scoreOf(b) ?? 0) - (scoreOf(a) ?? 0));
   return ranked[0] ?? null;
 }

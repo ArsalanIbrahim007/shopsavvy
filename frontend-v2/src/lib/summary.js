@@ -29,9 +29,12 @@ export function summarizeOffers(offers) {
     return { count: 0, platformCount: 0, lowest: null, average: null, bestDeal: null, flagged: 0, updatedAt: null };
   }
 
-  // An offer flagged as a probable listing error is never presented as the lowest price or the best deal.
+  // An offer flagged as a probable listing error is never presented as the lowest price or the best deal, and
+  // neither is one that does not say whether a phone is PTA approved while being priced like a non-PTA unit
+  // (see lib/pta.js): it would make the PTA-approved offers look expensive. They stay in the list, labelled.
   const believable = offers.filter((offer) => !suspect(offer));
-  const pool = believable.length ? believable : offers;
+  const comparable = believable.filter((offer) => !offer.ptaAssessment);
+  const pool = comparable.length ? comparable : believable.length ? believable : offers;
 
   const lowest = pool.reduce((a, b) => (b.price < a.price ? b : a));
   const bestDeal = [...pool].sort((a, b) => (b.dealScore || 0) - (a.dealScore || 0))[0] || lowest;

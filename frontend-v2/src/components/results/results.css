@@ -53,6 +53,7 @@
 @media (min-width: 720px) { .result-group__price { justify-items: end; text-align: right; } }
 .result-group__amount { font-family: var(--font-display); font-size: 1.625rem; font-weight: 800; color: var(--brand); }
 .result-group__price .btn { margin-top: var(--space-2); }
+.result-group__pta { margin: 0 var(--space-4) var(--space-4); padding: var(--space-3); border: 1px solid var(--caution-line); border-radius: var(--radius-control); background: var(--caution-soft); color: var(--ink); }
 
 /* the offers table */
 .offer-table__wrap { border-top: 1px solid var(--line); overflow-x: auto; background: var(--canvas); }
@@ -73,6 +74,7 @@
 /* table additions: tags under the store, verdict column, availability */
 .offer-table { min-width: 880px; }
 .offer-table__tags { display: flex; flex-direction: column; margin-top: 2px; }
+.offer-table__pta { margin-top: var(--space-1); }
 .offer-table__best { color: var(--brand); font-weight: 700; }
 .offer-table__rec { display: grid; gap: var(--space-1); justify-items: start; }
 .offer-table__age { display: block; }

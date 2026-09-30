@@ -6,6 +6,7 @@ import { Link, useLocation } from "react-router-dom";
 
 import { formatPrice } from "../lib/format.js";
 import { platformName } from "../lib/platforms.js";
+import { ptaFlag } from "../lib/pta.js";
 import { scoreOf } from "../lib/score.js";
 import { StoreMark } from "./StoreLogo.jsx";
 import { cardBadges } from "../lib/verdicts.js";
@@ -24,6 +25,7 @@ export default function ProductCard({ group }) {
   // The badges describe the offer whose price is shown, so the price and its verdict always agree.
   const badges = cardBadges(best);
   const score = scoreOf(best);
+  const pta = ptaFlag(best);
 
   return (
     <article className="product-card card">
@@ -43,6 +45,7 @@ export default function ProductCard({ group }) {
 
       <div className="product-card__badges">
         {score !== null && <span className="badge badge-neutral" title="Deal score out of 100: price, store trust, freshness and availability">Score {Math.round(score)}</span>}
+        {pta && <VerdictBadge tone={pta.tone} label={pta.label} title={pta.reason} />}
         {badges.map((badge) => (
           <VerdictBadge key={badge.id} tone={badge.tone} label={badge.label} title={badge.reason} />
         ))}
