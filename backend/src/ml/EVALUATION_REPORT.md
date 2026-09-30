@@ -139,10 +139,10 @@ headphones), which the production model never saw in training:
 - **"Samsung WA21CK6745BVRT 21KG Automatic Top Load Washing Machine"** (229999) vs **"Samsung Top Load Fully Automatic Washing Machine 8Kg White (WA21CK6745BVRT)"** (236632) — true label: match, ML said no-match. (same washing machine model code WA21CK6745BVRT; the capacity in one title is a store typo)
 - **"Nothing CMF Headphones Pro"** (32499) vs **"Nothing CMF Headphone Pro"** (34999) — true label: match, ML said no-match. (same Nothing CMF Headphone Pro; wording only)
 
-## Sanity check against the original 18 hand-labeled cases (`test-grouping-ml.js`)
+## Sanity check against the original 18 hand-labeled cases (`src/scripts/checks/test-grouping-ml.js`, `npm run check:grouping-ml`)
 
 The classifier was also run through the same 18 cases used to validate the rule-based system
-in `test-grouping.js` (report §4.4.3, Chapter 5). It passes 16/18, against the rule's 18/18.
+in `src/scripts/checks/test-grouping.js` (report §4.4.3, Chapter 5). It passes 16/18, against the rule's 18/18.
 
 The first attempt (a randomly-mined 150-pair dataset) only reached 12/18 — a genuine finding
 worth keeping in the record, not just the improved number: a model trained on **randomly

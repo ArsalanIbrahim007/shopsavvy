@@ -3,15 +3,15 @@
 // enough data points to evaluate. Every generated entry is tagged
 // source: "simulated" so seeded data stays distinguishable from scraped data.
 //
-//   node seed-history.js --dry
-//   node seed-history.js
-//   node seed-history.js --clean     (removes simulated entries only)
+//   node src/scripts/demo-data/seed-history.js --dry
+//   node src/scripts/demo-data/seed-history.js
+//   node src/scripts/demo-data/seed-history.js --clean     (removes simulated entries only)
 
 import { config } from "dotenv";
 config({ quiet: true });
 import mongoose from "mongoose";
-import Listing from "./src/models/listing.model.js";
-import PriceHistory from "./src/models/priceHistory.model.js";
+import Listing from "../../models/listing.model.js";
+import PriceHistory from "../../models/priceHistory.model.js";
 
 const DAYS_BACK = 45;
 const POINTS = 8;

@@ -2,7 +2,7 @@
 // fixed-threshold Jaccard decision in similarity.service.js. Not wired into
 // the live API by default (see productGrouping.service.js's matchStrategy
 // parameter) -- this exists for the side-by-side comparison in
-// src/scripts/ml/06-compare-grouping.js and test-grouping-ml.js. Flipping
+// src/scripts/ml/06-compare-grouping.js and src/scripts/checks/test-grouping-ml.js. Flipping
 // the live default is a deliberate one-line change for later, after the
 // team has reviewed the evaluation numbers in src/ml/EVALUATION_REPORT.md.
 

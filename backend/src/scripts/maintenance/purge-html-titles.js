@@ -2,8 +2,8 @@
 // Removes listings whose title contains raw HTML. These were produced before
 // cleanText stripped tags, and one of them was appearing in search results.
 //
-//   node purge-html-titles.js --dry
-//   node purge-html-titles.js
+//   node src/scripts/maintenance/purge-html-titles.js --dry
+//   node src/scripts/maintenance/purge-html-titles.js
 
 import { config } from "dotenv";
 config({ quiet: true });

@@ -45,9 +45,11 @@ const router = express.Router();
  *       201:
  *         description: Alert created.
  *       400:
- *         description: Validation failed (bad listingId, invalid email, or non-positive targetPrice).
+ *         description: Validation failed (bad listingId, invalid email, or non-positive targetPrice), or the target price is not below the current price.
+ *       404:
+ *         description: The listing does not exist.
  *       429:
- *         description: Rate limit exceeded (10 creates / 15 min / IP).
+ *         description: Rate limit exceeded (10 creates / 15 min / IP), or the email already has 20 active alerts.
  *   get:
  *     summary: List a person's alerts
  *     description: Requires the email as a lightweight anti-tampering check, since there's no real authentication in this system.
@@ -106,7 +108,9 @@ router.get("/", alertReadLimiter, getPriceAlerts);
  *       200:
  *         description: Alert cancelled.
  *       400:
- *         description: email missing from the request body, or it doesn't match the alert's owner.
+ *         description: email missing from the request body.
+ *       403:
+ *         description: The email does not match the alert's owner.
  *       404:
  *         description: Alert not found.
  *       429:

@@ -2,10 +2,10 @@
 import { config } from "dotenv";
 config({ quiet: true });
 import mongoose from "mongoose";
-import Listing from "./src/models/listing.model.js";
-import PriceHistory from "./src/models/priceHistory.model.js";
-import { attachPriceHistory } from "./src/services/historyEnrichment.service.js";
-import { calculateFakeDiscountScore } from "./src/ranking/scores/fakeDiscountScore.js";
+import Listing from "../../models/listing.model.js";
+import PriceHistory from "../../models/priceHistory.model.js";
+import { attachPriceHistory } from "../../services/historyEnrichment.service.js";
+import { calculateFakeDiscountScore } from "../../ranking/scores/fakeDiscountScore.js";
 
 await mongoose.connect(process.env.MONGO_URI);
 

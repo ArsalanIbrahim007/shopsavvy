@@ -1,4 +1,4 @@
-// check-api.js — run with: node check-api.js   (backend must be running)
+// check-api.js — run with: node src/scripts/diagnostics/check-api.js   (backend must be running)
 import { config } from "dotenv";
 config({ quiet: true });
 

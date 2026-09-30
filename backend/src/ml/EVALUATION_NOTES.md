@@ -1,7 +1,7 @@
-## Sanity check against the original 18 hand-labeled cases (`test-grouping-ml.js`)
+## Sanity check against the original 18 hand-labeled cases (`src/scripts/checks/test-grouping-ml.js`, `npm run check:grouping-ml`)
 
 The classifier was also run through the same 18 cases used to validate the rule-based system
-in `test-grouping.js` (report §4.4.3, Chapter 5). It passes 16/18, against the rule's 18/18.
+in `src/scripts/checks/test-grouping.js` (report §4.4.3, Chapter 5). It passes 16/18, against the rule's 18/18.
 
 The first attempt (a randomly-mined 150-pair dataset) only reached 12/18 — a genuine finding
 worth keeping in the record, not just the improved number: a model trained on **randomly

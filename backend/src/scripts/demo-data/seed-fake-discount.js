@@ -3,15 +3,15 @@
 // producing the pattern the detection engine is designed to catch: a headline
 // "discount" measured against a price the product never genuinely sold at.
 //
-//   node seed-fake-discount.js --dry
-//   node seed-fake-discount.js
+//   node src/scripts/demo-data/seed-fake-discount.js --dry
+//   node src/scripts/demo-data/seed-fake-discount.js
 
 import { config } from "dotenv";
 config({ quiet: true });
 import mongoose from "mongoose";
-import Listing from "./src/models/listing.model.js";
-import { attachPriceHistory } from "./src/services/historyEnrichment.service.js";
-import { calculateFakeDiscountScore } from "./src/ranking/scores/fakeDiscountScore.js";
+import Listing from "../../models/listing.model.js";
+import { attachPriceHistory } from "../../services/historyEnrichment.service.js";
+import { calculateFakeDiscountScore } from "../../ranking/scores/fakeDiscountScore.js";
 
 const dryRun = process.argv.includes("--dry");
 const INFLATION = 1.45; // ~45% above reference — past the 20% threshold, still plausible

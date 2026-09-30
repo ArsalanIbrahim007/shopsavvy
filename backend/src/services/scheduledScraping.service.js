@@ -16,7 +16,7 @@ import { runScrapersAndSave } from "./scraper.service.js";
 
 const MAX_QUERY_WORDS = 4;
 
-// Demo queries carry hand-seeded originalPrice values (seed-fake-discount.js)
+// Demo queries carry hand-seeded originalPrice values (src/scripts/demo-data/seed-fake-discount.js)
 // so the fake-discount badges have something to show. A scheduled re-scrape
 // upserts fresh price/originalPrice from the live site on every run, which
 // would silently overwrite that seeding -- the demo routine already re-seeds

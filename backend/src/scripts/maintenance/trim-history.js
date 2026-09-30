@@ -2,13 +2,13 @@
 // Repeated seeding stacks entries because the simulated flag does not persist
 // through the sub-schema, so they cannot be removed selectively.
 //
-//   node trim-history.js --dry
-//   node trim-history.js
+//   node src/scripts/maintenance/trim-history.js --dry
+//   node src/scripts/maintenance/trim-history.js
 
 import { config } from "dotenv";
 config({ quiet: true });
 import mongoose from "mongoose";
-import PriceHistory from "./src/models/priceHistory.model.js";
+import PriceHistory from "../../models/priceHistory.model.js";
 
 const KEEP = 8;
 const dryRun = process.argv.includes("--dry");

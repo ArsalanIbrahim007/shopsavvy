@@ -1,6 +1,6 @@
 // check-platform.js — shows what each platform has contributed
-//   node check-platform.js            (all platforms)
-//   node check-platform.js w11stop    (one platform, with sample titles)
+//   node src/scripts/diagnostics/check-platform.js            (all platforms)
+//   node src/scripts/diagnostics/check-platform.js w11stop    (one platform, with sample titles)
 
 import { config } from "dotenv";
 config({ quiet: true });
