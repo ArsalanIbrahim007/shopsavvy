@@ -104,3 +104,24 @@ export const validateCreateAlert = [
     return next(AppError.validation(errors.array()));
   },
 ];
+// The body of POST /api/alerts/confirm and /api/alerts/cancel: the secret from the emailed link.
+// Only its shape is checked here; whether it is genuine is decided in alertTokens.service.js.
+export const validateAlertToken = [
+  body("token")
+    .isString()
+    .withMessage("token is required")
+    .bail()
+    .trim()
+    .isLength({ min: 20, max: 200 })
+    .withMessage("token is not valid"),
+
+  (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (errors.isEmpty()) {
+      return next();
+    }
+
+    return next(AppError.validation(errors.array()));
+  },
+];

@@ -3,8 +3,10 @@ import { BASE_URL } from "../api/api";
 
 /**
  * "Tell me when this drops to X". Accountless: an email and a target price,
- * matching POST /api/alerts. The alert is stored and marked triggered when a
- * scheduled scrape sees the price reach the target.
+ * matching POST /api/alerts. The alert starts pending: the address's owner has to
+ * follow the link in the confirmation email before it becomes active (double
+ * opt-in), and it is marked triggered when a scheduled scrape sees the price reach
+ * the target.
  */
 function PriceAlertForm({ listing }) {
   const suggested = Math.floor((listing.price * 0.95) / 100) * 100;
@@ -31,7 +33,10 @@ function PriceAlertForm({ listing }) {
       if (response.ok && data.success) {
         setState({
           status: "done",
-          message: `Alert saved. It will fire when the price reaches PKR ${Number(targetPrice).toLocaleString()} or lower.`,
+          // The server says whether a confirmation email is needed and whether it could be sent.
+          message: data.confirmationRequired
+            ? data.message
+            : `Alert saved. It will fire when the price reaches PKR ${Number(targetPrice).toLocaleString()} or lower.`,
         });
       } else {
         const detail = data.errors?.map((e) => e.msg).join(". ");

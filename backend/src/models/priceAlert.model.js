@@ -7,8 +7,9 @@
 // so this is accountless: an alert is just an email address plus a target
 // price, the same pattern a "notify me when back in stock" button uses on
 // a site with no login. There's no way to verify the email actually
-// belongs to the requester at this stage -- see notification.service.js
-// for what that means for delivery.
+// belongs to the requester when the alert is typed in, so an alert starts
+// "pending" and only becomes active when the link emailed to that address is
+// followed (double opt-in, see alertTokens.service.js and notification.service.js).
 
 import mongoose from "mongoose";
 
@@ -50,9 +51,16 @@ const priceAlertSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["active", "triggered", "cancelled"],
-      default: "active",
+      // pending: created, waiting for the address's owner to follow the confirm link
+      // (an alert that is not active is never checked or emailed).
+      enum: ["pending", "active", "triggered", "cancelled"],
+      default: "pending",
       index: true,
+    },
+
+    confirmedAt: {
+      type: Date,
+      default: null,
     },
 
     triggeredAt: {

@@ -16,6 +16,7 @@ import healthRoutes from "./routes/health.routes.js";
 import listingRoutes from "./routes/listing.routes.js";
 import analyticsRoutes from "./routes/analytics.routes.js";
 import priceAlertRoutes from "./routes/priceAlert.routes.js";
+import alertPageRoutes from "./routes/alertPages.routes.js";
 
 export function createApp() {
   const app = express();
@@ -42,6 +43,8 @@ export function createApp() {
   app.use("/api/listings", listingRoutes);
   app.use("/api/analytics", analyticsRoutes);
   app.use("/api/alerts", priceAlertRoutes);
+  // The pages the links in alert emails open (confirm / cancel).
+  app.use("/alerts", alertPageRoutes);
 
   // Must stay last: anything nothing above answered, and every error thrown above.
   app.use(notFoundHandler);

@@ -89,13 +89,22 @@ describe("request bodies", () => {
     expect(body.errors.map((e) => e.path).sort()).toEqual(["email", "listingId", "targetPrice"]);
   });
 
-  it("requires an email to list or cancel alerts", async () => {
-    const list = await json("/api/alerts");
-    expect(list.res.status).toBe(400);
+  it("requires a well-formed token to confirm or cancel an alert, and an object in its place is rejected", async () => {
+    for (const path of ["/api/alerts/confirm", "/api/alerts/cancel"]) {
+      const missing = await postJson(path, {});
+      expect(missing.res.status, path).toBe(400);
+      expect(missing.body.code).toBe("VALIDATION_ERROR");
+      const operator = await postJson(path, { token: { $ne: "x" } });
+      expect(operator.res.status, path).toBe(400);
+    }
+  });
+
+  it("no longer answers the old list and cancel-by-email endpoints", async () => {
+    expect((await json("/api/alerts?email=a@b.co")).res.status).toBe(404);
     const cancel = await json("/api/alerts/6abaa344cdd20c9c0815d328", {
-      method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: { $ne: "x" } }),
+      method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: "a@b.co" }),
     });
-    expect(cancel.res.status).toBe(400);
+    expect(cancel.res.status).toBe(404);
   });
 });
 

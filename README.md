@@ -56,6 +56,9 @@ default set of queries to fill an empty database (`--clear` wipes existing listi
 | `SCHEDULED_SCRAPING` | `true` runs a daily background re-scrape to build price history. Off by default |
 | `WARM_DEALS` | `false` skips filling the top-deals cache at start-up |
 | `GROUPING_WORKERS` | Worker threads used for heavy grouping (default 2) |
+| `ALERT_TOKEN_SECRET` | Signs the confirm / cancel links in alert emails; use a long random value |
+| `PUBLIC_BASE_URL` | The API's public address, used in those links (default `http://localhost:<PORT>`) |
+| `ALERT_AUTO_CONFIRM` | `true` skips email confirmation of alerts. Demonstrations only |
 | `CORS_ORIGINS` | Websites allowed to read the API from a browser, comma separated origins (for example `https://shopsavvy.example`). Not set: only `localhost` pages, which is what local development needs. **Set it when deploying** |
 
 The frontend reads `VITE_API_URL` if the API is not on `http://localhost:5000/api`.
