@@ -1,0 +1,7 @@
+.store-logo { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.store-logo__name { font-weight: 600; }
+.store-mark {
+  flex: none; display: inline-grid; place-items: center;
+  border-radius: 8px; color: #fff; font-family: var(--font-display); font-weight: 800; line-height: 1;
+}
+.store-mark--logo { object-fit: contain; background: var(--paper); border: 1px solid var(--line); }

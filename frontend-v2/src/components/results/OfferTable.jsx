@@ -1,38 +1,51 @@
-// OfferTable.jsx — one product's offers side by side: store, price (with the store's "was" price and
-// a verdict on it), stock, when it was last updated, and a link to the store. Cheapest first, with the
-// lowest believable price marked, and the listing the shopper opened labelled. Every offer is shown.
+// OfferTable.jsx — one product's offers side by side: store (with its logo), price with the store's was-price,
+// a verdict on the discount, the deal score with its breakdown, the recommendation with a price sparkline,
+// stock and freshness, and a link to the store. Cheapest first, with the lowest believable price marked, the
+// best deal (highest score among believable prices, when offers were actually compared) marked, and the listing
+// the shopper opened labelled. Every offer is shown.
 //
-// "Discount" never repeats a store's claim as fact: the cell shows the verdict (verified / fake /
-// suspicious / above market / unusual price). A claim we could not check is shown as a claim.
+// "Discount" never repeats a store's claim as fact: the cell shows the verdict (verified / fake / suspicious /
+// above market / unusual price). A claim we could not check is shown as a claim.
 
 import { claimedDiscount } from "../../lib/filters.js";
 import { formatPercent, formatPrice, timeAgo } from "../../lib/format.js";
 import { platformName } from "../../lib/platforms.js";
 import { offerLink } from "../../lib/safeLink.js";
-import { offerFlags } from "../../lib/verdicts.js";
+import { bestDealOffer } from "../../lib/score.js";
+import { offerFlags, recommendationOf } from "../../lib/verdicts.js";
 import { summarizeOffers } from "../../lib/summary.js";
+import StoreLogo from "../StoreLogo.jsx";
 import VerdictBadge from "../VerdictBadge.jsx";
+import ScoreCell from "./ScoreCell.jsx";
+import Sparkline from "./Sparkline.jsx";
 import "./results.css";
 
 function DiscountCell({ offer }) {
   const flags = offerFlags(offer);
-  if (flags.length > 0) {
-    return (
-      <div className="offer-table__flags">
-        {flags.map((flag) => <VerdictBadge key={flag.id} tone={flag.tone} label={flag.label} title={flag.reason} />)}
-      </div>
-    );
-  }
   const claimed = claimedDiscount(offer);
-  return claimed > 0
-    ? <span className="small muted">Claims {formatPercent(claimed)} off</span>
-    : <span className="small muted">No discount claimed</span>;
+  return (
+    <div className="offer-table__flags">
+      {claimed > 0 && <span className="small muted">Claims {formatPercent(claimed)} off</span>}
+      {flags.map((flag) => <VerdictBadge key={flag.id} tone={flag.tone} label={flag.label} title={flag.reason} />)}
+      {claimed === 0 && flags.length === 0 && <span className="small muted">No discount claimed</span>}
+    </div>
+  );
+}
+
+function VerdictCell({ offer }) {
+  const rec = recommendationOf(offer);
+  return (
+    <div className="offer-table__rec">
+      <VerdictBadge tone={rec.tone} label={rec.label} title={offer.recommendation?.reason} />
+      <Sparkline offer={offer} />
+    </div>
+  );
 }
 
 export default function OfferTable({ offers, name, currentId }) {
   const sorted = [...offers].sort((a, b) => a.price - b.price);
   const lowestId = summarizeOffers(offers).lowest?._id;
-  const rows = sorted;
+  const bestId = bestDealOffer(offers)?._id;
 
   return (
     <div className="offer-table__wrap">
@@ -43,21 +56,25 @@ export default function OfferTable({ offers, name, currentId }) {
             <th scope="col">Store</th>
             <th scope="col" className="num">Price</th>
             <th scope="col">Discount</th>
-            <th scope="col">Stock</th>
-            <th scope="col">Updated</th>
+            <th scope="col">Deal score</th>
+            <th scope="col">Verdict</th>
+            <th scope="col">Availability</th>
             <th scope="col"><span className="visually-hidden">Link</span></th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((offer) => {
+          {sorted.map((offer) => {
             const href = offerLink(offer);
             const isLowest = offer._id === lowestId;
             return (
               <tr key={offer._id} className={isLowest ? "is-lowest" : undefined}>
                 <td>
-                  <span className="offer-table__store">{platformName(offer.platform)}</span>
-                  {isLowest && <span className="offer-table__lowest small">Lowest price</span>}
-                  {offer._id === currentId && <span className="offer-table__current small muted">The one you opened</span>}
+                  <StoreLogo platform={offer.platform} />
+                  <div className="offer-table__tags">
+                    {isLowest && <span className="offer-table__lowest small">Lowest price</span>}
+                    {offer._id === bestId && <span className="offer-table__best small">Best deal</span>}
+                    {offer._id === currentId && <span className="offer-table__current small muted">The one you opened</span>}
+                  </div>
                 </td>
                 <td className="num">
                   <span className="price offer-table__price">{formatPrice(offer.price)}</span>
@@ -66,8 +83,12 @@ export default function OfferTable({ offers, name, currentId }) {
                   )}
                 </td>
                 <td><DiscountCell offer={offer} /></td>
-                <td className="small">{offer.inStock === false ? <span className="muted">Out of stock</span> : "In stock"}</td>
-                <td className="small muted">{offer.lastScrapedAt ? timeAgo(offer.lastScrapedAt) : ""}</td>
+                <td><ScoreCell offer={offer} /></td>
+                <td><VerdictCell offer={offer} /></td>
+                <td className="small">
+                  {offer.inStock === false ? <span className="muted">Out of stock</span> : "In stock"}
+                  {offer.lastScrapedAt && <span className="offer-table__age muted">{timeAgo(offer.lastScrapedAt)}</span>}
+                </td>
                 <td>
                   {href ? (
                     <a
@@ -88,6 +109,9 @@ export default function OfferTable({ offers, name, currentId }) {
           })}
         </tbody>
       </table>
+      <p className="offer-table__note small muted">
+        The deal score combines price (60), store trust (20), data freshness (10) and availability (10). Hover or focus a score to see its parts.
+      </p>
     </div>
   );
 }

@@ -5,13 +5,14 @@
 // failing request never blanks the page. The deals block hides itself when there are none: the
 // server only reports savings it can verify, so the list is short by design and is never padded.
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 import { getCatalog, getDeals, getStats } from "../api/endpoints.js";
 import { useAsync } from "../hooks/useAsync.js";
 import { featuredCategories } from "../lib/categories.js";
 import { formatNumber, timeAgo } from "../lib/format.js";
+import { clearRecentSearches, getRecentSearches } from "../lib/recentSearches.js";
 import DealCard from "../components/DealCard.jsx";
 import ErrorState from "../components/ErrorState.jsx";
 import ProductCard from "../components/ProductCard.jsx";
@@ -29,6 +30,9 @@ const HOW_WE_CHECK = [
 ];
 
 function Hero() {
+  // This browser's own last searches (never sent anywhere); read once when the page opens.
+  const [recent, setRecent] = useState(getRecentSearches);
+
   return (
     <section className="hero">
       <div className="container hero__inner">
@@ -48,6 +52,15 @@ function Hero() {
             <Link key={term} className="chip" to={`/results?q=${encodeURIComponent(term)}`}>{term}</Link>
           ))}
         </p>
+        {recent.length > 0 && (
+          <p className="hero__popular small" aria-label="Your recent searches">
+            <span>Recent:</span>
+            {recent.map((term) => (
+              <Link key={term} className="chip" to={`/results?q=${encodeURIComponent(term)}`}>{term}</Link>
+            ))}
+            <button type="button" className="hero__clear" onClick={() => { clearRecentSearches(); setRecent([]); }}>Clear</button>
+          </p>
+        )}
       </div>
     </section>
   );
@@ -134,22 +147,23 @@ function Deals() {
   );
 }
 
-function MostComparedPhones() {
-  const phones = useAsync((signal) => getCatalog({ category: "smartphone", limit: 8, signal }), []);
+// The products of one category that the most stores sell, straight from the server's cached catalog.
+function MostCompared({ category, title, allLabel }) {
+  const products = useAsync((signal) => getCatalog({ category, limit: 8, signal }), [category]);
 
-  if (phones.status === "error") return null;
-  if (phones.status === "success" && phones.data.groups.length === 0) return null;
+  if (products.status === "error") return null;
+  if (products.status === "success" && products.data.groups.length === 0) return null;
 
   return (
-    <section className="home-section container" aria-labelledby="phones-heading" aria-busy={phones.status === "loading"}>
+    <section className="home-section container" aria-labelledby={`${category}-heading`} aria-busy={products.status === "loading"}>
       <div className="home-section__head">
-        <h2 id="phones-heading">Most compared phones</h2>
-        <Link to="/results?category=smartphone">See all phones</Link>
+        <h2 id={`${category}-heading`}>{title}</h2>
+        <Link to={`/results?category=${category}`}>{allLabel}</Link>
       </div>
       <div className="card-grid">
-        {phones.status === "loading"
+        {products.status === "loading"
           ? Array.from({ length: 4 }, (_, i) => <CardSkeleton key={i} />)
-          : phones.data.groups.map((group) => <ProductCard key={group.offers[0]._id} group={group} />)}
+          : products.data.groups.map((group) => <ProductCard key={group.offers[0]._id} group={group} />)}
       </div>
     </section>
   );
@@ -184,7 +198,9 @@ export default function Home() {
       <TrustRow stats={stats} />
       <Categories stats={stats} />
       <Deals />
-      <MostComparedPhones />
+      <MostCompared category="smartphone" title="Most compared phones" allLabel="See all phones" />
+      <MostCompared category="laptop" title="Most compared laptops" allLabel="See all laptops" />
+      <MostCompared category="tv" title="Most compared TVs" allLabel="See all TVs" />
       <HowWeCheck />
     </>
   );

@@ -6,6 +6,8 @@ import { Link, useLocation } from "react-router-dom";
 
 import { formatPrice } from "../lib/format.js";
 import { platformName } from "../lib/platforms.js";
+import { scoreOf } from "../lib/score.js";
+import { StoreMark } from "./StoreLogo.jsx";
 import { cardBadges } from "../lib/verdicts.js";
 import { summarizeOffers } from "../lib/summary.js";
 import ProductImage from "./ProductImage.jsx";
@@ -21,6 +23,7 @@ export default function ProductCard({ group }) {
 
   // The badges describe the offer whose price is shown, so the price and its verdict always agree.
   const badges = cardBadges(best);
+  const score = scoreOf(best);
 
   return (
     <article className="product-card card">
@@ -33,10 +36,13 @@ export default function ProductCard({ group }) {
 
       <div className="product-card__price">
         <span className="price product-card__amount">{formatPrice(best.price)}</span>
-        <span className="small muted">at {platformName(best.platform)}</span>
+        <span className="product-card__store small muted">
+          <StoreMark platform={best.platform} size={18} /> {platformName(best.platform)}
+        </span>
       </div>
 
       <div className="product-card__badges">
+        {score !== null && <span className="badge badge-neutral" title="Deal score out of 100: price, store trust, freshness and availability">Score {Math.round(score)}</span>}
         {badges.map((badge) => (
           <VerdictBadge key={badge.id} tone={badge.tone} label={badge.label} title={badge.reason} />
         ))}

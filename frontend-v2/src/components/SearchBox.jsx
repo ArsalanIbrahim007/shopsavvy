@@ -12,6 +12,7 @@ import { getSuggestions } from "../api/endpoints.js";
 import { useAsync } from "../hooks/useAsync.js";
 import { useDebouncedValue } from "../hooks/useDebouncedValue.js";
 import { categoryName } from "../lib/categories.js";
+import { addRecentSearch } from "../lib/recentSearches.js";
 import "./SearchBox.css";
 
 // The server refuses longer text anyway (400); stopping it here saves a round trip.
@@ -48,6 +49,7 @@ export default function SearchBox({ initialQuery = "", autoFocus = false, size =
     if (!query) return;
     setOpen(false);
     setActive(-1);
+    addRecentSearch(query);
     navigate(`/results?${new URLSearchParams({ q: query }).toString()}`);
   }
 

@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { formatPrice, timeAgo } from "../lib/format.js";
 import { categoryName } from "../lib/categories.js";
 import { platformName } from "../lib/platforms.js";
+import { StoreMark } from "./StoreLogo.jsx";
 import ProductImage from "./ProductImage.jsx";
 import VerdictBadge from "./VerdictBadge.jsx";
 import "./cards.css";
@@ -24,7 +25,9 @@ export default function DealCard({ deal }) {
 
       <div className="product-card__price">
         <span className="price product-card__amount">{formatPrice(lowest.price)}</span>
-        <span className="small muted">at {platformName(lowest.platform)}</span>
+        <span className="product-card__store small muted">
+          <StoreMark platform={lowest.platform} size={18} /> {platformName(lowest.platform)}
+        </span>
       </div>
 
       <div className="product-card__badges">

@@ -8,7 +8,7 @@
 
 import { canonicalPlatform, platformName } from "./platforms.js";
 import { DEFAULT_FACETS, FACETS_BY_CATEGORY, RESOLUTION_ORDER } from "./categories.js";
-import { formatCapacity, formatCondition, formatPta, formatScreen } from "./format.js";
+import { formatBrand, formatCapacity, formatCondition, formatPta, formatScreen } from "./format.js";
 
 export const SORTS = [
   { id: "recommended", label: "Best deal", hint: "Recommended" },
@@ -21,6 +21,7 @@ const SORT_IDS = new Set(SORTS.map((s) => s.id));
 
 // A filter facet: which offer field it reads, how its options are ordered and labelled.
 export const FACET_DEFS = {
+  brand: { title: "Brand", field: "brand", order: "count", format: formatBrand },
   storage: { title: "Storage", field: "storageGb", numeric: true, order: "value", format: formatCapacity },
   ram: { title: "RAM", field: "ramGb", numeric: true, order: "value", format: formatCapacity },
   screen: { title: "Screen size", field: "screenInches", numeric: true, order: "value", format: formatScreen },

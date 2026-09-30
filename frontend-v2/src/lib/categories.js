@@ -43,13 +43,13 @@ export function featuredCategories(counts = [], { min = MIN_TILE_COUNT } = {}) {
 }
 
 export const FACETS_BY_CATEGORY = {
-  smartphone: ["storage", "ram", "colour", "condition", "pta"],
-  tablet: ["storage", "ram", "colour", "condition", "pta"],
-  laptop: ["storage", "ram", "screen", "colour", "condition"],
-  tv: ["screen", "resolution", "condition"],
-  monitor: ["screen", "resolution", "condition"],
-  smartwatch: ["colour", "condition"],
-  headphones: ["colour", "condition"],
+  smartphone: ["brand", "storage", "ram", "colour", "condition", "pta"],
+  tablet: ["brand", "storage", "ram", "colour", "condition", "pta"],
+  laptop: ["brand", "storage", "ram", "screen", "colour", "condition"],
+  tv: ["brand", "screen", "resolution", "condition"],
+  monitor: ["brand", "screen", "resolution", "condition"],
+  smartwatch: ["brand", "colour", "condition"],
+  headphones: ["brand", "colour", "condition"],
   camera: ["condition"],
   appliance: ["condition"],
   accessory: ["colour", "condition"],

@@ -23,6 +23,14 @@ export const formatCondition = (value) => CONDITIONS[value] || value;
 const PTA = { pta_approved: "PTA approved", non_pta: "Non-PTA" };
 export const formatPta = (value) => PTA[value] || value;
 
+/** Stores and our own parsing give brands in lower case: "apple" -> "Apple", short ones are acronyms: "hp" -> "HP". */
+export function formatBrand(brand) {
+  const text = String(brand ?? "").trim();
+  if (!text) return "";
+  if (text.length <= 3) return text.toUpperCase();
+  return text.replace(/(^|[\s-])([a-z])/g, (_, lead, letter) => lead + letter.toUpperCase());
+}
+
 export const formatScreen = (inches) => `${inches}"`;
 
 /** 25 -> "25% off". Whole percent; anything under 1% is not worth showing. */

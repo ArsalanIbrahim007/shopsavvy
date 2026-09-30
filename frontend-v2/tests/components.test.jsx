@@ -303,6 +303,17 @@ describe("Home", () => {
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(/know if the price is real/i);
   });
 
+  it("shows the most compared products of phones, laptops and TVs, each from that category's catalog", async () => {
+    renderAt("/", <Home />);
+    for (const title of [/most compared phones/i, /most compared laptops/i, /most compared tvs/i]) {
+      expect(await screen.findByRole("heading", { name: title })).toBeInTheDocument();
+    }
+    expect(screen.getByRole("link", { name: "See all laptops" })).toHaveAttribute("href", "/results?category=laptop");
+    expect(screen.getByRole("link", { name: "See all TVs" })).toHaveAttribute("href", "/results?category=tv");
+    const categories = vi.mocked(api.getCatalog).mock.calls.map(([arg]) => arg.category).sort();
+    expect(categories).toEqual(["laptop", "smartphone", "tv"]);
+  });
+
   it("has the hero search and popular searches that go to the results page", async () => {
     renderAt("/", <Home />);
     expect(screen.getByRole("combobox")).toBeInTheDocument();

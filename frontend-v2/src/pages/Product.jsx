@@ -1,16 +1,38 @@
-// Product.jsx — one product and every store's offer for it, side by side: photo, name, verdict,
-// best price and the saving, then the offers table (cheapest first, the lowest marked, the listing
-// the shopper opened labelled). Reached by clicking a card in the results or on the home page.
-// The verdict panel, price-history chart, variant picker and alert form arrive in stage 3.
+// Product.jsx — one product and every store's offer for it, side by side (reached by clicking a card).
+// The top is the comparison: photo, name, verdict, best price, and the offers table with deal scores.
+// Below it, about the listing the shopper opened: the three checks behind its verdict (with the server's
+// reasons), every store's price history, the price alert form, the specifications, and the cross-store summary.
 
 import { Link, useLocation, useParams } from "react-router-dom";
 
 import { getListing } from "../api/endpoints.js";
 import { useAsync } from "../hooks/useAsync.js";
+import { platformName } from "../lib/platforms.js";
 import ErrorState from "../components/ErrorState.jsx";
+import AlertForm from "../components/product/AlertForm.jsx";
+import CrossStoreSummary from "../components/product/CrossStoreSummary.jsx";
+import DealVerdict from "../components/product/DealVerdict.jsx";
+import PriceHistoryChart from "../components/product/PriceHistoryChart.jsx";
+import Specifications from "../components/product/Specifications.jsx";
 import ResultGroup from "../components/results/ResultGroup.jsx";
 import { Skeleton } from "../components/Skeleton.jsx";
+import "../components/product/product.css";
 import "./Product.css";
+
+function Explainer() {
+  return (
+    <section className="explain card" aria-labelledby="explain-heading">
+      <h2 id="explain-heading">How we check a discount</h2>
+      <p className="muted">A store's "was" price is only a claim. We test it in three ways, and show you the reason for each result:</p>
+      <ul>
+        <li><strong>Against this listing's own history.</strong> If the price was never anywhere near the claimed one, the discount is flagged. This needs at least three recorded prices, so a new listing stays "unverified".</li>
+        <li><strong>Against the other stores.</strong> A "was" price above anything other stores charge for the same product is marked as above market.</li>
+        <li><strong>Against what is plausible.</strong> A price far out of line with every other store is marked unusual, and is never counted as the lowest price or a saving.</li>
+      </ul>
+      <p className="small"><Link to="/how-it-works">Read more about how ShopSavvy checks prices</Link></p>
+    </section>
+  );
+}
 
 export default function Product() {
   const { id } = useParams();
@@ -47,16 +69,37 @@ export default function Product() {
 
   const { listing, offers, productGroup } = product.data;
   const clickedName = typeof state?.name === "string" && state.name.trim() ? state.name : null;
-  const group = {
-    productName: clickedName || productGroup?.productName || listing.title,
-    // The API always includes the listing itself; the fallback only guards an empty answer.
-    offers: offers.length > 0 ? offers : [listing],
-  };
+  // The API always includes the listing itself; the fallback only guards an empty answer.
+  const allOffers = offers.length > 0 ? offers : [listing];
+  const group = { productName: clickedName || productGroup?.productName || listing.title, offers: allOffers };
 
   return (
     <div className="container product">
       {back}
       <ResultGroup group={group} currentId={listing._id} />
+
+      <section className="product-section" aria-labelledby="verdict-heading">
+        <h2 id="verdict-heading">Deal verdict for {platformName(listing.platform)}</h2>
+        <DealVerdict listing={listing} />
+      </section>
+
+      <section className="product-section" aria-labelledby="history-heading">
+        <h2 id="history-heading">Price history</h2>
+        <PriceHistoryChart offers={allOffers} currentId={listing._id} />
+      </section>
+
+      <div className="product-facts">
+        <section className="product-section" aria-labelledby="alert-heading">
+          <h2 id="alert-heading">Price alert</h2>
+          <AlertForm listing={listing} />
+        </section>
+        <div className="product-section">
+          <CrossStoreSummary offers={allOffers} />
+          <Specifications listing={listing} />
+        </div>
+      </div>
+
+      <Explainer />
     </div>
   );
 }

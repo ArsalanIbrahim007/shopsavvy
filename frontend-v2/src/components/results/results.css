@@ -69,3 +69,41 @@
 .offer-table__flags { display: flex; flex-wrap: wrap; gap: var(--space-1); }
 .offer-table__go { min-height: 36px; padding: 0 var(--space-4); font-size: 0.875rem; white-space: nowrap; }
 .offer-table__current { display: block; }
+
+/* table additions: tags under the store, verdict column, availability */
+.offer-table { min-width: 880px; }
+.offer-table__tags { display: flex; flex-direction: column; margin-top: 2px; }
+.offer-table__best { color: var(--brand); font-weight: 700; }
+.offer-table__rec { display: grid; gap: var(--space-1); justify-items: start; }
+.offer-table__age { display: block; }
+.offer-table__note { padding: var(--space-3) var(--space-4); border-top: 1px solid var(--line-soft); }
+
+/* deal score */
+.score-cell { position: relative; display: grid; gap: 4px; width: 92px; outline-offset: 4px; }
+.score-value { font-family: var(--font-display); font-weight: 800; font-size: 1.0625rem; }
+.score-high { color: var(--good); }
+.score-mid { color: var(--caution); }
+.score-low { color: var(--bad); }
+.score-bar { display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: var(--line); }
+.score-seg { min-width: 2px; }
+.seg-price { background: var(--brand); }
+.seg-trust { background: var(--good); }
+.seg-freshness { background: var(--accent-hover); }
+.seg-availability { background: #7c8db5; }
+.score-popover {
+  display: none; position: absolute; z-index: 10; left: 0; top: calc(100% + 6px); width: 260px; padding: var(--space-3);
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-control);
+  box-shadow: 0 8px 24px rgba(15, 27, 45, 0.16); text-align: left;
+}
+.score-cell:hover .score-popover, .score-cell:focus .score-popover, .score-cell:focus-within .score-popover { display: grid; gap: var(--space-2); }
+.score-popover__head { font-weight: 700; font-size: 0.8125rem; }
+.score-popover__row { display: grid; grid-template-columns: 10px 1fr auto; gap: var(--space-2); align-items: center; font-size: 0.8125rem; }
+.score-popover__total { display: flex; justify-content: space-between; border-top: 1px solid var(--line); padding-top: var(--space-2); font-weight: 700; font-size: 0.8125rem; }
+.score-key { width: 10px; height: 10px; border-radius: 2px; }
+
+/* sparkline */
+.sparkline { display: inline-grid; gap: 2px; }
+.sparkline polyline { stroke: var(--ink-faint); }
+.sparkline circle { fill: var(--ink-faint); }
+.sparkline--down polyline { stroke: var(--good); } .sparkline--down circle { fill: var(--good); }
+.sparkline--up polyline { stroke: var(--bad); } .sparkline--up circle { fill: var(--bad); }

@@ -143,7 +143,7 @@ describe("Results: the product cards", () => {
 
     expect(card).toHaveTextContent("Samsung Galaxy A17 256GB");
     expect(card).toHaveTextContent("PKR 64,000");
-    expect(card).toHaveTextContent("at PriceOye");
+    expect(card).toHaveTextContent("PriceOye"); // the store: its mark and name
     expect(card).toHaveTextContent("Good deal");
     expect(card).toHaveTextContent("4 offers from 4 stores");
     expect(within(card).queryByRole("table")).toBeNull(); // the comparison table is on the product page
@@ -178,7 +178,7 @@ describe("Results: the product cards", () => {
     renderResults("/results?q=a17");
     const card = await screen.findByRole("article");
     expect(card).toHaveTextContent("PKR 65,500");
-    expect(card).toHaveTextContent("at Mega.pk");
+    expect(card).toHaveTextContent("Mega.pk");
     expect(card).not.toHaveTextContent("PKR 6,400");
   });
 });
@@ -263,6 +263,22 @@ describe("Results: filters and sorting live in the URL", () => {
     fireEvent.click(within(storage).getByRole("checkbox", { name: /128 GB/ }));
     expect(where()).toContain("storage=128");
     expect(titles()).toEqual(["Samsung Galaxy A57 128GB"]);
+  });
+
+  it("offers the brand as a filter, formatted, and keeps the choice in the URL", async () => {
+    serve([
+      group("Samsung Galaxy A17 256GB", [offer("a1", "priceoye", 64000, { brand: "samsung" }), offer("a2", "mega", 65000, { brand: "samsung" })]),
+      group("Apple iPhone 16 128GB", [offer("i1", "priceoye", 300000, { brand: "apple", storageGb: 128 }), offer("i2", "mega", 305000, { brand: "apple", storageGb: 128 })]),
+    ]);
+    renderResults("/results?q=phone");
+    await screen.findAllByRole("article");
+    const brand = stores().getByText("Brand").closest("fieldset");
+    expect(within(brand).getByRole("checkbox", { name: /^Samsung/ }).closest("label")).toHaveTextContent("2");
+    expect(within(brand).getByRole("checkbox", { name: /^Apple/ })).toBeInTheDocument();
+
+    fireEvent.click(within(brand).getByRole("checkbox", { name: /^Apple/ }));
+    expect(where()).toBe("/results?q=phone&brand=apple");
+    expect(titles()).toEqual(["Apple iPhone 16 128GB"]);
   });
 
   it("switches category, clears the previous category's facet choices, and offers the new category's filters", async () => {

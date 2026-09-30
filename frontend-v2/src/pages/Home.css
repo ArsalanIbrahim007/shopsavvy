@@ -14,6 +14,8 @@
 .hero__search { width: 100%; max-width: 640px; }
 .hero__popular { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: var(--space-2); color: #cfd9ea; }
 .hero .chip { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.25); color: #fff; }
+.hero__clear { background: none; border: 0; color: #cfd9ea; text-decoration: underline; cursor: pointer; font: inherit; padding: var(--space-1); }
+.hero__clear:hover { color: #fff; }
 .hero a.chip:hover { background: rgba(255, 255, 255, 0.18); border-color: #fff; color: #fff; }
 
 /* the trust row overlaps the hero's lower edge */

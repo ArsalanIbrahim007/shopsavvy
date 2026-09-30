@@ -38,7 +38,8 @@ function serve(offers, { current = offers[0], name } = {}) {
   });
 }
 
-const rowsOf = () => screen.getAllByRole("row").slice(1);
+// the offers table only (the page also has a specifications table and a recorded-prices table)
+const rowsOf = () => within(screen.getByRole("table", { name: /^offers for/i })).getAllByRole("row").slice(1);
 const priceOf = (row) => within(row).getAllByRole("cell")[1].textContent;
 
 beforeEach(() => vi.spyOn(console, "error").mockImplementation(() => {}));
@@ -171,6 +172,48 @@ describe("Product page: the name", () => {
       expect(await screen.findByRole("heading", { level: 1, name: "Samsung Galaxy A17 8GB" }), String(name)).toBeInTheDocument();
       unmount();
     }
+  });
+});
+
+describe("Product page: everything about the opened listing", () => {
+  const history = (price) => [{ price: price + 6000, recordedAt: new Date(Date.now() - 20 * 86400000).toISOString() }, { price, recordedAt: new Date(Date.now() - 86400000).toISOString() }];
+
+  it("shows the verdict checks, price history, alert form, specifications and summary, with the store logos and scores", async () => {
+    const offers = [
+      offer("p1", "priceoye", 64000, { brand: "samsung", storageGb: 256, ptaStatus: "pta_approved", dealScore: 91, priceHistory: history(64000), recommendation: { action: "GOOD_DEAL", reason: "Cheapest in 20 days." } }),
+      offer("p2", "mega", 66000, { dealScore: 70, priceHistory: history(66000) }),
+    ];
+    serve(offers, { name: "Samsung Galaxy A17" });
+    renderProduct("p1");
+    await screen.findByRole("article");
+
+    expect(screen.getByRole("heading", { level: 2, name: "Deal verdict for PriceOye" })).toBeInTheDocument();
+    expect(screen.getByText("Cheapest in 20 days.")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Price history" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "Price alert" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Your email")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "Specifications" })).toBeInTheDocument();
+    expect(screen.getByText("Samsung")).toBeInTheDocument(); // the brand, capitalised
+    expect(screen.getByRole("heading", { level: 2, name: "Across stores" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 2, name: "How we check a discount" })).toBeInTheDocument();
+    expect(document.querySelectorAll(".offer-table .store-mark")).toHaveLength(2);
+    expect(within(screen.getByRole("table", { name: /^offers for/i })).getByText("91.0")).toBeInTheDocument();
+  });
+
+  it("starts the alert target about 5% below the opened listing's price", async () => {
+    serve([offer("p1", "priceoye", 64299), offer("p2", "mega", 66000)]);
+    renderProduct("p1");
+    await screen.findByRole("article");
+    expect(screen.getByLabelText(/alert me at or below/i)).toHaveValue(61000);
+  });
+
+  it("copes with a listing that has no history, no specifications and no scores", async () => {
+    serve([offer("p1", "priceoye", 64000, { dealScore: undefined, productCategory: "other" })]);
+    renderProduct("p1");
+    await screen.findByRole("article");
+    expect(screen.getByText(/no price history has been recorded/i)).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { level: 2, name: "Specifications" })).toBeNull();
+    expect(screen.getByText("Not scored")).toBeInTheDocument();
   });
 });
 
