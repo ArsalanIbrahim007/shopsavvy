@@ -8,6 +8,7 @@ import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 
 import { swaggerSpec } from "./config/swagger.js";
+import { buildCorsOptions } from "./config/cors.js";
 import { requestId } from "./middleware/requestId.middleware.js";
 import { requestLogger } from "./middleware/requestLogger.middleware.js";
 import { notFoundHandler, globalErrorHandler } from "./middleware/error.middleware.js";
@@ -26,7 +27,8 @@ export function createApp() {
   app.use(requestId);
   app.use(requestLogger);
 
-  app.use(cors());
+  // Which websites may read responses from a browser: see config/cors.js (CORS_ORIGINS).
+  app.use(cors(buildCorsOptions()));
   // No endpoint takes a large body; a small explicit limit is cheaper than the
   // default being an accident.
   app.use(express.json({ limit: "100kb" }));
