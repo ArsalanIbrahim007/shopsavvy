@@ -4,4 +4,4 @@
   flex: none; display: inline-grid; place-items: center;
   border-radius: 8px; color: #fff; font-family: var(--font-display); font-weight: 800; line-height: 1;
 }
-.store-mark--logo { object-fit: contain; background: var(--paper); border: 1px solid var(--line); }
+.store-mark--logo { object-fit: contain; background: var(--paper); border: 1px solid var(--line); padding: 3px; box-sizing: border-box; }

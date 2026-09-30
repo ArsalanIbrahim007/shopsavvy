@@ -17,6 +17,9 @@ import { ApiError } from "../src/api/errors.js";
 import { formatBrand, formatDate } from "../src/lib/format.js";
 import { suggestedTarget, validateAlert } from "../src/lib/alertForm.js";
 import StoreLogo, { StoreMark } from "../src/components/StoreLogo.jsx";
+import { STORE_LOGO_FILES, logoSrc } from "../src/lib/storeLogos.js";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import ScoreCell from "../src/components/results/ScoreCell.jsx";
 import Sparkline from "../src/components/results/Sparkline.jsx";
 import OfferTable from "../src/components/results/OfferTable.jsx";
@@ -63,25 +66,62 @@ describe("formatBrand", () => {
 });
 
 describe("StoreLogo", () => {
-  it("shows a monogram badge in the store's colour with the store's name as text", () => {
-    const { container } = render(<StoreLogo platform="priceoye" />);
-    expect(screen.getByText("PriceOye")).toBeInTheDocument();
+  it("shows a bundled logo with the store's name as text, from our own files", () => {
+    const { container } = render(<StoreLogo platform="mega" />);
+    expect(screen.getByText("Mega.pk")).toBeInTheDocument();
+    const img = container.querySelector("img.store-mark");
+    expect(img).toHaveAttribute("src", "/stores/mega.png");
+    expect(img).toHaveAttribute("alt", ""); // decorative: the name is the label
+  });
+
+  it("uses a monogram badge in the store's colour for a store without a logo file", () => {
+    const { container } = render(<StoreLogo platform="ishopping" />);
+    expect(screen.getByText("iShopping")).toBeInTheDocument();
+    expect(container.querySelector("img")).toBeNull();
     const mark = container.querySelector(".store-mark");
-    expect(mark).toHaveTextContent("P");
-    expect(mark).toHaveAttribute("aria-hidden", "true"); // decorative: the name is the label
+    expect(mark).toHaveTextContent("I");
+    expect(mark).toHaveAttribute("aria-hidden", "true");
     expect(mark.style.background).not.toBe("");
   });
 
   it("gives different stores different badges, and an unknown store a neutral one", () => {
-    const { container } = render(<><StoreMark platform="mega" /><StoreMark platform="telemart" /><StoreMark platform="brand new store" /></>);
+    const { container } = render(<><StoreMark platform="ishopping" /><StoreMark platform="brand new store" /></>);
     const marks = [...container.querySelectorAll(".store-mark")];
-    expect(marks.map((m) => m.textContent)).toEqual(["M", "T", "B"]);
+    expect(marks.map((m) => m.textContent)).toEqual(["I", "B"]);
     expect(marks[0].style.background).not.toBe(marks[1].style.background);
   });
 
-  it("never requests an image from a store's own site", () => {
-    const { container } = render(<StoreLogo platform="shophive" />);
+  it("falls back to the monogram when a logo file fails to load", () => {
+    const { container } = render(<StoreMark platform="paklap" />);
+    fireEvent.error(container.querySelector("img"));
     expect(container.querySelector("img")).toBeNull();
+    expect(container.querySelector(".store-mark")).toHaveTextContent("P");
+  });
+
+  it("only ever points at our own files, never at a store's website", () => {
+    for (const id of Object.keys(STORE_LOGO_FILES)) {
+      const src = logoSrc(id);
+      expect(src, id).toMatch(/^\/stores\/[a-z0-9]+\.(png|ico)$/);
+      expect(src).not.toMatch(/^(https?:)?\/\//);
+    }
+    expect(logoSrc("PriceOye")).toBe(logoSrc("priceoye"));
+    expect(logoSrc("some new store")).toBeNull();
+    expect(logoSrc("")).toBeNull();
+    expect(logoSrc(undefined)).toBeNull();
+  });
+
+  it("has every listed logo file on disk, small, and really an image (not a web page saved by mistake)", () => {
+    for (const [id, file] of Object.entries(STORE_LOGO_FILES)) {
+      const path = join(process.cwd(), "public", "stores", file); // vitest runs from the project folder
+      expect(existsSync(path), id).toBe(true);
+      const bytes = readFileSync(path);
+      expect(bytes.length, id).toBeGreaterThan(100);
+      expect(bytes.length, id).toBeLessThan(30000);
+      const isPng = bytes.subarray(0, 4).toString("hex") === "89504e47";
+      const isIco = bytes.subarray(0, 4).toString("hex") === "00000100";
+      expect(isPng || isIco, id).toBe(true);
+      expect(file.endsWith(".png") ? isPng : isIco, id).toBe(true); // the extension tells the truth
+    }
   });
 });
 
