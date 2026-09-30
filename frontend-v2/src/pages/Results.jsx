@@ -21,7 +21,7 @@ import { newestScrape, summarizeOffers } from "../lib/summary.js";
 import ErrorState from "../components/ErrorState.jsx";
 import FilterPanel from "../components/results/FilterPanel.jsx";
 import IntegrityStrip from "../components/results/IntegrityStrip.jsx";
-import ResultGroup from "../components/results/ResultGroup.jsx";
+import ProductCard from "../components/ProductCard.jsx";
 import SummaryCards from "../components/results/SummaryCards.jsx";
 import { CardSkeleton } from "../components/Skeleton.jsx";
 import "../components/results/results.css";
@@ -61,12 +61,14 @@ function Empty({ query }) {
   );
 }
 
-/** The product cards, PAGE at a time. Keyed by the URL, so a new filter starts from the top again. */
+/** The product cards in a grid, PAGE at a time. Keyed by the URL, so a new filter starts from the top again. */
 function GroupList({ groups }) {
   const [visible, setVisible] = useState(PAGE);
   return (
     <>
-      {groups.slice(0, visible).map((group) => <ResultGroup key={groupKey(group)} group={group} />)}
+      <div className="card-grid">
+        {groups.slice(0, visible).map((group) => <ProductCard key={groupKey(group)} group={group} />)}
+      </div>
       {groups.length > visible && (
         <button type="button" className="btn btn-ghost" onClick={() => setVisible((n) => n + PAGE)}>
           Show more products ({formatNumber(groups.length - visible)} left)

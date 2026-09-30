@@ -1,8 +1,9 @@
-// ResultGroup.jsx — one product in the results: photo, name, verdict, how much a shopper can save
-// across stores, the best price, and the offers table underneath. The verdict badges describe the
-// offer whose price is shown, so the price and its verdict always agree (see cardBadges).
-
-import { Link } from "react-router-dom";
+// ResultGroup.jsx — one product, laid out for the product page: photo, name, verdict, how much a
+// shopper can save across stores, the best price, and the offers table underneath (every offer,
+// cheapest first). The verdict badges describe the offer whose price is shown, so the price and its
+// verdict always agree (see cardBadges).
+//
+// The results list shows the compact ProductCard instead; clicking one leads here.
 
 import { categoryName } from "../../lib/categories.js";
 import { formatPrice } from "../../lib/format.js";
@@ -16,7 +17,7 @@ import "./results.css";
 
 const isSuspect = (offer) => offer?.priceCheck?.status?.startsWith("suspect");
 
-export default function ResultGroup({ group }) {
+export default function ResultGroup({ group, currentId }) {
   const offers = group.offers ?? [];
   const summary = summarizeOffers(offers);
   const best = summary.lowest;
@@ -32,7 +33,7 @@ export default function ResultGroup({ group }) {
     <article className="result-group card">
       <div className="result-group__head">
         <div className="result-group__image">
-          <ProductImage src={best.imageUrl} alt="" height={120} />
+          <ProductImage src={best.imageUrl} alt={group.productName} height={140} />
         </div>
 
         <div className="result-group__info">
@@ -40,9 +41,7 @@ export default function ResultGroup({ group }) {
             {category && <span className="badge badge-neutral">{categoryName(category)}</span>}
             {badges.map((badge) => <VerdictBadge key={badge.id} tone={badge.tone} label={badge.label} title={badge.reason} />)}
           </div>
-          <h2 className="result-group__name">
-            <Link to={`/product/${best._id}`}>{group.productName}</Link>
-          </h2>
+          <h1 className="result-group__name">{group.productName}</h1>
           <p className="small muted">
             {summary.count} {summary.count === 1 ? "offer" : "offers"} from {summary.platformCount} {summary.platformCount === 1 ? "store" : "stores"}
             {saving > 0 ? ` · you can save up to ${formatPrice(saving)}` : ""}
@@ -52,11 +51,10 @@ export default function ResultGroup({ group }) {
         <div className="result-group__price">
           <p className="price result-group__amount">{formatPrice(best.price)}</p>
           <p className="small muted">Lowest at {platformName(best.platform)}</p>
-          <Link className="btn btn-primary" to={`/product/${best._id}`}>View details</Link>
         </div>
       </div>
 
-      <OfferTable offers={offers} name={group.productName} />
+      <OfferTable offers={offers} name={group.productName} currentId={currentId} />
     </article>
   );
 }

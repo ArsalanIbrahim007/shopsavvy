@@ -68,8 +68,4 @@
 .offer-table__was { display: block; text-decoration: line-through; }
 .offer-table__flags { display: flex; flex-wrap: wrap; gap: var(--space-1); }
 .offer-table__go { min-height: 36px; padding: 0 var(--space-4); font-size: 0.875rem; white-space: nowrap; }
-.offer-table__more {
-  width: 100%; padding: var(--space-3); border: 0; border-top: 1px solid var(--line);
-  background: var(--paper); color: var(--brand); font: inherit; font-weight: 600; cursor: pointer;
-}
-.offer-table__more:hover { background: var(--brand-soft); }
+.offer-table__current { display: block; }

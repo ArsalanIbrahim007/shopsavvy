@@ -1,8 +1,8 @@
 // ProductCard.jsx — one product (a group of offers for the same product) in the results list:
 // image, name, the best believable price and who has it, how many offers, and the verdict.
-// Stage 1 version: no comparison table or filters yet, those arrive with the results page.
+// Clicking it opens the product page, which shows every store's offer side by side.
 
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 import { formatPrice } from "../lib/format.js";
 import { platformName } from "../lib/platforms.js";
@@ -13,6 +13,7 @@ import VerdictBadge from "./VerdictBadge.jsx";
 import "./cards.css";
 
 export default function ProductCard({ group }) {
+  const { pathname, search } = useLocation();
   const offers = group.offers ?? [];
   const summary = summarizeOffers(offers);
   const best = summary.lowest;
@@ -23,7 +24,9 @@ export default function ProductCard({ group }) {
 
   return (
     <article className="product-card card">
-      <Link to={`/product/${best._id}`} className="product-card__link" aria-label={`${group.productName}, from ${formatPrice(best.price)}`}>
+      {/* `from` lets the product page's back link return to this exact list, filters included; `name` keeps the
+          title the shopper clicked (the page re-groups the product, and its first title can differ) */}
+      <Link to={`/product/${best._id}`} state={{ from: `${pathname}${search}`, name: group.productName }} className="product-card__link" aria-label={`${group.productName}, from ${formatPrice(best.price)}`}>
         <ProductImage src={best.imageUrl} alt="" />
         <h3 className="product-card__name">{group.productName}</h3>
       </Link>

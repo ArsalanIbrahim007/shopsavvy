@@ -36,9 +36,11 @@ const TV = group("Samsung 55 inch 4K TV", [
   offer("c2", "mega", 92000, { productCategory: "tv", storageGb: null, ptaStatus: "unknown", screenInches: 55, resolution: "FHD" }),
 ]);
 
+const useLocationState = () => ({ state: useLocation().state });
 const Where = () => {
   const { pathname, search } = useLocation();
-  return <p data-testid="where">{decodeURIComponent(pathname + search)}</p>;
+  const { state } = useLocationState();
+  return <><p data-testid="where">{decodeURIComponent(pathname + search)}</p><p data-testid="state">{state ? JSON.stringify(state) : ""}</p></>;
 };
 
 function renderResults(path) {
@@ -49,7 +51,7 @@ function renderResults(path) {
   );
 }
 const where = () => screen.getByTestId("where").textContent;
-const titles = () => screen.getAllByRole("article").map((a) => within(a).getByRole("heading", { level: 2 }).textContent);
+const titles = () => screen.getAllByRole("article").map((a) => within(a).getByRole("heading", { level: 3 }).textContent);
 const stores = () => within(screen.getByRole("complementary", { name: /filters/i }));
 const store = (name) => stores().getByRole("checkbox", { name: new RegExp(`^${name}`, "i") });
 
@@ -96,7 +98,7 @@ describe("Results: summary", () => {
     renderResults("/results?q=a17");
     const cards = await screen.findByRole("group", { name: /summary of these results/i });
     expect(cards).toHaveTextContent("PKR 65,500at Mega.pk");
-    expect(within(screen.getByRole("article")).queryByText("Lowest price")).not.toHaveTextContent("PriceOye");
+    expect(screen.getByRole("article")).not.toHaveTextContent("PKR 6,400");
   });
 });
 
@@ -133,97 +135,51 @@ describe("Results: integrity strip", () => {
   });
 });
 
-describe("Results: a product and its offers", () => {
-  it("shows one card per product with the best price, the saving, and the offers cheapest first", async () => {
+describe("Results: the product cards", () => {
+  it("shows one compact card per product: name, best price and store, verdict, offers and stores", async () => {
     renderResults("/results?q=samsung");
     await screen.findAllByRole("article");
     const card = screen.getAllByRole("article").find((a) => a.textContent.includes("Galaxy A17"));
 
-    expect(within(card).getByRole("link", { name: "Samsung Galaxy A17 256GB" })).toHaveAttribute("href", "/product/a1");
-    expect(within(card).getByRole("link", { name: "View details" })).toHaveAttribute("href", "/product/a1");
-    expect(card).toHaveTextContent("4 offers from 4 stores · you can save up to PKR 3,000");
-    expect(card).toHaveTextContent("Lowest at PriceOye");
-
-    const rows = within(card).getAllByRole("row").slice(1);
-    expect(rows).toHaveLength(3); // only the first three until asked
-    expect(rows.map((r) => within(r).getAllByRole("cell")[1].textContent)).toEqual(["PKR 64,000", "PKR 65,500", "PKR 66,000"]);
-    expect(rows[0]).toHaveClass("is-lowest");
-    expect(rows[0]).toHaveTextContent("Lowest price");
+    expect(card).toHaveTextContent("Samsung Galaxy A17 256GB");
+    expect(card).toHaveTextContent("PKR 64,000");
+    expect(card).toHaveTextContent("at PriceOye");
+    expect(card).toHaveTextContent("Good deal");
+    expect(card).toHaveTextContent("4 offers from 4 stores");
+    expect(within(card).queryByRole("table")).toBeNull(); // the comparison table is on the product page
+    expect(within(card).getByRole("link", { name: /Samsung Galaxy A17 256GB, from PKR 64,000/ })).toHaveAttribute("href", "/product/a1");
   });
 
-  it("expands to every offer and collapses again", async () => {
-    renderResults("/results?q=samsung");
-    const card = (await screen.findAllByRole("article")).find((a) => a.textContent.includes("Galaxy A17"));
-    fireEvent.click(within(card).getByRole("button", { name: /show all 4 offers \(1 more\)/i }));
-    expect(within(card).getAllByRole("row")).toHaveLength(5);
-    fireEvent.click(within(card).getByRole("button", { name: /show fewer/i }));
-    expect(within(card).getAllByRole("row")).toHaveLength(4);
-    expect(within(screen.getAllByRole("article").find((a) => a.textContent.includes("A57"))).queryByRole("button", { name: /show all/i })).toBeNull();
+  it("opens the product page from a card, remembering this exact list so Back can return to it", async () => {
+    renderResults("/results?q=samsung&sort=lowestPrice&platforms=mega,priceoye");
+    await screen.findAllByRole("article");
+    fireEvent.click(screen.getAllByRole("link", { name: /Samsung Galaxy A17 256GB, from/ })[0]);
+    expect(where()).toBe("/product/a1"); // the card opens its cheapest offer
+    expect(screen.getByTestId("state")).toHaveTextContent("/results?q=samsung&sort=lowestPrice&platforms=mega,priceoye"); // the address as it was, filters included
   });
 
-  it("gives each offer a safe store link that opens safely, and marks an unusable one as unavailable", async () => {
-    const mixed = group("Samsung Galaxy A17 256GB", [
-      offer("m1", "priceoye", 64000), offer("m2", "mega", 65000, { productUrl: "javascript:alert(1)", sourceUrl: "data:text/html,x" }),
-    ]);
-    serve([mixed]);
-    renderResults("/results?q=a17");
-    const card = await screen.findByRole("article");
-    const link = within(card).getByRole("link", { name: "View deal at PriceOye" });
-    expect(link).toHaveAttribute("href", "https://priceoye.example.com/m1");
-    expect(link).toHaveAttribute("rel", "noopener noreferrer");
-    expect(link).toHaveAttribute("target", "_blank");
-    expect(within(card).queryByRole("link", { name: /view deal at mega/i })).toBeNull();
-    expect(within(card).getByText("Unavailable")).toBeInTheDocument();
-  });
-
-  it("shows a verdict rather than repeating a store's claim, the was-price, stock and freshness", async () => {
-    const claims = group("Samsung Galaxy S26 Plus", [
-      offer("d1", "priceoye", 300000, { originalPrice: 400000, discountAnalysis: { classification: "likely_fake", isFakeDiscount: true, reason: "never sold at that price" }, lastScrapedAt: new Date(Date.now() - 3 * 3600 * 1000).toISOString() }),
-      offer("d2", "mega", 305000, { originalPrice: 366000, inStock: false }),
-      offer("d3", "shophive", 310000),
-    ]);
-    serve([claims]);
-    renderResults("/results?q=s26");
-    const rows = within(await screen.findByRole("article")).getAllByRole("row").slice(1);
-
-    expect(rows[0]).toHaveTextContent("Fake discount");
-    expect(rows[0]).toHaveTextContent("PKR 400,000"); // the store's was-price is shown, struck through
-    expect(rows[0]).toHaveTextContent("3 h ago");
-    expect(rows[1]).toHaveTextContent("Claims 17% off"); // an unchecked claim is labelled as a claim
-    expect(rows[1]).toHaveTextContent("Out of stock");
-    expect(rows[2]).toHaveTextContent("No discount claimed");
-    expect(rows[2]).toHaveTextContent("In stock");
-  });
-
-  it("lists the offers cheapest first even when the server sends them in another order", async () => {
-    const shuffled = group("Samsung Galaxy A17 256GB", [offer("s1", "telemart", 70000), offer("s2", "priceoye", 64000), offer("s3", "mega", 66000)]);
-    serve([shuffled]);
-    renderResults("/results?q=a17");
-    const rows = within(await screen.findByRole("article")).getAllByRole("row").slice(1);
-    expect(rows.map((r) => within(r).getAllByRole("cell")[1].textContent)).toEqual(["PKR 64,000", "PKR 66,000", "PKR 70,000"]);
-  });
-
-  it("does not count an unusual price towards how much a shopper can save", async () => {
-    const odd = group("Samsung Galaxy A17 256GB", [
-      offer("o1", "priceoye", 6400, { priceCheck: { status: "suspect_low", reason: "far below the other stores" } }),
-      offer("o2", "mega", 65500), offer("o3", "shophive", 66000),
-    ]);
-    serve([odd]);
-    renderResults("/results?q=a17");
-    const card = await screen.findByRole("article");
-    expect(card).toHaveTextContent("you can save up to PKR 500"); // 66,000 - 65,500, not 59,600
-    expect(card).toHaveTextContent("Lowest at Mega.pk");
-  });
-
-  it("does not show a good-deal badge next to a fake-discount warning on the card", async () => {
+  it("does not show a good-deal badge next to a fake-discount warning on a card", async () => {
     const fake = group("Samsung Galaxy S26 Plus", [
       offer("f1", "priceoye", 300000, { recommendation: { action: "GOOD_DEAL", reason: "cheap" }, discountAnalysis: { classification: "likely_fake", isFakeDiscount: true, reason: "why" } }),
     ]);
     serve([fake]);
     renderResults("/results?q=s26");
-    const head = (await screen.findByRole("article")).querySelector(".result-group__badges");
-    expect(head).toHaveTextContent("Fake discount");
-    expect(head).not.toHaveTextContent("Good deal");
+    const card = await screen.findByRole("article");
+    expect(card).toHaveTextContent("Fake discount");
+    expect(card).not.toHaveTextContent("Good deal");
+  });
+
+  it("prices a card at the lowest believable offer, never at an unusual price", async () => {
+    const odd = group("Samsung Galaxy A17 256GB", [
+      offer("z1", "priceoye", 6400, { priceCheck: { status: "suspect_low", reason: "far below the other stores" } }),
+      offer("z2", "mega", 65500), offer("z3", "shophive", 66000),
+    ]);
+    serve([odd]);
+    renderResults("/results?q=a17");
+    const card = await screen.findByRole("article");
+    expect(card).toHaveTextContent("PKR 65,500");
+    expect(card).toHaveTextContent("at Mega.pk");
+    expect(card).not.toHaveTextContent("PKR 6,400");
   });
 });
 

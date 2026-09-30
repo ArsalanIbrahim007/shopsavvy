@@ -20,7 +20,6 @@ import ProductImage from "../src/components/ProductImage.jsx";
 import VerdictBadge from "../src/components/VerdictBadge.jsx";
 import Layout from "../src/components/Layout.jsx";
 import Home from "../src/pages/Home.jsx";
-import Product from "../src/pages/Product.jsx";
 
 const NOW = new Date().toISOString();
 const offer = (id, platform, price, over = {}) => ({
@@ -314,67 +313,4 @@ describe("Home", () => {
 
 // The results page (filters, sorting, comparison table, URL state) is covered in results.test.jsx.
 
-describe("Product", () => {
-  const renderProduct = (id = "p1") =>
-    render(
-      <MemoryRouter initialEntries={[`/product/${id}`]}>
-        <Routes><Route path="/product/:id" element={<Product />} /></Routes>
-      </MemoryRouter>
-    );
-
-  it("shows the product, its verdict, a safe store link, and every offer cheapest first with this one marked", async () => {
-    const mine = offer("p1", "priceoye", 65000);
-    vi.mocked(api.getListing).mockResolvedValue({
-      listing: mine,
-      offers: [mine, offer("p2", "mega", 63000), offer("p3", "shophive", 66000)],
-      summary: null, productGroup: null,
-    });
-    renderProduct();
-
-    expect(await screen.findByRole("heading", { level: 1, name: "Samsung Galaxy A17" })).toBeInTheDocument();
-    const view = screen.getByRole("link", { name: /view at priceoye/i });
-    expect(view).toHaveAttribute("href", "https://priceoye.example.com/a17");
-    expect(view).toHaveAttribute("rel", "noopener noreferrer");
-    expect(view).toHaveAttribute("target", "_blank");
-    expect(screen.getByText("Good deal")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "3 offers from 3 stores" })).toBeInTheDocument();
-
-    const rows = screen.getAllByRole("row").slice(1);
-    expect(rows.map((r) => within(r).getAllByRole("cell")[1].textContent)).toEqual(["PKR 63,000", "PKR 65,000", "PKR 66,000"]);
-    expect(rows[1]).toHaveAttribute("aria-current", "true");
-    expect(rows[1]).toHaveTextContent("(this one)");
-  });
-
-  it("never links to an unsafe store address: the button is shown as unavailable", async () => {
-    const bad = offer("p1", "priceoye", 65000, { productUrl: "javascript:alert(1)", sourceUrl: "data:text/html,x" });
-    vi.mocked(api.getListing).mockResolvedValue({ listing: bad, offers: [bad], summary: null, productGroup: null });
-    renderProduct();
-    await screen.findByRole("heading", { level: 1 });
-    expect(screen.queryByRole("link", { name: /view at/i })).toBeNull();
-    expect(screen.getByText("Link unavailable")).toHaveAttribute("aria-disabled", "true");
-    expect(screen.getByText("Unavailable")).toBeInTheDocument();
-  });
-
-  it("tells not-found apart from a server problem, with the reference id and the right actions", async () => {
-    vi.mocked(api.getListing).mockRejectedValueOnce(new ApiError({ status: 404, code: "NOT_FOUND", requestId: "r-4" }));
-    const { unmount } = renderProduct("missing");
-    let alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent(/couldn't find/i);
-    expect(alert).toHaveTextContent("Reference: r-4");
-    expect(within(alert).queryByRole("button", { name: /try again/i })).toBeNull();
-    expect(screen.getByRole("link", { name: /back to the home page/i })).toBeInTheDocument();
-    unmount();
-
-    vi.mocked(api.getListing).mockRejectedValueOnce(new ApiError({ status: 503, code: "DATABASE_UNAVAILABLE" }));
-    renderProduct("p1");
-    alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent(/temporarily unavailable/i);
-    expect(within(alert).getByRole("button", { name: /try again/i })).toBeInTheDocument();
-  });
-
-  it("shows a loading placeholder first", () => {
-    vi.mocked(api.getListing).mockReturnValue(new Promise(() => {}));
-    const { container } = renderProduct();
-    expect(container.querySelector("[aria-busy='true']")).not.toBeNull();
-  });
-});
+// The product page (offers table, verdicts, links, back link, error states) is covered in product.test.jsx.

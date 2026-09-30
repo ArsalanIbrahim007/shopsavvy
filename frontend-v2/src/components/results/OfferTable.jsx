@@ -1,11 +1,9 @@
 // OfferTable.jsx — one product's offers side by side: store, price (with the store's "was" price and
 // a verdict on it), stock, when it was last updated, and a link to the store. Cheapest first, with the
-// lowest believable price marked. Only the first few rows are shown until the shopper asks for more.
+// lowest believable price marked, and the listing the shopper opened labelled. Every offer is shown.
 //
 // "Discount" never repeats a store's claim as fact: the cell shows the verdict (verified / fake /
 // suspicious / above market / unusual price). A claim we could not check is shown as a claim.
-
-import { useState } from "react";
 
 import { claimedDiscount } from "../../lib/filters.js";
 import { formatPercent, formatPrice, timeAgo } from "../../lib/format.js";
@@ -15,8 +13,6 @@ import { offerFlags } from "../../lib/verdicts.js";
 import { summarizeOffers } from "../../lib/summary.js";
 import VerdictBadge from "../VerdictBadge.jsx";
 import "./results.css";
-
-const INITIAL_ROWS = 3;
 
 function DiscountCell({ offer }) {
   const flags = offerFlags(offer);
@@ -33,12 +29,10 @@ function DiscountCell({ offer }) {
     : <span className="small muted">No discount claimed</span>;
 }
 
-export default function OfferTable({ offers, name }) {
-  const [showAll, setShowAll] = useState(false);
+export default function OfferTable({ offers, name, currentId }) {
   const sorted = [...offers].sort((a, b) => a.price - b.price);
   const lowestId = summarizeOffers(offers).lowest?._id;
-  const rows = showAll ? sorted : sorted.slice(0, INITIAL_ROWS);
-  const hidden = sorted.length - rows.length;
+  const rows = sorted;
 
   return (
     <div className="offer-table__wrap">
@@ -63,6 +57,7 @@ export default function OfferTable({ offers, name }) {
                 <td>
                   <span className="offer-table__store">{platformName(offer.platform)}</span>
                   {isLowest && <span className="offer-table__lowest small">Lowest price</span>}
+                  {offer._id === currentId && <span className="offer-table__current small muted">The one you opened</span>}
                 </td>
                 <td className="num">
                   <span className="price offer-table__price">{formatPrice(offer.price)}</span>
@@ -93,11 +88,6 @@ export default function OfferTable({ offers, name }) {
           })}
         </tbody>
       </table>
-      {sorted.length > INITIAL_ROWS && (
-        <button type="button" className="offer-table__more" aria-expanded={showAll} onClick={() => setShowAll((v) => !v)}>
-          {showAll ? "Show fewer offers" : `Show all ${sorted.length} offers (${hidden} more)`}
-        </button>
-      )}
     </div>
   );
 }
