@@ -8,7 +8,7 @@
 //   was-price    share with an original ("was") price. Low is expected for
 //                stores that rarely discount, so verify against the site
 //                before treating a low number as a bug
-//   rating       share with a rating (the scraper contract does not carry one yet)
+//   rating       share with a rating (scrapers send it via the optional rating field)
 //   storage      share where a storage capacity could be read from the title
 //   other/acc    share classified as "other" or "accessory": a high share means
 //                the category classifier or the search filter is letting junk in

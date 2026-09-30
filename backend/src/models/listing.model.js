@@ -96,6 +96,12 @@ const listingSchema = new mongoose.Schema(
     condition:       { type: String, default: "new", index: true },
     screenInches:    { type: Number, default: null },
     resolution: { type: String, default: null, index: true },
+    // Optional fields a scraper may send (validated by scrapedExtras.service).
+    // null means "the store did not show it", never zero.
+    rating:      { type: Number, default: null, min: 0, max: 5 },
+    reviewCount: { type: Number, default: null, min: 0 },
+    // Flat label -> value strings from the store's specification table.
+    specs:       { type: mongoose.Schema.Types.Mixed, default: null },
   },
   {
     timestamps: true,

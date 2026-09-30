@@ -165,6 +165,28 @@ const swaggerOptions = {
                   type: "string",
                   example: "samsung galaxy a55 256gb",
                 },
+                rating: {
+                  type: "number",
+                  nullable: true,
+                  minimum: 0,
+                  maximum: 5,
+                  example: 4.5,
+                  description: "Average store rating on a 0-5 scale. null when the store shows none (never 0).",
+                },
+                reviewCount: {
+                  type: "integer",
+                  nullable: true,
+                  minimum: 0,
+                  example: 128,
+                  description: "Number of reviews or ratings. null when not shown.",
+                },
+                specs: {
+                  type: "object",
+                  nullable: true,
+                  additionalProperties: { type: "string" },
+                  example: { RAM: "8 GB", Storage: "256 GB" },
+                  description: "Specification label/value pairs scraped from the store. null when none.",
+                },
                 lastScrapedAt: {
                   type: "string",
                   format: "date-time",

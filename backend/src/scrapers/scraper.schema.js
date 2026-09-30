@@ -17,7 +17,17 @@
  * @property {string|null} imageUrl   - main product image
  * @property {string|null} brand      - if extractable from title/page
  * @property {boolean} inStock        - availability if determinable, default true
+ * @property {number|null} rating     - average rating on a 0-5 scale, null if the store shows none
+ *                                      (never 0: 0 would read as "rated zero stars")
+ * @property {number|null} reviewCount - number of reviews/ratings, null if not shown
+ * @property {Object|null} specs      - flat { label: value } strings from the store's spec
+ *                                      table or card (e.g. { "RAM": "8 GB" }), null if none.
+ *                                      An array of { label, value } is also accepted.
  * @property {string} scrapedAt       - ISO timestamp of when this was scraped
+ *
+ * rating, reviewCount and specs are optional. The backend validates them
+ * (services/scrapedExtras.service.js): out-of-range or malformed values are
+ * stored as null rather than rejected, so a bad value never loses the listing.
  */
 
 function makeListing({
@@ -29,6 +39,9 @@ function makeListing({
   imageUrl = null,
   brand = null,
   inStock = true,
+  rating = null,
+  reviewCount = null,
+  specs = null,
 }) {
   if (!platform || !sourceUrl || !title) {
     throw new Error("makeListing: platform, sourceUrl, and title are required");
@@ -42,6 +55,9 @@ function makeListing({
     imageUrl,
     brand,
     inStock,
+    rating,
+    reviewCount,
+    specs,
     scrapedAt: new Date().toISOString(),
   };
 }

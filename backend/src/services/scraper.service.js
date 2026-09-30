@@ -16,6 +16,7 @@ import PriceHistory from "../models/priceHistory.model.js";
 import { normalizeTitle } from "./normalizeTitle.service.js";
 import { scrapeAllPlatforms } from "../scrapers/index.js";
 import { extractAttributes } from "./productAttributes.service.js";
+import { extractExtras } from "./scrapedExtras.service.js";
 // How old data can be before we re-scrape (in minutes)
 // Set to 30 minutes so rapid repeated searches don't hammer sites
 const STALE_THRESHOLD_MINUTES = 30;
@@ -97,6 +98,7 @@ function toListingDoc(scraped) {
     lastScrapedAt:   new Date(),
     scrapedAt:       scraped.scrapedAt ? new Date(scraped.scrapedAt) : new Date(),
     ...extractAttributes(scraped.title),
+    ...extractExtras(scraped),
   };
 }
 
@@ -208,4 +210,5 @@ export {
   fetchAndRefreshListings,
   runScrapersAndSave,
   hasFreshData,
+  toListingDoc,
 };
