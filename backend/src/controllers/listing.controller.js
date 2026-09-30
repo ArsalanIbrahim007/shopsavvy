@@ -7,6 +7,12 @@ import { selectCandidates } from "../services/candidateSelection.service.js";
 import { normalizeTitle } from "../services/normalizeTitle.service.js";
 import { parsePagination } from "../services/pagination.service.js";
 import { textParam, numberParam } from "../services/queryParams.service.js";
+import { hasAdminKey } from "../middleware/adminKey.middleware.js";
+
+// Longest search text accepted. Real product searches are a handful of words;
+// anything longer is a paste or an attack, and it would only be fed to
+// regex-building and scraping.
+const MAX_QUERY_LENGTH = 100;
 import { groupListingsByProduct } from "../services/productGrouping.service.js";
 import {
   getListingPriceHistory,
@@ -97,14 +103,22 @@ function createRecommendedListingArray(listings = [], groups = []) {
   });
 }
 
+// Fields a manual create may set: the scraped ones, not derived or bookkeeping fields.
+const LISTING_WRITABLE_FIELDS = [
+  "platform", "title", "platformProductId", "price", "originalPrice", "currency",
+  "sourceUrl", "productUrl", "imageUrl", "brand", "category", "inStock", "isActive",
+];
+
 export async function createListing(req, res) {
   try {
-    const listingData = {
-      ...req.body,
-      normalizedTitle:
-        req.body.normalizedTitle ||
-        normalizeTitle(req.body.title),
-    };
+    // Only these fields may be set by the caller. Spreading req.body let a request
+    // set anything in the schema (isActive, lastScrapedAt, productCategory, ...).
+    const listingData = {};
+    for (const field of LISTING_WRITABLE_FIELDS) {
+      if (req.body[field] !== undefined) listingData[field] = req.body[field];
+    }
+    listingData.normalizedTitle =
+      req.body.normalizedTitle || normalizeTitle(req.body.title);
 
     const listing = await Listing.create(listingData);
 
@@ -188,10 +202,20 @@ export async function searchListings(req, res) {
           "Search query is required. Example: /api/listings/search?q=iphone",
       });
     }
+
+    if (q.length > MAX_QUERY_LENGTH) {
+      return res.status(400).json({
+        success: false,
+        message: `Search query is too long (maximum ${MAX_QUERY_LENGTH} characters).`,
+      });
+    }
     const trimmedQuery = q.trim();
 
     const refreshResult = await fetchAndRefreshListings(trimmedQuery, {
-    force: req.query.refresh === "true",
+    // Forcing a re-scrape bypasses the freshness window and costs a full round of
+    // requests to every store, so it needs the admin key. Anyone else's
+    // ?refresh=true is ignored: they simply get the normal cached behaviour.
+    force: req.query.refresh === "true" && hasAdminKey(req),
     dynamic: false,
 });
 

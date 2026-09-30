@@ -43,6 +43,14 @@ const swaggerOptions = {
     ],
 
     components: {
+      securitySchemes: {
+        AdminKey: {
+          type: "apiKey",
+          in: "header",
+          name: "x-admin-key",
+          description: "Shared secret from the server's ADMIN_API_KEY. Needed only for manual writes and forced refreshes.",
+        },
+      },
       schemas: {
         ErrorResponse: {
           type: "object",

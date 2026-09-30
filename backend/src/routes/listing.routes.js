@@ -13,6 +13,8 @@ import {
 import {
   validateCreateListing,
 } from "../middleware/validation.middleware.js";
+import { requireAdminKey } from "../middleware/adminKey.middleware.js";
+import { searchLimiter } from "../middleware/rateLimit.middleware.js";
 
 const router = express.Router();
 
@@ -21,9 +23,11 @@ const router = express.Router();
  * /api/listings:
  *   post:
  *     summary: Create a listing
- *     description: Creates a single listing directly (used for manual entries and testing; scraped listings are normally written by the scraper service, not this endpoint).
+ *     description: Creates a single listing directly (used for manual entries and testing; scraped listings are normally written by the scraper service, not this endpoint). Requires the x-admin-key header; the endpoint is disabled when the server has no ADMIN_API_KEY.
  *     tags:
  *       - Listings
+ *     security:
+ *       - AdminKey: []
  *     requestBody:
  *       required: true
  *       content:
@@ -49,9 +53,14 @@ const router = express.Router();
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ValidationErrorResponse'
+ *       401:
+ *         description: Missing or wrong x-admin-key.
+ *       503:
+ *         description: Disabled because the server has no ADMIN_API_KEY configured.
  */
 router.post(
   "/",
+  requireAdminKey,
   validateCreateListing,
   createListing
 );
@@ -146,13 +155,14 @@ router.get("/stats", getListingStats);
  *         required: true
  *         schema:
  *           type: string
+ *           maxLength: 100
  *         example: samsung galaxy a17
- *         description: The search text.
+ *         description: The search text, at most 100 characters.
  *       - in: query
  *         name: refresh
  *         schema:
  *           type: boolean
- *         description: Force a live re-scrape even if stored data is still fresh.
+ *         description: Force a live re-scrape even if stored data is still fresh. Honoured only when a valid x-admin-key header is sent; otherwise ignored and the normal cached behaviour applies.
  *       - in: query
  *         name: category
  *         schema:
@@ -216,9 +226,11 @@ router.get("/stats", getListingStats);
  *                   items:
  *                     $ref: '#/components/schemas/Listing'
  *       400:
- *         description: Missing or empty q parameter.
+ *         description: Missing, empty, non-text or over-long (more than 100 characters) q parameter.
+ *       429:
+ *         description: Too many searches from this address (120 per 15 minutes).
  */
-router.get("/search", searchListings);
+router.get("/search", searchLimiter, searchListings);
 
 /**
  * @swagger
@@ -250,9 +262,11 @@ router.get("/search", searchListings);
  *         description: No price history found for this listing.
  *   post:
  *     summary: Record a price observation for a listing
- *     description: Appends a new price snapshot; normally called by the scraper service, exposed here for manual/testing use.
+ *     description: Appends a new price snapshot; normally called by the scraper service, exposed here for manual/testing use. Requires the x-admin-key header; the endpoint is disabled when the server has no ADMIN_API_KEY.
  *     tags:
  *       - Price History
+ *     security:
+ *       - AdminKey: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -277,11 +291,15 @@ router.get("/search", searchListings);
  *     responses:
  *       201:
  *         description: Price entry recorded.
+ *       401:
+ *         description: Missing or wrong x-admin-key.
  *       404:
  *         description: Listing not found.
+ *       503:
+ *         description: Disabled because the server has no ADMIN_API_KEY configured.
  */
 router.get("/:id/history", getListingHistory);
-router.post("/:id/history", addListingPriceHistory);
+router.post("/:id/history", requireAdminKey, addListingPriceHistory);
 
 /**
  * @swagger

@@ -31,3 +31,30 @@ export const alertReadLimiter = rateLimit({
     message: "Too many requests. Please try again in a few minutes.",
   },
 });
+
+
+// Search is the one public endpoint that can make this server do expensive
+// outbound work: a search for something not scraped in the last 30 minutes
+// launches live requests to every store, including headless-browser page
+// loads. The freshness window and the in-flight de-duplication in
+// scraper.service.js limit accidental load; this limits deliberate load, and
+// protects the stores (and our IP address's standing with them).
+//
+// The number is generous on purpose. The homepage alone fires about five
+// searches on load (ten in development under React StrictMode), and a
+// shopper refining a query issues several more. It is a ceiling against
+// scripts, not a throttle on people.
+export function createSearchLimiter({ windowMs = 15 * 60 * 1000, limit = 120 } = {}) {
+  return rateLimit({
+    windowMs,
+    limit,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+      success: false,
+      message: "Too many searches from this address. Please wait a few minutes and try again.",
+    },
+  });
+}
+
+export const searchLimiter = createSearchLimiter();

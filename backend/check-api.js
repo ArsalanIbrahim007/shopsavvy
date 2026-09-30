@@ -1,4 +1,7 @@
 // check-api.js — run with: node check-api.js   (backend must be running)
+import { config } from "dotenv";
+config({ quiet: true });
+
 const BASE = "http://localhost:5000/api";
 const QUERY = process.argv[2] || "iphone 17 pro";
 
@@ -8,8 +11,11 @@ async function main() {
   // that the fake-discount badges depend on, so the default reads stored data.
   const refresh = process.argv.includes("--refresh") ? "&refresh=true" : "";
 
+  // A forced refresh is only honoured with the admin key (set ADMIN_API_KEY in .env).
+  const headers = process.env.ADMIN_API_KEY ? { "x-admin-key": process.env.ADMIN_API_KEY } : {};
   const res = await fetch(
-    `${BASE}/listings/search?q=${encodeURIComponent(QUERY)}${refresh}`
+    `${BASE}/listings/search?q=${encodeURIComponent(QUERY)}${refresh}`,
+    { headers }
   );
   const j = await res.json();
 
