@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-import { extractColourOptions } from "../src/services/colourPage.service.js";
+import { colourOptionsFromList, extractColourOptions } from "../src/services/colourPage.service.js";
 import { enrichFromPages, enrichPta, interleaveByStore, PAGE_CATEGORIES, RECHECK_DAYS } from "../src/services/pageEnrichment.service.js";
 
 // Small stand-ins for the real pages read on 2026-10-01. Stores embed JSON with escaped slashes, so the fixtures do too.
@@ -95,6 +95,34 @@ describe("extractColourOptions", () => {
   it("lists each colour once, in the order the page gives them, keeping the first picture it finds", () => {
     const repeated = page(`<ul class="colors"><li><a data-tooltip-template="blue">x</a></li><li><a data-tooltip-template="black">x</a></li><li><a data-tooltip-template="blue"><img src="https://img.example/blue.webp"></a></li></ul>`);
     expect(extractColourOptions(repeated)).toEqual([{ colour: "Blue", image: "https://img.example/blue.webp" }, { colour: "Black", image: null }]);
+  });
+});
+
+describe("colourOptionsFromList (colours a store gives in structured form)", () => {
+  it("maps names to the ones the title reader uses, keeping the store's order and each picture", () => {
+    expect(colourOptionsFromList([{ name: "Cosmic Orange", image: "https://x.example/a.webp" }, { name: "Deep Blue", image: null }, { name: "Space Grey" }])).toEqual([
+      { colour: "Orange", image: "https://x.example/a.webp" }, { colour: "Blue", image: null }, { colour: "Space grey", image: null },
+    ]);
+  });
+
+  it("keeps a colour once, with the first picture, even when two names mean the same colour", () => {
+    const out = colourOptionsFromList([{ name: "Cosmic Orange" }, { name: "Orange", image: "https://x.example/o.webp" }, { name: "Burnt Orange", image: "https://x.example/b.webp" }]);
+    expect(out).toEqual([{ colour: "Orange", image: "https://x.example/o.webp" }]);
+  });
+
+  it("accepts a picture only if it is a web address (a protocol-relative one is made https)", () => {
+    const out = colourOptionsFromList([
+      { name: "Black", image: "javascript:alert(1)" }, { name: "White", image: "data:image/png;base64,AAAA" }, { name: "Silver", image: "//cdn.example/s.webp" },
+    ]);
+    expect(out).toEqual([{ colour: "Black", image: null }, { colour: "White", image: null }, { colour: "Silver", image: "https://cdn.example/s.webp" }]);
+  });
+
+  it("drops values that are not colours, and gives [] for more than twelve or for nothing", () => {
+    expect(colourOptionsFromList([{ name: "Free Charger" }, { name: "" }, null, {}])).toEqual([]);
+    const thirteen = ["Black", "White", "Red", "Blue", "Green", "Gold", "Pink", "Silver", "Purple", "Orange", "Yellow", "Grey", "Titanium"].map((name) => ({ name }));
+    expect(colourOptionsFromList(thirteen)).toEqual([]);
+    expect(colourOptionsFromList(thirteen.slice(0, 12))).toHaveLength(12);
+    expect(colourOptionsFromList(undefined)).toEqual([]);
   });
 });
 

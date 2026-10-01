@@ -3,6 +3,7 @@ import {
   normalizeRating,
   normalizeReviewCount,
   normalizeSpecs,
+  normalizeColourOptions,
   extractExtras,
 } from "../src/services/scrapedExtras.service.js";
 import { makeListing } from "../src/scrapers/scraper.schema.js";
@@ -76,6 +77,57 @@ describe("normalizeSpecs", () => {
     expect(normalizeSpecs("RAM 8GB")).toBeNull();
     expect(normalizeSpecs({})).toBeNull();
     expect(normalizeSpecs({ a: "" })).toBeNull();
+  });
+});
+
+describe("normalizeColourOptions", () => {
+  const pic = "https://store.example/a.webp";
+
+  it("keeps a colour with its picture, and a colour with none", () => {
+    expect(normalizeColourOptions([{ colour: "Blue", image: pic }, { colour: "Silver", image: null }, { colour: "Black" }])).toEqual([
+      { colour: "Blue", image: pic }, { colour: "Silver", image: null }, { colour: "Black", image: null },
+    ]);
+  });
+
+  it("accepts a picture only if it is a web address, and trims it", () => {
+    const out = normalizeColourOptions([
+      { colour: "A", image: "  https://x.example/a.png  " }, { colour: "B", image: "javascript:alert(1)" }, { colour: "C", image: "data:image/png;base64,AAAA" },
+      { colour: "D", image: "//x.example/d.png" }, { colour: "E", image: "https://x.example/has space.png" }, { colour: "F", image: 42 },
+    ]);
+    expect(out.map((c) => c.image)).toEqual(["https://x.example/a.png", null, null, null, null, null]);
+  });
+
+  it("drops entries with no colour name, keeps each colour once and keeps the first picture it finds", () => {
+    const out = normalizeColourOptions([{ colour: "", image: pic }, { image: pic }, null, "Blue", { colour: "Blue", image: null }, { colour: "Blue", image: pic }, { colour: " Blue " }]);
+    expect(out).toEqual([{ colour: "Blue", image: pic }]);
+  });
+
+  it("tidies the name and cuts one that is absurdly long", () => {
+    expect(normalizeColourOptions([{ colour: "  Deep   Blue " }])[0].colour).toBe("Deep Blue");
+    expect(normalizeColourOptions([{ colour: "x".repeat(100) }])[0].colour).toHaveLength(40);
+  });
+
+  it("gives nothing for more than twelve colours (that is not one product's colours), but accepts twelve", () => {
+    const many = (n) => Array.from({ length: n }, (_, i) => ({ colour: `Colour ${i}` }));
+    expect(normalizeColourOptions(many(12))).toHaveLength(12);
+    expect(normalizeColourOptions(many(13))).toEqual([]);
+  });
+
+  it("gives [] for anything that is not a list", () => {
+    for (const value of [null, undefined, "Blue", 5, {}, { colour: "Blue" }]) expect(normalizeColourOptions(value)).toEqual([]);
+  });
+});
+
+describe("colourOptions in the scraper contract", () => {
+  it("extractExtras adds colourOptions only when there are some, so a scrape that says nothing cannot undo an earlier answer", () => {
+    expect(extractExtras({ colourOptions: [{ colour: "Blue", image: null }] }).colourOptions).toEqual([{ colour: "Blue", image: null }]);
+    for (const none of [undefined, null, [], [{ colour: "" }], "Blue"]) expect("colourOptions" in extractExtras({ colourOptions: none })).toBe(false);
+  });
+
+  it("makeListing carries colourOptions and defaults them to null", () => {
+    const base = { platform: "x", sourceUrl: "https://x.pk/p", title: "Phone", price: 100 };
+    expect(makeListing(base).colourOptions).toBeNull();
+    expect(makeListing({ ...base, colourOptions: [{ colour: "Blue", image: null }] }).colourOptions).toEqual([{ colour: "Blue", image: null }]);
   });
 });
 

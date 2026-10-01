@@ -125,6 +125,18 @@ function unique(choices) {
 }
 
 /**
+ * Colour choices from data a store gives in structured form (WooCommerce variations: the colour's name and the picture of that
+ * variation), given as [{ name, image }]. Same rules as a page: names are mapped to the colour names the title reader uses, a
+ * picture must be an http(s) address, one entry per colour, and a product listing more than MAX_COLOURS is not describing one
+ * product's colours.
+ * @returns {Array<{colour: string, image: string|null}>}
+ */
+export function colourOptionsFromList(items) {
+  const choices = unique((Array.isArray(items) ? items : []).map((item) => ({ colour: normalise(item?.name), image: imageUrl(item?.image) })));
+  return choices.length <= MAX_COLOURS ? choices : [];
+}
+
+/**
  * @param {string} html  a store's product page
  * @returns {Array<{colour: string, image: string|null}>} in the order the page lists them; [] when it says nothing
  */

@@ -241,6 +241,72 @@ describe("scrapeWooSearch", () => {
     expect(out.map((l) => l.price).sort()).toEqual([299999, 308999]);
   });
 
+  describe("colours", () => {
+    const picture = (name) => ({ images: [{ src: `https://x.example/uploads/${name}.webp` }] });
+    const parentFor = (name) => wooProduct({ id: 9, name, type: "variable", permalink: "https://x.example/p/" });
+    const run = (name, variations) => scrapeWooSearch(WOO, "iphone", { fetchJson: async (url) => (url.includes("type=variation") ? variations : [parentFor(name)]) });
+
+    it("keeps each listing's colours with the picture of each, from the variations the store already gave", async () => {
+      const variations = [
+        variation(1, "256 GB", "Cosmic Orange", 479999, { name: "Apple iPhone 17", ...picture("orange") }),
+        variation(2, "256 GB", "Deep Blue", 479999, { name: "Apple iPhone 17", ...picture("blue") }),
+        variation(3, "256 GB", "Silver", 479999, { name: "Apple iPhone 17", ...picture("silver") }),
+        variation(4, "512 GB", "Deep Blue", 569999, { name: "Apple iPhone 17", ...picture("blue512") }),
+      ];
+      const out = await run("Apple iPhone 17", variations);
+      expect(out.map((l) => l.title)).toEqual(["Apple iPhone 17 256GB", "Apple iPhone 17 512GB"]);
+      // names are the ones the title reader uses ("Cosmic Orange" is Orange), in the store's order
+      expect(out[0].colourOptions).toEqual([
+        { colour: "Orange", image: "https://x.example/uploads/orange.webp" }, { colour: "Blue", image: "https://x.example/uploads/blue.webp" },
+        { colour: "Silver", image: "https://x.example/uploads/silver.webp" },
+      ]);
+      expect(out[1].colourOptions).toEqual([{ colour: "Blue", image: "https://x.example/uploads/blue512.webp" }]);
+    });
+
+    it("keeps a colour without a picture, and ignores a value that is not a colour", async () => {
+      const out = await run("Apple iPhone 17", [
+        variation(1, "256 GB", "Black", 479999, { name: "Apple iPhone 17" }),
+        variation(2, "256 GB", "Free Charger", 479999, { name: "Apple iPhone 17", ...picture("x") }),
+      ]);
+      expect(out[0].colourOptions).toEqual([{ colour: "Black", image: null }]);
+    });
+
+    it("gives no colours for more than twelve (that is not one product's colours)", async () => {
+      const variations = Array.from({ length: 13 }, (_, i) => variation(i, "256 GB", ["Black", "White", "Red", "Blue", "Green", "Gold", "Pink", "Silver", "Purple", "Orange", "Yellow", "Grey", "Titanium"][i], 100000, { name: "Apple iPhone 17" }));
+      expect((await run("Apple iPhone 17", variations))[0].colourOptions).toEqual([]);
+    });
+
+    it("gives every listing of a capacity sold at two prices its own address, so one cannot overwrite the other", async () => {
+      const variations = [
+        variation(1, "128 GB", "Black", 299999, { name: "Apple iPhone 16", ...picture("black") }),
+        variation(2, "128 GB", "White", 299999, { name: "Apple iPhone 16", ...picture("white") }),
+        variation(3, "128 GB", "Teal", 308999, { name: "Apple iPhone 16", ...picture("teal") }),
+        variation(4, "256 GB", "Black", 349999, { name: "Apple iPhone 16", ...picture("black") }),
+      ];
+      const out = await run("Apple iPhone 16", variations);
+      const urls = out.map((l) => l.sourceUrl);
+      expect(new Set(urls).size).toBe(urls.length);
+      expect(urls).toEqual([
+        "https://x.example/p/?attribute_storage=128GB&attribute_color=Black,White",
+        "https://x.example/p/?attribute_storage=128GB&attribute_color=Teal",
+        "https://x.example/p/?attribute_storage=256GB", // sold at one price: no colour in the address
+      ]);
+      expect(out.map((l) => l.colourOptions.map((c) => c.colour))).toEqual([["Black", "White"], ["Teal"], ["Black"]]);
+      expect(out.map((l) => l.price)).toEqual([299999, 308999, 349999]);
+    });
+
+    it("sends no colours when the variations are kept one by one with the colour in the title", async () => {
+      const watch = [["Silver", 0], ["Black", 1]].map(([colour, i]) => ({ ...variation(i, "x", colour, 95499), name: "Apple iPhone Watch 9", variation: `Color: ${colour}`, permalink: `https://x.example/w/?attribute_color=${colour}` }));
+      const out = await run("Apple iPhone Watch 9", watch);
+      expect(out.map((l) => l.colourOptions)).toEqual([null, null]);
+    });
+
+    it("sends none for a simple product", async () => {
+      const out = await scrapeWooSearch(WOO, "samsung galaxy a17", { fetchJson: async () => [wooProduct()] });
+      expect(out[0].colourOptions).toBeNull();
+    });
+  });
+
   it("keeps the variations one by one, colour in the title, when there is no capacity or other option to tell them apart", async () => {
     const parent = wooProduct({ id: 7, name: "Samsung Galaxy Watch 9", type: "variable", permalink: "https://x.example/w/" });
     const variations = ["Silver", "Black"].map((colour, i) => ({ ...variation(i, "x", colour, 95499), name: "Samsung Galaxy Watch 9", variation: `Color: ${colour}`, permalink: `https://x.example/w/?attribute_color=${colour}` }));

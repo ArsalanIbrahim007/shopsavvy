@@ -14,6 +14,7 @@
 
 import * as cheerio from "cheerio";
 
+import { colourOptionsFromList } from "../services/colourPage.service.js";
 import { makeListing } from "./scraper.schema.js";
 import { cleanText, safeMap } from "./scraper.utils.js";
 import { fetchJson as politeFetchJson } from "./politeJson.js";
@@ -60,7 +61,7 @@ function variationOptions(variation) {
 
 const isColour = (option) => /^colou?r$/i.test(option.name);
 
-function toListing(platform, product, { title }) {
+function toListing(platform, product, { title, colourOptions = null }) {
   const prices = product.prices ?? {};
   const minor = prices.currency_minor_unit;
   const price = rupees(prices.price_range?.min_amount ?? prices.price, minor);
@@ -79,6 +80,7 @@ function toListing(platform, product, { title }) {
     inStock: product.is_in_stock !== false,
     rating: rating > 0 ? rating : null, // 0 means "no reviews", not "rated zero stars"
     reviewCount: reviews > 0 ? reviews : null,
+    colourOptions,
   });
 }
 
@@ -98,21 +100,40 @@ function listingsFromVariations(platform, parent, name, variations) {
     );
   }
 
-  // one entry per capacity and price; the first variation of each stands for its colours
+  // one entry per capacity and price; the first variation of each stands for its colours, which are kept with the store's
+  // picture of each (the variation's own image)
   const groups = new Map();
   for (const entry of entries) {
     const others = entry.options.filter((option) => !isColour(option));
     const price = rupees(entry.variation.prices?.price, entry.variation.prices?.currency_minor_unit);
-    const key = `${others.map((o) => o.value).join(" ")}|${price}`;
-    if (!groups.has(key)) groups.set(key, { others, entry });
+    const capacity = others.map((o) => o.value).join(" ");
+    const key = `${capacity}|${price}`;
+    if (!groups.has(key)) groups.set(key, { others, capacity, entry, colourName: null, colours: [] });
+    const group = groups.get(key);
+    const colour = entry.options.find(isColour);
+    if (colour) {
+      group.colourName ??= colour.name;
+      group.colours.push({ name: colour.value, image: entry.variation.images?.[0]?.src ?? null });
+    }
   }
+
+  // A capacity sold at more than one price (a colour that costs more) becomes more than one listing. Listings are keyed on
+  // their address, so those must differ or each scrape would overwrite the other: the colours go into the address.
+  const pricesPerCapacity = new Map();
+  for (const group of groups.values()) pricesPerCapacity.set(group.capacity, (pricesPerCapacity.get(group.capacity) ?? 0) + 1);
+
   const permalink = String(parent.permalink).split("?")[0];
   return safeMap(
     [...groups.values()],
-    ({ others, entry }) => {
-      const query = others.map((option) => `attribute_${option.name.toLowerCase()}=${encodeURIComponent(option.value)}`).join("&");
+    ({ others, capacity, entry, colourName, colours }) => {
+      const parts = others.map((option) => `attribute_${option.name.toLowerCase()}=${encodeURIComponent(option.value)}`);
+      if (pricesPerCapacity.get(capacity) > 1 && colourName) {
+        parts.push(`attribute_${colourName.toLowerCase()}=${colours.map((c) => encodeURIComponent(c.name)).join(",")}`);
+      }
+      const query = parts.join("&");
       return toListing(platform, { ...entry.variation, permalink: query ? `${permalink}?${query}` : permalink }, {
         title: decode(`${entry.variation.name || name} ${others.map((o) => o.value).join(" ")}`),
+        colourOptions: colourOptionsFromList(colours),
       });
     },
     platform

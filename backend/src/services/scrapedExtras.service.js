@@ -10,6 +10,8 @@
 const MAX_SPEC_ENTRIES = 40;
 const MAX_SPEC_LABEL = 60;
 const MAX_SPEC_VALUE = 200;
+const MAX_COLOURS = 12;
+const MAX_COLOUR_LENGTH = 40;
 
 /** A rating on a 0-5 scale, or null. Zero is treated as "no rating". */
 export function normalizeRating(value) {
@@ -26,6 +28,8 @@ export function normalizeReviewCount(value) {
   if (!Number.isFinite(number) || number < 0 || !Number.isInteger(number)) return null;
   return number;
 }
+
+const PICTURE_ADDRESS = /^https?:\/\/[^\s"'<>]+$/i;
 
 function cleanText(value, maxLength) {
   if (value === null || value === undefined) return "";
@@ -65,11 +69,35 @@ export function normalizeSpecs(value) {
   return Object.keys(specs).length > 0 ? specs : null;
 }
 
-/** The three optional fields of a scraped listing, each validated. */
+/**
+ * The colours a listing comes in, each with a picture: [{ colour, image }] with a colour name and an http(s) picture address (or
+ * null). Empty or malformed entries are dropped, a colour is kept once, and a list longer than MAX_COLOURS is not one product's
+ * colours so it gives []. [] means "the store did not say", never "no colours".
+ */
+export function normalizeColourOptions(value) {
+  if (!Array.isArray(value)) return [];
+  const byColour = new Map();
+  for (const item of value) {
+    const colour = cleanText(item?.colour, MAX_COLOUR_LENGTH);
+    if (!colour) continue;
+    const image = typeof item?.image === "string" && PICTURE_ADDRESS.test(item.image.trim()) ? item.image.trim() : null;
+    if (!byColour.has(colour)) byColour.set(colour, { colour, image });
+    else if (!byColour.get(colour).image && image) byColour.get(colour).image = image;
+  }
+  const colours = [...byColour.values()];
+  return colours.length <= MAX_COLOURS ? colours : [];
+}
+
+/**
+ * The optional fields of a scraped listing, each validated. `colourOptions` is only present when the scraper sent some: a scrape
+ * that says nothing about colours must not undo what a store's product page said on an earlier day (pageEnrichment.service.js).
+ */
 export function extractExtras(scraped = {}) {
+  const colourOptions = normalizeColourOptions(scraped.colourOptions);
   return {
     rating: normalizeRating(scraped.rating),
     reviewCount: normalizeReviewCount(scraped.reviewCount),
     specs: normalizeSpecs(scraped.specs),
+    ...(colourOptions.length > 0 ? { colourOptions } : {}),
   };
 }

@@ -76,6 +76,22 @@ describe("saving scraped listings", () => {
     expect(doc.specs).toEqual({ RAM: "8 GB", bad: "x" });
   });
 
+  it("stores the colours a scraper found, validated, and leaves colourOptions alone when it found none", async () => {
+    scrapeAllPlatforms.mockResolvedValue([
+      listing({ sourceUrl: "https://x.test/with", colourOptions: [{ colour: "Blue", image: "https://x.test/b.webp" }, { colour: "Silver", image: "javascript:x" }] }),
+      listing({ sourceUrl: "https://x.test/without", colourOptions: [] }),
+      listing({ sourceUrl: "https://x.test/never" }),
+    ]);
+
+    await runScrapersAndSave("iphone 17");
+
+    const docs = Object.fromEntries(upsert.mock.calls.map((call) => [call[0].sourceUrl.split("/").pop(), call[1].$set]));
+    expect(docs.with.colourOptions).toEqual([{ colour: "Blue", image: "https://x.test/b.webp" }, { colour: "Silver", image: null }]);
+    // an empty answer is not written: the page read may have found the colours on an earlier day
+    expect("colourOptions" in docs.without).toBe(false);
+    expect("colourOptions" in docs.never).toBe(false);
+  });
+
   it("retries once when another request stored the same product an instant earlier", async () => {
     scrapeAllPlatforms.mockResolvedValue([listing({})]);
     upsert.mockRejectedValueOnce(Object.assign(new Error("E11000"), { code: 11000 })).mockResolvedValueOnce({});

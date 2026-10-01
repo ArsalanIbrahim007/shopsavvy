@@ -23,9 +23,12 @@
  * @property {Object|null} specs      - flat { label: value } strings from the store's spec
  *                                      table or card (e.g. { "RAM": "8 GB" }), null if none.
  *                                      An array of { label, value } is also accepted.
+ * @property {Array|null} colourOptions - [{ colour, image }] the colours this listing comes in, each with the store's
+ *                                      picture of it, when the store gives them in structured form (WooCommerce
+ *                                      variations). null when it does not: a product page is then read instead.
  * @property {string} scrapedAt       - ISO timestamp of when this was scraped
  *
- * rating, reviewCount and specs are optional. The backend validates them
+ * rating, reviewCount, specs and colourOptions are optional. The backend validates them
  * (services/scrapedExtras.service.js): out-of-range or malformed values are
  * stored as null rather than rejected, so a bad value never loses the listing.
  */
@@ -42,6 +45,7 @@ function makeListing({
   rating = null,
   reviewCount = null,
   specs = null,
+  colourOptions = null,
 }) {
   if (!platform || !sourceUrl || !title) {
     throw new Error("makeListing: platform, sourceUrl, and title are required");
@@ -58,6 +62,7 @@ function makeListing({
     rating,
     reviewCount,
     specs,
+    colourOptions,
     scrapedAt: new Date().toISOString(),
   };
 }
