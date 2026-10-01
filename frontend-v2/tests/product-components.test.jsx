@@ -101,7 +101,7 @@ describe("StoreLogo", () => {
   it("only ever points at our own files, never at a store's website", () => {
     for (const id of Object.keys(STORE_LOGO_FILES)) {
       const src = logoSrc(id);
-      expect(src, id).toMatch(/^\/stores\/[a-z0-9]+\.(png|ico)$/);
+      expect(src, id).toMatch(/^\/stores\/[a-z0-9]+\.(png|ico|webp)$/);
       expect(src).not.toMatch(/^(https?:)?\/\//);
     }
     expect(logoSrc("PriceOye")).toBe(logoSrc("priceoye"));
@@ -119,8 +119,10 @@ describe("StoreLogo", () => {
       expect(bytes.length, id).toBeLessThan(30000);
       const isPng = bytes.subarray(0, 4).toString("hex") === "89504e47";
       const isIco = bytes.subarray(0, 4).toString("hex") === "00000100";
-      expect(isPng || isIco, id).toBe(true);
-      expect(file.endsWith(".png") ? isPng : isIco, id).toBe(true); // the extension tells the truth
+      const isWebp = bytes.subarray(0, 4).toString("latin1") === "RIFF" && bytes.subarray(8, 12).toString("latin1") === "WEBP";
+      expect(isPng || isIco || isWebp, id).toBe(true);
+      const matchesExtension = file.endsWith(".png") ? isPng : file.endsWith(".webp") ? isWebp : isIco;
+      expect(matchesExtension, id).toBe(true); // the extension tells the truth
     }
   });
 });

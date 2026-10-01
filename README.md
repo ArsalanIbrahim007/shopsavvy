@@ -22,7 +22,7 @@ verdict on whether each price is a good deal. Final Year Project, Bahria Univers
 | Folder | What is in it |
 |---|---|
 | `backend/` | Node.js + Express API, scrapers, matching and ranking code, background jobs, tests |
-| `frontend/` | React 19 + Vite web app |
+| `frontend/` | React 19 + Vite web app (see [frontend/README.md](frontend/README.md)) |
 | `backend/src/scripts/` | One-off tools: see [backend/src/scripts/README.md](backend/src/scripts/README.md) |
 
 ## Getting started
@@ -67,6 +67,7 @@ The frontend reads `VITE_API_URL` if the API is not on `http://localhost:5000/ap
 
 ```bash
 cd backend && npm test        # unit and API tests (Vitest); the API tests need no database
+cd frontend && npm test           # unit and component tests (Vitest)
 cd frontend && npm run lint
 ```
 
