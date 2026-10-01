@@ -4,7 +4,8 @@
 // which product a shopper is looking at, and breaks whenever a store moves its favicon.
 //
 // The files are each store's own public icon, downloaded once with Arsalan's permission (first six on 2026-09-30, the
-// six stores added on 2026-10-01 the day after). Mymart and Mi Store's icons are only 32 and 48 px and look soft at 28 px.
+// six stores added on 2026-10-01 the day after). Mi Store's is the "mi" icon cut out of the vector logo on its own site (an
+// SVG, so it is sharp at any size). Mymart publishes nothing larger than its 32 px icon, which looks a little soft at 28 px.
 // iShopping has none: its site refuses scripted downloads and has no favicon at the usual address, so it
 // keeps the monogram. Telemart's site now redirects to telex.pk, and its icon is the Telex one.
 
@@ -17,7 +18,7 @@ export const STORE_LOGO_FILES = {
   w11stop: "w11stop.png",
   telemart: "telemart.png",
   paklap: "paklap.png",
-  mistore: "mistore.png",
+  mistore: "mistore.svg",
   mymart: "mymart.png",
   alfatah: "alfatah.png",
   xcessorieshub: "xcessorieshub.png",
