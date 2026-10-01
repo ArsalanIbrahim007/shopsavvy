@@ -92,7 +92,7 @@ describe("productSeries", () => {
 
 describe("assessOutlook: too early", () => {
   it("says so, and why, when there are no records", () => {
-    expect(assessOutlook([], { now: NOW })).toEqual({ verdict: "too_early", why: "no_records", basis: { firstDay: null, lastDay: null, days: 0, records: 0 }, stats: null, strength: null });
+    expect(assessOutlook([], { now: NOW })).toEqual({ verdict: "too_early", why: "no_records", basis: { firstDay: null, lastDay: null, days: 0, records: 0 }, stats: null, strength: null, series: [], limits: { minDays: 7, minRecords: 5, fairDays: 28, fairRecords: 20, staleDays: 3 } });
     expect(assessOutlook(undefined, { now: NOW }).why).toBe("no_records");
   });
 
@@ -118,6 +118,32 @@ describe("assessOutlook: too early", () => {
     const out = assessOutlook(daily([100, 100, 100]), { now: NOW });
     expect(out.stats).toBeNull();
     expect(out.strength).toBeNull();
+  });
+});
+
+describe("assessOutlook: the thresholds sent with it", () => {
+  it("are the ones it applies, with a verdict and without one, so a page never has its own copy", () => {
+    const limits = { minDays: OUTLOOK.MIN_DAYS, minRecords: OUTLOOK.MIN_RECORD_DAYS, fairDays: OUTLOOK.FAIR_DAYS, fairRecords: OUTLOOK.FAIR_RECORDS, staleDays: OUTLOOK.STALE_DAYS };
+    expect(assessOutlook(daily([1000, 1010, 1020, 1030, 1040, 1050, 1060]), { now: NOW }).limits).toEqual(limits);
+    expect(assessOutlook(daily([1000]), { now: NOW }).limits).toEqual(limits);
+  });
+});
+
+describe("assessOutlook: the series sent to be drawn", () => {
+  it("is the best price on each recorded day, oldest first, for a verdict and for too early alike", () => {
+    const series = daily([1200, 1150, 1100, 1050, 1000, 1000, 1010]);
+    expect(assessOutlook(series, { now: NOW }).series).toEqual(series);
+    expect(assessOutlook(daily([1000, 1010]), { now: NOW }).series).toEqual(daily([1000, 1010]));
+  });
+
+  it("is only the newest 120 days when there are more", () => {
+    const many = daily(Array.from({ length: 150 }, (_, i) => 1000 + (i % 7) * 20));
+    const out = assessOutlook(many, { now: NOW });
+    expect(out.series).toHaveLength(120);
+    expect(out.series[119]).toEqual(many[149]);
+    expect(out.series[0]).toEqual(many[30]);
+    // the numbers still describe all of it
+    expect(out.basis.records).toBe(150);
   });
 });
 

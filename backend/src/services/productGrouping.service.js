@@ -1,6 +1,7 @@
 import { normalizeTitle, extractStorage } from "./normalizeTitle.service.js";
 import { isSimilarProduct, attributeConflict } from "./similarity.service.js";
 import { calculateDealScores } from "../ranking/dealScore.js";
+import { currentOffers } from "./offerFreshness.service.js";
 import { COLOURS, extractNetworkGeneration, extractPtaStatus, networkFamilyKey } from "./productAttributes.service.js";
 
 /**
@@ -283,10 +284,12 @@ export function groupListingsByProduct(listings = [], { matchStrategy = ruleMatc
 
       // Where a PTA-approved offer exists, the best deal is one of those: an offer that does not say it is
       // approved cannot be told apart from a non-PTA unit, which is why the deals feed applies the same rule.
-      // The unstated offers stay in the list, labelled.
+      // The unstated offers stay in the list, labelled. An offer whose price has not been checked for two weeks is not the best deal
+      // either (offerFreshness.service.js): it stays in the list, labelled.
+      const candidates = currentOffers(rankedOffers);
       const bestDeal = group.ptaStatus === "pta_approved"
-        ? rankedOffers.find((offer) => ptaOf(offer) === "pta_approved") ?? rankedOffers[0]
-        : rankedOffers[0];
+        ? candidates.find((offer) => ptaOf(offer) === "pta_approved") ?? candidates[0]
+        : candidates[0];
 
       return {
         ...group,

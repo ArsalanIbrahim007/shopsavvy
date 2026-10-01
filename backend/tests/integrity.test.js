@@ -207,7 +207,13 @@ describe("summarizeGroups", () => {
 
   it("counts how fresh the prices are, and finds the newest scrape", () => {
     const out = summarizeGroups([group([offer("a", 1, { lastScrapedAt: hoursAgo(2) }), offer("b", 1, { lastScrapedAt: hoursAgo(30) }), offer("c", 1, { lastScrapedAt: hoursAgo(100) }), offer("d", 1, { lastScrapedAt: undefined })])], { now: NOW });
-    expect(out.freshness).toEqual({ within24h: 1, within72h: 2, newestAt: hoursAgo(2) });
+    expect(out.freshness).toEqual({ within24h: 1, within72h: 2, outOfDate: 0, outOfDateAfterDays: 14, newestAt: hoursAgo(2) });
+  });
+
+  it("counts the offers whose price was last checked more than 14 days ago, and not the ones with no date", () => {
+    const out = summarizeGroups([group([offer("a", 1, { lastScrapedAt: hoursAgo(14 * 24) }), offer("b", 1, { lastScrapedAt: hoursAgo(14 * 24 + 1) }), offer("c", 1, { lastScrapedAt: hoursAgo(60 * 24) }), offer("d", 1, { lastScrapedAt: undefined })])], { now: NOW });
+    expect(out.freshness.outOfDate).toBe(2);
+    expect(out.freshness.outOfDateAfterDays).toBe(14);
   });
 
   it("includes an offer checked exactly 24 or 72 hours ago, and leaves out one checked a little earlier than that", () => {

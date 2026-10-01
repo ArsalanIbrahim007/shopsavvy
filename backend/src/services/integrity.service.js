@@ -10,6 +10,7 @@ import { VISIBLE_PLATFORMS_FILTER } from "../config/platforms.js";
 import Listing from "../models/listing.model.js";
 import { CATALOG_CATEGORIES, getCatalogGroups } from "./catalogFeed.service.js";
 import { readEvaluation } from "./evaluationReport.service.js";
+import { isOutOfDate, STALE_AFTER_DAYS } from "./offerFreshness.service.js";
 
 const CACHE_TTL_MS = 10 * 60 * 1000;
 const DAY_MS = 24 * 3600 * 1000;
@@ -29,7 +30,7 @@ export function summarizeGroups(groups, { now = Date.now() } = {}) {
     unusualPrices: { count: 0, examples: [] },
     discounts: { claims: 0, verdicts: { genuine: 0, likelyGenuine: 0, suspicious: 0, likelyFake: 0, unverified: 0 }, aboveMarket: 0 },
     pta: { offers: 0, approved: 0, nonPta: 0, notStated: 0, movedOut: 0, readFromProductPage: 0, productsKeptApart: 0 },
-    freshness: { within24h: 0, within72h: 0, newestAt: null },
+    freshness: { within24h: 0, within72h: 0, outOfDate: 0, outOfDateAfterDays: STALE_AFTER_DAYS, newestAt: null },
   };
 
   let newest = 0;
@@ -79,6 +80,7 @@ export function summarizeGroups(groups, { now = Date.now() } = {}) {
         if (now - scraped <= 3 * DAY_MS) out.freshness.within72h += 1;
         if (scraped > newest) newest = scraped;
       }
+      if (isOutOfDate(offer, now)) out.freshness.outOfDate += 1;
     }
   }
 

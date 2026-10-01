@@ -106,6 +106,23 @@ describe("GET /api/listings/search", () => {
     expect(body.data.every((offer) => offer.recommendation)).toBe(true);
   });
 
+  it("leaves a price that has not been checked for two weeks out of the lowest and highest price", async () => {
+    const old = new Date(Date.now() - 45 * 86400000).toISOString();
+    vi.spyOn(Listing, "find").mockImplementation(() => chain([row(11, "shophive", 40000, undefined, { lastScrapedAt: old }), ...threeStores]));
+
+    const { body } = await json("/api/listings/search?q=galaxy%20a17");
+    expect(body.count).toBe(4); // it is still listed
+    expect(body.summary).toMatchObject({ lowestPrice: 60000, highestPrice: 63000 });
+  });
+
+  it("uses an old price when it is all there is", async () => {
+    const old = new Date(Date.now() - 45 * 86400000).toISOString();
+    vi.spyOn(Listing, "find").mockImplementation(() => chain([row(11, "shophive", 40000, undefined, { lastScrapedAt: old }), row(12, "mega", 42000, undefined, { lastScrapedAt: old })]));
+
+    const { body } = await json("/api/listings/search?q=galaxy%20a17");
+    expect(body.summary).toMatchObject({ lowestPrice: 40000, highestPrice: 42000 });
+  });
+
   it("answers no results with an empty, well-formed 200", async () => {
     vi.spyOn(Listing, "find").mockImplementation(() => chain([]));
 
@@ -242,6 +259,17 @@ describe("GET /api/listings/:id", () => {
       expect(body.outlook).toBeNull();
       expect(body.offers.length).toBeGreaterThan(0);
     });
+  });
+
+  it("leaves a price that has not been checked for two weeks out of the product's lowest and highest price, and out of its best deal", async () => {
+    const old = new Date(Date.now() - 45 * 86400000).toISOString();
+    vi.spyOn(Listing, "findOne").mockResolvedValue(selected);
+    vi.spyOn(Listing, "find").mockImplementation(() => chain([row(2, "mega", 61500), row(13, "shophive", 40000, undefined, { lastScrapedAt: old })]));
+
+    const { body } = await json(`/api/listings/${ID(1)}`);
+    expect(body.offers).toHaveLength(3); // still listed
+    expect(body.summary).toMatchObject({ lowestPrice: 60000, highestPrice: 61500 });
+    expect(body.summary.bestDealPlatform).not.toBe("shophive");
   });
 
   it("still answers when the product is sold by only one store", async () => {

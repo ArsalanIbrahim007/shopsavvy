@@ -16,6 +16,7 @@ import { DEFAULT_MAX_AGE_HOURS } from "../services/dealsRanking.service.js";
 import { getSuggestions } from "../services/suggestions.service.js";
 import { groupListings } from "../services/grouping.service.js";
 import { getMarketMovement } from "../services/marketMovement.service.js";
+import { currentOffers } from "../services/offerFreshness.service.js";
 import { outlookForOffers } from "../services/priceOutlook.service.js";
 import {
   getListingPriceHistory,
@@ -380,7 +381,8 @@ console.log("[search]", refreshResult);
       groups
     );
 
-  const prices = recommendedListings
+  // a price not checked for two weeks is not "the lowest price" (offerFreshness.service.js)
+  const prices = currentOffers(recommendedListings)
     .map((listing) => Number(listing.price))
     .filter(
       (price) =>
@@ -525,8 +527,7 @@ export async function getListingDetails(req, res) {
 
   // An offer flagged as a probable listing error must not set the lowest price or
   // the "you can save" figure.
-  const prices = offers
-    .filter((offer) => !isSuspectPrice(offer))
+  const prices = currentOffers(offers.filter((offer) => !isSuspectPrice(offer)))
     .map((offer) => Number(offer.price))
     .filter(
       (price) =>

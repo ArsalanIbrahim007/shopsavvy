@@ -30,6 +30,12 @@ export const OUTLOOK = Object.freeze({
   CHANGE: 0.005, // a move of 0.5% or more counts as a change
   FAIR_DAYS: 28, // history this long, with FAIR_RECORDS records, is "fair" rather than "early"
   FAIR_RECORDS: 20,
+  SERIES_POINTS: 120, // the best-price-per-day points sent for the page to draw: the newest this many
+});
+
+/** The thresholds a page needs to show how close a product is to a verdict, sent with every outlook so the page never has its own copy. */
+const LIMITS = Object.freeze({
+  minDays: OUTLOOK.MIN_DAYS, minRecords: OUTLOOK.MIN_RECORD_DAYS, fairDays: OUTLOOK.FAIR_DAYS, fairRecords: OUTLOOK.FAIR_RECORDS, staleDays: OUTLOOK.STALE_DAYS,
 });
 
 const PRE_OWNED = new Set(["used", "refurbished", "open_box"]);
@@ -102,7 +108,8 @@ const pct = (from, to) => Math.round(((to - from) / from) * 1000) / 10;
  * @param {{day: string, price: number}[]} series  oldest first (see productSeries)
  * @param {object} [options]
  * @param {number} [options.now]  epoch ms
- * @returns {{verdict: string, basis: object, stats: object|null, strength: string|null}}
+ * @returns {{verdict: string, why: string|null, basis: object, stats: object|null, strength: string|null, series: {day: string, price: number}[], limits: object}}
+ *   `series` is the best price on each recorded day (the newest SERIES_POINTS of them), for the page to draw; `limits` the thresholds above
  */
 export function assessOutlook(series, { now = Date.now() } = {}) {
   const points = Array.isArray(series) ? series : [];
@@ -111,11 +118,12 @@ export function assessOutlook(series, { now = Date.now() } = {}) {
   const span = first ? dayIndex(last.day) - dayIndex(first.day) + 1 : 0;
   const age = last ? dayIndex(karachiDay(now)) - dayIndex(last.day) : null;
   const basis = { firstDay: first?.day ?? null, lastDay: last?.day ?? null, days: span, records: points.length };
+  const shown = points.slice(-OUTLOOK.SERIES_POINTS);
 
   const enough = span >= OUTLOOK.MIN_DAYS && points.length >= OUTLOOK.MIN_RECORD_DAYS && age !== null && age <= OUTLOOK.STALE_DAYS;
   if (!enough) {
     const why = points.length === 0 ? "no_records" : age > OUTLOOK.STALE_DAYS ? "stale" : "short";
-    return { verdict: "too_early", why, basis, stats: null, strength: null };
+    return { verdict: "too_early", why, basis, stats: null, strength: null, series: shown, limits: LIMITS };
   }
 
   const prices = points.map((point) => point.price);
@@ -152,7 +160,7 @@ export function assessOutlook(series, { now = Date.now() } = {}) {
   else verdict = "usual";
 
   const strength = span >= OUTLOOK.FAIR_DAYS && points.length >= OUTLOOK.FAIR_RECORDS ? "fair" : "early";
-  return { verdict, why: null, basis, stats, strength };
+  return { verdict, why: null, basis, stats, strength, series: shown, limits: LIMITS };
 }
 
 /** The outlook for a product's offers. */
