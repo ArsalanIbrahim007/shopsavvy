@@ -72,6 +72,12 @@ async function categoryCatalog(category, now) {
   return computation;
 }
 
+/** Every grouped product of a category, from the cache (computed first if needed). For reports that count across all of them. */
+export async function getCatalogGroups(category, now = Date.now()) {
+  const entry = await categoryCatalog(category, now);
+  return { groups: entry.groups, generatedAt: entry.generatedAt };
+}
+
 /**
  * @param {object} options
  * @param {string} options.category  one of CATALOG_CATEGORIES

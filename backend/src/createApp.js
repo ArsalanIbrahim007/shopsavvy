@@ -15,6 +15,7 @@ import { notFoundHandler, globalErrorHandler } from "./middleware/error.middlewa
 import healthRoutes from "./routes/health.routes.js";
 import listingRoutes from "./routes/listing.routes.js";
 import analyticsRoutes from "./routes/analytics.routes.js";
+import integrityRoutes from "./routes/integrity.routes.js";
 import priceAlertRoutes from "./routes/priceAlert.routes.js";
 import alertPageRoutes from "./routes/alertPages.routes.js";
 
@@ -42,6 +43,7 @@ export function createApp() {
   app.use("/api/health", healthRoutes);
   app.use("/api/listings", listingRoutes);
   app.use("/api/analytics", analyticsRoutes);
+  app.use("/api/integrity", integrityRoutes);
   app.use("/api/alerts", priceAlertRoutes);
   // The pages the links in alert emails open (confirm / cancel).
   app.use("/alerts", alertPageRoutes);
