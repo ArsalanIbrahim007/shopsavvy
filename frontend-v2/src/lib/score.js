@@ -52,7 +52,8 @@ export function bestDealOffer(offers) {
   if (!Array.isArray(offers) || offers.length < 2) return null;
   const believable = offers.filter((offer) => !offer?.priceCheck?.status?.startsWith("suspect"));
   const unmarked = believable.filter((offer) => !offer?.ptaAssessment);
-  const pool = unmarked.length > 0 ? unmarked : believable;
+  const inStock = unmarked.filter((offer) => offer?.inStock !== false); // a best deal that cannot be bought is no deal
+  const pool = inStock.length > 0 ? inStock : unmarked.length > 0 ? unmarked : believable;
   const ranked = [...pool].sort((a, b) => (scoreOf(b) ?? 0) - (scoreOf(a) ?? 0));
   return ranked[0] ?? null;
 }

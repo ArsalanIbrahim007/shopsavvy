@@ -151,3 +151,39 @@ describe("PTA on screen", () => {
     expect(screen.queryByText(/PTA/)).toBeNull();
   });
 });
+
+describe("offers that are out of stock are never the lowest price, the best deal or the saving", () => {
+  const stocked = () => [
+    offer("gone", "xcessorieshub", 50999, { inStock: false, dealScore: 99 }),
+    offer("a", "mega", 61999, { dealScore: 80 }),
+    offer("b", "shophive", 66499, { dealScore: 70 }),
+  ];
+
+  it("summarizeOffers and bestDealOffer pass over an out-of-stock offer, but count it", () => {
+    const summary = summarizeOffers(stocked());
+    expect(summary.lowest._id).toBe("a");
+    expect(summary.bestDeal._id).toBe("a"); // "gone" scores 99 and is cheaper
+    expect(summary.count).toBe(3);
+    expect(bestDealOffer(stocked())._id).toBe("a");
+  });
+
+  it("uses them when nothing is in stock", () => {
+    const none = stocked().map((o) => ({ ...o, inStock: false }));
+    expect(summarizeOffers(none).lowest._id).toBe("gone");
+    expect(bestDealOffer(none)._id).toBe("gone");
+  });
+
+  it("treats a missing stock flag as in stock", () => {
+    const flagless = [offer("x", "mega", 100, { inStock: undefined }), offer("y", "shophive", 120)];
+    expect(summarizeOffers(flagless).lowest._id).toBe("x");
+  });
+
+  it("ResultGroup leads with an in-stock price, and 'you can save' ignores the out-of-stock one", () => {
+    inRouter(<ResultGroup group={{ productName: "Redmi Note 14 8GB 256GB", offers: stocked() }} />);
+    expect(document.querySelector(".result-group__amount")).toHaveTextContent("61,999");
+    expect(document.querySelector(".result-group__info")).toHaveTextContent("save up to PKR 4,500"); // 66,499 - 61,999
+    const rows = screen.getAllByRole("row").slice(1);
+    expect(rows[0]).toHaveTextContent("Out of stock"); // still listed, cheapest first, marked
+    expect(rows[0]).not.toHaveTextContent("Lowest price");
+  });
+});

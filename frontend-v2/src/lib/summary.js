@@ -35,7 +35,10 @@ export function summarizeOffers(offers) {
   // (see lib/pta.js): it would make the PTA-approved offers look expensive. They stay in the list, labelled.
   const believable = offers.filter((offer) => !suspect(offer));
   const comparable = believable.filter((offer) => !offer.ptaAssessment);
-  const pool = comparable.length ? comparable : believable.length ? believable : offers;
+  // A price the shopper cannot buy at is not "the lowest price": offers in stock come first, and the rest are used only
+  // when nothing is in stock (they stay in the table, marked out of stock).
+  const buyable = comparable.filter((offer) => offer.inStock !== false);
+  const pool = buyable.length ? buyable : comparable.length ? comparable : believable.length ? believable : offers;
 
   const lowest = pool.reduce((a, b) => (b.price < a.price ? b : a));
   const bestDeal = [...pool].sort((a, b) => (b.dealScore || 0) - (a.dealScore || 0))[0] || lowest;

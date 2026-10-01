@@ -14,7 +14,7 @@ import SearchBox from "./SearchBox.jsx";
 import ThemeToggle from "./ThemeToggle.jsx";
 import "./Layout.css";
 
-const STORES = ["priceoye", "shophive", "ishopping", "telemart", "mega", "paklap", "w11stop"];
+const STORES = ["priceoye", "shophive", "ishopping", "telemart", "mega", "paklap", "w11stop", "mistore", "mymart", "alfatah", "xcessorieshub", "eezepc", "ledshop"];
 
 // The header's shortcuts: the categories people browse most, and the verified deals on the home page.
 const NAV = [

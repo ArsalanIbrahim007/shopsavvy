@@ -34,7 +34,7 @@ export default function ResultGroup({ group, currentId, colour = null, onColour 
   if (!best) return null;
 
   // Only prices we believe, and that compare like with like, count towards "you can save".
-  const believable = offers.filter((offer) => !isSuspect(offer) && !offer.ptaAssessment).map((offer) => offer.price);
+  const believable = offers.filter((offer) => !isSuspect(offer) && !offer.ptaAssessment && offer.inStock !== false).map((offer) => offer.price);
   const saving = believable.length > 1 ? Math.max(...believable) - Math.min(...believable) : 0;
   const badges = cardBadges(best);
   const category = best.productCategory;

@@ -14,6 +14,13 @@ const STORES = {
   daraz: { name: "Daraz", domain: "daraz.pk", color: "#f85606" },
   homeshopping: { name: "HomeShopping", domain: "homeshopping.pk", color: "#b71c1c" },
   symbios: { name: "Symbios", domain: "symbios.pk", color: "#8e24aa" },
+  // added 2026-10-01 (backend scrapers/stores.js); no logo files yet, so they show the monogram
+  mistore: { name: "Mi Store", domain: "mistore.pk", color: "#c2185b" },
+  mymart: { name: "MyMart", domain: "mymart.pk", color: "#37474f" },
+  alfatah: { name: "Al-Fatah", domain: "alfatah.pk", color: "#827717" },
+  xcessorieshub: { name: "XcessoriesHub", domain: "xcessorieshub.com", color: "#0097a7" },
+  eezepc: { name: "eezepc", domain: "eezepc.com", color: "#3949ab" },
+  ledshop: { name: "LEDshop.pk", domain: "ledshop.pk", color: "#e65100" },
 };
 
 /** "PriceOye", "priceoye.pk", "PRICEOYE" -> "priceoye" */
