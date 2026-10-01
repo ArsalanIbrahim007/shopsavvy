@@ -3,6 +3,7 @@
 // probable listing error never sets the lowest price, the saving, or the best deal.
 
 import { comparableOffers } from "../../lib/condition.js";
+import { currentOffers } from "../../lib/freshness.js";
 import { formatPrice } from "../../lib/format.js";
 import { platformName } from "../../lib/platforms.js";
 import { bestDealOffer } from "../../lib/score.js";
@@ -14,7 +15,7 @@ const suspect = (offer) => offer?.priceCheck?.status?.startsWith("suspect");
 export default function CrossStoreSummary({ offers }) {
   const summary = summarizeOffers(offers);
   // used, refurbished and open-box prices are not part of the comparison (see lib/condition.js)
-  const believable = comparableOffers(offers).filter((offer) => !suspect(offer)).map((offer) => offer.price);
+  const believable = currentOffers(comparableOffers(offers)).filter((offer) => !suspect(offer)).map((offer) => offer.price);
   const highest = believable.length ? Math.max(...believable) : null;
   const lowest = summary.lowest?.price ?? null;
   const saving = highest !== null && lowest !== null ? highest - lowest : 0;

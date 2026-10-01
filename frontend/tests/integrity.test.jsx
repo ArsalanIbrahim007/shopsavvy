@@ -95,7 +95,7 @@ const report = (over = {}) => ({
     unusualPrices: { count: 1, examples: [{ platform: "priceoye", title: "Samsung 43 Inch Smart TV", price: 225999, reason: "2.5 times what 2 other stores charge." }] },
     discounts: { claims: 735, verdicts: { genuine: 4, likelyGenuine: 26, suspicious: 116, likelyFake: 53, unverified: 536 }, aboveMarket: 26 },
     pta: { offers: 1750, approved: 399, nonPta: 36, notStated: 117, movedOut: 15, readFromProductPage: 303, productsKeptApart: 31 },
-    freshness: { within24h: 2225, within72h: 2945, newestAt: new Date().toISOString() },
+    freshness: { within24h: 2225, within72h: 2945, outOfDate: 211, outOfDateAfterDays: 14, newestAt: new Date().toISOString() },
     history: { points: 8296, days: 25, since: "2026-07-03T00:00:00Z" },
   },
   evaluation: {
@@ -241,6 +241,27 @@ describe("HonestPrices page", () => {
     renderPage();
     expect(await screen.findByText(/live numbers are not available/)).toBeInTheDocument();
     expect(within(screen.getByRole("region", { name: "What the checks found today" })).queryByText("0")).not.toBeInTheDocument();
+  });
+
+  it("says how many offers have an old price, that they are marked, and that they do not count as the lowest price", async () => {
+    vi.mocked(getIntegrity).mockResolvedValue(report());
+    renderPage();
+    expect(await screen.findByText(/211 offers have not been checked for over 14 days\. They are marked "May be out of date" and do not count as the lowest price/)).toBeInTheDocument();
+  });
+
+  it("says so when no offer is old, and says '1 offer has' for one", async () => {
+    const none = report();
+    none.live.freshness = { ...none.live.freshness, outOfDate: 0 };
+    vi.mocked(getIntegrity).mockResolvedValueOnce(none);
+    const { unmount } = renderPage();
+    expect(await screen.findByText("No offer is older than 14 days.")).toBeInTheDocument();
+    unmount();
+
+    const one = report();
+    one.live.freshness = { ...one.live.freshness, outOfDate: 1 };
+    vi.mocked(getIntegrity).mockResolvedValueOnce(one);
+    renderPage();
+    expect(await screen.findByText(/^1 offer has not been checked for over 14 days/)).toBeInTheDocument();
   });
 
   it("shows what the wait-or-buy panel would have said and what the price then did, and says when no row can be judged", async () => {

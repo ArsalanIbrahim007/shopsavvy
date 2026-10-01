@@ -8,7 +8,7 @@ import { platformName } from "../../lib/platforms.js";
 import "./results.css";
 
 export default function SummaryCards({ summary }) {
-  const { lowest, bestDeal, average, platformCount, count, preOwnedOnly } = summary;
+  const { lowest, bestDeal, average, platformCount, count, preOwnedOnly, outOfDate } = summary;
   const score = Number.isFinite(bestDeal?.dealScore) ? Math.round(bestDeal.dealScore) : null;
 
   return (
@@ -16,7 +16,10 @@ export default function SummaryCards({ summary }) {
       <div className="card summary-card">
         <p className="eyebrow">Stores compared</p>
         <p className="summary-card__value">{platformCount}</p>
-        <p className="small muted">{count} {count === 1 ? "offer" : "offers"} shown</p>
+        <p className="small muted">
+          {count} {count === 1 ? "offer" : "offers"} shown
+          {outOfDate > 0 ? `, ${outOfDate} with an old price not counted` : ""}
+        </p>
       </div>
       <div className="card summary-card">
         <p className="eyebrow">{preOwnedOnly ? "Lowest pre-owned price" : "Lowest price"}</p>

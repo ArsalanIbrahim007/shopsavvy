@@ -4,6 +4,7 @@
 // change there shows up here without a code change.
 
 import { comparableOffers } from "./condition.js";
+import { currentOffers } from "./freshness.js";
 
 const PARTS = [
   { key: "price", label: "Price competitiveness", fallbackMax: 60 },
@@ -51,8 +52,9 @@ export function scoreParts(offer) {
  * applies the same rule to the product's own `bestDeal`, and summarizeOffers to the lowest price.
  */
 export function bestDealOffer(allOffers) {
-  // used, refurbished and open-box offers are not compared with new ones (see lib/condition.js)
-  const offers = comparableOffers(allOffers);
+  // used, refurbished and open-box offers are not compared with new ones (lib/condition.js), and a price not checked for two weeks
+  // is not a deal (lib/freshness.js)
+  const offers = currentOffers(comparableOffers(allOffers));
   if (!Array.isArray(allOffers) || offers.length < 2) return null;
   const believable = offers.filter((offer) => !offer?.priceCheck?.status?.startsWith("suspect"));
   const unmarked = believable.filter((offer) => !offer?.ptaAssessment);

@@ -114,6 +114,11 @@ function LiveNumbers({ live, generatedAt }) {
             {formatShare(share(freshness.within72h, live.offers))} in the last 3 days.
             {freshness.newestAt ? ` The newest check was ${timeAgo(freshness.newestAt)}.` : ""} Every offer shows when it was last updated.
           </p>
+          <p className="muted">
+            {freshness.outOfDate > 0
+              ? `${formatNumber(freshness.outOfDate)} ${freshness.outOfDate === 1 ? "offer has" : "offers have"} not been checked for over ${freshness.outOfDateAfterDays ?? 14} days. They are marked "May be out of date" and do not count as the lowest price, the best deal or a saving while their product has a current price.`
+              : `No offer is older than ${freshness.outOfDateAfterDays ?? 14} days.`}
+          </p>
         </section>
       </div>
     </>

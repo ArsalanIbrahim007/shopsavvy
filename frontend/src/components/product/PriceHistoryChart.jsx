@@ -7,8 +7,9 @@
 // store's price on that date, and a box lists the date and what every store charged, with the store nearest the
 // pointer in bold. The chart is drawn at the width it is shown at, so its text stays a readable size on a phone.
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 
+import { useElementWidth } from "../../hooks/useElementWidth.js";
 import { DEFAULT_RANGE, RANGES, buildSeries, chartModel, historyPoints, historyStats, hoverRows } from "../../lib/history.js";
 import { formatDate, formatPrice } from "../../lib/format.js";
 import { canonicalPlatform, platformColor, platformName } from "../../lib/platforms.js";
@@ -18,32 +19,13 @@ const DAY_MS = 24 * 3600 * 1000;
 const FALLBACK_WIDTH = 720; // before the first measurement, and where nothing can be measured (tests)
 const NARROW = 520;
 
-/** The width of an element, kept up to date as it is resized. */
-function useElementWidth(ref) {
-  const [width, setWidth] = useState(FALLBACK_WIDTH);
-  useEffect(() => {
-    const element = ref.current;
-    if (!element) return undefined;
-    const measure = () => {
-      const measured = Math.round(element.clientWidth);
-      if (measured > 0) setWidth(Math.max(measured, 280));
-    };
-    measure();
-    if (typeof ResizeObserver === "undefined") return undefined;
-    const observer = new ResizeObserver(measure);
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [ref]);
-  return width;
-}
-
 export default function PriceHistoryChart({ offers, currentId, now }) {
   const uid = useId();
   const plotRef = useRef(null);
   const [range, setRange] = useState(DEFAULT_RANGE);
   const [hidden, setHidden] = useState([]); // canonical store ids
   const [hover, setHover] = useState(null); // { time: ms, y: px | null } while the chart is being read
-  const width = useElementWidth(plotRef);
+  const width = useElementWidth(plotRef, FALLBACK_WIDTH);
 
   const current = offers.find((offer) => offer._id === currentId) ?? offers[0];
   const allSeries = buildSeries(offers, range, { currentId, now });

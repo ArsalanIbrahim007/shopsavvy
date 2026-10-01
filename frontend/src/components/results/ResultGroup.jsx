@@ -8,6 +8,7 @@
 import { categoryName } from "../../lib/categories.js";
 import { coloursOf, offersInColour, unstatedColourCount } from "../../lib/colours.js";
 import { comparableOffers, conditionFlag, conditionNotice } from "../../lib/condition.js";
+import { currentOffers, freshnessNotice, outOfDateFlag } from "../../lib/freshness.js";
 import { formatPrice } from "../../lib/format.js";
 import { platformName } from "../../lib/platforms.js";
 import { ptaFlag, ptaNotice } from "../../lib/pta.js";
@@ -35,13 +36,15 @@ export default function ResultGroup({ group, currentId, colour = null, onColour 
   if (!best) return null;
 
   // Only prices we believe, and that compare like with like, count towards "you can save".
-  const believable = comparableOffers(offers).filter((offer) => !isSuspect(offer) && !offer.ptaAssessment && offer.inStock !== false).map((offer) => offer.price);
+  const believable = currentOffers(comparableOffers(offers)).filter((offer) => !isSuspect(offer) && !offer.ptaAssessment && offer.inStock !== false).map((offer) => offer.price);
   const saving = believable.length > 1 ? Math.max(...believable) - Math.min(...believable) : 0;
   const badges = cardBadges(best);
   const category = best.productCategory;
   const pta = ptaFlag(best);
   const condition = conditionFlag(best);
+  const oldPrice = outOfDateFlag(best);
   const notice = ptaNotice(offers);
+  const oldNotice = freshnessNotice(offers);
   const stateNotice = conditionNotice(offers);
 
   return (
@@ -55,6 +58,7 @@ export default function ResultGroup({ group, currentId, colour = null, onColour 
           <div className="result-group__badges">
             {category && <span className="badge badge-neutral">{categoryName(category)}</span>}
             {condition && <VerdictBadge tone={condition.tone} label={condition.label} title={condition.reason} />}
+            {oldPrice && <VerdictBadge tone={oldPrice.tone} label={oldPrice.label} title={oldPrice.reason} />}
             {pta && <VerdictBadge tone={pta.tone} label={pta.label} title={pta.reason} />}
             {badges.map((badge) => <VerdictBadge key={badge.id} tone={badge.tone} label={badge.label} title={badge.reason} />)}
           </div>
@@ -72,6 +76,7 @@ export default function ResultGroup({ group, currentId, colour = null, onColour 
       </div>
 
       {stateNotice && <p className="result-group__pta small" role="note">{stateNotice}</p>}
+      {oldNotice && <p className="result-group__pta small" role="note">{oldNotice}</p>}
       {notice && <p className="result-group__pta small" role="note">{notice}</p>}
 
       {onColour && <ColourPicker offers={allOffers} value={chosen} onChange={onColour} />}
