@@ -76,6 +76,9 @@ async function databaseIsUp() {
  *                   properties:
  *                     running:
  *                       type: integer
+ *                     runningBackground:
+ *                       type: integer
+ *                       description: How many of the running jobs are background work (cache warm-ups), which never take the last worker.
  *                     queued:
  *                       type: integer
  *                     workers:

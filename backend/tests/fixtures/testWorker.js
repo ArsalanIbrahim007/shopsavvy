@@ -10,6 +10,13 @@ const JOBS = {
     while (Date.now() < end) { /* busy wait: like real CPU work */ }
     return "slept";
   },
+  // Busy for ms and report when it started and ended, so a test can see whether two jobs overlapped without
+  // depending on how fast or loaded the machine is.
+  span: ({ ms }) => {
+    const start = Date.now();
+    while (Date.now() - start < ms) { /* busy wait */ }
+    return { start, end: Date.now() };
+  },
   pid: () => threadMarker,
 };
 

@@ -14,6 +14,14 @@ const PLATFORM_TRUST_SCORES = {
   czone: 0.8,
   galaxy: 0.78,
   vmart: 0.75,
+  // Added 2026-10-01 with the platform adapters (scrapers/stores.js). A judgement, not a measurement: a brand's own store and
+  // an established retail chain are trusted a little above the default; the smaller shops sit just above it.
+  mistore: 0.88,
+  alfatah: 0.85,
+  mymart: 0.78,
+  xcessorieshub: 0.75,
+  eezepc: 0.75,
+  ledshop: 0.75,
 };
 
 // Maps domain-style names onto their canonical platform key.

@@ -20,6 +20,7 @@ vi.mock("../src/services/priceHistory.service.js", () => ({
 
 import Listing from "../src/models/listing.model.js";
 import { createApp } from "../src/createApp.js";
+import { clearCategoryCountsCache } from "../src/controllers/listing.controller.js";
 import { fetchAndRefreshListings } from "../src/services/scraper.service.js";
 import { recordPriceSnapshot } from "../src/services/priceHistory.service.js";
 
@@ -72,6 +73,8 @@ afterAll(async () => {
 beforeEach(() => {
   vi.spyOn(console, "log").mockImplementation(() => {});
   vi.spyOn(console, "error").mockImplementation(() => {});
+  clearCategoryCountsCache();
+  vi.spyOn(Listing, "aggregate").mockResolvedValue([]);
 });
 afterEach(() => {
   vi.restoreAllMocks();
@@ -229,9 +232,31 @@ describe("listing list and stats", () => {
   it("reports the headline numbers from counts, not by loading every listing", async () => {
     vi.spyOn(Listing, "countDocuments").mockResolvedValue(3203);
     vi.spyOn(Listing, "distinct").mockResolvedValue(["priceoye", "mega", "shophive", "telemart", "ishopping", "paklap", "w11stop"]);
+    Listing.aggregate.mockResolvedValue([{ _id: "smartphone", count: 1368 }, { _id: "tv", count: 571 }, { _id: "other", count: 217 }]);
+
     const { res, body } = await json("/api/listings/stats");
     expect(res.status).toBe(200);
-    expect(body).toEqual({ success: true, products: 3203, platforms: 7 });
+    expect(body).toEqual({
+      success: true,
+      products: 3203,
+      platforms: 7,
+      categories: [{ category: "smartphone", count: 1368 }, { category: "tv", count: 571 }, { category: "other", count: 217 }],
+    });
+  });
+
+  it("counts categories over visible stores only, and answers repeat calls from a short cache", async () => {
+    vi.spyOn(Listing, "countDocuments").mockResolvedValue(1);
+    vi.spyOn(Listing, "distinct").mockResolvedValue([]);
+    Listing.aggregate.mockResolvedValue([{ _id: "tv", count: 5 }]);
+
+    await json("/api/listings/stats");
+    await json("/api/listings/stats");
+    expect(Listing.aggregate).toHaveBeenCalledTimes(1);
+
+    const pipeline = Listing.aggregate.mock.calls[0][0];
+    expect(pipeline[0].$match.platform.$nin).toContain("daraz");
+    // A listing with no category is counted as "other" rather than dropped or shown as null.
+    expect(JSON.stringify(pipeline)).toContain('"$ifNull":["$productCategory","other"]');
   });
 
   it("paginates only when asked, and clamps the page size", async () => {

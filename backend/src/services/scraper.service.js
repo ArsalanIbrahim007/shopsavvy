@@ -83,7 +83,7 @@ async function hasFreshData(query) {
  * Converts a ScrapedListing to a Listing model document.
  */
 function toListingDoc(scraped) {
-  return {
+  const doc = {
     platform:        scraped.platform,
     title:           scraped.title,
     normalizedTitle: normalizeTitle(scraped.title),
@@ -102,6 +102,14 @@ function toListingDoc(scraped) {
     ...extractAttributes(scraped.title),
     ...extractExtras(scraped),
   };
+
+  // A title that says nothing about PTA must not undo what the store's product page said on an earlier day
+  // (pageEnrichment.service.js): only a status the title itself states is written. A new listing still starts at
+  // "unknown" through the schema default.
+  if (doc.ptaStatus === "unknown") delete doc.ptaStatus;
+  else doc.ptaSource = "title";
+
+  return doc;
 }
 
 /**

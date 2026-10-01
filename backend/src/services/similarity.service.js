@@ -6,7 +6,7 @@ import {
   extractModelCodes,
   extractSpecs,
 } from "./normalizeTitle.service.js";
-import { extractRamGb, extractCondition } from "./productAttributes.service.js";
+import { extractRamGb, extractCondition, extractNetworkGeneration } from "./productAttributes.service.js";
 
 /**
  * Words marking a distinct product tier rather than describing the same
@@ -36,8 +36,16 @@ export function getSimilarityPercentage(textA = "", textB = "") {
   return Math.round(calculateJaccardSimilarity(textA, textB) * 100);
 }
 
+/**
+ * "Pro+", "Pro +" and "S25+" are written forms of "Plus": Redmi Note 14 Pro+ is a different, dearer phone than the Pro, and a
+ * store that writes the symbol must not be read as the plain model. Only after a model or tier word, so "8GB + 256GB" (RAM and
+ * storage) is left alone. modelTokens drops the symbol, so it is turned into the word before that.
+ */
+const PLUS_AFTER_MODEL = new RegExp("\\b(pro|max|ultra|mini|air|lite|fe|se|edge|[sa]\\d{2,3}|note\\s?\\d{1,2})\\s?\\+(?![\\w])", "gi");
+
 export function extractVariants(text = "") {
-  return new Set(tokenize(modelTokens(text)).filter((t) => VARIANT_TOKENS.has(t)));
+  const written = String(text).replace(PLUS_AFTER_MODEL, "$1 plus");
+  return new Set(tokenize(modelTokens(written)).filter((t) => VARIANT_TOKENS.has(t)));
 }
 
 /**
@@ -143,6 +151,12 @@ export function attributeConflict(textA, textB, { ignoreUnstatedStorage = false 
   const ptaA = extractPtaStatus(textA);
   const ptaB = extractPtaStatus(textB);
   if (ptaA !== "unknown" && ptaB !== "unknown" && ptaA !== ptaB) return true;
+
+  // A 4G and a 5G version of a phone are different products at very different prices. Like approval status,
+  // this blocks a match only when BOTH titles state a generation and they differ: stores often omit "5G".
+  const networkA = extractNetworkGeneration(textA);
+  const networkB = extractNetworkGeneration(textB);
+  if (networkA !== null && networkB !== null && networkA !== networkB) return true;
 
   // Model codes conflict only when both titles state some and they share
   // none. Requiring identical sets split a store that appends a SKU ("S24

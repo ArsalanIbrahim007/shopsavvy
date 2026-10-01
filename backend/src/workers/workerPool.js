@@ -10,9 +10,16 @@
 // means loading the modules and the trained model again, which costs more than
 // a small job. Workers are started on first use and reused.
 //
+// Two lanes. A shopper is waiting on an "interactive" job (a search, a product page), and nobody is waiting on a
+// "background" one (warming the deals and catalog caches, the scheduled-scrape query list). Background jobs may
+// never use the last worker, so one is always free for a shopper, and waiting interactive jobs go before waiting
+// background ones. (Before this, a cold start filled both workers with cache warm-ups and a product page waited
+// 6 to 15 seconds behind them.) A job that has started cannot be interrupted, so the reserve is what guarantees
+// the wait: at most one background job runs at a time with two workers.
+//
 // Behaviour worth knowing:
-//  - At most `size` jobs run at once; others wait in a queue.
-//  - The queue is bounded (`maxQueue`). Past that, run() rejects immediately with a
+//  - At most `size` jobs run at once (at most `backgroundLimit` of them background); others wait in a queue.
+//  - Each lane's queue is bounded (`maxQueue`). Past that, run() rejects immediately with a
 //    503 SERVICE_BUSY AppError, so a flood of heavy searches cannot pile up forever.
 //  - A job that takes longer than its timeout has its worker terminated and the
 //    job rejected; the worker is replaced on demand. A worker that crashes rejects
@@ -32,33 +39,42 @@ export class WorkerPool {
    * @param {object} [options]
    * @param {number} [options.size]       workers running at once
    * @param {number} [options.timeoutMs]  default per-job time limit
-   * @param {number} [options.maxQueue]   jobs allowed to wait before run() rejects
+   * @param {number} [options.maxQueue]   jobs per lane allowed to wait before run() rejects
+   * @param {number} [options.backgroundLimit]  most background jobs running at once (default: all but one worker)
    * @param {string} [options.name]       for error messages
    */
-  constructor(script, { size = 2, timeoutMs = 120000, maxQueue = 20, name = "worker" } = {}) {
+  constructor(script, { size = 2, timeoutMs = 120000, maxQueue = 20, name = "worker", backgroundLimit } = {}) {
     this.script = script;
     this.timeoutMs = timeoutMs;
     this.maxQueue = maxQueue;
     this.name = name;
+    // With a single worker there is nothing to reserve: background work may use it.
+    this.backgroundLimit = backgroundLimit ?? (size > 1 ? size - 1 : size);
     this.slots = Array.from({ length: size }, () => ({ worker: null, job: null }));
     this.queue = [];
     this.closed = false;
   }
 
-  /** Runs `type` with `payload` on a worker. Resolves with the worker's result. */
-  run(type, payload, { timeoutMs = this.timeoutMs } = {}) {
+  /**
+   * Runs `type` with `payload` on a worker. Resolves with the worker's result.
+   * @param {object} [options]
+   * @param {number} [options.timeoutMs]
+   * @param {"interactive"|"background"} [options.priority]  "interactive" (default) when a shopper is waiting
+   */
+  run(type, payload, { timeoutMs = this.timeoutMs, priority = "interactive" } = {}) {
     if (this.closed) return Promise.reject(new Error(`${this.name} pool is closed`));
+    if (priority !== "interactive" && priority !== "background") return Promise.reject(new Error(`unknown priority "${priority}"`));
 
     return new Promise((resolve, reject) => {
-      const job = { id: nextJobId++, type, payload, timeoutMs, resolve, reject, timer: null };
+      const job = { id: nextJobId++, type, payload, timeoutMs, priority, resolve, reject, timer: null };
 
       const slot = this.slots.find((s) => !s.job);
-      if (slot) {
+      if (slot && this.#mayStart(job)) {
         this.#start(slot, job);
         return;
       }
 
-      if (this.queue.length >= this.maxQueue) {
+      if (this.queue.filter((queued) => queued.priority === priority).length >= this.maxQueue) {
         reject(new AppError(503, "The server is busy right now. Please try again in a moment.", { code: ERROR_CODES.SERVICE_BUSY }));
         return;
       }
@@ -71,10 +87,11 @@ export class WorkerPool {
     for (const slot of this.slots) if (!slot.worker) this.#spawn(slot);
   }
 
-  /** Jobs running, jobs waiting, workers alive. */
+  /** Jobs running (and how many of them background), jobs waiting, workers alive. */
   stats() {
     return {
       running: this.slots.filter((s) => s.job).length,
+      runningBackground: this.#runningBackground(),
       queued: this.queue.length,
       workers: this.slots.filter((s) => s.worker).length,
     };
@@ -156,12 +173,31 @@ export class WorkerPool {
     job.reject(error);
   }
 
+  #runningBackground() {
+    return this.slots.filter((s) => s.job?.priority === "background").length;
+  }
+
+  /** A background job may start only while fewer than backgroundLimit are running; an interactive one always may. */
+  #mayStart(job) {
+    return job.priority === "interactive" || this.#runningBackground() < this.backgroundLimit;
+  }
+
+  /** The next waiting job that may start now: interactive ones first (in order), then background ones. */
+  #takeNext() {
+    const interactive = this.queue.findIndex((job) => job.priority === "interactive");
+    if (interactive >= 0) return this.queue.splice(interactive, 1)[0];
+    const background = this.queue.findIndex((job) => this.#mayStart(job));
+    return background >= 0 ? this.queue.splice(background, 1)[0] : null;
+  }
+
   #next() {
     if (this.closed) return;
     while (this.queue.length > 0) {
       const slot = this.slots.find((s) => !s.job);
       if (!slot) return;
-      this.#start(slot, this.queue.shift());
+      const job = this.#takeNext();
+      if (!job) return;
+      this.#start(slot, job);
     }
   }
 }

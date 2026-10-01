@@ -23,6 +23,7 @@ import { scrapeIShoppingSearch } from "./ishopping.scraper.js";
 // Daraz is switched off (see the disabled task in scrapeFixedPlatforms below).
 // Re-enable by uncommenting this import and that block.
 // import { scrapeDarazSearch } from "./daraz.scraper.js";
+import { storeTasks } from "./stores.js";
 import { detectCategory, detectQueryCategory } from "./productCategory.js";
 
 // Query aliases — map shorthand searches to what actually appears in titles
@@ -137,6 +138,9 @@ async function scrapeFixedPlatforms(query) {
     //   // deliberate signal, see daraz.scraper.js for the full note.
     //   fn: () => scrapeDarazSearch(`https://www.daraz.pk/catalog/?q=${encoded}`),
     // },
+
+    // Stores read through a platform adapter (Shopify, WooCommerce) rather than a scraper of their own: see stores.js.
+    ...storeTasks(query),
   ];
 
   const settled = await Promise.allSettled(tasks.map((t) => t.fn()));

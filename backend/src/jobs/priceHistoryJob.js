@@ -22,36 +22,19 @@
 // not at one precise instant.
 
 import cron from "node-cron";
-import { readFileSync, writeFileSync } from "fs";
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
+import { enrichFromPages } from "../services/pageEnrichment.service.js";
 import { runScheduledScrape } from "../services/scheduledScraping.service.js";
+import { isDoneToday, markDone, markFailed, pktHour, tryStart } from "./scrapeState.js";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const STATE_FILE = join(__dirname, "..", "..", ".scheduled-scrape-state.json");
-
-const WINDOW_START_HOUR = 22; // 10 PM, inclusive
+const WINDOW_START_HOUR = 22; // 10 PM Pakistan time, inclusive
 const WINDOW_END_HOUR = 23; // 11 PM, exclusive
 const CHECK_INTERVAL_CRON = "*/10 * * * *"; // every 10 minutes
 
-function todayKey() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function readState() {
-  try {
-    return JSON.parse(readFileSync(STATE_FILE, "utf8"));
-  } catch {
-    return { lastRunDate: null };
-  }
-}
-
-function writeState(state) {
-  writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
-}
-
-function isWithinWindow() {
-  const hour = new Date().getHours();
+// The day and the window are Pakistan's (see scrapeState.js), so they do not depend on this machine's time zone.
+// The day is also shared with the script run by hand or by Windows Task Scheduler
+// (src/scripts/run-scheduled-scrape.js): whichever starts first does the day's scrape, the other skips it.
+export function isWithinWindow(now = new Date()) {
+  const hour = pktHour(now);
   return hour >= WINDOW_START_HOUR && hour < WINDOW_END_HOUR;
 }
 
@@ -60,9 +43,9 @@ let isRunning = false;
 async function maybeRunToday() {
   if (isRunning) return; // a run is already in flight, don't double-start
 
-  const today = todayKey();
-  if (readState().lastRunDate === today) return; // already done today
+  if (isDoneToday()) return; // already done today
   if (!isWithinWindow()) return; // not the window right now
+  if (!tryStart().ok) return; // the script (or another process) is already doing today's run
 
   isRunning = true;
   console.log("[priceHistoryJob] In the 10-11 PM window and not yet run today, starting...");
@@ -78,13 +61,23 @@ async function maybeRunToday() {
     // Only marked done on success -- a crash partway through leaves
     // lastRunDate unset, so the next 10-minute check retries rather than
     // silently giving up on today, as long as it's still before 11 PM.
-    writeState({ lastRunDate: today });
+    markDone();
 
     console.log(
       `[priceHistoryJob] Done. ${summary.totalQueries} queries, ${summary.totalSaved} listings saved, ` +
       `${summary.failures.length} failed, ${(summary.durationMs / 1000).toFixed(0)}s.`
     );
+
+    // Then read a few store pages for PTA status and colours (see pageEnrichment.service.js). The scrape already counts
+    // as done: a failure here is logged and never makes the day be scraped twice.
+    try {
+      const pages = await enrichFromPages();
+      console.log(`[priceHistoryJob] Page check: ${pages.checked} pages read, ${pages.approved} PTA approved, ${pages.nonPta} non-PTA, ${pages.withColours} with colours, ${pages.failed} unreadable.`);
+    } catch (err) {
+      console.warn("[priceHistoryJob] Page check failed:", err.message);
+    }
   } catch (err) {
+    markFailed();
     console.error("[priceHistoryJob] Run failed, will retry on the next check within the window:", err.message);
   } finally {
     isRunning = false;

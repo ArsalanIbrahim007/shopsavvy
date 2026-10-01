@@ -75,7 +75,7 @@ export async function buildScheduledQueryList({ minOffers = 2 } = {}) {
   for (const [, items] of byCategory) {
     // Rule strategy, no recommendations: this only needs the product clusters. Runs in a
     // worker thread for large categories so the API stays responsive.
-    const groups = await groupListings(items, { strategy: "rule", recommend: false });
+    const groups = await groupListings(items, { strategy: "rule", recommend: false, priority: "background" });
     groups
       .filter((group) => (group.offerCount || 0) >= minOffers)
       .forEach((group) => {

@@ -5,6 +5,7 @@ import {
   getListings,
   getListingStats,
   getDeals,
+  getCategoryCatalog,
   suggestListings,
   searchListings,
   getListingDetails,
@@ -116,7 +117,7 @@ router.get("/", getListings);
  * /api/listings/stats:
  *   get:
  *     summary: Headline counts
- *     description: Total number of stored listings and the number of distinct platforms, without returning the listings themselves.
+ *     description: Total number of visible listings, the number of distinct platforms, and how many listings each product category holds (biggest first, cached for a minute), without returning the listings themselves.
  *     tags:
  *       - Listings
  *     responses:
@@ -136,6 +137,17 @@ router.get("/", getListings);
  *                 platforms:
  *                   type: integer
  *                   example: 8
+ *                 categories:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       category:
+ *                         type: string
+ *                         example: smartphone
+ *                       count:
+ *                         type: integer
+ *                         example: 1368
  */
 router.get("/stats", getListingStats);
 
@@ -210,6 +222,68 @@ router.get("/stats", getListingStats);
  *         description: Too many requests.
  */
 router.get("/deals", dealsLimiter, getDeals);
+
+/**
+ * @swagger
+ * /api/listings/catalog:
+ *   get:
+ *     summary: Browse a category
+ *     description: >
+ *       The products of one category (smartphone, laptop, tv, tablet, smartwatch or headphones), most
+ *       compared first, in pages. Each product is a group of offers with the same shape as the groups
+ *       in /api/listings/search, except that offers carry no price history (the product page loads it).
+ *       Grouping a category is expensive, so it is computed once in the worker pool and cached for ten
+ *       minutes (warmed at start-up); no scraping happens. Shares the deals rate limit.
+ *     tags:
+ *       - Listings
+ *     parameters:
+ *       - in: query
+ *         name: category
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [smartphone, laptop, tv, tablet, smartwatch, headphones]
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 50
+ *           default: 24
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *           default: 0
+ *     responses:
+ *       200:
+ *         description: One page of products.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 category: { type: string }
+ *                 count: { type: integer, description: Products in this page. }
+ *                 total: { type: integer, description: Products in the whole category. }
+ *                 offset: { type: integer }
+ *                 limit: { type: integer }
+ *                 generatedAt: { type: string, format: date-time }
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     description: A product group (productName, offerCount, lowestPrice, highestPrice, bestDeal, offers).
+ *       400:
+ *         description: Missing or unknown category.
+ *       429:
+ *         description: Too many requests.
+ *       503:
+ *         description: The database is unreachable, or the grouping workers are saturated (code SERVICE_BUSY).
+ */
+router.get("/catalog", dealsLimiter, getCategoryCatalog);
 
 /**
  * @swagger
