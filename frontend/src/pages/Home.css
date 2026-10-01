@@ -31,6 +31,7 @@
 
 .home-section { margin-top: var(--space-7); display: grid; gap: var(--space-4); }
 .home-section__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-2) var(--space-4); }
+.home-section__links { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); }
 .eyebrow { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); }
 
 .tiles { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }

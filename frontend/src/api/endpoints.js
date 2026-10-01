@@ -67,6 +67,16 @@ export async function getCatalog({ category, limit, offset, signal }) {
   return { groups: body.data ?? [], total: body.total ?? 0, offset: body.offset ?? 0, generatedAt: body.generatedAt ?? null };
 }
 
+/**
+ * What ShopSavvy's own checks found in the data it holds, and how the trained models scored on pairs they never saw.
+ * Counted by the server from its cached catalog (cached ten minutes); the first request after a restart can take about a minute.
+ * @returns {Promise<{generatedAt: string, live: object, evaluation: {matcher: object|null, discount: object|null}}>}
+ */
+export async function getIntegrity({ signal } = {}) {
+  const body = await request("/integrity", { signal, timeoutMs: 100000 });
+  return { generatedAt: body.generatedAt ?? null, live: body.live ?? null, evaluation: body.evaluation ?? { matcher: null, discount: null } };
+}
+
 // The server answers an empty list below this length; not asking saves a request per keystroke.
 export const MIN_SUGGEST_LENGTH = 2;
 

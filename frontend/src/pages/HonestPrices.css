@@ -1,0 +1,37 @@
+/* HonestPrices.css — layout for the "how we keep prices honest" page. Reuses .prose (HowItWorks.css) for the reading column. */
+
+.honest { max-width: 980px; }
+.honest > section > p,
+.honest > section > ul,
+.honest > .lead { max-width: 760px; }
+
+.honest-grid { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); align-items: start; }
+.honest-card { display: grid; gap: var(--space-3); padding: var(--space-5); }
+.honest-card h3 { font-size: 1.0625rem; }
+
+.honest-figure { display: grid; gap: 0; }
+.honest-figure__value { font-family: var(--font-display); font-size: 2rem; font-weight: 700; line-height: 1.1; color: var(--ink); margin: 0; font-variant-numeric: tabular-nums; }
+.honest-figure__label { margin: 0; color: var(--ink-soft); font-size: 0.875rem; }
+
+.prose .honest-examples { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-2); }
+.honest-examples li { border-left: 3px solid var(--caution-line); background: var(--caution-soft); padding: var(--space-2) var(--space-3); border-radius: 0 var(--radius-control) var(--radius-control) 0; }
+
+.honest-table { width: 100%; border-collapse: collapse; font-size: 0.9375rem; }
+.honest-table th, .honest-table td { text-align: left; padding: var(--space-2) var(--space-2); border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+.honest-table thead th { font-size: 0.8125rem; color: var(--ink-soft); font-weight: 600; border-bottom-color: var(--line); }
+.honest-table tbody th { font-weight: 600; }
+.honest-table tfoot th, .honest-table tfoot td { border-bottom: 0; border-top: 1px solid var(--line); font-weight: 600; }
+.honest-table .num { text-align: right; white-space: nowrap; }
+.honest-table__hint { display: block; font-weight: 400; }
+.honest-table tr.is-in-use { background: var(--brand-soft); }
+
+.honest-table--wide { min-width: 560px; }
+.honest-scroll { overflow-x: auto; }
+
+.honest-loading { display: grid; gap: var(--space-3); }
+
+@media (max-width: 600px) {
+  .honest-card { padding: var(--space-4); }
+  .honest-table--wide { min-width: 0; font-size: 0.875rem; }
+  .honest-table--wide th, .honest-table--wide td { padding-inline: var(--space-1); }
+}

@@ -11,6 +11,21 @@ vi.mock("../src/api/endpoints.js", () => ({
   getCatalog: vi.fn(async () => ({ groups: [], total: 0, offset: 0, generatedAt: null })),
   createAlert: vi.fn(),
   getListing: vi.fn(),
+  getIntegrity: vi.fn(async () => ({
+    generatedAt: new Date().toISOString(),
+    live: {
+      offers: 100, stores: 5, products: 80, productsCompared: 10,
+      unusualPrices: { count: 1, examples: [{ platform: "priceoye", title: "A TV", price: 225999, reason: "2.5 times what 2 other stores charge." }] },
+      discounts: { claims: 10, verdicts: { genuine: 1, likelyGenuine: 1, suspicious: 2, likelyFake: 1, unverified: 5 }, aboveMarket: 1 },
+      pta: { offers: 20, approved: 10, nonPta: 2, notStated: 5, movedOut: 1, readFromProductPage: 4, productsKeptApart: 2 },
+      freshness: { within24h: 80, within72h: 95, newestAt: new Date().toISOString() },
+      history: { points: 500, days: 25, since: "2026-07-03T00:00:00Z" },
+    },
+    evaluation: {
+      matcher: { generatedAt: "2026-09-29T10:00:00Z", heldOutPairs: 105, trainingPairs: 106, models: { production: { accuracy: 78.1, precision: 71.4, recall: 34.5, f1: 46.5 }, candidate: { accuracy: 74.3, precision: 54.2, recall: 44.8, f1: 49.1 }, rule: { accuracy: 74.3, precision: 58.3, recall: 24.1, f1: 34.1 } } },
+      discount: { generatedAt: "2026-09-29T10:00:00Z", judgeableClaims: 251, historyRuleJudged: 14, historyRuleShare: 5.6, splits: 5, flaggedRealClaims: 7, caughtInvented: { "1.3x": 9.5, "1.5x": 29.5, "1.75x": 85, "2x": 96.8 } },
+    },
+  })),
 }));
 
 import Layout from "../src/components/Layout.jsx";
@@ -19,6 +34,7 @@ import ResultGroup from "../src/components/results/ResultGroup.jsx";
 import PriceHistoryChart from "../src/components/product/PriceHistoryChart.jsx";
 import AlertForm from "../src/components/product/AlertForm.jsx";
 import Home from "../src/pages/Home.jsx";
+import HonestPrices from "../src/pages/HonestPrices.jsx";
 
 // Structural accessibility rules (names, roles, labels, landmarks, headings, duplicate ids) run on what the pages
 // render. Colour contrast is left to tests/theme.test.js (it needs real layout and colours, which jsdom does not
@@ -61,6 +77,12 @@ describe("accessibility (axe, structural rules)", () => {
   it("the home page", async () => {
     const { container, findByRole } = inRouter(<Home />);
     await findByRole("heading", { name: /browse by category/i });
+    expect(await violationsIn(container)).toEqual([]);
+  });
+
+  it("the how-we-keep-prices-honest page, with its tables and figures", async () => {
+    const { container, findByText } = inRouter(<HonestPrices />);
+    await findByText(/Counted from/);
     expect(await violationsIn(container)).toEqual([]);
   });
 

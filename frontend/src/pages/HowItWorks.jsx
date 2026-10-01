@@ -83,6 +83,11 @@ export default function HowItWorks() {
         </p>
       </details>
 
+      <p>
+        Want the numbers instead of the explanation? <Link to="/honest-prices">How we keep prices honest</Link> shows what the checks found in
+        today's data and how accurate they are, including where they fall short.
+      </p>
+
       <p><Link to="/" className="btn btn-primary">Start comparing</Link></p>
     </div>
   );

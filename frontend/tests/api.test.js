@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { request } from "../src/api/client.js";
 import { ApiError, describeError, CLIENT_CODES } from "../src/api/errors.js";
-import { searchListings, createAlert, confirmAlert, cancelAlert, getStats, getDeals, getSuggestions, getCatalog } from "../src/api/endpoints.js";
+import { searchListings, createAlert, confirmAlert, cancelAlert, getStats, getDeals, getSuggestions, getCatalog, getIntegrity } from "../src/api/endpoints.js";
 import * as endpoints from "../src/api/endpoints.js";
 
 // A minimal Response stand-in: enough of the fetch API for the client.
@@ -294,6 +294,34 @@ describe("getStats categories and getCatalog", () => {
     expect(url.searchParams.get("category")).toBe("smartphone");
     expect(url.searchParams.get("offset")).toBe("24");
     expect(result).toEqual({ groups: [{ productName: "Galaxy A17", offers: [] }], total: 1034, offset: 24, generatedAt: "2026-09-30T10:00:00Z" });
+  });
+
+  it("getIntegrity asks for the report with a long time limit and passes its three parts through", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(respond(200, { success: true, generatedAt: "2026-10-01T09:00:00Z", live: { offers: 3095 }, evaluation: { matcher: { heldOutPairs: 105 }, discount: null } }));
+    vi.stubGlobal("fetch", fetchMock);
+    const result = await getIntegrity();
+    expect(new URL(fetchMock.mock.calls[0][0]).pathname).toBe("/api/integrity");
+    expect(result).toEqual({ generatedAt: "2026-10-01T09:00:00Z", live: { offers: 3095 }, evaluation: { matcher: { heldOutPairs: 105 }, discount: null } });
+  });
+
+  it("getIntegrity waits well past the usual limit, because the first count after a server restart takes about a minute", async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((url, { signal }) => new Promise((resolve, reject) => signal.addEventListener("abort", () => reject(Object.assign(new Error("aborted"), { name: "AbortError" }))))),
+    );
+    const pending = getIntegrity().catch((e) => e);
+    let settled = false;
+    pending.then(() => { settled = true; });
+    await vi.advanceTimersByTimeAsync(90000);
+    expect(settled).toBe(false);
+    await vi.advanceTimersByTimeAsync(10001);
+    expect(await pending).toMatchObject({ code: CLIENT_CODES.TIMEOUT });
+  });
+
+  it("getIntegrity gives null and empty parts, never made-up numbers, when the server leaves them out", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(respond(200, { success: true })));
+    expect(await getIntegrity()).toEqual({ generatedAt: null, live: null, evaluation: { matcher: null, discount: null } });
   });
 
   it("getCatalog reports an unknown category as an ApiError", async () => {

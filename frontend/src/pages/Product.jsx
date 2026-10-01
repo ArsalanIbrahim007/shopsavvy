@@ -29,7 +29,7 @@ function Explainer() {
         <li><strong>Against the other stores.</strong> A "was" price above anything other stores charge for the same product is marked as above market.</li>
         <li><strong>Against what is plausible.</strong> A price far out of line with every other store is marked unusual, and is never counted as the lowest price or a saving.</li>
       </ul>
-      <p className="small"><Link to="/how-it-works">Read more about how ShopSavvy checks prices</Link></p>
+      <p className="small"><Link to="/how-it-works">Read more about how ShopSavvy checks prices</Link> · <Link to="/honest-prices">how accurate the checks are</Link></p>
     </section>
   );
 }

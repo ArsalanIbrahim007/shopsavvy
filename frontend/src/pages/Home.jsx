@@ -177,7 +177,10 @@ function HowWeCheck() {
     <section className="home-section container" aria-labelledby="how-heading">
       <div className="home-section__head">
         <h2 id="how-heading">How we check prices</h2>
-        <Link to="/how-it-works">Read the details</Link>
+        <span className="home-section__links">
+          <Link to="/how-it-works">Read the details</Link>
+          <Link to="/honest-prices">See the numbers</Link>
+        </span>
       </div>
       <div className="how-grid">
         {HOW_WE_CHECK.map((item) => (
