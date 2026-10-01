@@ -1,19 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#2563eb"/>
-      <stop offset="100%" style="stop-color:#1d4ed8"/>
-    </linearGradient>
-  </defs>
-  <rect width="32" height="32" rx="8" fill="url(#bg)"/>
-  <text
-    x="16"
-    y="22"
-    font-family="Segoe UI, Arial, sans-serif"
-    font-size="18"
-    font-weight="800"
-    text-anchor="middle"
-    fill="#fbbf24"
-    letter-spacing="-1"
-  >S</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 4 42 42" width="32" height="32">
+  <rect x="2" y="6" width="38" height="38" rx="10" fill="#1a3c6e"/>
+  <path d="M14 26C14 23.7909 15.7909 22 18 22H24C26.2091 22 28 23.7909 28 26C28 28.2091 26.2091 30 24 30H18C15.7909 30 14 31.7909 14 34C14 36.2091 15.7909 38 18 38H25" stroke="#f5a623" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+  <path d="M21 16V22M21 38V42" stroke="#f5a623" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <path d="M27 12L34 19L27 26" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
 </svg>
