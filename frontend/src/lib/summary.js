@@ -2,6 +2,7 @@
 
 import { canonicalPlatform } from "./platforms.js";
 import { offerCount } from "./colours.js";
+import { allPreOwned, comparableOffers } from "./condition.js";
 import { isDiscountDoubtful } from "./filters.js";
 
 /**
@@ -22,12 +23,16 @@ export function newestScrape(offers) {
 const suspect = (offer) => offer?.priceCheck?.status?.startsWith("suspect");
 
 /**
+ * Used, refurbished and open-box offers are left out of every number here whenever there is a new offer to compare
+ * (see lib/condition.js): their prices are shown in their own section, never as "the lowest price". `excluded` says how
+ * many were left out, and `preOwnedOnly` that all that is left is pre-owned (a search for refurbished laptops).
  * @returns {{count:number, platformCount:number, lowest:object|null, average:number|null,
- *            bestDeal:object|null, flagged:number, updatedAt:Date|null}}
+ *            bestDeal:object|null, flagged:number, updatedAt:Date|null, excluded:number, preOwnedOnly:boolean}}
  */
-export function summarizeOffers(offers) {
+export function summarizeOffers(allOffers) {
+  const offers = comparableOffers(allOffers);
   if (!offers.length) {
-    return { count: 0, platformCount: 0, lowest: null, average: null, bestDeal: null, flagged: 0, updatedAt: null };
+    return { count: 0, platformCount: 0, lowest: null, average: null, bestDeal: null, flagged: 0, updatedAt: null, excluded: 0, preOwnedOnly: false };
   }
 
   // An offer flagged as a probable listing error is never presented as the lowest price or the best deal, and
@@ -51,5 +56,7 @@ export function summarizeOffers(offers) {
     bestDeal,
     flagged: offers.filter(isDiscountDoubtful).length,
     updatedAt: newestScrape(offers),
+    excluded: allOffers.length - offers.length,
+    preOwnedOnly: allPreOwned(offers),
   };
 }

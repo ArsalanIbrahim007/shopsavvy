@@ -3,6 +3,8 @@
 // see its breakdown"). Labels and the maximum of each part come from the server's own weights, so a
 // change there shows up here without a code change.
 
+import { comparableOffers } from "./condition.js";
+
 const PARTS = [
   { key: "price", label: "Price competitiveness", fallbackMax: 60 },
   { key: "trust", label: "Store trust", fallbackMax: 20 },
@@ -48,8 +50,10 @@ export function scoreParts(offer) {
  * like a non-PTA unit) cannot be the best deal: it cannot be told apart from a cheaper non-PTA unit. The server
  * applies the same rule to the product's own `bestDeal`, and summarizeOffers to the lowest price.
  */
-export function bestDealOffer(offers) {
-  if (!Array.isArray(offers) || offers.length < 2) return null;
+export function bestDealOffer(allOffers) {
+  // used, refurbished and open-box offers are not compared with new ones (see lib/condition.js)
+  const offers = comparableOffers(allOffers);
+  if (!Array.isArray(allOffers) || offers.length < 2) return null;
   const believable = offers.filter((offer) => !offer?.priceCheck?.status?.startsWith("suspect"));
   const unmarked = believable.filter((offer) => !offer?.ptaAssessment);
   const inStock = unmarked.filter((offer) => offer?.inStock !== false); // a best deal that cannot be bought is no deal

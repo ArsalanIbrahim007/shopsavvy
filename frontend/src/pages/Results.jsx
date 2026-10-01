@@ -12,6 +12,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { getCatalog, searchListings } from "../api/endpoints.js";
 import { useAsync } from "../hooks/useAsync.js";
 import { categoryName, FEATURED_CATEGORIES } from "../lib/categories.js";
+import { splitByCondition } from "../lib/condition.js";
 import {
   FACET_KEYS_FOR_RESET, activeCategory, applyFilters, buildFacets, categoryCounts, emptyFilters, filterGroups, filtersToParams,
   groupKey, isFiltered, parseFilters, platformOptions, priceBounds, sortGroups,
@@ -92,6 +93,8 @@ function ResultsView({ groups, total, query, browseCategory, filters, searchPara
 
   const keptOffers = applyFilters(allOffers, filters);
   const shown = sortGroups(filterGroups(groups, keptOffers), filters.sort);
+  // Used, refurbished and open-box products get a section of their own and are left out of the summary (lib/condition.js).
+  const { fresh, preOwned } = splitByCondition(shown);
   const summary = summarizeOffers(keptOffers);
   const updated = newestScrape(allOffers);
 
@@ -166,7 +169,7 @@ function ResultsView({ groups, total, query, browseCategory, filters, searchPara
         </div>
 
         <div className="results-list">
-          {shown.length === 0 ? (
+          {fresh.length === 0 && preOwned.length === 0 ? (
             <div className="card" style={{ padding: "var(--space-5)" }}>
               <h2 style={{ fontSize: "1.125rem" }}>No products match these filters</h2>
               <p className="muted" style={{ marginTop: "var(--space-2)" }}>Try widening the price range or removing a filter.</p>
@@ -174,9 +177,29 @@ function ResultsView({ groups, total, query, browseCategory, filters, searchPara
             </div>
           ) : (
             <>
-              {/* the product names below are h3s; this keeps the heading levels in order (h1, h2, h3) */}
-              <h2 className="visually-hidden">Products</h2>
-              <GroupList key={searchParams.toString()} groups={shown} />
+              {fresh.length > 0 && (
+                <>
+                  {/* the product names below are h3s; this keeps the heading levels in order (h1, h2, h3) */}
+                  <h2 className="visually-hidden">Products</h2>
+                  {preOwned.length > 0 && (
+                    <p className="small muted preowned-note" role="note">
+                      Also {formatNumber(preOwned.length)} used, refurbished or open-box {preOwned.length === 1 ? "product" : "products"}, <a href="#preowned">further down</a>.
+                      Their prices are not counted in the summary above.
+                    </p>
+                  )}
+                  <GroupList key={searchParams.toString()} groups={fresh} />
+                </>
+              )}
+              {preOwned.length > 0 && (
+                <section className="preowned" id="preowned" aria-labelledby="preowned-heading" tabIndex={-1}>
+                  <h2 id="preowned-heading">Used, refurbished and open box ({formatNumber(preOwned.length)})</h2>
+                  <p className="muted">
+                    Not new. These are shown apart, never compared with new prices, and are not counted in the summary above.
+                    Ask the store about condition and warranty before you buy.
+                  </p>
+                  <GroupList key={`preowned-${searchParams.toString()}`} groups={preOwned} />
+                </section>
+              )}
             </>
           )}
         </div>

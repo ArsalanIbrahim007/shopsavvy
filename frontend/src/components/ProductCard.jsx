@@ -4,6 +4,7 @@
 
 import { Link, useLocation } from "react-router-dom";
 
+import { conditionFlag } from "../lib/condition.js";
 import { formatPrice } from "../lib/format.js";
 import { platformName } from "../lib/platforms.js";
 import { ptaFlag } from "../lib/pta.js";
@@ -27,6 +28,7 @@ export default function ProductCard({ group }) {
   const badges = cardBadges(best);
   const score = scoreOf(best);
   const pta = ptaFlag(best);
+  const condition = conditionFlag(best);
 
   return (
     <article className="product-card card">
@@ -45,6 +47,7 @@ export default function ProductCard({ group }) {
       </div>
 
       <div className="product-card__badges">
+        {condition && <VerdictBadge tone={condition.tone} label={condition.label} title={condition.reason} />}
         {score !== null && <span className="badge badge-neutral" title="Deal score out of 100: price, store trust, freshness and availability">Score {Math.round(score)}</span>}
         {pta && <VerdictBadge tone={pta.tone} label={pta.label} title={pta.reason} />}
         {badges.map((badge) => (

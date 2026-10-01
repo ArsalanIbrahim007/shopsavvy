@@ -8,6 +8,7 @@
 // above market / unusual price). A claim we could not check is shown as a claim.
 
 import { collapseVariants } from "../../lib/colours.js";
+import { conditionFlag } from "../../lib/condition.js";
 import { claimedDiscount } from "../../lib/filters.js";
 import { formatPercent, formatPrice, timeAgo } from "../../lib/format.js";
 import { platformName } from "../../lib/platforms.js";
@@ -86,6 +87,7 @@ export default function OfferTable({ offers, name, currentId, colour = null }) {
             const href = offerLink(offer);
             const isLowest = has(entry, lowestId);
             const pta = ptaFlag(offer);
+            const condition = conditionFlag(offer);
             return (
               <tr key={offer._id} className={isLowest ? "is-lowest" : undefined}>
                 <td>
@@ -96,6 +98,7 @@ export default function OfferTable({ offers, name, currentId, colour = null }) {
                     {has(entry, currentId) && <span className="offer-table__current small muted">The one you opened</span>}
                   </div>
                   <ColourTag entry={entry} colour={colour} />
+                  {condition && <div className="offer-table__pta"><VerdictBadge tone={condition.tone} label={condition.label} title={condition.reason} /></div>}
                   {pta && <div className="offer-table__pta"><VerdictBadge tone={pta.tone} label={pta.label} title={pta.reason} /></div>}
                 </td>
                 <td className="num">

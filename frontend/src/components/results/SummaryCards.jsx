@@ -8,7 +8,7 @@ import { platformName } from "../../lib/platforms.js";
 import "./results.css";
 
 export default function SummaryCards({ summary }) {
-  const { lowest, bestDeal, average, platformCount, count } = summary;
+  const { lowest, bestDeal, average, platformCount, count, preOwnedOnly } = summary;
   const score = Number.isFinite(bestDeal?.dealScore) ? Math.round(bestDeal.dealScore) : null;
 
   return (
@@ -19,7 +19,7 @@ export default function SummaryCards({ summary }) {
         <p className="small muted">{count} {count === 1 ? "offer" : "offers"} shown</p>
       </div>
       <div className="card summary-card">
-        <p className="eyebrow">Lowest price</p>
+        <p className="eyebrow">{preOwnedOnly ? "Lowest pre-owned price" : "Lowest price"}</p>
         <p className="summary-card__value price">{lowest ? formatPrice(lowest.price) : "—"}</p>
         <p className="small muted">{lowest ? `at ${platformName(lowest.platform)}` : ""}</p>
       </div>
