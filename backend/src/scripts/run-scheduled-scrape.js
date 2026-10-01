@@ -7,7 +7,7 @@
 //   node src/scripts/run-scheduled-scrape.js
 //   node src/scripts/run-scheduled-scrape.js --min-offers=1   (include single-offer groups too)
 //   node src/scripts/run-scheduled-scrape.js --force          (run even if today's scrape already happened)
-//   node src/scripts/run-scheduled-scrape.js --no-pta         (skip the PTA page check that follows the scrape)
+//   node src/scripts/run-scheduled-scrape.js --no-pages         (skip the page check (PTA status, colours) that follows the scrape)
 //
 // Shares today's "already done / running" record with the backend's own daily job
 // (src/jobs/scrapeState.js), so a day is scraped once however it was started:
@@ -19,7 +19,7 @@ config({ quiet: true });
 import mongoose from "mongoose";
 
 import { isDoneToday, markDone, markFailed, tryStart } from "../jobs/scrapeState.js";
-import { enrichPta } from "../services/ptaEnrichment.service.js";
+import { enrichFromPages } from "../services/pageEnrichment.service.js";
 import { buildScheduledQueryList, runScheduledScrape } from "../services/scheduledScraping.service.js";
 
 const minOffersArg = process.argv.find((a) => a.startsWith("--min-offers="));
@@ -56,14 +56,14 @@ try {
   if (claimed || !isDoneToday()) markDone();
   console.log(`\nDone. ${summary.totalQueries} queries, ${summary.totalSaved} listings saved, ${summary.failures.length} failed, ${(summary.durationMs / 1000).toFixed(0)}s.`);
 
-  // Then read a few store pages for PTA status. The scrape is already recorded as done, so a failure here only
+  // Then read a few store pages for PTA status and colours. The scrape is already recorded as done, so a failure here only
   // shows in the log.
-  if (!process.argv.includes("--no-pta")) {
+  if (!process.argv.includes("--no-pages")) {
     try {
-      const pta = await enrichPta({ log: console.log });
-      console.log(`PTA check: ${pta.checked} pages read, ${pta.approved} approved, ${pta.nonPta} non-PTA, ${pta.unknown} say nothing, ${pta.failed} unreadable.`);
+      const pages = await enrichFromPages({ log: console.log });
+      console.log(`Page check: ${pages.checked} pages read, PTA ${pages.approved} approved / ${pages.nonPta} non-PTA, ${pages.withColours} with colours, ${pages.failed} unreadable.`);
     } catch (err) {
-      console.warn("PTA check failed:", err.message);
+      console.warn("Page check failed:", err.message);
     }
   }
 } catch (err) {

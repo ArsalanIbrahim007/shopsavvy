@@ -1,7 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect } from "vitest";
 
 import { classify, extractPtaFromPage } from "../src/services/ptaPage.service.js";
-import { enrichPta, interleaveByStore, RECHECK_DAYS } from "../src/services/ptaEnrichment.service.js";
 import { toListingDoc } from "../src/services/scraper.service.js";
 
 // Pages are small stand-ins for the real ones read on 2026-10-01 (iShopping, PriceOye, and stores that say nothing).
@@ -81,89 +80,6 @@ describe("extractPtaFromPage", () => {
     expect(extractPtaFromPage("")).toEqual({ status: "unknown", evidence: null, source: null });
     expect(extractPtaFromPage(undefined).status).toBe("unknown");
     expect(extractPtaFromPage("<<<not html").status).toBe("unknown");
-  });
-});
-
-describe("interleaveByStore", () => {
-  it("never asks one store twice in a row while another store is waiting", () => {
-    const listing = (platform, n) => ({ platform, n });
-    const out = interleaveByStore([listing("a", 1), listing("a", 2), listing("a", 3), listing("b", 1), listing("c", 1)]);
-    expect(out.map((l) => `${l.platform}${l.n}`)).toEqual(["a1", "b1", "c1", "a2", "a3"]);
-    expect(interleaveByStore([])).toEqual([]);
-  });
-});
-
-describe("enrichPta", () => {
-  const NOW = Date.parse("2026-10-01T12:00:00Z");
-  const row = (id, platform, title = "Samsung Galaxy A17") => ({ _id: id, platform, title, productUrl: `https://${platform}.example/${id}` });
-
-  let updates;
-  let filterSeen;
-  let model;
-  const modelReturning = (rows) => ({
-    find: vi.fn((filter) => {
-      filterSeen = filter;
-      return { sort: () => ({ limit: (n) => ({ lean: async () => rows.slice(0, n) }) }) };
-    }),
-    updateOne: vi.fn(async (where, change) => { updates.push([where._id, change.$set]); }),
-  });
-  beforeEach(() => { updates = []; filterSeen = null; });
-  afterEach(() => vi.restoreAllMocks());
-
-  it("asks only for phones and tablets with no PTA status that have not been read lately", async () => {
-    model = modelReturning([]);
-    await enrichPta({ model, now: NOW, delayMs: 0 });
-    expect(filterSeen).toMatchObject({ productCategory: { $in: ["smartphone", "tablet"] }, ptaStatus: "unknown", isActive: true });
-    expect(filterSeen.$or).toEqual([{ ptaCheckedAt: null }, { ptaCheckedAt: { $lt: new Date(NOW - RECHECK_DAYS * 86400000) } }]);
-    await enrichPta({ model, now: NOW, delayMs: 0, stores: ["mega"] });
-    expect(filterSeen.platform).toEqual({ $in: ["mega"] });
-  });
-
-  it("saves what a page says, marks where it came from, and records that the page was read", async () => {
-    model = modelReturning([row("a", "ishopping"), row("b", "priceoye"), row("c", "shophive")]);
-    const pages = { a: ISHOPPING, b: page("<table><tr><th>PTA Approved</th><td>No</td></tr></table>"), c: page("<h1>nothing</h1>") };
-    const summary = await enrichPta({ model, now: NOW, delayMs: 0, fetchPage: async (l) => pages[l._id] });
-
-    expect(summary).toMatchObject({ checked: 3, approved: 1, nonPta: 1, unknown: 1, failed: 0, dry: false });
-    const byId = Object.fromEntries(updates);
-    expect(byId.a).toEqual({ ptaCheckedAt: new Date(NOW), ptaStatus: "pta_approved", ptaSource: "product_page" });
-    expect(byId.b).toMatchObject({ ptaStatus: "non_pta", ptaSource: "product_page" });
-    expect(byId.c).toEqual({ ptaCheckedAt: new Date(NOW) }); // nothing said: only remembered as read, status left alone
-  });
-
-  it("a dry run reads and reports but changes nothing", async () => {
-    model = modelReturning([row("a", "ishopping")]);
-    const summary = await enrichPta({ model, now: NOW, delayMs: 0, dry: true, fetchPage: async () => ISHOPPING });
-    expect(summary).toMatchObject({ approved: 1, dry: true });
-    expect(model.updateOne).not.toHaveBeenCalled();
-  });
-
-  it("a page that cannot be read is skipped, tried again in two days, and does not stop the others", async () => {
-    model = modelReturning([row("a", "ishopping"), row("b", "priceoye")]);
-    const fetchPage = async (l) => { if (l._id === "a") throw new Error("HTTP 403"); return PRICEOYE; };
-    const summary = await enrichPta({ model, now: NOW, delayMs: 0, fetchPage });
-    expect(summary).toMatchObject({ checked: 1, failed: 1, approved: 1 });
-    const byId = Object.fromEntries(updates);
-    expect(byId.a).toEqual({ ptaCheckedAt: new Date(NOW - (RECHECK_DAYS - 2) * 86400000) }); // due again after 2 days
-    expect(byId.a.ptaStatus).toBeUndefined();
-    expect(byId.b.ptaStatus).toBe("pta_approved");
-  });
-
-  it("spreads the pages across stores instead of asking one store for several in a row", async () => {
-    model = modelReturning([row("a1", "priceoye"), row("a2", "priceoye"), row("a3", "priceoye"), row("b1", "mega")]);
-    const order = [];
-    await enrichPta({ model, now: NOW, delayMs: 0, fetchPage: async (l) => { order.push(l._id); return "<html></html>"; } });
-    expect(order).toEqual(["a1", "b1", "a2", "a3"]);
-  });
-
-  it("reads at most the limit, and pauses between pages", async () => {
-    const rows = Array.from({ length: 10 }, (_, i) => row(`r${i}`, `store${i}`));
-    model = modelReturning(rows);
-    const stamps = [];
-    await enrichPta({ model, now: NOW, limit: 3, delayMs: 30, fetchPage: async () => { stamps.push(Date.now()); return "<html></html>"; } });
-    expect(stamps).toHaveLength(3);
-    expect(stamps[1] - stamps[0]).toBeGreaterThanOrEqual(25);
-    expect(stamps[2] - stamps[1]).toBeGreaterThanOrEqual(25);
   });
 });
 

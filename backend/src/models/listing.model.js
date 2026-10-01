@@ -94,10 +94,14 @@ const listingSchema = new mongoose.Schema(
     colour:          { type: String, default: null },
     ptaStatus:       { type: String, default: "unknown", index: true },
     // Where ptaStatus came from: "title" (the listing's own title), "product_page" (read from the store's page by
-    // ptaEnrichment.service.js) or null (unknown). ptaCheckedAt is when that page was last read, so a listing
+    // pageEnrichment.service.js) or null (unknown). ptaCheckedAt is when that page was last read, so a listing
     // whose page says nothing is not fetched again every night.
     ptaSource:       { type: String, default: null },
-    ptaCheckedAt:    { type: Date, default: null },
+    ptaCheckedAt:    { type: Date, default: null }, // before pageCheckedAt; no longer written
+    // What the store's product page says beyond the title (pageEnrichment.service.js): the colours it is sold in, and
+    // when the page was last read (so a page that says nothing is not fetched again every night).
+    colourOptions:   { type: [mongoose.Schema.Types.Mixed], default: [] }, // [{ colour: "Blue", image: "https://..." | null }]
+    pageCheckedAt:   { type: Date, default: null },
     condition:       { type: String, default: "new", index: true },
     screenInches:    { type: Number, default: null },
     resolution: { type: String, default: null, index: true },

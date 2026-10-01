@@ -22,7 +22,7 @@
 // not at one precise instant.
 
 import cron from "node-cron";
-import { enrichPta } from "../services/ptaEnrichment.service.js";
+import { enrichFromPages } from "../services/pageEnrichment.service.js";
 import { runScheduledScrape } from "../services/scheduledScraping.service.js";
 import { isDoneToday, markDone, markFailed, pktHour, tryStart } from "./scrapeState.js";
 
@@ -68,13 +68,13 @@ async function maybeRunToday() {
       `${summary.failures.length} failed, ${(summary.durationMs / 1000).toFixed(0)}s.`
     );
 
-    // Then read a few store pages for PTA status (see ptaEnrichment.service.js). The scrape already counts as done:
-    // a failure here is logged and never makes the day be scraped twice.
+    // Then read a few store pages for PTA status and colours (see pageEnrichment.service.js). The scrape already counts
+    // as done: a failure here is logged and never makes the day be scraped twice.
     try {
-      const pta = await enrichPta();
-      console.log(`[priceHistoryJob] PTA check: ${pta.checked} pages read, ${pta.approved} approved, ${pta.nonPta} non-PTA, ${pta.failed} unreadable.`);
+      const pages = await enrichFromPages();
+      console.log(`[priceHistoryJob] Page check: ${pages.checked} pages read, ${pages.approved} PTA approved, ${pages.nonPta} non-PTA, ${pages.withColours} with colours, ${pages.failed} unreadable.`);
     } catch (err) {
-      console.warn("[priceHistoryJob] PTA check failed:", err.message);
+      console.warn("[priceHistoryJob] Page check failed:", err.message);
     }
   } catch (err) {
     markFailed();

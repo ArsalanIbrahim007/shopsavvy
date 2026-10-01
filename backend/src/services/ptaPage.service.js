@@ -1,5 +1,5 @@
 // ptaPage.service.js — reads PTA approval from a store's own product page. Pure: HTML in, answer out; fetching
-// and saving live in ptaEnrichment.service.js.
+// and saving live in pageEnrichment.service.js.
 //
 // Why: most stores leave "PTA" out of their listing titles ("Samsung Galaxy A17"), so a title can say nothing about
 // a phone whose page says "PTA Status: PTA Approved" (iShopping's attribute list) or shows a "PTA Approved" badge

@@ -104,7 +104,7 @@ function toListingDoc(scraped) {
   };
 
   // A title that says nothing about PTA must not undo what the store's product page said on an earlier day
-  // (ptaEnrichment.service.js): only a status the title itself states is written. A new listing still starts at
+  // (pageEnrichment.service.js): only a status the title itself states is written. A new listing still starts at
   // "unknown" through the schema default.
   if (doc.ptaStatus === "unknown") delete doc.ptaStatus;
   else doc.ptaSource = "title";
