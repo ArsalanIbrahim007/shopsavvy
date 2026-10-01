@@ -92,6 +92,48 @@ export function parseDiscountReport(report, threshold) {
   };
 }
 
+const OUTLOOK_VERDICTS = ["too_early", "flat", "at_low", "above_usual", "usual"];
+
+/**
+ * The wait-or-buy outlook's backtest: how often the price fell or rose a week after each verdict, on past records. A row marked
+ * "(too few)" in the report has too few comparisons to judge and is returned with judgeable: false.
+ * @param {string} report  the text of src/ml/OUTLOOK_BACKTEST.md
+ */
+export function parseOutlookBacktest(report) {
+  const text = String(report ?? "");
+  const lines = text.split("\n");
+  const start = lines.findIndex((line) => line.startsWith("| Verdict at the time"));
+  const compared = /Records compared: (\d+)(?:, starting (\d{4}-\d{2}-\d{2}), the last one on (\d{4}-\d{2}-\d{2}))?/.exec(text);
+  const minimum = /fewer than (\d+) comparisons/.exec(text)?.[1];
+  if (start < 0 || !compared || !minimum) return null;
+
+  const rowOf = (line) => {
+    const values = cells(line);
+    if (values.length !== 5) return null;
+    const [label, comparisons, listings, fell, rose] = values;
+    const count = Number(comparisons);
+    if (!Number.isInteger(count)) return null;
+    return {
+      label, comparisons: count, listings: listings === "" ? null : Number(listings),
+      fellShare: percent(fell), roseShare: percent(rose), judgeable: !/too few/.test(fell + rose) && percent(fell) !== null,
+    };
+  };
+
+  const body = lines.slice(start + 2).filter((line) => line.startsWith("|"));
+  const rows = body.map(rowOf);
+  if (rows.some((row) => row === null) || rows.length !== OUTLOOK_VERDICTS.length + 1) return null;
+
+  return {
+    generatedAt: GENERATED.exec(text)?.[1] ?? null,
+    comparisons: Number(compared[1]),
+    from: compared[2] ?? null,
+    to: compared[3] ?? null,
+    minimumToJudge: Number(minimum),
+    rows: rows.slice(0, OUTLOOK_VERDICTS.length).map((row, i) => ({ verdict: OUTLOOK_VERDICTS[i], ...row })),
+    all: rows[OUTLOOK_VERDICTS.length],
+  };
+}
+
 const read = (path) => {
   try {
     return readFileSync(path, "utf8");
@@ -119,7 +161,10 @@ export function readEvaluation() {
   const discountArtifact = readJson(join(ML_DIR, "discount", "model.artifact.json"));
   const discount = discountArtifact ? parseDiscountReport(read(join(ML_DIR, "discount", "EVALUATION_REPORT.md")), discountArtifact.threshold) : null;
 
+  const outlook = parseOutlookBacktest(read(join(ML_DIR, "OUTLOOK_BACKTEST.md")));
+
   cached = {
+    outlook,
     matcher: matcher && matcherArtifact
       ? { ...matcher, trainingPairs: matcherArtifact.trainingSize ?? null, trainedAt: matcherArtifact.trainedAt ?? null }
       : null,

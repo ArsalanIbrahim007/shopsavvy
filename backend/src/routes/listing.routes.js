@@ -519,7 +519,13 @@ router.post("/:id/history", requireAdminKey, addListingPriceHistory);
  *           type: string
  *     responses:
  *       200:
- *         description: Listing with its grouped offers and summary.
+ *         description: |
+ *           Listing with its grouped offers and summary, and `outlook`: what the product's own recorded prices say about waiting
+ *           ("wait or buy?"). It is not a price forecast. `outlook.verdict` is `too_early` (too few days of records to say, with
+ *           `why`: `short`, `stale` or `no_records`), `flat`, `at_low`, `above_usual` or `usual`; `basis` says how many days and
+ *           records it rests on, `stats` the numbers (current, low, high, usual, vsUsualPct, changeWeekPct, daysSinceChange, daysBelow),
+ *           `strength` is `early` (under 4 weeks of records) or `fair`, and `market` counts how prices moved over about a week across
+ *           every tracked listing (or null). `outlook` is null if it could not be worked out.
  *       404:
  *         description: Listing not found.
  *       400:

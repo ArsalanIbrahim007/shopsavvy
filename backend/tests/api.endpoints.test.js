@@ -11,7 +11,10 @@ vi.mock("../src/services/scraper.service.js", () => ({
   fetchAndRefreshListings: vi.fn(async () => ({ scraped: false, reason: "fresh_data" })),
 }));
 vi.mock("../src/services/historyEnrichment.service.js", () => ({
-  attachPriceHistory: async (listings) => listings.map((l) => ({ ...l, priceHistory: [] })),
+  attachPriceHistory: vi.fn(async (listings) => listings.map((l) => ({ ...l, priceHistory: [] }))),
+}));
+vi.mock("../src/services/marketMovement.service.js", () => ({
+  getMarketMovement: vi.fn(async () => null),
 }));
 vi.mock("../src/services/priceHistory.service.js", () => ({
   recordPriceSnapshot: vi.fn(async () => ({ created: true, reason: "recorded", snapshot: {} })),
@@ -22,6 +25,8 @@ import Listing from "../src/models/listing.model.js";
 import { createApp } from "../src/createApp.js";
 import { clearCategoryCountsCache } from "../src/controllers/listing.controller.js";
 import { fetchAndRefreshListings } from "../src/services/scraper.service.js";
+import { attachPriceHistory } from "../src/services/historyEnrichment.service.js";
+import { getMarketMovement } from "../src/services/marketMovement.service.js";
 import { recordPriceSnapshot } from "../src/services/priceHistory.service.js";
 
 const ID = (n) => `6a78a2af9c96f297ede773${String(n).padStart(2, "0")}`;
@@ -203,6 +208,40 @@ describe("GET /api/listings/:id", () => {
     expect(body.offers.map((offer) => offer.platform).sort()).toEqual(["mega", "priceoye", "shophive"]);
     expect(body.productGroup.offerCount).toBe(3);
     expect(body.summary).toMatchObject({ platforms: 3, lowestPrice: 60000, highestPrice: 63000 });
+  });
+
+  describe("the wait-or-buy outlook", () => {
+    // ten consecutive days of records ending today, one per day, at the given prices
+    const history = (prices) => prices.map((price, i) => ({ price, recordedAt: new Date(Date.now() - (prices.length - 1 - i) * 86400000).toISOString() }));
+    const withHistory = (byPrice) => attachPriceHistory.mockImplementationOnce(async (listings) => listings.map((l) => ({ ...l, priceHistory: byPrice(l) })));
+
+    it("says it is too early when a product has only a few records", async () => {
+      vi.spyOn(Listing, "findOne").mockResolvedValue(selected);
+      vi.spyOn(Listing, "find").mockImplementation(() => chain([row(2, "mega", 61500)]));
+      const { res, body } = await json(`/api/listings/${ID(1)}`);
+      expect(res.status).toBe(200);
+      expect(body.outlook).toMatchObject({ verdict: "too_early", why: "no_records", stats: null, strength: null, market: null });
+    });
+
+    it("works the outlook out from the product's recorded prices, and adds how prices move across the catalog", async () => {
+      vi.spyOn(Listing, "findOne").mockResolvedValue(selected);
+      vi.spyOn(Listing, "find").mockImplementation(() => chain([row(2, "mega", 61500)]));
+      withHistory(() => history([66000, 65000, 64000, 63000, 62000, 61000, 60500, 60200, 60100, 60000]));
+      vi.mocked(getMarketMovement).mockResolvedValueOnce({ comparisons: 221, fell: 42, rose: 25 });
+      const { body } = await json(`/api/listings/${ID(1)}`);
+      expect(body.outlook).toMatchObject({ verdict: "at_low", strength: "early", basis: { days: 10, records: 10 }, stats: { current: 60000, low: 60000, high: 66000 } });
+      expect(body.outlook.market).toEqual({ comparisons: 221, fell: 42, rose: 25 });
+    });
+
+    it("still serves the product, with outlook null, when the outlook cannot be worked out", async () => {
+      vi.spyOn(Listing, "findOne").mockResolvedValue(selected);
+      vi.spyOn(Listing, "find").mockImplementation(() => chain([row(2, "mega", 61500)]));
+      vi.mocked(getMarketMovement).mockRejectedValueOnce(new Error("boom"));
+      const { res, body } = await json(`/api/listings/${ID(1)}`);
+      expect(res.status).toBe(200);
+      expect(body.outlook).toBeNull();
+      expect(body.offers.length).toBeGreaterThan(0);
+    });
   });
 
   it("still answers when the product is sold by only one store", async () => {

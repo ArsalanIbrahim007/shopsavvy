@@ -15,6 +15,8 @@ import { getCatalog, isCatalogCategory, CATALOG_CATEGORIES } from "../services/c
 import { DEFAULT_MAX_AGE_HOURS } from "../services/dealsRanking.service.js";
 import { getSuggestions } from "../services/suggestions.service.js";
 import { groupListings } from "../services/grouping.service.js";
+import { getMarketMovement } from "../services/marketMovement.service.js";
+import { outlookForOffers } from "../services/priceOutlook.service.js";
 import {
   getListingPriceHistory,
   recordPriceSnapshot,
@@ -565,6 +567,15 @@ export async function getListingDetails(req, res) {
     )[0] ||
     selectedListing;
 
+  // "Wait or buy?": what this product's own price records say, and how prices move across the catalog. Context only: if it
+  // cannot be worked out the page is still served.
+  let outlook = null;
+  try {
+    outlook = { ...outlookForOffers(offers), market: await getMarketMovement() };
+  } catch (error) {
+    console.error("[outlook] could not be worked out:", error.message);
+  }
+
   res.json({
     success: true,
     listing: selectedListing,
@@ -586,6 +597,7 @@ export async function getListingDetails(req, res) {
         bestDeal?.recommendation?.action ||
         null,
     },
+    outlook,
     offers,
   });
 }

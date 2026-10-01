@@ -12,7 +12,7 @@ Run these from the `backend/` folder (they read `.env` from there), for example
 | `maintenance/` | Clean-up and repair: remove accessories, seed data or HTML titles, backfill attributes, repair types, trim history | **yes** (use `--dry` first) |
 | `demo-data/` | Simulated price history and inflated "was" prices for demonstrations. Entries are tagged as simulated | **yes** (use `--dry` first) |
 | `ops/` | `register-nightly-scrape.ps1`: registers the daily scrape as a Windows Task Scheduler task (`-DryRun`, `-Status`, `-Remove`) | no (changes the computer's scheduled tasks) |
-| `ml/` | The matching model's dataset, training and evaluation pipeline, in numbered order | only its own files |
+| `ml/` | The matching model's dataset, training and evaluation pipeline, in numbered order; also `price-outlook-backtest.js`, the read-only test of the product page's "wait or buy?" panel (re-run it weekly as price history grows; it rewrites `src/ml/OUTLOOK_BACKTEST.md`) | only its own files |
 | top level | `seed.js` (scrapes a default set of queries), `run-scheduled-scrape.js`, `prewarm-demo.js`, `merge-duplicate-listings.js`, `audit-scrapers.js`, `benchmark-scrapers.js`, `report-price-anomalies.js` | see each file's header |
 
 Do not run the `maintenance/` or `demo-data/` scripts against a database you care about without a backup.
