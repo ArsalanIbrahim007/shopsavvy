@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { request } from "../src/api/client.js";
 import { ApiError, describeError, CLIENT_CODES } from "../src/api/errors.js";
-import { searchListings, createAlert, confirmAlert, cancelAlert, getStats, getDeals, getSuggestions, getCatalog, getIntegrity } from "../src/api/endpoints.js";
+import { searchListings, createAlert, confirmAlert, cancelAlert, getStats, getDeals, getSuggestions, getCatalog, getIntegrity, getListing } from "../src/api/endpoints.js";
 import * as endpoints from "../src/api/endpoints.js";
 
 // A minimal Response stand-in: enough of the fetch API for the client.
@@ -317,6 +317,14 @@ describe("getStats categories and getCatalog", () => {
     expect(settled).toBe(false);
     await vi.advanceTimersByTimeAsync(10001);
     expect(await pending).toMatchObject({ code: CLIENT_CODES.TIMEOUT });
+  });
+
+  it("getListing passes the wait-or-buy outlook through, and gives null when the server sent none", async () => {
+    const body = { success: true, listing: { _id: "a1" }, offers: [{ _id: "a1" }], summary: null, productGroup: null, outlook: { verdict: "at_low" } };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(respond(200, body)));
+    expect((await getListing("a1")).outlook).toEqual({ verdict: "at_low" });
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(respond(200, { ...body, outlook: undefined })));
+    expect((await getListing("a1")).outlook).toBeNull();
   });
 
   it("getIntegrity gives null and empty parts, never made-up numbers, when the server leaves them out", async () => {

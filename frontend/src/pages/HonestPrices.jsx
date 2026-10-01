@@ -10,7 +10,7 @@ import ErrorState from "../components/ErrorState.jsx";
 import { Skeleton } from "../components/Skeleton.jsx";
 import { useAsync } from "../hooks/useAsync.js";
 import { formatDate, formatNumber, formatPrice, timeAgo } from "../lib/format.js";
-import { daysSince, discountRows, formatScore, formatShare, markupRows, matcherRows, perHundred, ptaRows, share } from "../lib/integrity.js";
+import { discountRows, formatScore, formatShare, markupRows, matcherRows, outlookJudgeable, outlookRows, perHundred, ptaRows, share } from "../lib/integrity.js";
 import { platformName } from "../lib/platforms.js";
 import "./HowItWorks.css"; // the shared reading column (.prose)
 import "./HonestPrices.css";
@@ -53,7 +53,6 @@ function CountTable({ caption, rows, total }) {
 
 function LiveNumbers({ live, generatedAt }) {
   const { discounts, pta, freshness, history, unusualPrices } = live;
-  const historyDays = daysSince(history.since);
 
   return (
     <>
@@ -89,7 +88,7 @@ function LiveNumbers({ live, generatedAt }) {
           <CountTable caption="Discount claims by result" rows={discountRows(discounts)} total={discounts.claims} />
           <p className="muted">
             {formatShare(share(discounts.verdicts.unverified, discounts.claims))} of claims are unverified, and that is deliberate: a claim can only be checked against a product's own price history, and ours
-            is {history.days} {history.days === 1 ? "day" : "days"} deep{historyDays ? ` (${formatNumber(history.points)} price points since ${formatDate(history.since)})` : ""}.
+            has records from {formatNumber(history.days)} different {history.days === 1 ? "day" : "days"}{history.since ? ` since ${formatDate(history.since)}` : ""} ({formatNumber(history.points)} price points).
             We say "unverified" rather than guess. We never count a claimed discount as a saving.
           </p>
           <p className="muted">
@@ -226,6 +225,66 @@ function DiscountModelSection({ report }) {
   );
 }
 
+function OutlookSection({ report }) {
+  if (report.status === "loading") return <Skeleton height={140} />;
+  const outlook = report.status === "success" ? report.data.evaluation.outlook : null;
+  if (!outlook) return <p className="muted">The test results could not be loaded right now.</p>;
+
+  const rows = outlookRows(outlook);
+  return (
+    <>
+      <p>
+        The "Wait or buy?" panel on a product page is not a price forecast. It says where today's price sits among the prices we have
+        recorded: the lowest so far, well above its usual level, or about usual. To test it, we replay it on past records: for each one with a
+        later record about a week on, we work out what the panel would have said then, using only the history before that day, and check
+        whether the price then fell or rose by 3% or more.
+      </p>
+      <div className="honest-scroll" role="region" aria-label="Wait or buy test table" tabIndex={0}>
+        <table className="honest-table honest-table--wide">
+          <caption className="visually-hidden">What the wait-or-buy panel would have said, and what the price did a week later</caption>
+          <thead>
+            <tr>
+              <th scope="col">What it would have said</th>
+              <th scope="col" className="num">Comparisons</th>
+              <th scope="col" className="num">Fell 3% or more</th>
+              <th scope="col" className="num">Rose 3% or more</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.verdict}>
+                <th scope="row">
+                  {row.label}
+                  {!row.judgeable && row.comparisons > 0 && <span className="honest-table__hint small muted">too few to judge</span>}
+                </th>
+                <td className="num">{formatNumber(row.comparisons)}</td>
+                <td className="num">{formatScore(row.fellShare)}</td>
+                <td className="num">{formatScore(row.roseShare)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="small muted">
+        {formatNumber(outlook.comparisons)} comparisons{outlook.from && outlook.to ? `, from ${formatDate(outlook.from)} to ${formatDate(outlook.to)}` : ""}. Comparisons
+        of one product on neighbouring days overlap, so they are fewer independent facts than the count suggests. Report generated {formatDate(outlook.generatedAt)}.
+      </p>
+      {outlookJudgeable(outlook) ? (
+        <p>
+          Read it by comparing "5% or more above its usual price" with the rows around it: if it did not fall more often, the verdict carries no
+          information and should not be trusted. A row needs {formatNumber(outlook.minimumToJudge)} comparisons before it counts.
+        </p>
+      ) : (
+        <p>
+          None of the verdicts has the {formatNumber(outlook.minimumToJudge)} comparisons it needs to be judged yet, so we cannot say whether any of
+          them foreshadows a price move. That is why the panel calls its verdicts an early estimate, and says "too early" for most products. Daily
+          records are recent, so we re-run this test as they build up.
+        </p>
+      )}
+    </>
+  );
+}
+
 export default function HonestPrices() {
   // One request feeds all three sections.
   const report = useAsync((signal) => getIntegrity({ signal }), []);
@@ -256,6 +315,11 @@ export default function HonestPrices() {
         <DiscountModelSection report={report} />
       </section>
 
+      <section aria-labelledby="outlook-heading">
+        <h2 id="outlook-heading">Does "wait or buy?" work?</h2>
+        <OutlookSection report={report} />
+      </section>
+
       <section aria-labelledby="limits-heading">
         <h2 id="limits-heading">What we cannot tell you</h2>
         <ul>
@@ -263,6 +327,7 @@ export default function HonestPrices() {
           <li>We compare the price on the store's page. Delivery, warranty terms and in-store prices are not included.</li>
           <li>Some stores do not state PTA approval or a colour; we say "not stated" rather than guess, and we show where the answer came from.</li>
           <li>A new product has no price history, so its discount stays unverified until it has some.</li>
+          <li>"Wait or buy?" is an early estimate, not a forecast: it cannot know about a sale, a new model or a price rise.</li>
           <li>We can still be wrong. A match that looks wrong is one click from the store's own page, where you can check.</li>
           <li>ShopSavvy is free to use. We do not take money from stores to rank or recommend them.</li>
         </ul>

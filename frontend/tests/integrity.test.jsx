@@ -99,6 +99,17 @@ const report = (over = {}) => ({
     history: { points: 8296, days: 25, since: "2026-07-03T00:00:00Z" },
   },
   evaluation: {
+    outlook: {
+      generatedAt: "2026-10-01T07:29:34.670Z", comparisons: 221, from: "2026-07-03", to: "2026-08-17", minimumToJudge: 30,
+      rows: [
+        { verdict: "too_early", label: "Too early to say (not enough days of records)", comparisons: 189, listings: 62, fellShare: 17.5, roseShare: 11.1, judgeable: true },
+        { verdict: "flat", label: "Flat", comparisons: 0, listings: 0, fellShare: null, roseShare: null, judgeable: false },
+        { verdict: "at_low", label: "At its lowest", comparisons: 12, listings: 10, fellShare: 0, roseShare: 25, judgeable: false },
+        { verdict: "above_usual", label: "Above usual", comparisons: 14, listings: 7, fellShare: 50, roseShare: 7.1, judgeable: false },
+        { verdict: "usual", label: "Usual", comparisons: 6, listings: 6, fellShare: 33.3, roseShare: 0, judgeable: false },
+      ],
+      all: { label: "All", comparisons: 221, listings: null, fellShare: 19, roseShare: 11.3, judgeable: true },
+    },
     matcher: {
       generatedAt: "2026-09-29T10:00:00Z", heldOutPairs: 105, trainingPairs: 106,
       models: {
@@ -144,7 +155,7 @@ describe("HonestPrices page", () => {
     expect(within(discounts).getByRole("row", { name: /Likely fake.*53.*7\.2%/ })).toBeInTheDocument();
     expect(within(discounts).getByRole("row", { name: /^All.*735.*100%/ })).toBeInTheDocument();
     expect(screen.getByText(/73% of claims are unverified/)).toBeInTheDocument();
-    expect(screen.getByText(/25 days deep \(8,296 price points since 3 Jul 2026\)/)).toBeInTheDocument();
+    expect(screen.getByText(/has records from 25 different days since 3 Jul 2026 \(8,296 price points\)/)).toBeInTheDocument();
 
     const pta = screen.getByRole("table", { name: "PTA status of phone and tablet offers" });
     expect(within(pta).getByRole("row", { name: /State PTA approved.*399.*23%/ })).toBeInTheDocument();
@@ -229,7 +240,76 @@ describe("HonestPrices page", () => {
     vi.mocked(getIntegrity).mockResolvedValue(report({ live: null }));
     renderPage();
     expect(await screen.findByText(/live numbers are not available/)).toBeInTheDocument();
-    expect(screen.queryByText("0")).not.toBeInTheDocument();
+    expect(within(screen.getByRole("region", { name: "What the checks found today" })).queryByText("0")).not.toBeInTheDocument();
+  });
+
+  it("shows what the wait-or-buy panel would have said and what the price then did, and says when no row can be judged", async () => {
+    vi.mocked(getIntegrity).mockResolvedValue(report());
+    renderPage();
+    const table = await screen.findByRole("table", { name: /what the wait-or-buy panel would have said/i });
+    const above = within(table).getByRole("row", { name: /5% or more above its usual price.*14.*50%.*7.1%/ });
+    expect(above).toHaveTextContent("too few to judge");
+    expect(within(table).getByRole("row", { name: /Too early to say.*189.*17.5%.*11.1%/ })).not.toHaveTextContent("too few to judge");
+    const flat = within(table).getByRole("row", { name: /The price had not moved/ });
+    expect(flat).toHaveTextContent("0");
+    expect(flat).toHaveTextContent("n/a");
+    expect(flat).not.toHaveTextContent("too few to judge"); // nothing compared, nothing to call too few
+    expect(screen.getByText(/None of the verdicts has the 30 comparisons it needs to be judged yet/)).toBeInTheDocument();
+    expect(screen.getByText(/221 comparisons, from 3 Jul 2026 to 17 Aug 2026/)).toBeInTheDocument();
+    expect(screen.getByText(/is not a price forecast/)).toBeInTheDocument();
+  });
+
+  it("reads the backtest differently once a verdict can be judged", async () => {
+    const data = report();
+    data.evaluation.outlook.rows[3] = { ...data.evaluation.outlook.rows[3], comparisons: 45, judgeable: true };
+    vi.mocked(getIntegrity).mockResolvedValue(data);
+    renderPage();
+    expect(await screen.findByText(/did not fall more often, the verdict carries no information/)).toBeInTheDocument();
+    expect(screen.queryByText(/None of the verdicts has/)).toBeNull();
+    expect(screen.queryAllByText(/too few to judge/).length).toBeGreaterThan(0); // the other rows still are
+  });
+
+  it("names every verdict in plain words, in a fixed order", async () => {
+    vi.mocked(getIntegrity).mockResolvedValue(report());
+    renderPage();
+    const table = await screen.findByRole("table", { name: /what the wait-or-buy panel would have said/i });
+    const labels = within(table).getAllByRole("rowheader").map((cell) => cell.textContent.replace(/too few to judge$/, ""));
+    expect(labels).toEqual([
+      "Too early to say", "The price had not moved", "At its lowest recorded price", "5% or more above its usual price", "Around its usual price",
+    ]);
+  });
+
+  it("leaves out the period when the report does not give one", async () => {
+    const data = report();
+    data.evaluation.outlook.from = null;
+    data.evaluation.outlook.to = null;
+    vi.mocked(getIntegrity).mockResolvedValue(data);
+    renderPage();
+    expect(await screen.findByText(/^221 comparisons\. Comparisons/)).toBeInTheDocument();
+  });
+
+  it("lists wait-or-buy among the things we cannot tell you", async () => {
+    vi.mocked(getIntegrity).mockResolvedValue(report());
+    renderPage();
+    const limits = (await screen.findByRole("heading", { name: "What we cannot tell you" })).closest("section");
+    expect(within(limits).getByText(/"Wait or buy\?" is an early estimate, not a forecast/)).toBeInTheDocument();
+  });
+
+  it("does not count 'too early' being judgeable as a verdict that can be judged", async () => {
+    const data = report();
+    data.evaluation.outlook.rows.forEach((row) => { row.judgeable = row.verdict === "too_early"; });
+    vi.mocked(getIntegrity).mockResolvedValue(data);
+    renderPage();
+    expect(await screen.findByText(/None of the verdicts has the 30 comparisons/)).toBeInTheDocument();
+  });
+
+  it("says the test results are unavailable when the server has none", async () => {
+    const data = report();
+    data.evaluation.outlook = null;
+    vi.mocked(getIntegrity).mockResolvedValue(data);
+    renderPage();
+    expect(await screen.findByText(/test results could not be loaded/)).toBeInTheDocument();
+    expect(screen.queryByRole("table", { name: /wait-or-buy panel/ })).toBeNull();
   });
 
   it("does not name another price comparison site", async () => {

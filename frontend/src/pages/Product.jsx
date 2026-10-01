@@ -12,6 +12,7 @@ import ErrorState from "../components/ErrorState.jsx";
 import AlertForm from "../components/product/AlertForm.jsx";
 import CrossStoreSummary from "../components/product/CrossStoreSummary.jsx";
 import DealVerdict from "../components/product/DealVerdict.jsx";
+import PriceOutlook from "../components/product/PriceOutlook.jsx";
 import PriceHistoryChart from "../components/product/PriceHistoryChart.jsx";
 import Specifications from "../components/product/Specifications.jsx";
 import ResultGroup from "../components/results/ResultGroup.jsx";
@@ -77,7 +78,7 @@ export default function Product() {
     );
   }
 
-  const { listing, offers, productGroup } = product.data;
+  const { listing, offers, productGroup, outlook } = product.data;
   const clickedName = typeof state?.name === "string" && state.name.trim() ? state.name : null;
   // The API always includes the listing itself; the fallback only guards an empty answer.
   const allOffers = offers.length > 0 ? offers : [listing];
@@ -87,6 +88,8 @@ export default function Product() {
     <div className="container product">
       {back}
       <ResultGroup group={group} currentId={listing._id} colour={colour} onColour={chooseColour} />
+
+      <PriceOutlook outlook={outlook} />
 
       <section className="product-section" aria-labelledby="verdict-heading">
         <h2 id="verdict-heading">Deal verdict for {platformName(listing.platform)}</h2>

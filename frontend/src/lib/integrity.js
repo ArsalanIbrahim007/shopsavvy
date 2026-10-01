@@ -44,6 +44,22 @@ export function ptaRows(pta) {
   ];
 }
 
+const OUTLOOK_LABELS = {
+  too_early: "Too early to say",
+  flat: "The price had not moved",
+  at_low: "At its lowest recorded price",
+  above_usual: "5% or more above its usual price",
+  usual: "Around its usual price",
+};
+
+/** The wait-or-buy backtest as rows in a fixed order: what the panel would have said, and what the price then did. */
+export function outlookRows(outlook) {
+  return (outlook?.rows ?? []).map((row) => ({ ...row, label: OUTLOOK_LABELS[row.verdict] ?? row.label }));
+}
+
+/** True when at least one verdict that says something (not "too early") has enough comparisons to be judged. */
+export const outlookJudgeable = (outlook) => (outlook?.rows ?? []).some((row) => row.verdict !== "too_early" && row.judgeable);
+
 /** The models compared on the same held-out pairs, in the order the page shows them. Missing models are left out. */
 export function matcherRows(models) {
   const labels = [

@@ -22,6 +22,13 @@ vi.mock("../src/api/endpoints.js", () => ({
       history: { points: 500, days: 25, since: "2026-07-03T00:00:00Z" },
     },
     evaluation: {
+      outlook: { generatedAt: "2026-10-01T07:29:34.670Z", comparisons: 221, from: "2026-07-03", to: "2026-08-17", minimumToJudge: 30, rows: [
+        { verdict: "too_early", label: "x", comparisons: 189, listings: 62, fellShare: 17.5, roseShare: 11.1, judgeable: true },
+        { verdict: "flat", label: "x", comparisons: 0, listings: 0, fellShare: null, roseShare: null, judgeable: false },
+        { verdict: "at_low", label: "x", comparisons: 12, listings: 10, fellShare: 0, roseShare: 25, judgeable: false },
+        { verdict: "above_usual", label: "x", comparisons: 14, listings: 7, fellShare: 50, roseShare: 7.1, judgeable: false },
+        { verdict: "usual", label: "x", comparisons: 6, listings: 6, fellShare: 33.3, roseShare: 0, judgeable: false },
+      ], all: { label: "All", comparisons: 221, listings: null, fellShare: 19, roseShare: 11.3, judgeable: true } },
       matcher: { generatedAt: "2026-09-29T10:00:00Z", heldOutPairs: 105, trainingPairs: 106, models: { production: { accuracy: 78.1, precision: 71.4, recall: 34.5, f1: 46.5 }, candidate: { accuracy: 74.3, precision: 54.2, recall: 44.8, f1: 49.1 }, rule: { accuracy: 74.3, precision: 58.3, recall: 24.1, f1: 34.1 } } },
       discount: { generatedAt: "2026-09-29T10:00:00Z", judgeableClaims: 251, historyRuleJudged: 14, historyRuleShare: 5.6, splits: 5, flaggedRealClaims: 7, caughtInvented: { "1.3x": 9.5, "1.5x": 29.5, "1.75x": 85, "2x": 96.8 } },
     },

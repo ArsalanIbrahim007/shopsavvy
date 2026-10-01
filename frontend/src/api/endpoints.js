@@ -28,7 +28,10 @@ export async function searchListings({ q, category, signal }) {
   };
 }
 
-/** One listing with the other offers for the same product. */
+/**
+ * One listing with the other offers for the same product, and `outlook`: what the product's own recorded prices say about waiting
+ * (see lib/outlook.js). `outlook` is null when the server could not work it out; the page then shows nothing about it.
+ */
 export async function getListing(id, { signal } = {}) {
   const body = await request(`/listings/${encodeURIComponent(id)}`, { signal });
   return {
@@ -36,6 +39,7 @@ export async function getListing(id, { signal } = {}) {
     offers: body.offers ?? [],
     summary: body.summary ?? null,
     productGroup: body.productGroup ?? null,
+    outlook: body.outlook ?? null,
   };
 }
 
