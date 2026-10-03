@@ -83,6 +83,14 @@ describe("assertPublicUrl (resolves the host name too)", () => {
     await expect(assertPublicUrl("https://mixed.example.com/", { resolve: resolving("93.184.216.34", "10.0.0.5") })).rejects.toThrow(UnsafeUrlError);
   });
 
+  it("marks only a failed lookup as transient (worth retrying); an unsafe URL never is", async () => {
+    const error = async (promise) => { try { await promise; } catch (e) { return e; } return null; };
+    expect(await error(assertPublicUrl("https://nowhere.example.com/", { resolve: vi.fn(async () => { throw new Error("EAI_AGAIN"); }) }))).toMatchObject({ transient: true });
+    expect(await error(assertPublicUrl("http://127.0.0.1/"))).toMatchObject({ transient: false });
+    expect(await error(assertPublicUrl("https://evil.example.com/", { resolve: resolving("10.0.0.5") }))).toMatchObject({ transient: false });
+    expect(await error(assertPublicUrl("https://empty.example.com/", { resolve: vi.fn(async () => []) }))).toMatchObject({ transient: false });
+  });
+
   it("refuses a name that cannot be resolved or has no address, since it cannot be checked", async () => {
     await expect(assertPublicUrl("https://nowhere.example.com/", { resolve: vi.fn(async () => { throw new Error("ENOTFOUND"); }) })).rejects.toThrow(/could not be resolved/);
     await expect(assertPublicUrl("https://empty.example.com/", { resolve: vi.fn(async () => []) })).rejects.toThrow(/no address/);

@@ -15,9 +15,11 @@ import { lookup } from "node:dns/promises";
 import net from "node:net";
 
 export class UnsafeUrlError extends Error {
-  constructor(message) {
+  /** @param {boolean} [transient]  true when the URL may be fine and the check could not finish (a DNS failure): worth trying again */
+  constructor(message, transient = false) {
     super(message);
     this.name = "UnsafeUrlError";
+    this.transient = transient;
   }
 }
 
@@ -73,7 +75,7 @@ export async function assertPublicUrl(value, { resolve = lookup } = {}) {
   try {
     addresses = await resolve(host, { all: true });
   } catch {
-    throw new UnsafeUrlError("That host name could not be resolved, so it cannot be checked.");
+    throw new UnsafeUrlError("That host name could not be resolved, so it cannot be checked.", true);
   }
   if (!Array.isArray(addresses) || addresses.length === 0) throw new UnsafeUrlError("That host name has no address.");
   if (addresses.some((entry) => isPrivateAddress(entry.address))) throw new UnsafeUrlError("That host name points at a private address.");

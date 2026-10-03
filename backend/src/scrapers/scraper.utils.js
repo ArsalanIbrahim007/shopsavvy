@@ -5,6 +5,8 @@
 
 import axios from "axios";
 
+import { UnsafeUrlError, assertPublicUrl, assertRedirectIsPublic } from "../services/outboundUrlGuard.service.js";
+
 // Common headers to look like a real browser request.
 // Tweak per-platform if a site blocks the default UA.
 const DEFAULT_HEADERS = {
@@ -32,6 +34,9 @@ async function fetchHtml(url, opts = {}) {
 
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
+      // Only public websites are fetched: never this machine, its network or a cloud metadata address (see the guard's file).
+      await assertPublicUrl(url);
+
       const res = await axios.get(url, {
         headers: {
           ...DEFAULT_HEADERS,
@@ -41,6 +46,7 @@ async function fetchHtml(url, opts = {}) {
         timeout,
 
         maxRedirects: 5,
+        beforeRedirect: assertRedirectIsPublic, // a redirect may not lead off the public internet either
 
         responseType: "text",
 
@@ -54,6 +60,11 @@ async function fetchHtml(url, opts = {}) {
       lastErr = err;
 
       const status = err.response?.status;
+
+      // A refused address will not become acceptable on a retry. (A DNS failure that merely stopped the check is retried like any other.)
+      if (err instanceof UnsafeUrlError && !err.transient) {
+        throw new Error(`fetchHtml refused ${url}: ${err.message}`);
+      }
 
       /*
        * Retrying most 4xx responses with exactly the same request
