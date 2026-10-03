@@ -1,16 +1,6 @@
-// ishopping.scraper.js
-//
-// Dedicated scraper for iShopping.pk.
-// iShopping uses Magento and serves static HTML, but 403s every plain axios
-// request -- even with a full browser-like header set and a homepage-first
-// cookie handshake (both tried and confirmed still blocked, 2026-09-29).
-// Whatever the bot check inspects, axios can't fake it. Fetches go through
-// a real headless browser instead (playwrightFetch.js); everything below
-// this point (selectors, parsing) is unchanged from the axios version.
-
 import * as cheerio from "cheerio";
 import { fetchHtmlWithBrowser } from "./playwrightFetch.js";
-import { parsePrice, cleanText, safeMap } from "./scraper.utils.js";
+import { parsePrice, cleanText, safeMap, validatePricePair } from "./scraper.utils.js";
 import { makeListing } from "./scraper.schema.js";
 
 const PLATFORM = "ishopping";
@@ -23,49 +13,6 @@ function toAbsoluteUrl(value) {
   } catch {
     return null;
   }
-}
-
-async function fetchIShoppingHtml(url) {
-  return fetchHtmlWithBrowser(url, { waitForSelector: ".product-item" });
-}
-
-function readPrice(card, selectors) {
-  for (const selector of selectors) {
-    const element = card.find(selector).first();
-    if (!element.length) continue;
-
-    const dataPrice = element.attr("data-price-amount");
-    if (dataPrice) {
-      const value = Number(String(dataPrice).replace(/,/g, ""));
-      if (Number.isFinite(value) && value > 0) return Math.round(value);
-    }
-
-    const text = cleanText(element.text());
-    if (!text) continue;
-
-    const price = parsePrice(text);
-    if (price !== null && price > 0) return price;
-  }
-  return null;
-}
-
-function getStockStatus(card) {
-  const text = cleanText(
-    card.find([
-      ".stock", ".availability",
-      "[class*='stock']", "[class*='availability']",
-      ".ddnone",
-    ].join(", ")).text()
-  ).toLowerCase();
-
-  if (
-    text.includes("out of stock") ||
-    text.includes("sold out") ||
-    text.includes("unavailable")
-  ) {
-    return false;
-  }
-  return true;
 }
 
 function getProductCards($) {
@@ -107,7 +54,7 @@ async function scrapeIShoppingSearch(searchUrl) {
     (el) => {
       const card = $(el);
 
-      // Title + URL
+      // ── Title + URL ────────────────────────────────────────────────
       let productLink = card.find([
         "a.product-item-link",
         ".product-item-name a",
@@ -142,8 +89,19 @@ async function scrapeIShoppingSearch(searchUrl) {
       const sourceUrl = toAbsoluteUrl(href);
       if (!sourceUrl) return null;
 
-      // Current price
-      const price = readPrice(card, [
+      // ── Current price ──────────────────────────────────────────────
+      // iShopping uses two markup layouts:
+      //
+      // Layout A (standard Magento, no discount):
+      //   <span data-price-type="finalPrice" data-price-amount="119999">
+      //
+      // Layout B (Was/Now custom layout, with discount):
+      //   <span class="info-list--row active">
+      //     <span data-price-type="finalPrice" data-price-amount="291">
+      //
+      // Both expose the value via data-price-amount so the same selectors work.
+      const rawPrice = readPrice(card, [
+        "[data-price-type='finalPrice'][data-price-amount]",
         ".special-price [data-price-amount]",
         "[data-price-type='finalPrice'] [data-price-amount]",
         ".price-final_price [data-price-amount]",
@@ -152,22 +110,25 @@ async function scrapeIShoppingSearch(searchUrl) {
         ".price-box .price",
       ]);
 
-      if (!price) return null;
-
-      // Original price
-      const detectedOriginalPrice = readPrice(card, [
-        ".old-price [data-price-amount]",
+      // ── Original / "was" price ─────────────────────────────────────
+      // Layout A: no was-price element present.
+      // Layout B: <span data-price-type="oldPrice" data-price-amount="323">
+      //   The element itself carries data-price-amount (not a child span).
+      const rawOriginal = readPrice(card, [
+        "[data-price-type='oldPrice'][data-price-amount]",
         "[data-price-type='oldPrice'] [data-price-amount]",
-        ".old-price .price",
+        ".old-price [data-price-amount]",
         "[data-price-type='oldPrice'] .price",
+        ".old-price .price",
       ]);
 
-      const originalPrice =
-        detectedOriginalPrice && detectedOriginalPrice > price
-          ? detectedOriginalPrice
-          : null;
+      // Validate the pair: price must be >= 100, was-price must be strictly
+      // above price and at most 10x price (catches the Telemart-style misparse
+      // where two numbers get joined).
+      const { price, originalPrice } = validatePricePair(rawPrice, rawOriginal);
+      if (!price) return null;
 
-      // Image
+      // ── Image ──────────────────────────────────────────────────────
       const image = card.find([
         "img.product-image-photo",
         ".product-image-wrapper img",
@@ -183,6 +144,8 @@ async function scrapeIShoppingSearch(searchUrl) {
         null;
 
       const imageUrl = toAbsoluteUrl(imageRaw);
+
+      // ── Stock ──────────────────────────────────────────────────────
       const inStock = getStockStatus(card);
 
       return makeListing({
@@ -202,3 +165,56 @@ async function scrapeIShoppingSearch(searchUrl) {
 }
 
 export { scrapeIShoppingSearch };
+
+async function fetchIShoppingHtml(url) {
+  return fetchHtmlWithBrowser(url, { waitForSelector: ".product-item" });
+}
+
+/**
+ * Reads a price value from the first matching selector on a card.
+ *
+ * iShopping puts data-price-amount on the wrapper span itself in the
+ * Was/Now layout, so we check the matched element before looking at children.
+ */
+function readPrice(card, selectors) {
+  for (const selector of selectors) {
+    const element = card.find(selector).first();
+    if (!element.length) continue;
+
+    // data-price-amount may be on the element itself or on a child
+    const dataPrice =
+      element.attr("data-price-amount") ||
+      element.find("[data-price-amount]").first().attr("data-price-amount");
+
+    if (dataPrice) {
+      const value = Number(String(dataPrice).replace(/,/g, ""));
+      if (Number.isFinite(value) && value > 0) return Math.round(value);
+    }
+
+    const text = cleanText(element.text());
+    if (!text) continue;
+
+    const price = parsePrice(text);
+    if (price !== null && price > 0) return price;
+  }
+  return null;
+}
+
+function getStockStatus(card) {
+  const text = cleanText(
+    card.find([
+      ".stock", ".availability",
+      "[class*='stock']", "[class*='availability']",
+      ".ddnone",
+    ].join(", ")).text()
+  ).toLowerCase();
+
+  if (
+    text.includes("out of stock") ||
+    text.includes("sold out") ||
+    text.includes("unavailable")
+  ) {
+    return false;
+  }
+  return true;
+}
