@@ -114,6 +114,27 @@ function isNetworkSplit(titleA, titleB, families) {
 }
 
 /**
+ * The PTA status of a listing as far as we know it: what its title says, else what its store's own product page said (the nightly
+ * page read stores that in `ptaStatus`). Titles are silent for most stores, so the stored status is often all there is.
+ */
+const ptaOf = (listing) => {
+  const stated = extractPtaStatus(listing.title || listing.normalizedTitle || "");
+  return stated !== "unknown" ? stated : listing.ptaStatus ?? "unknown";
+};
+
+/**
+ * True when both listings are known to differ on PTA approval. Like every attribute veto this needs BOTH to say, so an unstated
+ * offer never blocks a match. It uses ptaOf, not the title alone as attributeConflict does: a listing whose title says nothing but
+ * whose page says "non-PTA" (Mega: "Apple iPhone 17" at PKR 284,999 beside PTA-approved units at PKR 370,000 and up) must not join a
+ * group of approved ones, whatever its bare title looks like.
+ */
+const ptaConflict = (a, b) => {
+  const first = ptaOf(a);
+  const second = ptaOf(b);
+  return first !== "unknown" && second !== "unknown" && first !== second;
+};
+
+/**
  * The first group in `candidates` the listing may join, or null. The strategy decides whether it looks like the
  * group's product; on top of that it must not conflict with any member (see the comment inside).
  */
@@ -139,6 +160,7 @@ function findMatchingGroup(listing, rawTitle, listingStorage, candidates, matchS
     if (
       matchStrategy(rawTitle, group, listing, listingStorage) &&
       !group.offers.some((member) =>
+        ptaConflict(listing, member) ||
         attributeConflict(rawTitle, member.title || member.normalizedTitle || "", { ignoreUnstatedStorage: true }) ||
         isNetworkSplit(rawTitle, member.title || member.normalizedTitle || "", networkFamilies)
       )
@@ -189,10 +211,6 @@ const PTA_SENSITIVE = new Set(["smartphone", "tablet"]);
  */
 const NON_PTA_PRICE_RATIO = 1 - PRICE_PROXIMITY;
 
-const ptaOf = (listing) => {
-  const stated = extractPtaStatus(listing.title || listing.normalizedTitle || "");
-  return stated !== "unknown" ? stated : listing.ptaStatus ?? "unknown";
-};
 
 /**
  * Moves the unstated-PTA offers that are priced far below every stated-PTA offer of their product into a group
