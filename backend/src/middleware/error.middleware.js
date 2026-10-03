@@ -109,9 +109,9 @@ export const globalErrorHandler = (err, req, res, next) => {
 
   if (statusCode >= 500) {
     // The full error, with stack, stays in the log.
-    console.error(`[error] [req ${req.id}] ${where} -> ${statusCode} ${code}`, err);
+    console.error("[error] [req %s] %s -> %s %s", req.id, where, statusCode, code, err);
   } else {
-    console.warn(`[req ${req.id}] ${where} -> ${statusCode} ${code}: ${message}`);
+    console.warn("[req %s] %s -> %s %s: %s", req.id, where, statusCode, code, message);
   }
 
   return sendError(res, statusCode, code, message, {

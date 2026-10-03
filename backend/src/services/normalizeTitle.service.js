@@ -10,7 +10,7 @@ export function normalizeTitle(title = "") {
     .toLowerCase()
 
     // Strip any HTML that leaked through the scraper
-    .replace(/<[^>]*>/g, " ")
+    .replace(/<[^<>]*>/g, " ")
 
     // Brand words that appear inconsistently
     .replace(/\bapple\b/g, "")

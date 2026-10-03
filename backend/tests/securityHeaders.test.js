@@ -55,10 +55,17 @@ describe("API responses", () => {
 });
 
 describe("the Swagger page", () => {
-  it("is served, with the standard headers but without the strict content policy it could not run under", async () => {
+  it("is served under a looser policy it can run in, that still allows scripts from this origin only", async () => {
     const res = await get("/api-docs/");
     expect(res.status).toBe(200);
-    expect(res.headers.get("content-security-policy")).toBeNull();
+    const csp = res.headers.get("content-security-policy");
+    expect(csp).toContain("default-src 'none'");
+    expect(csp).toContain("script-src 'self'");
+    expect(csp).toContain("connect-src 'self'");
+    expect(csp).toContain("frame-ancestors 'none'");
+    expect(csp).toContain("style-src 'self' 'unsafe-inline'"); // the page has inline styles, and only styles
+    expect(csp).not.toMatch(/script-src[^;]*unsafe/); // never inline or eval'd script
+    expect(csp).not.toMatch(/https?:|\*/); // no other origin, no wildcard
     expect(res.headers.get("x-content-type-options")).toBe("nosniff");
     expect(res.headers.get("referrer-policy")).toBe("no-referrer");
     expect(res.headers.get("strict-transport-security")).not.toBeNull();

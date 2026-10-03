@@ -107,7 +107,9 @@ function shopifyChoices(html) {
     const picture = /"featured_image"\s*:\s*\{[^}]*?"src"\s*:\s*"([^"]+)"/.exec(html.slice(from, end));
     found.push({ colour, image: picture ? imageUrl(picture[1]) : null });
   }
-  for (const m of html.matchAll(/"options"\s*:\s*\[((?:\s*"[^"\]]{1,60}"\s*,?)+)\]/g)) {
+  // A JSON array of short strings: each value is followed by one comma or the end, so the whitespace around a value can only be
+  // matched one way (the earlier form, with optional whitespace on both sides of every value, could take quadratic time on a page of spaces).
+  for (const m of html.matchAll(/"options"\s*:\s*\[\s*("[^"\]]{1,60}"(?:\s*,\s*"[^"\]]{1,60}")*)\s*\]/g)) {
     for (const value of m[1].matchAll(/"([^"]+)"/g)) found.push({ colour: normalise(value[1]), image: null });
   }
   return found;

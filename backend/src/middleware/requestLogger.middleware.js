@@ -11,7 +11,7 @@ export function requestLogger(req, res, next) {
 
   res.on("finish", () => {
     if (req.path === "/api/health") return;
-    console.log(`[req ${req.id}] ${req.method} ${req.originalUrl.split("?")[0]} ${res.statusCode} ${Date.now() - startedAt}ms`);
+    console.log("[req %s] %s %s %s %sms", req.id, req.method, req.originalUrl.split("?")[0], res.statusCode, Date.now() - startedAt);
   });
 
   next();

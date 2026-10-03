@@ -19,6 +19,7 @@ import { extractAttributes } from "./productAttributes.service.js";
 import { extractExtras } from "./scrapedExtras.service.js";
 import { retryOnDuplicateKey } from "./retryOnDuplicateKey.js";
 import { sanitizePrices } from "./priceSanity.service.js";
+import { quote } from "../config/logSafe.js";
 // How old data can be before we re-scrape (in minutes)
 // Set to 30 minutes so rapid repeated searches don't hammer sites
 const STALE_THRESHOLD_MINUTES = 30;
@@ -124,18 +125,18 @@ function toListingDoc(scraped) {
 async function runScrapersAndSave(query, opts = {}) {
   const { dynamic = false } = opts;
 
-  console.log(`[scraperService] Running live scrapers for: "${query}"`);
+  console.log("[scraperService] Running live scrapers for: %s", quote(query));
 
   let scraped;
   try {
     scraped = await scrapeAllPlatforms(query, { dynamic });
   } catch (err) {
-    console.error(`[scraperService] Scraping failed for "${query}":`, err.message);
+    console.error("[scraperService] Scraping failed for %s: %s", quote(query), err.message);
     return 0;
   }
 
   if (!scraped || scraped.length === 0) {
-    console.log(`[scraperService] No results from scrapers for "${query}"`);
+    console.log("[scraperService] No results from scrapers for %s", quote(query));
     return 0;
   }
 
@@ -177,7 +178,7 @@ async function runScrapersAndSave(query, opts = {}) {
 
       saved++;
     } catch (err) {
-      console.warn(`[scraperService] Failed to save "${item.title}":`, err.message);
+      console.warn("[scraperService] Failed to save %s: %s", quote(item.title), err.message);
     }
   }
 
@@ -214,7 +215,7 @@ async function fetchAndRefreshListings(query, opts = {}) {
   const fresh = await hasFreshData(query);
 
   if (fresh && !force) {
-    console.log(`[scraperService] Fresh data found for "${query}", skipping scrape`);
+    console.log("[scraperService] Fresh data found for %s, skipping scrape", quote(query));
     return { scraped: false, reason: "fresh_data" };
   }
 
@@ -222,7 +223,7 @@ async function fetchAndRefreshListings(query, opts = {}) {
   const inFlight = inFlightScrapes.get(dedupeKey);
 
   if (inFlight) {
-    console.log(`[scraperService] Scrape already in flight for "${query}", joining it`);
+    console.log("[scraperService] Scrape already in flight for %s, joining it", quote(query));
     const saved = await inFlight;
     return { scraped: true, saved, reason: "joined_in_flight" };
   }

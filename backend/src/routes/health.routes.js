@@ -5,6 +5,7 @@ import Listing from "../models/listing.model.js";
 import { VISIBLE_PLATFORMS_FILTER } from "../config/platforms.js";
 import { eventLoopStats } from "../services/runtimeStats.service.js";
 import { groupingPoolStats } from "../services/grouping.service.js";
+import { healthLimiter } from "../middleware/rateLimit.middleware.js";
 
 const router = express.Router();
 
@@ -86,7 +87,7 @@ async function databaseIsUp() {
  *       503:
  *         description: The process is up but the database is unreachable (status "degraded", db "down").
  */
-router.get("/", async (req, res) => {
+router.get("/", healthLimiter, async (req, res) => {
   const dbUp = await databaseIsUp();
 
   let lastScrapeAt = null;

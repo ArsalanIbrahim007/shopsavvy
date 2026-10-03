@@ -6,6 +6,7 @@
 // injection attempts, and an unexpected failure.
 
 import { describe, it, expect, vi, beforeAll, afterAll, beforeEach, afterEach } from "vitest";
+import { format } from "node:util";
 
 vi.mock("../src/services/scraper.service.js", () => ({
   fetchAndRefreshListings: vi.fn(async () => ({ scraped: false, reason: "fresh_data" })),
@@ -402,7 +403,7 @@ describe("responses in general", () => {
     await json("/api/no-such-route?email=private.person@example.com&token=secret-token-value");
     await new Promise((resolve) => setTimeout(resolve, 20));
 
-    const lines = log.mock.calls.map((call) => call.join(" ")).join("\n");
+    const lines = log.mock.calls.map((call) => format(...call)).join("\n");
     expect(lines).toMatch(/GET \/api\/no-such-route 404/);
     expect(lines).not.toMatch(/secret-token-value/);
     expect(lines).not.toMatch(/private\.person|email=/);

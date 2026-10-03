@@ -11,14 +11,16 @@
 // If ADMIN_API_KEY is not set the protected endpoints are simply switched off,
 // so a server that forgot to configure it fails closed, not open.
 
-import { createHash, timingSafeEqual } from "crypto";
+import { createHmac, randomBytes, timingSafeEqual } from "crypto";
 
 import { sendError } from "./error.middleware.js";
 import { ERROR_CODES } from "../errors/AppError.js";
 
-// Hashing first gives both sides the same length, which timingSafeEqual
-// requires, and avoids leaking the key's length through timing.
-const digest = (value) => createHash("sha256").update(String(value)).digest();
+// Both sides are passed through an HMAC first: that gives them the same length, which timingSafeEqual requires, and avoids leaking
+// the key's length through timing. This is not password storage (the key is never stored hashed), so a keyed HMAC with a random
+// per-process key is the right tool; a bare SHA-256 of a secret is what code scanners rightly flag.
+const COMPARE_KEY = randomBytes(32);
+const digest = (value) => createHmac("sha256", COMPARE_KEY).update(String(value)).digest();
 
 /** True when the request carries the configured admin key. */
 export function hasAdminKey(req) {

@@ -25,6 +25,7 @@ import cron from "node-cron";
 import { enrichFromPages } from "../services/pageEnrichment.service.js";
 import { runScheduledScrape } from "../services/scheduledScraping.service.js";
 import { isDoneToday, markDone, markFailed, pktHour, tryStart } from "./scrapeState.js";
+import { quote } from "../config/logSafe.js";
 
 const WINDOW_START_HOUR = 22; // 10 PM Pakistan time, inclusive
 const WINDOW_END_HOUR = 23; // 11 PM, exclusive
@@ -53,8 +54,8 @@ async function maybeRunToday() {
   try {
     const summary = await runScheduledScrape({
       onProgress: ({ index, total, query, saved, error }) => {
-        if (error) console.warn(`[priceHistoryJob] (${index}/${total}) "${query}" failed: ${error}`);
-        else console.log(`[priceHistoryJob] (${index}/${total}) "${query}" -> ${saved} saved`);
+        if (error) console.warn("[priceHistoryJob] (%s/%s) %s failed: %s", index, total, quote(query), error);
+        else console.log("[priceHistoryJob] (%s/%s) %s -> %s saved", index, total, quote(query), saved);
       },
     });
 

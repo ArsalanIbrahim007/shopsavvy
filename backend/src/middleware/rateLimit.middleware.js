@@ -71,4 +71,22 @@ export function createReadLimiter({ windowMs = 15 * 60 * 1000, limit = 240 } = {
 }
 
 export const dealsLimiter = createReadLimiter({ limit: 240 });
+// A product page is one request (the server groups its offers in a worker): a shopper opens a few dozen in a sitting, a script opens thousands.
+export const detailLimiter = createReadLimiter({ limit: 200 });
+// Stored listings, one product's recorded prices, headline counts: reads of stored data.
+export const readLimiter = createReadLimiter({ limit: 240 });
+// The health check pings the database. A monitor polls it every few seconds, so this is a ceiling against abuse, not a throttle:
+// 600 an hour-quarter is one every 1.5 seconds.
+export const healthLimiter = createReadLimiter({ limit: 600 });
+// Writes that need the admin key: the limit is what stops the key being guessed.
+export function createAdminLimiter({ windowMs = 15 * 60 * 1000, limit = 30 } = {}) {
+  return rateLimit({
+    windowMs,
+    limit,
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: tooMany("Too many requests. Please wait a few minutes and try again."),
+  });
+}
+export const adminLimiter = createAdminLimiter();
 export const suggestLimiter = createReadLimiter({ limit: 900 });

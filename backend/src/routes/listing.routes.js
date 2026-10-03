@@ -17,7 +17,7 @@ import {
   validateCreateListing,
 } from "../middleware/validation.middleware.js";
 import { requireAdminKey } from "../middleware/adminKey.middleware.js";
-import { searchLimiter, dealsLimiter, suggestLimiter } from "../middleware/rateLimit.middleware.js";
+import { searchLimiter, dealsLimiter, suggestLimiter, detailLimiter, readLimiter, adminLimiter } from "../middleware/rateLimit.middleware.js";
 
 const router = express.Router();
 
@@ -110,7 +110,7 @@ router.post(
  *                   items:
  *                     $ref: '#/components/schemas/Listing'
  */
-router.get("/", getListings);
+router.get("/", readLimiter, getListings);
 
 /**
  * @swagger
@@ -149,7 +149,7 @@ router.get("/", getListings);
  *                         type: integer
  *                         example: 1368
  */
-router.get("/stats", getListingStats);
+router.get("/stats", readLimiter, getListingStats);
 
 /**
  * @swagger
@@ -500,8 +500,8 @@ router.get("/search", searchLimiter, searchListings);
  *       503:
  *         description: Disabled because the server has no ADMIN_API_KEY configured.
  */
-router.get("/:id/history", getListingHistory);
-router.post("/:id/history", requireAdminKey, addListingPriceHistory);
+router.get("/:id/history", readLimiter, getListingHistory);
+router.post("/:id/history", adminLimiter, requireAdminKey, addListingPriceHistory);
 
 /**
  * @swagger
@@ -533,6 +533,6 @@ router.post("/:id/history", requireAdminKey, addListingPriceHistory);
  *       503:
  *         description: The database is unreachable, or the grouping workers are saturated (code SERVICE_BUSY). Retry shortly.
  */
-router.get("/:id", getListingDetails);
+router.get("/:id", detailLimiter, getListingDetails);
 
 export default router;

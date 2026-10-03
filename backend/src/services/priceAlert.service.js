@@ -62,6 +62,11 @@ export function alertLinks(alertId) {
  * @returns {Promise<{alert: object, confirmationRequired: boolean, confirmationSent: boolean}>}
  */
 export async function createAlert({ listingId, email, targetPrice }) {
+  // The route validates these, but a query is only ever built from plain strings and numbers here, so an object such as
+  // { "$ne": "" } can never become a query operator even if a caller forgets to validate.
+  if (typeof listingId !== "string" || typeof email !== "string" || typeof targetPrice !== "number") {
+    throw new AlertServiceError("Invalid alert request.", 400);
+  }
   const listing = await Listing.findById(listingId);
   if (!listing) {
     throw new AlertServiceError("Listing not found", 404);

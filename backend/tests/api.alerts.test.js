@@ -4,6 +4,7 @@
 // links in its emails.
 
 import { describe, it, expect, vi, beforeAll, afterAll, beforeEach, afterEach } from "vitest";
+import { format } from "node:util";
 
 vi.mock("../src/services/notification.service.js", () => ({
   sendAlertConfirmation: vi.fn(async () => ({ delivered: false, channel: "test" })),
@@ -318,7 +319,7 @@ describe("the pages the email links open", () => {
   it("does not log the token", async () => {
     await page("/alerts/confirm?token=SECRET-IN-QUERY-12345");
     await new Promise((resolve) => setTimeout(resolve, 20));
-    const logged = console.log.mock.calls.map((call) => call.join(" ")).join("\n");
+    const logged = console.log.mock.calls.map((call) => format(...call)).join("\n");
     expect(logged).toMatch(/GET \/alerts\/confirm 200/);
     expect(logged).not.toMatch(/SECRET-IN-QUERY/);
   });
