@@ -26,6 +26,10 @@ const minOffersArg = process.argv.find((a) => a.startsWith("--min-offers="));
 const minOffers = minOffersArg ? Number(minOffersArg.split("=")[1]) : 2;
 const force = process.argv.includes("--force");
 
+// Every line of nightly-scrape.log starts a run with a time, so a run that is stopped can be told from one that never started.
+const stamp = () => new Date().toISOString();
+console.log(`[${stamp()}] scheduled scrape starting`);
+
 let claimed = false;
 if (!force) {
   const claim = tryStart();
@@ -36,6 +40,15 @@ if (!force) {
     process.exit(0);
   }
   claimed = true;
+}
+
+// A window closed or Ctrl+C: say so in the log and release today's claim, so the next start is not told "already running".
+for (const signal of ["SIGINT", "SIGTERM", "SIGHUP", "SIGBREAK"]) {
+  process.on(signal, () => {
+    console.warn(`[${stamp()}] stopped by ${signal} before it finished`);
+    if (claimed) markFailed();
+    process.exit(1);
+  });
 }
 
 let exitCode = 0;
@@ -73,4 +86,5 @@ try {
 } finally {
   await mongoose.disconnect().catch(() => {});
 }
+console.log(`[${stamp()}] scheduled scrape finished with exit code ${exitCode}`);
 process.exit(exitCode);
