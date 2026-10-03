@@ -5,10 +5,12 @@
 
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
 import swaggerUi from "swagger-ui-express";
 
 import { swaggerSpec } from "./config/swagger.js";
 import { buildCorsOptions } from "./config/cors.js";
+import { apiDocsHeaders, apiHeaders } from "./config/securityHeaders.js";
 import { requestId } from "./middleware/requestId.middleware.js";
 import { requestLogger } from "./middleware/requestLogger.middleware.js";
 import { notFoundHandler, globalErrorHandler } from "./middleware/error.middleware.js";
@@ -28,6 +30,10 @@ export function createApp() {
   // First, so every later log line and error body can carry the request id.
   app.use(requestId);
   app.use(requestLogger);
+
+  // Standard security headers (see config/securityHeaders.js). The Swagger page needs inline scripts and styles, so it gets the
+  // same headers without the strict content policy; the alert pages send their own, stricter, nonce-based policy.
+  app.use((req, res, next) => (req.path === "/api-docs" || req.path.startsWith("/api-docs/") ? apiDocsHeaders : apiHeaders)(req, res, next));
 
   // Which websites may read responses from a browser: see config/cors.js (CORS_ORIGINS).
   app.use(cors(buildCorsOptions()));
