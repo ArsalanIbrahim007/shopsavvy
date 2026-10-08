@@ -75,6 +75,10 @@ if ($Status) {
 
   $log = Join-Path $backend "nightly-scrape.log"
   Write-Host "Log file:    $log"
+  # Every run writes a timestamped first line to the log. A "successful" run that left the log untouched never started the scrape.
+  if ($info.LastRunTime -and $info.LastTaskResult -eq 0 -and $info.LastRunTime.Year -gt 2000 -and (-not (Test-Path $log) -or (Get-Item $log).LastWriteTime -lt $info.LastRunTime.AddMinutes(-1))) {
+    Write-Host "WARNING:     the task reports success, but the log was not written at its last run: the scrape never started. Re-register the task." -ForegroundColor Yellow
+  }
   if ((Test-Path $log) -and (Get-Item $log).Length -gt 0) {
     Write-Host "End of the log:"
     Get-Content $log -Tail 5 | ForEach-Object { Write-Host "  $_" }
@@ -107,7 +111,10 @@ if (-not (Test-Path $conhost)) { throw "conhost.exe was not found at $conhost; t
 
 # cmd.exe so the output can be appended to a log file (Task Scheduler does not keep it otherwise), started through
 # "conhost --headless" so that no console window appears for anyone to close.
-$arguments = "--headless cmd.exe /c `"`"$node`" src\scripts\run-scheduled-scrape.js >> nightly-scrape.log 2>&1`""
+# No quotes anywhere in it, and "node" instead of its full path ("C:\Program Files\nodejs\node.exe" has a space, so it needs quotes):
+# under conhost --headless a quoted program path makes cmd.exe do nothing at all, yet report success (tried on 2026-10-08: the task
+# "succeeded" at 22:00 on 10-07 and 10-06 without starting a scrape). node is found through PATH, which Get-Command above just proved.
+$arguments = "--headless cmd.exe /c node src\scripts\run-scheduled-scrape.js >> nightly-scrape.log 2>&1"
 
 $action = New-ScheduledTaskAction -Execute $conhost -Argument $arguments -WorkingDirectory $backend
 $trigger = New-ScheduledTaskTrigger -Daily -At $Time
