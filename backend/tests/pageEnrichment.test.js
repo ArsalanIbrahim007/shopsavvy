@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import { colourOptionsFromList, extractColourOptions } from "../src/services/colourPage.service.js";
-import { enrichFromPages, enrichPta, interleaveByStore, PAGE_CATEGORIES, RECHECK_DAYS } from "../src/services/pageEnrichment.service.js";
+import { enrichFromPages, enrichPta, interleaveByStore, PAGE_CATEGORIES, RATING_READERS, RECHECK_DAYS } from "../src/services/pageEnrichment.service.js";
 
 // Small stand-ins for the real pages read on 2026-10-01. Stores embed JSON with escaped slashes, so the fixtures do too.
 const page = (body, head = "<title>Samsung Galaxy A17 Price in Pakistan</title>") => `<html><head>${head}</head><body>${body}</body></html>`;
@@ -162,6 +162,15 @@ describe("enrichFromPages", () => {
     expect(filterSeen.platform).toEqual({ $in: ["mega"] });
   });
 
+  it("with `again` also takes pages read lately, but still only active listings of the right categories and stores", async () => {
+    model = modelReturning([]);
+    await enrichFromPages({ model, now: NOW, delayMs: 0, again: true, stores: ["priceoye"] });
+    expect(filterSeen).not.toHaveProperty("$or");
+    expect(filterSeen).toMatchObject({ productCategory: { $in: PAGE_CATEGORIES }, isActive: true, platform: { $in: ["priceoye"] } });
+    await enrichFromPages({ model, now: NOW, delayMs: 0 });
+    expect(filterSeen).toHaveProperty("$or");
+  });
+
   it("can be limited to titles containing some text, taken literally", async () => {
     model = modelReturning([]);
     await enrichFromPages({ model, now: NOW, delayMs: 0, match: "iphone 17 (pro)" });
@@ -201,6 +210,59 @@ describe("enrichFromPages", () => {
     model = modelReturning([row("a", "shophive")]);
     await enrichFromPages({ model, now: NOW, delayMs: 0, fetchPage: async () => page("<h1>nothing</h1>") });
     expect(Object.fromEntries(updates).a).not.toHaveProperty("colourOptions");
+  });
+
+  describe("ratings", () => {
+    // PriceOye's visible rating block, plus its structured data, which says 5 whatever the block says.
+    const rated = (value, count) => page(
+      `<h1>x</h1><div class="po-rating-section"><div class="rating-points">${value}</div><span> | </span><div class="rating-count">${count} Reviews</div></div>` +
+      `<script type="application/ld+json">{"@type":"Product","aggregateRating":{"@type":"AggregateRating","bestRating":"5","ratingValue":5,"ratingCount":${count}}}</script>`,
+    );
+
+    it("saves the rating a PriceOye page shows (not the 5 in its structured data) and the number of reviews, and counts it", async () => {
+      model = modelReturning([row("a", "priceoye")]);
+      const summary = await enrichFromPages({ model, now: NOW, delayMs: 0, fetchPage: async () => rated(4.5, 39) });
+      expect(summary.withRating).toBe(1);
+      expect(summary.results[0].rating).toEqual({ rating: 4.5, reviewCount: 39 });
+      expect(Object.fromEntries(updates).a).toMatchObject({ rating: 4.5, reviewCount: 39, pageCheckedAt: new Date(NOW) });
+    });
+
+    it("takes ratings only from stores checked to state one per product: Mega's page states 4.5 from 1,341 on every product", async () => {
+      expect([...RATING_READERS.keys()]).toEqual(["priceoye"]);
+      model = modelReturning([row("a", "mega"), row("b", "ishopping"), row("c", "shophive"), row("d", "PriceOye")]);
+      const summary = await enrichFromPages({ model, now: NOW, delayMs: 0, fetchPage: async () => rated(4.5, 1341) });
+      const byId = Object.fromEntries(updates);
+      for (const id of ["a", "b", "c"]) {
+        expect(byId[id]).not.toHaveProperty("rating");
+        expect(byId[id]).not.toHaveProperty("reviewCount");
+      }
+      expect(byId.d).toMatchObject({ rating: 4.5, reviewCount: 1341 }); // the store name is matched without regard to case
+      expect(summary.withRating).toBe(1);
+    });
+
+    it("keeps an earlier rating when the page states none this time, and never saves a zero", async () => {
+      model = modelReturning([row("a", "priceoye"), row("b", "priceoye")]);
+      const pages = { a: page("<h1>nothing</h1>"), b: rated(0, 0) };
+      const summary = await enrichFromPages({ model, now: NOW, delayMs: 0, fetchPage: async (l) => pages[l._id] });
+      for (const [, set] of updates) {
+        expect(set).not.toHaveProperty("rating");
+        expect(set).not.toHaveProperty("reviewCount");
+      }
+      expect(summary.withRating).toBe(0);
+    });
+
+    it("a dry run reports the rating but saves nothing", async () => {
+      model = modelReturning([row("a", "priceoye")]);
+      const summary = await enrichFromPages({ model, now: NOW, delayMs: 0, dry: true, fetchPage: async () => rated(3, 2) });
+      expect(summary.results[0].rating).toEqual({ rating: 3, reviewCount: 2 });
+      expect(model.updateOne).not.toHaveBeenCalled();
+    });
+
+    it("reads the rating of a category where PTA does not apply, alongside the colours", async () => {
+      model = modelReturning([row("a", "priceoye", { productCategory: "smartwatch" })]);
+      await enrichFromPages({ model, now: NOW, delayMs: 0, fetchPage: async () => rated(5, 27) });
+      expect(Object.fromEntries(updates).a).toMatchObject({ rating: 5, reviewCount: 27 });
+    });
   });
 
   it("a dry run reads and reports but changes nothing", async () => {

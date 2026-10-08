@@ -71,9 +71,26 @@ describe("saving scraped listings", () => {
     await runScrapersAndSave("galaxy a17");
 
     const doc = upsert.mock.calls[0][1].$set;
-    expect(doc.rating).toBeNull();
+    expect("rating" in doc).toBe(false); // 9 is not on the 0-5 scale: not written (and so not undoing an earlier one)
     expect(doc.reviewCount).toBe(1204);
     expect(doc.specs).toEqual({ RAM: "8 GB", bad: "x" });
+  });
+
+  it("writes a rating the scraper found, and leaves rating and reviewCount alone when it found none (the product page may have given them)", async () => {
+    scrapeAllPlatforms.mockResolvedValue([
+      listing({ sourceUrl: "https://x.test/rated", rating: "4.5", reviewCount: 12 }),
+      listing({ sourceUrl: "https://x.test/unrated" }),
+      listing({ sourceUrl: "https://x.test/zero", rating: 0, reviewCount: null }),
+    ]);
+
+    await runScrapersAndSave("galaxy a17");
+
+    const docs = Object.fromEntries(upsert.mock.calls.map((call) => [call[0].sourceUrl.split("/").pop(), call[1].$set]));
+    expect(docs.rated).toMatchObject({ rating: 4.5, reviewCount: 12 });
+    for (const id of ["unrated", "zero"]) {
+      expect("rating" in docs[id], id).toBe(false);
+      expect("reviewCount" in docs[id], id).toBe(false);
+    }
   });
 
   it("stores the colours a scraper found, validated, and leaves colourOptions alone when it found none", async () => {

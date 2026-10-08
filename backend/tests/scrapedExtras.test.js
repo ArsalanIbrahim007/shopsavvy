@@ -136,7 +136,14 @@ describe("scraper contract", () => {
     expect(extractExtras({ rating: "4.2", reviewCount: "1,050", specs: { RAM: "8 GB" } })).toEqual({
       rating: 4.2, reviewCount: 1050, specs: { RAM: "8 GB" },
     });
-    expect(extractExtras({})).toEqual({ rating: null, reviewCount: null, specs: null });
+    expect(extractExtras({})).toEqual({ specs: null });
+  });
+
+  it("extractExtras leaves rating and reviewCount out when the scrape has none, so it cannot undo a rating read from the product page", () => {
+    for (const none of [undefined, null, "", 0, "0", -1, 6, "abc"]) expect("rating" in extractExtras({ rating: none }), String(none)).toBe(false);
+    for (const none of [undefined, null, "", -1, 1.5, "abc"]) expect("reviewCount" in extractExtras({ reviewCount: none }), String(none)).toBe(false);
+    expect(extractExtras({ rating: 4.5 })).toEqual({ rating: 4.5, specs: null });
+    expect(extractExtras({ reviewCount: 0 })).toEqual({ reviewCount: 0, specs: null }); // the store says: no reviews
   });
 
   it("makeListing carries the optional fields and defaults them to null", () => {
