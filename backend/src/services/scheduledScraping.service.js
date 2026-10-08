@@ -45,23 +45,63 @@ export function deriveQuery(title) {
   return words.slice(0, MAX_QUERY_WORDS).join(" ");
 }
 
+// Products only one store sells (73% of the listings on 2026-10-08: all of Paklap's) have nothing to compare against, so they are not
+// queried every night. But a listing is only refreshed when a query returns it, so left alone they all went out of date together
+// (offerFreshness.service.js: 14 days). Each night a bounded number of them are queried as well: the ones not refreshed for more than
+// STALE_SINGLE_AFTER_DAYS days, the oldest first, taken from each store in turn so that one large store (PriceOye has 1,500 of them)
+// cannot use up the night's share. A listing that was just refreshed drops out of the list, so the rotation moves on by itself.
+export const STALE_SINGLE_AFTER_DAYS = 7;
+export const STALE_SINGLE_PER_RUN = 120;
+const DAY_MS = 24 * 3600 * 1000;
+
+/**
+ * Picks up to `count` queries from candidates ({ query, platform, lastScrapedAt }): oldest first within a store, one store at a time
+ * in turn. A query that is already wanted (`skip`) or repeated is passed over without using up a place.
+ * @returns {string[]}
+ */
+export function pickStaleSingles(candidates, count, skip = new Set()) {
+  const byStore = new Map();
+  for (const candidate of candidates) {
+    if (!byStore.has(candidate.platform)) byStore.set(candidate.platform, []);
+    byStore.get(candidate.platform).push(candidate);
+  }
+  const queues = [...byStore.values()].map((queue) => queue.sort((a, b) => a.lastScrapedAt - b.lastScrapedAt));
+
+  const picked = new Set();
+  while (picked.size < count && queues.some((queue) => queue.length > 0)) {
+    for (const queue of queues) {
+      while (queue.length > 0) {
+        const { query } = queue.shift();
+        if (skip.has(query) || picked.has(query)) continue;
+        picked.add(query);
+        break;
+      }
+      if (picked.size >= count) break;
+    }
+  }
+  return [...picked];
+}
+
 /**
  * Loads every stored listing, groups it into distinct products per
  * category (same logic the search endpoint uses), and returns one
  * deduplicated query per group that is actually compared across platforms.
  *
- * Single-offer groups are skipped: with ~870 listings this produces over
- * 700 distinct queries, which at four platforms each is enough daily
- * request volume to risk getting the scrapers rate-limited or blocked.
- * Multi-offer groups are where price history actually matters most anyway
- * -- they're the ones a comparison and a "genuine discount" verdict can be
- * shown for; a single-offer listing has nothing to compare against
- * regardless of how much history it accumulates.
+ * Single-offer groups are mostly skipped: with ~870 listings this produced
+ * over 700 distinct queries (about 2,500 now), which at four platforms each
+ * is enough daily request volume to risk getting the scrapers rate-limited
+ * or blocked. Multi-offer groups are where price history actually matters
+ * most anyway -- they're the ones a comparison and a "genuine discount"
+ * verdict can be shown for. Their staleness is handled separately, above:
+ * up to `staleSingles` of the single-offer products not refreshed for
+ * `staleAfterDays` days are added, so every listing is still revisited.
  *
- * @param {{minOffers?: number}} [opts]
+ * @param {{minOffers?: number, staleSingles?: number, staleAfterDays?: number, now?: number}} [opts]
  * @returns {Promise<string[]>}
  */
-export async function buildScheduledQueryList({ minOffers = 2 } = {}) {
+export async function buildScheduledQueryList({
+  minOffers = 2, staleSingles = STALE_SINGLE_PER_RUN, staleAfterDays = STALE_SINGLE_AFTER_DAYS, now = Date.now(),
+} = {}) {
   const listings = await Listing.find(VISIBLE_PLATFORMS_FILTER).lean();
 
   const byCategory = new Map();
@@ -71,19 +111,29 @@ export async function buildScheduledQueryList({ minOffers = 2 } = {}) {
     byCategory.get(category).push(listing);
   }
 
+  const cutoff = now - staleAfterDays * DAY_MS;
   const queries = new Set();
+  const stale = [];
   for (const [, items] of byCategory) {
     // Rule strategy, no recommendations: this only needs the product clusters. Runs in a
     // worker thread for large categories so the API stays responsive.
     const groups = await groupListings(items, { strategy: "rule", recommend: false, priority: "background" });
-    groups
-      .filter((group) => (group.offerCount || 0) >= minOffers)
-      .forEach((group) => {
-        const query = deriveQuery(group.rawGroupKey || group.productName || "");
-        if (query && !DEMO_PROTECTED_QUERIES.has(query)) queries.add(query);
-      });
+    for (const group of groups) {
+      const query = deriveQuery(group.rawGroupKey || group.productName || "");
+      if (!query || DEMO_PROTECTED_QUERIES.has(query)) continue;
+
+      if ((group.offerCount || 0) >= minOffers) {
+        queries.add(query);
+        continue;
+      }
+      // A listing that was never dated counts as the oldest there is.
+      const dates = (group.offers || []).map((offer) => (offer.lastScrapedAt ? new Date(offer.lastScrapedAt).getTime() : 0));
+      const lastScrapedAt = dates.length > 0 ? Math.min(...dates) : 0;
+      if (lastScrapedAt < cutoff) stale.push({ query, platform: group.offers?.[0]?.platform ?? "", lastScrapedAt });
+    }
   }
 
+  if (staleSingles > 0) for (const query of pickStaleSingles(stale, staleSingles, queries)) queries.add(query);
   return [...queries];
 }
 

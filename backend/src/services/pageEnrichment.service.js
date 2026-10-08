@@ -1,6 +1,7 @@
 // pageEnrichment.service.js — reads a store's own product page once and records what it says that the listing title does
-// not: whether a phone is PTA approved (ptaPage.service.js) and the colours it comes in (colourPage.service.js). The shopper
-// then sees "PTA approved" instead of "PTA not stated", and can pick a colour for phones whose titles never name one.
+// not: whether a phone is PTA approved (ptaPage.service.js), the colours it comes in (colourPage.service.js) and what buyers
+// rated it (ratingPage.service.js). The shopper then sees "PTA approved" instead of "PTA not stated", can pick a colour for phones
+// whose titles never name one, and sees how the store's own buyers rated the product.
 //
 // Conduct: a small number of pages per run (default 150), one at a time with a pause between them and the requests spread
 // across stores, an honest User-Agent, and a listing is read again only after 14 days (2 days after a failed fetch). A page
@@ -11,6 +12,7 @@
 import Listing from "../models/listing.model.js";
 import { extractColourOptions } from "./colourPage.service.js";
 import { extractPtaFromPage } from "./ptaPage.service.js";
+import { extractPriceOyeRating } from "./ratingPage.service.js";
 
 // Where a colour choice is useful. PTA only applies to the first two.
 export const PAGE_CATEGORIES = ["smartphone", "tablet", "smartwatch", "headphones", "laptop"];
@@ -20,6 +22,10 @@ export const RECHECK_DAYS = 14;
 export const RETRY_AFTER_FAILURE_DAYS = 2;
 const DAY_MS = 24 * 3600 * 1000;
 const NEEDS_BROWSER = new Set(["ishopping", "paklap"]);
+// How to read a rating from each store whose pages were checked (see ratingPage.service.js for what was found, and why Mega, iShopping
+// and the others are not here). A store joins this list after the same check: pages of different products, compared with what the
+// page shows a shopper.
+export const RATING_READERS = new Map([["priceoye", extractPriceOyeRating]]);
 const USER_AGENT = "ShopSavvyBot/1.0 (student price-comparison project; reads product pages for PTA status and colours)";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -62,6 +68,7 @@ export async function defaultFetchPage(listing) {
  * @param {number} [options.limit]        most pages to read in this run
  * @param {number} [options.delayMs]      pause between two pages
  * @param {boolean} [options.dry]         read and report, but save nothing
+ * @param {boolean} [options.again]       include pages read within the last 14 days (oldest first), not only the ones that are due
  * @param {string[]} [options.stores]     only these stores (lowercase ids)
  * @param {string} [options.match]        only listings whose title contains this text (case-insensitive), to fill in one product first
  * @param {number} [options.now]          epoch ms, injectable for tests
@@ -71,32 +78,35 @@ export async function defaultFetchPage(listing) {
  * @returns {Promise<{checked: number, approved: number, nonPta: number, unknown: number, withColours: number, failed: number, dry: boolean, results: object[]}>}
  */
 export async function enrichFromPages({
-  limit = DEFAULT_LIMIT, delayMs = 2500, dry = false, stores = null, match = null, now = Date.now(),
+  limit = DEFAULT_LIMIT, delayMs = 2500, dry = false, again = false, stores = null, match = null, now = Date.now(),
   fetchPage = defaultFetchPage, model = Listing, log = () => {},
 } = {}) {
   const due = new Date(now - RECHECK_DAYS * DAY_MS);
   const filter = {
     productCategory: { $in: PAGE_CATEGORIES },
     isActive: true,
-    $or: [{ pageCheckedAt: null }, { pageCheckedAt: { $lt: due } }],
   };
+  // `again`: also the pages read lately (oldest first), to fill in a field that did not exist when they were read.
+  if (!again) filter.$or = [{ pageCheckedAt: null }, { pageCheckedAt: { $lt: due } }];
   if (stores?.length) filter.platform = { $in: stores };
   if (match) filter.title = { $regex: escapeRegex(String(match)), $options: "i" };
 
   const candidates = await model.find(filter).sort({ pageCheckedAt: 1, lastScrapedAt: -1 }).limit(Math.max(limit, 0)).lean();
   const queue = interleaveByStore(candidates);
 
-  const summary = { checked: 0, approved: 0, nonPta: 0, unknown: 0, withColours: 0, failed: 0, dry, results: [] };
+  const summary = { checked: 0, approved: 0, nonPta: 0, unknown: 0, withColours: 0, withRating: 0, failed: 0, dry, results: [] };
 
   for (const [index, listing] of queue.entries()) {
     if (index > 0 && delayMs > 0) await sleep(delayMs);
 
     let pta;
     let colours;
+    let rated = null;
     try {
       const html = await fetchPage(listing);
       pta = extractPtaFromPage(html, { productName: listing.title });
       colours = extractColourOptions(html);
+      rated = RATING_READERS.get(String(listing.platform).toLowerCase())?.(html) ?? null;
     } catch (err) {
       summary.failed += 1;
       log(`[pages] ${listing.platform} "${listing.title}": ${err.message}`);
@@ -115,8 +125,9 @@ export async function enrichFromPages({
       else summary.unknown += 1;
     }
     if (colours.length > 0) summary.withColours += 1;
-    summary.results.push({ id: String(listing._id), platform: listing.platform, title: listing.title, status: ptaApplies ? pta.status : "n/a", evidence: pta.evidence, colours });
-    log(`[pages] ${listing.platform} "${listing.title}": ${ptaApplies ? pta.status : "pta n/a"}${pta.evidence && ptaApplies ? ` (${pta.evidence})` : ""}; colours: ${colours.map((c) => c.colour).join(", ") || "none"}`);
+    if (rated) summary.withRating += 1;
+    summary.results.push({ id: String(listing._id), platform: listing.platform, title: listing.title, status: ptaApplies ? pta.status : "n/a", evidence: pta.evidence, colours, rating: rated });
+    log(`[pages] ${listing.platform} "${listing.title}": ${ptaApplies ? pta.status : "pta n/a"}${pta.evidence && ptaApplies ? ` (${pta.evidence})` : ""}; colours: ${colours.map((c) => c.colour).join(", ") || "none"}${rated ? `; rating: ${rated.rating} (${rated.reviewCount})` : ""}`);
 
     if (dry) continue;
     const set = { pageCheckedAt: new Date(now) };
@@ -125,6 +136,7 @@ export async function enrichFromPages({
       set.ptaSource = "product_page";
     }
     if (colours.length > 0) set.colourOptions = colours; // a page that says nothing leaves an earlier answer alone
+    if (rated) Object.assign(set, rated);
     await model.updateOne({ _id: listing._id }, { $set: set });
   }
 

@@ -6,6 +6,8 @@
 //
 //   node src/scripts/run-scheduled-scrape.js
 //   node src/scripts/run-scheduled-scrape.js --min-offers=1   (include single-offer groups too)
+//   node src/scripts/run-scheduled-scrape.js --stale-singles=0  (only products sold by 2+ stores; the default also re-queries up to 120
+//                                                              single-store products not refreshed for 7 days, oldest first)
 //   node src/scripts/run-scheduled-scrape.js --force          (run even if today's scrape already happened)
 //   node src/scripts/run-scheduled-scrape.js --no-pages         (skip the page check (PTA status, colours) that follows the scrape)
 //
@@ -24,6 +26,8 @@ import { buildScheduledQueryList, runScheduledScrape } from "../services/schedul
 
 const minOffersArg = process.argv.find((a) => a.startsWith("--min-offers="));
 const minOffers = minOffersArg ? Number(minOffersArg.split("=")[1]) : 2;
+const staleArg = process.argv.find((a) => a.startsWith("--stale-singles="));
+const staleSingles = staleArg ? Number(staleArg.split("=")[1]) : undefined; // undefined: the default (STALE_SINGLE_PER_RUN)
 const force = process.argv.includes("--force");
 
 // Every line of nightly-scrape.log starts a run with a time, so a run that is stopped can be told from one that never started.
@@ -55,7 +59,7 @@ let exitCode = 0;
 try {
   await mongoose.connect(process.env.MONGO_URI);
 
-  const queries = await buildScheduledQueryList({ minOffers });
+  const queries = await buildScheduledQueryList({ minOffers, staleSingles });
   console.log(`${queries.length} queries to re-scrape (min ${minOffers} offer(s) per product).\n`);
 
   const summary = await runScheduledScrape({
@@ -74,7 +78,7 @@ try {
   if (!process.argv.includes("--no-pages")) {
     try {
       const pages = await enrichFromPages({ log: console.log });
-      console.log(`Page check: ${pages.checked} pages read, PTA ${pages.approved} approved / ${pages.nonPta} non-PTA, ${pages.withColours} with colours, ${pages.failed} unreadable.`);
+      console.log(`Page check: ${pages.checked} pages read, PTA ${pages.approved} approved / ${pages.nonPta} non-PTA, ${pages.withColours} with colours, ${pages.withRating} with a rating, ${pages.failed} unreadable.`);
     } catch (err) {
       console.warn("Page check failed:", err.message);
     }

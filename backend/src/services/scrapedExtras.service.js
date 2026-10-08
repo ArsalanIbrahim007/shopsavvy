@@ -89,14 +89,17 @@ export function normalizeColourOptions(value) {
 }
 
 /**
- * The optional fields of a scraped listing, each validated. `colourOptions` is only present when the scraper sent some: a scrape
- * that says nothing about colours must not undo what a store's product page said on an earlier day (pageEnrichment.service.js).
+ * The optional fields of a scraped listing, each validated. `colourOptions`, `rating` and `reviewCount` are only present when the
+ * scraper sent some: a scrape that says nothing about them must not undo what a store's product page said on an earlier day
+ * (pageEnrichment.service.js). A listing that has never had a rating still reads null from the schema default.
  */
 export function extractExtras(scraped = {}) {
   const colourOptions = normalizeColourOptions(scraped.colourOptions);
+  const rating = normalizeRating(scraped.rating);
+  const reviewCount = normalizeReviewCount(scraped.reviewCount);
   return {
-    rating: normalizeRating(scraped.rating),
-    reviewCount: normalizeReviewCount(scraped.reviewCount),
+    ...(rating !== null ? { rating } : {}),
+    ...(reviewCount !== null ? { reviewCount } : {}),
     specs: normalizeSpecs(scraped.specs),
     ...(colourOptions.length > 0 ? { colourOptions } : {}),
   };

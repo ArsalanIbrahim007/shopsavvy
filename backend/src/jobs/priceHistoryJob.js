@@ -73,7 +73,7 @@ async function maybeRunToday() {
     // as done: a failure here is logged and never makes the day be scraped twice.
     try {
       const pages = await enrichFromPages();
-      console.log(`[priceHistoryJob] Page check: ${pages.checked} pages read, ${pages.approved} PTA approved, ${pages.nonPta} non-PTA, ${pages.withColours} with colours, ${pages.failed} unreadable.`);
+      console.log(`[priceHistoryJob] Page check: ${pages.checked} pages read, ${pages.approved} PTA approved, ${pages.nonPta} non-PTA, ${pages.withColours} with colours, ${pages.withRating} with a rating, ${pages.failed} unreadable.`);
     } catch (err) {
       console.warn("[priceHistoryJob] Page check failed:", err.message);
     }
