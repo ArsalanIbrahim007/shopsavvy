@@ -36,6 +36,7 @@ context.md
 
 # Per-machine scheduled-job bookkeeping
 backend/.scheduled-scrape-state.json
+backend/.scheduled-query-log.json*
 
 # Local-only project guides (public repo: never commit these)
 architecture.md

@@ -7,7 +7,8 @@
 //   node src/scripts/run-scheduled-scrape.js
 //   node src/scripts/run-scheduled-scrape.js --min-offers=1   (include single-offer groups too)
 //   node src/scripts/run-scheduled-scrape.js --stale-singles=0  (only products sold by 2+ stores; the default also re-queries up to 120
-//                                                              single-store products not refreshed for 7 days, oldest first)
+//                                                              single-store products not refreshed for 7 days). Queries run longest ago first; it stops after 150 minutes.
+//   node src/scripts/run-scheduled-scrape.js --plan           (show what the run would query, in order, and exit; scrapes nothing)
 //   node src/scripts/run-scheduled-scrape.js --force          (run even if today's scrape already happened)
 //   node src/scripts/run-scheduled-scrape.js --no-pages         (skip the page check (PTA status, colours) that follows the scrape)
 //
@@ -22,13 +23,27 @@ import mongoose from "mongoose";
 
 import { isDoneToday, markDone, markFailed, tryStart } from "../jobs/scrapeState.js";
 import { enrichFromPages } from "../services/pageEnrichment.service.js";
-import { buildScheduledQueryList, runScheduledScrape } from "../services/scheduledScraping.service.js";
+import { buildScheduledQueryPlan, createQueryLog, RUN_BUDGET_MS, runScheduledScrape } from "../services/scheduledScraping.service.js";
 
 const minOffersArg = process.argv.find((a) => a.startsWith("--min-offers="));
 const minOffers = minOffersArg ? Number(minOffersArg.split("=")[1]) : 2;
 const staleArg = process.argv.find((a) => a.startsWith("--stale-singles="));
 const staleSingles = staleArg ? Number(staleArg.split("=")[1]) : undefined; // undefined: the default (STALE_SINGLE_PER_RUN)
 const force = process.argv.includes("--force");
+
+// --plan: show what tonight's run would query, in order, and exit. Scrapes nothing and claims nothing (so it cannot make a real run
+// think the day is taken).
+if (process.argv.includes("--plan")) {
+  await mongoose.connect(process.env.MONGO_URI);
+  const planLog = createQueryLog();
+  const planned = await buildScheduledQueryPlan({ minOffers, staleSingles, lastQueried: planLog.lastQueried });
+  const tally = (key) => Object.entries(planned.reduce((a, e) => ((a[e[key]] = (a[e[key]] || 0) + 1), a), {})).map(([k, n]) => `${k} ${n}`).join(", ");
+  console.log(`${planned.length} queries (${tally("kind")}); ${planLog.lastQueried.size} of them run before.`);
+  console.log(`by category: ${tally("category")}`);
+  console.log(`first ten: ${planned.slice(0, 10).map((e) => `"${e.query}"`).join(", ")}`);
+  await mongoose.disconnect();
+  process.exit(0);
+}
 
 // Every line of nightly-scrape.log starts a run with a time, so a run that is stopped can be told from one that never started.
 const stamp = () => new Date().toISOString();
@@ -59,19 +74,25 @@ let exitCode = 0;
 try {
   await mongoose.connect(process.env.MONGO_URI);
 
-  const queries = await buildScheduledQueryList({ minOffers, staleSingles });
-  console.log(`${queries.length} queries to re-scrape (min ${minOffers} offer(s) per product).\n`);
+  const queryLog = createQueryLog();
+  const plan = await buildScheduledQueryPlan({ minOffers, staleSingles, lastQueried: queryLog.lastQueried });
+  const queries = plan.map((entry) => entry.query);
+  const byKind = (kind) => plan.filter((entry) => entry.kind === kind).length;
+  console.log(`[${stamp()}] ${queries.length} queries to re-scrape, longest since last run first (min ${minOffers} offer(s) per product; ${byKind("compared")} compared products + ${byKind("stale-single")} stale single-store ones).`);
+  console.log(`It stops starting new queries after ${RUN_BUDGET_MS / 60000} minutes; the rest wait for tomorrow.\n`);
 
   const summary = await runScheduledScrape({
     queries,
-    onProgress: ({ index, total, query, saved, error }) => {
-      if (error) console.warn(`(${index}/${total}) "${query}" failed: ${error}`);
+    queryLog,
+    onProgress: ({ index, total, query, saved, error, budgetReached, skipped }) => {
+      if (budgetReached) console.warn(`[${stamp()}] time budget reached after ${index} of ${total} queries: ${skipped} not run (the ones run most recently; they go first tomorrow).`);
+      else if (error) console.warn(`(${index}/${total}) "${query}" failed: ${error}`);
       else console.log(`(${index}/${total}) "${query}" -> ${saved} saved`);
     },
   });
 
   if (claimed || !isDoneToday()) markDone();
-  console.log(`\nDone. ${summary.totalQueries} queries, ${summary.totalSaved} listings saved, ${summary.failures.length} failed, ${(summary.durationMs / 1000).toFixed(0)}s.`);
+  console.log(`\nDone. ${summary.totalQueries - summary.skipped} of ${summary.totalQueries} queries, ${summary.totalSaved} listings saved, ${summary.failures.length} failed, ${(summary.durationMs / 1000).toFixed(0)}s.`);
 
   // Then read a few store pages for PTA status and colours. The scrape is already recorded as done, so a failure here only
   // shows in the log.

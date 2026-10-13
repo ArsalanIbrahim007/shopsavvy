@@ -53,6 +53,25 @@ describe("tryStart / markDone / markFailed", () => {
     expect(tryStart({ now: at("2026-09-30T17:30:00Z"), file, pid: 100 })).toEqual({ ok: false, reason: "done-today" });
   });
 
+  it("records the day a run STARTED on, so a run that ends after midnight does not make the next night skip itself", () => {
+    // 2026-10-10: started 22:00 in Pakistan, finished 01:32 on the 11th. Recorded as the 11th, the night of the 11th was skipped.
+    const start = at("2026-10-10T17:00:00Z");
+    const end = at("2026-10-10T20:32:00Z");
+    expect(tryStart({ now: start, file, pid: 100 })).toEqual({ ok: true });
+    markDone({ now: end, file });
+    expect(saved()).toEqual({ lastRunDate: "2026-10-10" });
+    expect(isDoneToday({ now: at("2026-10-10T17:30:00Z"), file })).toBe(true);
+    expect(tryStart({ now: at("2026-10-11T17:00:00Z"), file, pid: 100 })).toEqual({ ok: true }); // the 11th runs
+  });
+
+  it("uses the time of the call when the run was not claimed (a forced run), and never a start time in the future", () => {
+    markDone({ now, file });
+    expect(saved()).toEqual({ lastRunDate: "2026-09-30" });
+    writeFileSync(file, JSON.stringify({ runningSince: "2030-01-01T00:00:00Z", pid: 1 }));
+    markDone({ now, file });
+    expect(saved()).toEqual({ lastRunDate: "2026-09-30" });
+  });
+
   it("starts again the next Pakistan day", () => {
     markDone({ now, file });
     expect(isDoneToday({ now: at("2026-09-30T19:30:00Z"), file })).toBe(false); // 00:30 on 1 Oct in Pakistan

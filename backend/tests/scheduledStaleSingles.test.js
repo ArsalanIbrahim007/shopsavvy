@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterAll, afterEach } from "vitest";
 
 import Listing from "../src/models/listing.model.js";
 import { closeGroupingPool } from "../src/services/grouping.service.js";
-import { buildScheduledQueryList, deriveQuery, pickStaleSingles, STALE_SINGLE_AFTER_DAYS, STALE_SINGLE_PER_RUN } from "../src/services/scheduledScraping.service.js";
+import { buildScheduledQueryList, buildScheduledQueryPlan, deriveQuery, pickStaleSingles, STALE_SINGLE_AFTER_DAYS, STALE_SINGLE_PER_RUN } from "../src/services/scheduledScraping.service.js";
 
 afterEach(() => vi.restoreAllMocks());
 afterAll(() => closeGroupingPool());
@@ -128,6 +128,67 @@ describe("buildScheduledQueryList also re-queries products only one store sells,
     const listings = [listing("paklap", dell, daysAgo(1)), listing("mega", dell, daysAgo(30))];
     expect(await build(listings, { minOffers: 3 })).toContain(deriveQuery(dell)); // 2 offers, below 3: eligible, and its older offer is 30 days old
     expect(await build([listing("paklap", dell, daysAgo(1)), listing("mega", dell, daysAgo(2))], { minOffers: 3 })).not.toContain(deriveQuery(dell));
+  });
+
+  it("lists the stalest products first, whether compared or single-store, so a run that stops early skips the freshest", async () => {
+    const dell = "Dell Pro 15 Essential PV15250 Laptop";
+    const listings = [
+      listing("paklap", dell, daysAgo(1)), listing("mega", dell, daysAgo(3)), // compared; oldest offer 3 days
+      listing("paklap", "Acer Aspire Go 15 AG15 Laptop", daysAgo(9)), // single-store, 9 days
+      listing("paklap", "Lenovo IdeaPad Slim 3 15IRH10 Laptop", daysAgo(30)), // single-store, 30 days
+      listing("paklap", "HP 15 FD0912TU Laptop", daysAgo(5)), listing("mega", "HP 15 FD0912TU Laptop", daysAgo(20)), // compared; oldest offer 20 days
+    ];
+    const queries = await build(listings);
+    expect(queries).toEqual([
+      deriveQuery("Lenovo IdeaPad Slim 3 15IRH10 Laptop"), // 30
+      deriveQuery("HP 15 FD0912TU Laptop"), // 20 (its older offer)
+      deriveQuery("Acer Aspire Go 15 AG15 Laptop"), // 9
+      deriveQuery(dell), // 3
+    ]);
+  });
+
+  it("runs the queries run longest ago first, never-run ones before any, whatever the age of the listings (a delisted product must not hog the front)", async () => {
+    const dell = "Dell Pro 15 Essential PV15250 Laptop";
+    const listings = [
+      listing("paklap", dell, daysAgo(60)), listing("mega", dell, daysAgo(61)), // a product with a listing that no search refreshes any more: "stalest" for ever
+      listing("paklap", "Acer Aspire Go 15 AG15 Laptop", daysAgo(9)),
+      listing("paklap", "Lenovo IdeaPad Slim 3 15IRH10 Laptop", daysAgo(30)),
+      listing("paklap", "HP 15 FD0912TU Laptop", daysAgo(20)),
+    ];
+    const q = (title) => deriveQuery(title);
+    const lastQueried = new Map([
+      [q(dell), NOW - 1 * 86400000], // run yesterday
+      [q("Lenovo IdeaPad Slim 3 15IRH10 Laptop"), NOW - 3 * 86400000], // run 3 days ago
+      [q("HP 15 FD0912TU Laptop"), NOW - 2 * 86400000], // run 2 days ago
+      // the Acer has never been run
+    ]);
+    expect(await build(listings, { lastQueried })).toEqual([
+      q("Acer Aspire Go 15 AG15 Laptop"), q("Lenovo IdeaPad Slim 3 15IRH10 Laptop"), q("HP 15 FD0912TU Laptop"), q(dell),
+    ]);
+  });
+
+  it("describes each query: its category, how old it is, and whether it is a compared product or a stale single-store one", async () => {
+    const dell = "Dell Pro 15 Essential PV15250 Laptop";
+    vi.spyOn(Listing, "find").mockReturnValue({ lean: async () => [
+      listing("paklap", dell, daysAgo(1)), listing("mega", dell, daysAgo(2)), listing("paklap", "Acer Aspire Go 15 AG15 Laptop", daysAgo(9), { productCategory: "tablet" }),
+    ] });
+    const plan = await buildScheduledQueryPlan({ now: NOW });
+    expect(plan).toEqual([
+      { query: deriveQuery("Acer Aspire Go 15 AG15 Laptop"), category: "tablet", lastScrapedAt: NOW - 9 * 86400000, kind: "stale-single" },
+      { query: deriveQuery(dell), category: "laptop", lastScrapedAt: NOW - 2 * 86400000, kind: "compared" },
+    ]);
+  });
+
+  it("lists one query once when two products give it (the same phone in two capacities), dated by the older of them", async () => {
+    const phone = (platform, storage, days) => listing(platform, `Samsung Galaxy A17 ${storage} Black`, daysAgo(days), { productCategory: "smartphone", storageGb: storage === "128GB" ? 128 : 256 });
+    vi.spyOn(Listing, "find").mockReturnValue({ lean: async () => [
+      phone("mega", "128GB", 1), phone("priceoye", "128GB", 2), // one product, refreshed lately
+      phone("mega", "256GB", 10), phone("priceoye", "256GB", 11), // another, 11 days old
+    ] });
+    const plan = await buildScheduledQueryPlan({ now: NOW });
+    const same = plan.filter((entry) => entry.query === deriveQuery("Samsung Galaxy A17 128GB Black"));
+    expect(same).toHaveLength(1);
+    expect(same[0].lastScrapedAt).toBe(NOW - 11 * 86400000);
   });
 
   it("with --min-offers=1 every product is already included, so nothing is added twice", async () => {

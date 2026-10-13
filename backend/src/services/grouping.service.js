@@ -70,15 +70,17 @@ const withStringIds = (listings) => listings.map((listing) => ({ ...listing, _id
  * @param {boolean}  [options.recommend]  attach recommendations to each group (default true)
  * @param {number}   [options.threshold]  listings above this many go to a worker (default OFFLOAD_THRESHOLD)
  * @param {"interactive"|"background"} [options.priority]  background work (cache warm-ups) never takes the last worker
+ * @param {number}   [options.timeoutMs]  time limit for this job; the pool's default (90 s) when omitted. A shopper waits on a search, so
+ *                                        its default is short; the nightly job groups whole categories and passes a longer one
  * @returns {Promise<object[]>} groups, best-supported first
  */
-export async function groupListings(listings = [], { strategy = "ml", recommend = true, threshold = OFFLOAD_THRESHOLD, priority = "interactive" } = {}) {
+export async function groupListings(listings = [], { strategy = "ml", recommend = true, threshold = OFFLOAD_THRESHOLD, priority = "interactive", timeoutMs } = {}) {
   const plain = withStringIds(listings);
 
   if (plain.length <= threshold) {
     return groupAndRecommend(plain, { strategy, recommend });
   }
-  return getGroupingPool().run("group", { listings: plain, strategy, recommend }, { priority });
+  return getGroupingPool().run("group", { listings: plain, strategy, recommend }, { priority, timeoutMs });
 }
 
 /** Ranks a category's top deals in a worker (see dealsRanking.service.js). */
