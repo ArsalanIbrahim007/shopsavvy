@@ -24,6 +24,7 @@ import { scrapeIShoppingSearch } from "./ishopping.scraper.js";
 // Re-enable by uncommenting this import and that block.
 // import { scrapeDarazSearch } from "./daraz.scraper.js";
 import { storeTasks } from "./stores.js";
+import { storeBreaker } from "./storeBreaker.js";
 import { detectCategory, detectQueryCategory } from "./productCategory.js";
 
 // Query aliases — map shorthand searches to what actually appears in titles
@@ -143,18 +144,23 @@ async function scrapeFixedPlatforms(query) {
     ...storeTasks(query),
   ];
 
-  const settled = await Promise.allSettled(tasks.map((t) => t.fn()));
+  // A store that has failed several times in a row is paused and tried again now and then (storeBreaker.js), so a store that is down
+  // is not asked hundreds of times a night.
+  const live = tasks.filter((t) => storeBreaker.allow(t.platform));
+  const settled = await Promise.allSettled(live.map((t) => t.fn()));
   const results = [];
 
   settled.forEach((outcome, i) => {
-    const platform = tasks[i].platform;
+    const platform = live[i].platform;
     if (outcome.status === "fulfilled") {
+      storeBreaker.success(platform);
       const filtered = filterByRelevance(outcome.value, query);
       console.log(
         `[${platform}] scraped ${outcome.value.length} listings → ${filtered.length} relevant`
       );
       results.push(...filtered);
     } else {
+      storeBreaker.failure(platform);
       console.error(`[${platform}] failed:`, outcome.reason.message);
     }
   });
