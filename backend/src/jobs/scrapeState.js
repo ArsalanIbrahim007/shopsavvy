@@ -69,9 +69,15 @@ export function tryStart({ now = new Date(), file = DEFAULT_STATE_FILE, isAlive 
   return { ok: true };
 }
 
-/** Today's scrape finished: remember the day and release the claim. */
+/**
+ * Today's scrape finished: remember the day and release the claim. The day is the one the run STARTED on: a run that begins at 22:00
+ * and ends after midnight (3 h 32 min on 2026-10-10) used to be recorded as the next day's, so the next night found "already done"
+ * and skipped itself, and every other night went unscraped.
+ */
 export function markDone({ now = new Date(), file = DEFAULT_STATE_FILE } = {}) {
-  write(file, { lastRunDate: pktDay(now) });
+  const started = Date.parse(read(file).runningSince ?? "");
+  const day = pktDay(Number.isFinite(started) && started <= now.getTime() ? new Date(started) : now);
+  write(file, { lastRunDate: day });
 }
 
 /** Today's scrape failed: release the claim so the next check can retry. The last good day is kept. */

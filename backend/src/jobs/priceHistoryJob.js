@@ -53,8 +53,9 @@ async function maybeRunToday() {
 
   try {
     const summary = await runScheduledScrape({
-      onProgress: ({ index, total, query, saved, error }) => {
-        if (error) console.warn("[priceHistoryJob] (%s/%s) %s failed: %s", index, total, quote(query), error);
+      onProgress: ({ index, total, query, saved, error, budgetReached, skipped }) => {
+        if (budgetReached) console.warn("[priceHistoryJob] time budget reached after %s of %s queries: %s not run", index, total, skipped);
+        else if (error) console.warn("[priceHistoryJob] (%s/%s) %s failed: %s", index, total, quote(query), error);
         else console.log("[priceHistoryJob] (%s/%s) %s -> %s saved", index, total, quote(query), saved);
       },
     });
@@ -65,7 +66,7 @@ async function maybeRunToday() {
     markDone();
 
     console.log(
-      `[priceHistoryJob] Done. ${summary.totalQueries} queries, ${summary.totalSaved} listings saved, ` +
+      `[priceHistoryJob] Done. ${summary.totalQueries - summary.skipped} of ${summary.totalQueries} queries, ${summary.totalSaved} listings saved, ` +
       `${summary.failures.length} failed, ${(summary.durationMs / 1000).toFixed(0)}s.`
     );
 

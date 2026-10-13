@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterAll, afterEach } from "vitest";
 
 import Listing from "../src/models/listing.model.js";
-import { buildScheduledQueryList } from "../src/services/scheduledScraping.service.js";
+import { BACKGROUND_GROUP_TIMEOUT_MS, buildScheduledQueryList } from "../src/services/scheduledScraping.service.js";
 import { closeGroupingPool, getGroupingPool } from "../src/services/grouping.service.js";
 
 afterEach(() => vi.restoreAllMocks());
@@ -22,7 +22,9 @@ describe("the scheduled-scrape query list", () => {
     const queries = await buildScheduledQueryList({ minOffers: 2 });
 
     expect(run).toHaveBeenCalledTimes(1);
-    expect(run).toHaveBeenCalledWith("group", expect.objectContaining({ strategy: "rule", recommend: false }), { priority: "background" });
+    // The longer limit is the point: grouping a whole category took 162 s on 2026-10-13, against the pool's 90 s for a search.
+    expect(BACKGROUND_GROUP_TIMEOUT_MS).toBeGreaterThan(5 * 60 * 1000);
+    expect(run).toHaveBeenCalledWith("group", expect.objectContaining({ strategy: "rule", recommend: false }), { priority: "background", timeoutMs: BACKGROUND_GROUP_TIMEOUT_MS });
     expect(queries.some((q) => /galaxy a17/i.test(q))).toBe(true); // the product sold by two stores becomes a query
   }, 60000);
 });
