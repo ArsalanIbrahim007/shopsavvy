@@ -110,7 +110,51 @@ async function scrapePaklapSearch(searchUrl) {
   ];
 }
 
-export { scrapePaklapSearch };
+/**
+ * Parses a Paklap search results HTML string into listings.
+ * Separated from fetching so tests can run against saved HTML
+ * without making network requests.
+ *
+ * @param {string} html
+ * @returns {import('./scraper.schema').ScrapedListing[]}
+ */
+function parsePaklapHtml(html) {
+  const $ = cheerio.load(html);
+  const cards = $("li.product-item").toArray();
+  return safeMap(
+    cards,
+    (el) => {
+      const card = $(el);
+      const titleLink = card.find("a.product-item-link").first();
+      const title = cleanText(titleLink.text());
+      const href = titleLink.attr("href");
+      if (!title || !href) return null;
+      const sourceUrl = href.startsWith("http") ? href : `${BASE_URL}${href}`;
+      const priceEl = card.find("[data-price-type='finalPrice'][data-price-amount]").first();
+      const priceAmount = priceEl.attr("data-price-amount");
+      const rawPrice = priceAmount ? parsePrice(priceAmount) : null;
+      const originalPriceEl = card.find("[data-price-type='oldPrice'][data-price-amount]").first();
+      const originalPriceAmount = originalPriceEl.attr("data-price-amount");
+      const rawOriginal = originalPriceAmount ? parsePrice(originalPriceAmount) : null;
+      const price = rawPrice && rawPrice > 0 ? rawPrice : null;
+      if (!price) return null;
+      const originalPrice = rawOriginal && rawOriginal > price ? rawOriginal : null;
+      const img = card.find("img.product-image-photo").first();
+      const imageUrl = img.attr("data-src") || img.attr("src") || null;
+      return makeListing({
+        platform: PLATFORM,
+        sourceUrl,
+        title,
+        price,
+        originalPrice,
+        imageUrl: imageUrl ? (imageUrl.startsWith("http") ? imageUrl : `${BASE_URL}${imageUrl}`) : null,
+      });
+    },
+    PLATFORM
+  );
+}
+
+export { scrapePaklapSearch, parsePaklapHtml };
 
 // Quick test:
 // node -e "import('./paklap.scraper.js').then(m => m.scrapePaklapSearch('https://www.paklap.pk/catalogsearch/result/index/?cat=0&q=samsung')).then(r => console.log(JSON.stringify(r.slice(0,2), null, 2)))"

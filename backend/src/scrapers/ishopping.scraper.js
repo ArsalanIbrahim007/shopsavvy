@@ -201,4 +201,62 @@ async function scrapeIShoppingSearch(searchUrl) {
   return listings;
 }
 
-export { scrapeIShoppingSearch };
+/**
+ * Parses an iShopping search results HTML string into listings.
+ * Separated from fetching so tests can run against saved HTML
+ * without making network requests.
+ *
+ * @param {string} html
+ * @returns {import('./scraper.schema').ScrapedListing[]}
+ */
+function parseIShoppingHtml(html) {
+  const $ = cheerio.load(html);
+  const cards = getProductCards($);
+  return safeMap(
+    cards,
+    (el) => {
+      const card = $(el);
+      let productLink = card.find(["a.product-item-link", ".product-item-name a", ".product.name a"].join(", ")).first();
+      let title = cleanText(productLink.text());
+      let href = productLink.attr("href");
+      if (!title) title = cleanText(card.find([".product-item-name", ".product.name"].join(", ")).first().text());
+      if (!href) {
+        href = card.find("a[href]").filter((_, el) => {
+          const candidate = $(el).attr("href") || "";
+          return candidate.includes("ishopping.pk") && !candidate.includes("wishlist") && !candidate.includes("compare");
+        }).first().attr("href");
+      }
+      if (!title || !href) return null;
+      const sourceUrl = toAbsoluteUrl(href);
+      if (!sourceUrl) return null;
+      const rawPrice = readPrice(card, [
+        "[data-price-type='finalPrice'][data-price-amount]",
+        ".special-price [data-price-amount]",
+        "[data-price-type='finalPrice'] [data-price-amount]",
+        ".price-final_price [data-price-amount]",
+        ".special-price .price",
+        ".price-final_price .price",
+        ".price-box .price",
+      ]);
+      const rawOriginal = readPrice(card, [
+        "[data-price-type='oldPrice'][data-price-amount]",
+        "[data-price-type='oldPrice'] [data-price-amount]",
+        ".old-price [data-price-amount]",
+        "[data-price-type='oldPrice'] .price",
+        ".old-price .price",
+      ]);
+      const price = rawPrice && rawPrice > 0 ? rawPrice : null;
+      if (!price) return null;
+      const originalPrice = rawOriginal && rawOriginal > price ? rawOriginal : null;
+      const image = card.find(["img.product-image-photo", ".product-image-wrapper img", ".product-image-container img", "img"].join(", ")).first();
+      const imageRaw = image.attr("data-src") || image.attr("data-original") || image.attr("data-lazy-src") || image.attr("src") || null;
+      const imageUrl = toAbsoluteUrl(imageRaw);
+      const inStock = getStockStatus(card);
+      return makeListing({ platform: PLATFORM, sourceUrl, title, price, originalPrice, imageUrl, inStock });
+    },
+    PLATFORM
+  );
+}
+
+
+export { scrapeIShoppingSearch, parseIShoppingHtml };

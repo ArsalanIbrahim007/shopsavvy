@@ -104,7 +104,52 @@ async function scrapeTelemartSearch(searchUrl) {
   );
 }
 
-export { scrapeTelemartSearch };
+/**
+ * Parses a Telemart search results HTML string into listings.
+ * Separated from fetching so tests can run against saved HTML
+ * without making network requests.
+ *
+ * @param {string} html
+ * @returns {import('./scraper.schema').ScrapedListing[]}
+ */
+function parseTelemartHtml(html) {
+  const $ = cheerio.load(html);
+  const cards = $(".grid-view-item").toArray();
+  return safeMap(
+    cards,
+    (el) => {
+      const card = $(el);
+      const title = cleanText(card.find(".grid-view-item__title a").first().text());
+      const href = card.find(".grid-view-item__title a").first().attr("href");
+      const priceRaw = card.find(".grid-view-item__meta .product-price__price").not(".compare_price").first().text();
+      const originalPriceRaw = card.find(".grid-view-item__meta s.compare_price").first().text();
+      const imageUrl = card.find("img.grid-view-item__image").first().attr("src") || null;
+      if (!title || !href) return null;
+      const sourceUrl = href.startsWith("http") ? href : `${BASE_URL}${href}`;
+      const normalizedImageUrl = imageUrl
+        ? imageUrl.startsWith("//") ? `https:${imageUrl}` : imageUrl
+        : null;
+            const price = parsePrice(priceRaw);
+      if (!price || price < 100) return null;
+
+      const parsedOriginal = parsePrice(originalPriceRaw);
+      const originalPrice =
+        parsedOriginal && parsedOriginal > price ? parsedOriginal : null;
+
+      return makeListing({
+        platform: PLATFORM,
+        sourceUrl,
+        title,
+        price,
+        originalPrice,
+        imageUrl: normalizedImageUrl,
+      });
+    },
+    PLATFORM
+  );
+}
+
+export { scrapeTelemartSearch, parseTelemartHtml };
 
 // Quick manual test:
 //
