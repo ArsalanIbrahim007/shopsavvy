@@ -79,6 +79,8 @@
 .offer-table { min-width: 880px; }
 .offer-table__tags { display: flex; flex-direction: column; margin-top: 2px; }
 .offer-table__pta { margin-top: var(--space-1); }
+.offer-table__rating { display: block; margin-top: var(--space-1); font-variant-numeric: tabular-nums; }
+.offer-table__star { color: var(--ink); }
 .offer-table__best { color: var(--brand); font-weight: 700; }
 .offer-table__rec { display: grid; gap: var(--space-1); justify-items: start; }
 .offer-table__age { display: block; }

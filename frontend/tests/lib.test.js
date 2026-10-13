@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
 import { formatPrice, formatCapacity, formatPercent, timeAgo, formatCondition, formatPta } from "../src/lib/format.js";
 import { safeExternalUrl, offerLink } from "../src/lib/safeLink.js";
 import { canonicalPlatform, platformName } from "../src/lib/platforms.js";
@@ -103,6 +103,11 @@ describe("verdicts", () => {
 });
 
 describe("summarizeOffers", () => {
+  // These offers are dated 29 and 30 September. An offer not checked for 14 days is left out of the prices (lib/freshness.js), so with
+  // the real clock they stopped counting on 14 October and the tests failed. The clock is set to the day after the data.
+  beforeAll(() => { vi.useFakeTimers({ toFake: ["Date"] }); vi.setSystemTime(new Date("2026-10-01T12:00:00Z")); });
+  afterAll(() => vi.useRealTimers());
+
   const offers = [
     { _id: "a", platform: "priceoye", price: 100, dealScore: 70, lastScrapedAt: "2026-09-30T10:00:00Z" },
     { _id: "b", platform: "PriceOye", price: 120, dealScore: 90, lastScrapedAt: "2026-09-30T11:00:00Z" },
