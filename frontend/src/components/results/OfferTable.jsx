@@ -21,6 +21,7 @@ import { summarizeOffers } from "../../lib/summary.js";
 import { Swatch } from "../ColourPicker.jsx";
 import StoreLogo from "../StoreLogo.jsx";
 import VerdictBadge from "../VerdictBadge.jsx";
+import RatingTag from "./RatingTag.jsx";
 import ScoreCell from "./ScoreCell.jsx";
 import Sparkline from "./Sparkline.jsx";
 import "./results.css";
@@ -99,6 +100,7 @@ export default function OfferTable({ offers, name, currentId, colour = null }) {
                     {has(entry, bestId) && <span className="offer-table__best small">Best deal</span>}
                     {has(entry, currentId) && <span className="offer-table__current small muted">The one you opened</span>}
                   </div>
+                  <RatingTag offer={offer} />
                   <ColourTag entry={entry} colour={colour} />
                   {condition && <div className="offer-table__pta"><VerdictBadge tone={condition.tone} label={condition.label} title={condition.reason} /></div>}
                   {oldPrice && <div className="offer-table__pta"><VerdictBadge tone={oldPrice.tone} label={oldPrice.label} title={oldPrice.reason} /></div>}
