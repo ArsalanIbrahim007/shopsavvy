@@ -18,7 +18,7 @@ import { getSuggestions } from "../services/suggestions.service.js";
 import { groupListings } from "../services/grouping.service.js";
 import { getMarketMovement } from "../services/marketMovement.service.js";
 import { currentOffers } from "../services/offerFreshness.service.js";
-import { outlookForOffers } from "../services/priceOutlook.service.js";
+import { lowestBadge, outlookForOffers } from "../services/priceOutlook.service.js";
 import {
   getListingPriceHistory,
   recordPriceSnapshot,
@@ -392,6 +392,9 @@ console.log("[search]", refreshResult);
   // Runs in a worker thread when the result set is large (see grouping.service.js).
   const groups =
     await groupListings(enrichedListings, { strategy: resolveMatchStrategy(req) });
+
+  // "Lowest we have recorded" on a product's card: the same rule as its outlook (priceOutlook.service.js), from the history attached above.
+  for (const group of groups) group.atLow = lowestBadge(group.offers);
 
   const recommendedListings =
     createRecommendedListingArray(

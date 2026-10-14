@@ -7,6 +7,7 @@ import { Link, useLocation } from "react-router-dom";
 import { conditionFlag } from "../lib/condition.js";
 import { outOfDateFlag } from "../lib/freshness.js";
 import { formatPrice } from "../lib/format.js";
+import { lowestFlag } from "../lib/outlook.js";
 import { platformName } from "../lib/platforms.js";
 import { ptaFlag } from "../lib/pta.js";
 import { scoreOf } from "../lib/score.js";
@@ -31,6 +32,8 @@ export default function ProductCard({ group }) {
   const pta = ptaFlag(best);
   const condition = conditionFlag(best);
   const oldPrice = outOfDateFlag(best); // only when no offer of this product is current: otherwise the shown price is a current one
+  // "Lowest we've recorded": the server's claim (group.atLow, the outlook's own rule), shown only for the price on this card
+  const lowest = lowestFlag(group.atLow, best.price);
 
   return (
     <article className="product-card card">
@@ -53,6 +56,7 @@ export default function ProductCard({ group }) {
         {oldPrice && <VerdictBadge tone={oldPrice.tone} label={oldPrice.label} title={oldPrice.reason} />}
         {score !== null && <span className="badge badge-neutral" title="Deal score out of 100: price, store trust, freshness and availability">Score {Math.round(score)}</span>}
         {pta && <VerdictBadge tone={pta.tone} label={pta.label} title={pta.reason} />}
+        {lowest && <VerdictBadge tone={lowest.tone} label={lowest.label} title={lowest.reason} />}
         {badges.map((badge) => (
           <VerdictBadge key={badge.id} tone={badge.tone} label={badge.label} title={badge.reason} />
         ))}

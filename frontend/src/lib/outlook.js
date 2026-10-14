@@ -165,3 +165,22 @@ export function describeOutlook(outlook) {
     movement: movementFor(outlook.market),
   };
 }
+
+/**
+ * The search card's "lowest we have recorded" badge, or null. The server makes the claim (group.atLow, the same rule as the outlook's
+ * "Good time to buy"); this shows it only when the card's price is the one the claim is about. With a colour chosen the card can show
+ * a dearer offer, and the claim would then be about a price the shopper does not see.
+ * @param {null | {price: number, low: number, days: number, records: number, since: string}} atLow
+ * @param {number} shownPrice  the price on the card
+ */
+export function lowestFlag(atLow, shownPrice) {
+  const shown = Number(shownPrice);
+  if (!atLow || !(shown > 0) || shown > atLow.price) return null;
+  const since = formatDate(`${atLow.since}T00:00:00Z`);
+  return {
+    id: "lowest",
+    tone: "good",
+    label: "Lowest we've recorded",
+    reason: `Today's best price is at or within 1% of the lowest we have recorded for this product: ${plural(atLow.records, "check")} over ${plural(atLow.days, "day")}${since ? `, since ${since}` : ""}.`,
+  };
+}
