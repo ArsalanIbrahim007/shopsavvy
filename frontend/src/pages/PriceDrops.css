@@ -1,0 +1,7 @@
+.drops-page { padding-block: var(--space-6) var(--space-7); display: grid; gap: var(--space-4); }
+.drops-page__head { display: grid; gap: var(--space-2); max-width: 70ch; }
+.drops-page__filter { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.drops-page__filter .chip[aria-current="page"] { border-color: var(--brand); color: var(--brand); font-weight: 600; }
+.drops-page__count { margin-bottom: var(--space-3); }
+.drops-page__empty { padding: var(--space-5); border: 1px dashed var(--line); border-radius: var(--radius-card); color: var(--ink-soft); max-width: 70ch; }
+.drops-page__rules { max-width: 80ch; }

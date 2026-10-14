@@ -58,6 +58,19 @@ export async function getDeals({ category, limit, signal } = {}) {
 }
 
 /**
+ * Offers whose price just came down, from the recorded price history (no scraping). Each item is a listing with a `drop`:
+ * { price, before, day, beforeDay, rupees, percent }. `rules` repeats the thresholds the server used, so the page can state them.
+ * @param {object} [options]
+ * @param {string} [options.category]  smartphone, laptop, tv, tablet, smartwatch or headphones; omitted means all
+ * @param {number} [options.limit]     1-50, default 24
+ * @returns {Promise<{drops: object[], generatedAt: string|null, rules: object|null}>}
+ */
+export async function getPriceDrops({ category, limit, signal } = {}) {
+  const body = await request("/listings/drops", { params: { category, limit }, signal });
+  return { drops: body.data ?? [], generatedAt: body.generatedAt ?? null, rules: body.rules ?? null };
+}
+
+/**
  * Browse one category without searching: its products, most compared first. The server groups a
  * category once and caches it in the background (shoppers' searches and product pages go first), so the
  * very first request after a server restart can take over a minute; every later one is instant, hence
