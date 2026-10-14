@@ -22,6 +22,7 @@ const NAV = [
   { label: "Laptops", to: "/results?category=laptop", category: "laptop" },
   { label: "TVs", to: "/results?category=tv", category: "tv" },
   { label: "Deals", to: "/#deals", hash: "#deals" },
+  { label: "Price drops", to: "/drops", path: "/drops" },
 ];
 
 function MainNav({ pathname, category, hash }) {
@@ -30,7 +31,7 @@ function MainNav({ pathname, category, hash }) {
       {NAV.map((item) => {
         const current = item.category
           ? pathname === "/results" && category === item.category
-          : pathname === "/" && hash === item.hash;
+          : item.path ? pathname === item.path : pathname === "/" && hash === item.hash;
         return (
           <Link key={item.label} to={item.to} aria-current={current ? "page" : undefined}>
             {item.label}

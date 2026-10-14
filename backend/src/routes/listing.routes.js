@@ -5,6 +5,7 @@ import {
   getListings,
   getListingStats,
   getDeals,
+  getPriceDropsFeed,
   getCategoryCatalog,
   suggestListings,
   searchListings,
@@ -222,6 +223,36 @@ router.get("/stats", readLimiter, getListingStats);
  *         description: Too many requests.
  */
 router.get("/deals", dealsLimiter, getDeals);
+
+/**
+ * @swagger
+ * /api/listings/drops:
+ *   get:
+ *     summary: Price drops
+ *     description: Offers whose newest recorded price is at least 5% and PKR 500 below the price recorded on the previous day it was checked (at most 14 days earlier), seen in the last 2 days. A fall of more than 50% is left out (more often a listing or parsing error than a sale). Only active, new offers still at the new price, in the deal categories. Built from stored price history only (no scraping) and cached for ten minutes.
+ *     tags:
+ *       - Listings
+ *     parameters:
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *           enum: [smartphone, laptop, tv, tablet, smartwatch, headphones]
+ *         description: Restrict to one category. Omitted means all of them.
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 50
+ *           default: 24
+ *     responses:
+ *       200:
+ *         description: Drops, biggest percentage first. Each item is a listing with a `drop` object (price, before, day, beforeDay, rupees, percent); `rules` repeats the thresholds used.
+ *       400:
+ *         description: Unknown category.
+ */
+router.get("/drops", dealsLimiter, getPriceDropsFeed);
 
 /**
  * @swagger

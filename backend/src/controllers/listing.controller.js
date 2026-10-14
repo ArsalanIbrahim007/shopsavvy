@@ -11,6 +11,7 @@ import { textParam, numberParam } from "../services/queryParams.service.js";
 import { hasAdminKey } from "../middleware/adminKey.middleware.js";
 import { isSuspectPrice } from "../services/pricePlausibility.service.js";
 import { getTopDeals, isDealCategory, DEAL_CATEGORIES } from "../services/dealsFeed.service.js";
+import { DROPS, getPriceDrops } from "../services/priceDrops.service.js";
 import { getCatalog, isCatalogCategory, CATALOG_CATEGORIES } from "../services/catalogFeed.service.js";
 import { DEFAULT_MAX_AGE_HOURS } from "../services/dealsRanking.service.js";
 import { getSuggestions } from "../services/suggestions.service.js";
@@ -190,6 +191,23 @@ export async function getDeals(req, res) {
 
   res.set("Cache-Control", "public, max-age=60");
   res.json({ success: true, count: deals.length, generatedAt, maxAgeHours: DEFAULT_MAX_AGE_HOURS, data: deals });
+}
+
+/**
+ * Price drops from the recorded history: offers whose newest price is at least 5% and PKR 500 below the price recorded on the
+ * previous day it was checked (see priceDrops.service.js). Stored data only, cached for ten minutes.
+ */
+export async function getPriceDropsFeed(req, res) {
+  const category = textParam(req.query.category);
+  if (category && !isDealCategory(category)) {
+    throw AppError.badRequest(`category must be one of: ${DEAL_CATEGORIES.join(", ")}`);
+  }
+
+  const limit = Math.min(Math.max(Math.floor(numberParam(req.query.limit) ?? 24), 1), 50);
+  const { drops, generatedAt } = await getPriceDrops({ category, limit });
+
+  res.set("Cache-Control", "public, max-age=60");
+  res.json({ success: true, count: drops.length, generatedAt, rules: DROPS, data: drops });
 }
 
 /**

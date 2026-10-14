@@ -13,6 +13,7 @@ const Results = lazy(() => import("./pages/Results.jsx"));
 const Product = lazy(() => import("./pages/Product.jsx"));
 const HowItWorks = lazy(() => import("./pages/HowItWorks.jsx"));
 const HonestPrices = lazy(() => import("./pages/HonestPrices.jsx"));
+const PriceDrops = lazy(() => import("./pages/PriceDrops.jsx"));
 
 function Loading() {
   return (
@@ -23,7 +24,7 @@ function Loading() {
   );
 }
 
-// Routes: / home, /results?q=|category=, /product/:id, /how-it-works, /honest-prices. The outer boundary
+// Routes: / home, /results?q=|category=, /product/:id, /how-it-works, /honest-prices, /drops?category=. The outer boundary
 // catches a crash in the layout itself; each page is also wrapped inside the layout.
 export default function App() {
   return (
@@ -36,6 +37,7 @@ export default function App() {
             <Route path="product/:id" element={<Suspense fallback={<Loading />}><Product /></Suspense>} />
             <Route path="how-it-works" element={<Suspense fallback={<Loading />}><HowItWorks /></Suspense>} />
             <Route path="honest-prices" element={<Suspense fallback={<Loading />}><HonestPrices /></Suspense>} />
+            <Route path="drops" element={<Suspense fallback={<Loading />}><PriceDrops /></Suspense>} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
