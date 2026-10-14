@@ -166,6 +166,19 @@ export function assessOutlook(series, { now = Date.now() } = {}) {
 /** The outlook for a product's offers. */
 export const outlookForOffers = (offers, { now = Date.now() } = {}) => assessOutlook(productSeries(offers), { now });
 
+/**
+ * The "lowest we have recorded" claim for a product's search card, or null. Made only when the outlook itself says at_low: enough
+ * days of records (MIN_DAYS, MIN_RECORD_DAYS), the newest recent (STALE_DAYS), and a price that has moved (a flat price is not a
+ * "low"). So the card and the product page's outlook never disagree.
+ * @returns {null | {price: number, low: number, high: number, since: string, days: number, records: number, strength: string}}
+ */
+export function lowestBadge(offers, { now = Date.now() } = {}) {
+  const outlook = outlookForOffers(offers, { now });
+  if (outlook.verdict !== "at_low") return null;
+  const { current, low, high } = outlook.stats;
+  return { price: current, low, high, since: outlook.basis.firstDay, days: outlook.basis.days, records: outlook.basis.records, strength: outlook.strength };
+}
+
 // ---- how prices move at all, across every tracked listing ----
 
 export const MARKET = Object.freeze({
