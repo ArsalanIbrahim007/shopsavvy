@@ -82,6 +82,46 @@ if (isMain) {
       (agreed.length < spotIds.length ? ` Disagreements: ${spotIds.filter((id) => spot[id] !== labels[id]).map((id) => `${id} (labelled ${labels[id]}, spot-check ${spot[id]})`).join("; ")}.` : "")
     : "Blind human spot-check: pending.";
 
+  // The same labelled merges after a change to the matcher (09-recheck-group-merges.js --record), if that has been run.
+  let recheck = null;
+  try {
+    recheck = JSON.parse(readFileSync(join(ML, "dataset", "group_merges.recheck.json"), "utf8"));
+  } catch {
+    /* not rechecked */
+  }
+  const after = [];
+  if (recheck) {
+    const stateOf = new Map(recheck.states.map((s) => [s.id, s.state]));
+    const count = (verdict, state) => items.filter((i) => i.verdict === verdict && stateOf.get(i.id) === state).length;
+    const still = tally(items.filter((i) => stateOf.get(i.id) === "kept"));
+    const stillWrong = items.filter((i) => i.verdict === "different" && stateOf.get(i.id) === "kept");
+    after.push(
+      `## After the matcher fixes (${recheck.at.slice(0, 10)})`,
+      "",
+      "The live catalogue regrouped with the fixes (`src/scripts/ml/09-recheck-group-merges.js`), and each labelled merge checked again:",
+      "",
+      `- wrong merges now split: **${count("different", "split")} of ${overall.different}**`,
+      `- correct merges kept: **${count("same", "kept")} of ${overall.same}** (lost: ${count("same", "split")})`,
+      `- unsure merges split: ${count("unsure", "split")} of ${overall.unsure}; offers no longer listed: ${recheck.states.filter((s) => s.state === "gone").length}`,
+      `- precision over the sampled merges still made: **${pct(still.precision)}** (${still.same} of ${still.judged}; 95% interval ${range(still.interval)})`,
+      "",
+      stillWrong.length ? `Still wrong: ${stillWrong.map((w) => `${w.id} (${(reasons[w.id] ?? "").replace(/\.$/, "")})`).join("; ")}.` : "No sampled wrong merge remains.",
+      ...items.filter((i) => i.verdict === "same" && stateOf.get(i.id) === "split").map((i) =>
+        `Lost: ${i.id}, ${i.main.platform} "${i.main.title}" and ${i.offer.platform} "${i.offer.title}" (neither states a capacity, and such titles are now placed by price, which put these two apart).`),
+      "",
+      "Read this with care: the sample was drawn from the grouping before the fixes, so it shows that known mistakes are gone and correct",
+      "merges kept; it cannot score merges the fixes newly make." +
+        (recheck.changedGroups != null
+          ? ` Those are listed by the same script against a snapshot of the old grouping: ${recheck.groupsBefore} groups became ${recheck.groupsNow},` +
+            ` ${recheck.newlyTogether} pairs of offers are newly together and ${recheck.newlyApart} newly apart, in ${recheck.changedGroups} changed groups,` +
+            " every one of which Claude read, before and after, before the fixes were kept; the new mistakes found that way (Galaxy S7 / S7 edge," +
+            " Redmi 10 / 10 Prime, Redmi Note 11T Pro / Note 15 Pro, a 4G tablet beside a Wi-Fi one) became rules and tests as well." +
+            " An unbiased figure for the new grouping needs a fresh sample (07 with another seed)."
+          : ""),
+      "",
+    );
+  }
+
   const rows = categories.map((c) => {
     const t = byCategory[c];
     return `| ${c} | ${sample.population[c]} | ${t.same + t.different + t.unsure} | ${t.same} | ${t.different} | ${t.unsure} | ${pct(t.precision)} | ${range(t.interval)} |`;
@@ -112,6 +152,7 @@ if (isMain) {
       : "| Id | Category | Main offer | Merged offer | Why it is wrong |\n|---|---|---|---|---|\n" +
         wrong.map((w) => `| ${w.id} | ${w.category} | ${w.main.platform}: ${w.main.title.replace(/\|/g, "/")} | ${w.offer.platform}: ${w.offer.title.replace(/\|/g, "/")} | ${(reasons[w.id] ?? "").replace(/\|/g, "/")} |`).join("\n"),
     "",
+    ...after,
     "What this does and does not measure: precision only (a wrong merge shows a shopper a different product's price as this one's, the costlier",
     "error). It does not measure recall (two offers of one product left in separate groups), which needs a different sample: pairs the site",
     "did not merge. Pair-level scores for the trained matcher are in EVALUATION_REPORT.md.",

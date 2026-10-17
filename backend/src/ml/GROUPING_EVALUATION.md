@@ -46,6 +46,21 @@ Blind human spot-check: pending.
 | m089 | smartwatch | priceoye: HY Ultra2 Smart Watch | priceoye: i40 Ultra2 Suit 7 Sets Colorful Straps Smart Watch | HY Ultra2 against i40 Ultra2 Suit: different products. |
 | m097 | headphones | telemart: Samsung Galaxy Buds Pro | priceoye: Samsung Galaxy Buds 2 Pro | Galaxy Buds Pro against Galaxy Buds 2 Pro: different generations. |
 
+## After the matcher fixes (2026-10-17)
+
+The live catalogue regrouped with the fixes (`src/scripts/ml/09-recheck-group-merges.js`), and each labelled merge checked again:
+
+- wrong merges now split: **17 of 20**
+- correct merges kept: **71 of 72** (lost: 1)
+- unsure merges split: 4 of 8; offers no longer listed: 0
+- precision over the sampled merges still made: **95.9%** (71 of 74; 95% interval 88.7% to 98.6%)
+
+Still wrong: m055 (Mega's page names the Core Ultra 7 255H; the main offer is the Ultra 7 256V: different processor); m059 (Scripture texture skin against glitter texture skin: different products); m089 (HY Ultra2 against i40 Ultra2 Suit: different products).
+Lost: m047, priceoye "Xiaomi Redmi Pad 2 Wifi 1 Year Warranty" and ishopping "Xiaomi Redmi Pad 2 WiFi" (neither states a capacity, and such titles are now placed by price, which put these two apart).
+
+Read this with care: the sample was drawn from the grouping before the fixes, so it shows that known mistakes are gone and correct
+merges kept; it cannot score merges the fixes newly make. Those are listed by the same script against a snapshot of the old grouping: 4947 groups became 5032, 491 pairs of offers are newly together and 617 newly apart, in 131 changed groups, every one of which Claude read, before and after, before the fixes were kept; the new mistakes found that way (Galaxy S7 / S7 edge, Redmi 10 / 10 Prime, Redmi Note 11T Pro / Note 15 Pro, a 4G tablet beside a Wi-Fi one) became rules and tests as well. An unbiased figure for the new grouping needs a fresh sample (07 with another seed).
+
 What this does and does not measure: precision only (a wrong merge shows a shopper a different product's price as this one's, the costlier
 error). It does not measure recall (two offers of one product left in separate groups), which needs a different sample: pairs the site
 did not merge. Pair-level scores for the trained matcher are in EVALUATION_REPORT.md.

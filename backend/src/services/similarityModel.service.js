@@ -14,7 +14,7 @@ import { buildFeatureVector } from "../ml/features.js";
 import { FILLER_WORDS } from "../ml/fillerWords.js";
 import { predictProba } from "../ml/logisticRegression.js";
 import { attributeConflict, tokenize, sameSet } from "./similarity.service.js";
-import { modelTokens, extractStorage } from "./normalizeTitle.service.js";
+import { modelTokens, extractStorage, extractPtaStatus } from "./normalizeTitle.service.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // The live model. SHOPSAVVY_MATCH_MODEL names another artifact in src/ml/ to try a
@@ -68,6 +68,12 @@ const UNSTATED_CAPACITY_PRICE_DRIFT = 0.15;
 // Bounds the extra work on very large groups.
 const MAX_MEMBER_CHECKS = 40;
 
+// The same reading as productGrouping's ptaOf: the title first, else the status the store's page gave.
+const isPtaApproved = (offer) => {
+  const stated = extractPtaStatus(offer.title || offer.normalizedTitle || "");
+  return (stated !== "unknown" ? stated : offer.ptaStatus) === "pta_approved";
+};
+
 function fillerFreeTokens(title) {
   return new Set(tokenize(modelTokens(title)).filter((t) => !FILLER_WORDS.has(t)));
 }
@@ -95,14 +101,24 @@ export function mlMatchStrategy(rawTitle, group, listing) {
     ? (group.lowestPrice + group.highestPrice) / 2
     : null;
 
-  if (classifyPairML(
+  // When only one side states a capacity, the classifier cannot tell the variants apart (a bare "Galaxy S26 Ultra" at PKR 388,999
+  // scored 0.66 against a 256GB unit at PKR 269,999), so the price must agree as well, as in the rule strategy and the member
+  // fallback below. Except an offer cheaper than a group that has PTA-approved offers: productGrouping's separateLikelyNonPta moves
+  // such an offer out after grouping and labels it "likely non-PTA" for the shopper, so it is let in for that. (The opposite order,
+  // a dear approved bare title meeting a cheap stated group, does not arise: titles that state a capacity are grouped first.)
+  const ownStorage = extractStorage(rawTitle);
+  const oneCapacityUnstated = (ownStorage === null) !== (extractStorage(group.rawGroupKey) === null);
+  const leftToPtaSeparation = groupPrice !== null && listing.price < groupPrice && (group.offers || []).some(isPtaApproved);
+  const priceAgrees = !oneCapacityUnstated || groupPrice === null || !(listing.price > 0) || leftToPtaSeparation
+    || Math.abs(listing.price - groupPrice) / groupPrice <= UNSTATED_CAPACITY_PRICE_DRIFT;
+
+  if (priceAgrees && classifyPairML(
     { title: rawTitle, price: listing.price },
     { title: group.rawGroupKey, price: groupPrice }
   ).isMatch) return true;
 
   const own = fillerFreeTokens(rawTitle);
   if (own.size < 2) return false;
-  const ownStorage = extractStorage(rawTitle);
 
   let checks = 0;
   for (const member of group.offers || []) {

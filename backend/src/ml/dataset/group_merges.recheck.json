@@ -1,0 +1,412 @@
+{
+  "at": "2026-10-17T13:38:44.941Z",
+  "states": [
+    {
+      "id": "m001",
+      "state": "kept"
+    },
+    {
+      "id": "m002",
+      "state": "kept"
+    },
+    {
+      "id": "m003",
+      "state": "split"
+    },
+    {
+      "id": "m004",
+      "state": "kept"
+    },
+    {
+      "id": "m005",
+      "state": "split"
+    },
+    {
+      "id": "m006",
+      "state": "kept"
+    },
+    {
+      "id": "m007",
+      "state": "kept"
+    },
+    {
+      "id": "m008",
+      "state": "split"
+    },
+    {
+      "id": "m009",
+      "state": "split"
+    },
+    {
+      "id": "m010",
+      "state": "split"
+    },
+    {
+      "id": "m011",
+      "state": "kept"
+    },
+    {
+      "id": "m012",
+      "state": "kept"
+    },
+    {
+      "id": "m013",
+      "state": "kept"
+    },
+    {
+      "id": "m014",
+      "state": "kept"
+    },
+    {
+      "id": "m015",
+      "state": "kept"
+    },
+    {
+      "id": "m016",
+      "state": "split"
+    },
+    {
+      "id": "m017",
+      "state": "split"
+    },
+    {
+      "id": "m018",
+      "state": "kept"
+    },
+    {
+      "id": "m019",
+      "state": "split"
+    },
+    {
+      "id": "m020",
+      "state": "split"
+    },
+    {
+      "id": "m021",
+      "state": "kept"
+    },
+    {
+      "id": "m022",
+      "state": "kept"
+    },
+    {
+      "id": "m023",
+      "state": "kept"
+    },
+    {
+      "id": "m024",
+      "state": "kept"
+    },
+    {
+      "id": "m025",
+      "state": "kept"
+    },
+    {
+      "id": "m026",
+      "state": "kept"
+    },
+    {
+      "id": "m027",
+      "state": "kept"
+    },
+    {
+      "id": "m028",
+      "state": "kept"
+    },
+    {
+      "id": "m029",
+      "state": "kept"
+    },
+    {
+      "id": "m030",
+      "state": "kept"
+    },
+    {
+      "id": "m031",
+      "state": "kept"
+    },
+    {
+      "id": "m032",
+      "state": "kept"
+    },
+    {
+      "id": "m033",
+      "state": "kept"
+    },
+    {
+      "id": "m034",
+      "state": "kept"
+    },
+    {
+      "id": "m035",
+      "state": "kept"
+    },
+    {
+      "id": "m036",
+      "state": "kept"
+    },
+    {
+      "id": "m037",
+      "state": "kept"
+    },
+    {
+      "id": "m038",
+      "state": "kept"
+    },
+    {
+      "id": "m039",
+      "state": "kept"
+    },
+    {
+      "id": "m040",
+      "state": "kept"
+    },
+    {
+      "id": "m041",
+      "state": "split"
+    },
+    {
+      "id": "m042",
+      "state": "kept"
+    },
+    {
+      "id": "m043",
+      "state": "kept"
+    },
+    {
+      "id": "m044",
+      "state": "kept"
+    },
+    {
+      "id": "m045",
+      "state": "split"
+    },
+    {
+      "id": "m046",
+      "state": "kept"
+    },
+    {
+      "id": "m047",
+      "state": "split"
+    },
+    {
+      "id": "m048",
+      "state": "kept"
+    },
+    {
+      "id": "m049",
+      "state": "kept"
+    },
+    {
+      "id": "m050",
+      "state": "kept"
+    },
+    {
+      "id": "m051",
+      "state": "split"
+    },
+    {
+      "id": "m052",
+      "state": "kept"
+    },
+    {
+      "id": "m053",
+      "state": "split"
+    },
+    {
+      "id": "m054",
+      "state": "split"
+    },
+    {
+      "id": "m055",
+      "state": "kept"
+    },
+    {
+      "id": "m056",
+      "state": "kept"
+    },
+    {
+      "id": "m057",
+      "state": "kept"
+    },
+    {
+      "id": "m058",
+      "state": "split"
+    },
+    {
+      "id": "m059",
+      "state": "kept"
+    },
+    {
+      "id": "m060",
+      "state": "kept"
+    },
+    {
+      "id": "m061",
+      "state": "kept"
+    },
+    {
+      "id": "m062",
+      "state": "kept"
+    },
+    {
+      "id": "m063",
+      "state": "kept"
+    },
+    {
+      "id": "m064",
+      "state": "kept"
+    },
+    {
+      "id": "m065",
+      "state": "kept"
+    },
+    {
+      "id": "m066",
+      "state": "kept"
+    },
+    {
+      "id": "m067",
+      "state": "kept"
+    },
+    {
+      "id": "m068",
+      "state": "kept"
+    },
+    {
+      "id": "m069",
+      "state": "kept"
+    },
+    {
+      "id": "m070",
+      "state": "kept"
+    },
+    {
+      "id": "m071",
+      "state": "split"
+    },
+    {
+      "id": "m072",
+      "state": "kept"
+    },
+    {
+      "id": "m073",
+      "state": "kept"
+    },
+    {
+      "id": "m074",
+      "state": "kept"
+    },
+    {
+      "id": "m075",
+      "state": "split"
+    },
+    {
+      "id": "m076",
+      "state": "kept"
+    },
+    {
+      "id": "m077",
+      "state": "kept"
+    },
+    {
+      "id": "m078",
+      "state": "kept"
+    },
+    {
+      "id": "m079",
+      "state": "split"
+    },
+    {
+      "id": "m080",
+      "state": "split"
+    },
+    {
+      "id": "m081",
+      "state": "kept"
+    },
+    {
+      "id": "m082",
+      "state": "kept"
+    },
+    {
+      "id": "m083",
+      "state": "kept"
+    },
+    {
+      "id": "m084",
+      "state": "kept"
+    },
+    {
+      "id": "m085",
+      "state": "kept"
+    },
+    {
+      "id": "m086",
+      "state": "kept"
+    },
+    {
+      "id": "m087",
+      "state": "split"
+    },
+    {
+      "id": "m088",
+      "state": "kept"
+    },
+    {
+      "id": "m089",
+      "state": "kept"
+    },
+    {
+      "id": "m090",
+      "state": "kept"
+    },
+    {
+      "id": "m091",
+      "state": "kept"
+    },
+    {
+      "id": "m092",
+      "state": "kept"
+    },
+    {
+      "id": "m093",
+      "state": "kept"
+    },
+    {
+      "id": "m094",
+      "state": "kept"
+    },
+    {
+      "id": "m095",
+      "state": "kept"
+    },
+    {
+      "id": "m096",
+      "state": "kept"
+    },
+    {
+      "id": "m097",
+      "state": "split"
+    },
+    {
+      "id": "m098",
+      "state": "kept"
+    },
+    {
+      "id": "m099",
+      "state": "kept"
+    },
+    {
+      "id": "m100",
+      "state": "kept"
+    }
+  ],
+  "groupsBefore": 4947,
+  "groupsNow": 5032,
+  "pairsBefore": 4402,
+  "pairsNow": 4276,
+  "newlyTogether": 491,
+  "newlyApart": 617,
+  "changedGroups": 131
+}

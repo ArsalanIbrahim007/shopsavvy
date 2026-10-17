@@ -15,6 +15,10 @@ export function normalizeTitle(title = "") {
     // Brand words that appear inconsistently
     .replace(/\bapple\b/g, "")
 
+    // Apple's iPhone Air has no number, but half the stores list it as "iPhone 17 Air": without this the two names never met, and
+    // each capacity of the phone was shown as two products.
+    .replace(/\biphone\s*17\s*air\b/g, "iphone air")
+
     // Marketing and compliance terms
     .replace(/\bpta approved\b/g, "")
     .replace(/\bnon pta\b/g, "")
