@@ -6,6 +6,7 @@ import { detectCategory, detectQueryCategory } from "../scrapers/productCategory
 import { attachPriceHistory } from "../services/historyEnrichment.service.js";
 import { buildProductView } from "../services/productView.service.js";
 import { LIMITS as MATCH_LIMITS, matchPage } from "../services/productMatch.service.js";
+import { compareProducts, parseCompareIds } from "../services/productCompare.service.js";
 import { normalizeTitle } from "../services/normalizeTitle.service.js";
 import { parsePagination } from "../services/pagination.service.js";
 import { textParam, numberParam } from "../services/queryParams.service.js";
@@ -529,6 +530,20 @@ export async function getProductMatch(req, res) {
   matchCache.delete(key);
   matchCache.set(key, { at: Date.now(), result });
   if (matchCache.size > MATCH_CACHE_SIZE) matchCache.delete(matchCache.keys().next().value);
+  res.json({ success: true, ...result });
+}
+
+/**
+ * GET /api/listings/compare?ids=a,b[,c,d] — 2 to 4 products side by side, for the Compare page (see productCompare.service.js).
+ */
+export async function getProductComparison(req, res) {
+  const parsed = parseCompareIds(textParam(req.query.ids));
+  if (parsed.errors) throw AppError.validation(parsed.errors);
+
+  const result = await compareProducts(parsed.ids, { strategy: resolveMatchStrategy(req) });
+  if (result.missing) {
+    throw new AppError(404, `No listing with id ${result.missing.join(", ")}`, { code: "NOT_FOUND", details: { missing: result.missing } });
+  }
   res.json({ success: true, ...result });
 }
 

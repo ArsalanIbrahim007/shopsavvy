@@ -99,7 +99,7 @@ try {
   if (!process.argv.includes("--no-pages")) {
     try {
       const pages = await enrichFromPages({ log: console.log });
-      console.log(`Page check: ${pages.checked} pages read, PTA ${pages.approved} approved / ${pages.nonPta} non-PTA, ${pages.withColours} with colours, ${pages.withRating} with a rating, ${pages.failed} unreadable.`);
+      console.log(`Page check: ${pages.checked} pages read, PTA ${pages.approved} approved / ${pages.nonPta} non-PTA, ${pages.withColours} with colours, ${pages.withRating} with a rating, ${pages.withSpecs} with specifications, ${pages.failed} unreadable.`);
     } catch (err) {
       console.warn("Page check failed:", err.message);
     }

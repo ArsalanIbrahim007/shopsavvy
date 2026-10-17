@@ -7,6 +7,7 @@ import {
   getDeals,
   getPriceDropsFeed,
   getProductMatch,
+  getProductComparison,
   getCategoryCatalog,
   suggestListings,
   searchListings,
@@ -299,6 +300,39 @@ router.get("/drops", dealsLimiter, getPriceDropsFeed);
  *         description: Too many requests.
  */
 router.get("/match", matchLimiter, getProductMatch);
+
+/**
+ * @swagger
+ * /api/listings/compare:
+ *   get:
+ *     summary: Compare 2 to 4 products side by side
+ *     description: >
+ *       For the Compare page. Each id is a listing; its column is the product (group of offers) that listing belongs to, built
+ *       as on the product page. Specifications are the typed sheets the nightly page check read from the stores' product pages
+ *       (Specs engine), merged across the product's stores (the value most stores give). `specScore` and `rank` come from the
+ *       Specs engine and are null until it is installed, or when too few specifications are known; `specsEngine` says whether
+ *       it is. Never scrapes.
+ *     tags:
+ *       - Listings
+ *     parameters:
+ *       - in: query
+ *         name: ids
+ *         required: true
+ *         schema: { type: string, example: "6a6b01724d3ce0c30fbd2729,6ac0f72def0f2a362b00bbfa" }
+ *         description: 2 to 4 distinct listing ids, separated by commas.
+ *     responses:
+ *       200:
+ *         description: >
+ *           `products` in the order asked, each with id, name, category, image, `bestOffer` (id, platform, title, price, url,
+ *           inStock, lastScrapedAt, outOfDate), lowestPrice, offerCount, stores, ptaStatus, `specs` (canonical sheet or null),
+ *           `specsFrom` (stores whose pages gave it), `specScore` ({score, parts:[{field, points, max}]} or null), `rank` (from the
+ *           Specs engine, or null), productUrl; and `specsEngine` ("ready" or "missing").
+ *       400:
+ *         description: Fewer than 2 or more than 4 ids, an id that is not a listing id, or the same id twice.
+ *       404:
+ *         description: An id matches no listing (`errors.missing` lists them).
+ */
+router.get("/compare", detailLimiter, getProductComparison);
 
 /**
  * @swagger
