@@ -1,0 +1,2824 @@
+{
+  "drawnAt": "2026-10-14T21:53:58.062Z",
+  "seed": 20261015,
+  "strategy": "ml",
+  "sampleSize": 100,
+  "population": {
+    "smartphone": 905,
+    "laptop": 106,
+    "tv": 114,
+    "tablet": 162,
+    "smartwatch": 258,
+    "headphones": 150
+  },
+  "quota": {
+    "smartphone": 52,
+    "laptop": 8,
+    "tv": 8,
+    "tablet": 9,
+    "smartwatch": 14,
+    "headphones": 9
+  },
+  "merges": [
+    {
+      "category": "smartphone",
+      "groupName": "Oneplus Bullets Wireless Z2 Neckband",
+      "groupSize": 7,
+      "main": {
+        "title": "Oneplus Bullets Wireless Z2 Neckband",
+        "platform": "priceoye",
+        "price": 6799,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/wireless-earbuds/oneplus/oneplus-bullets-wireless-z2-neckband"
+      },
+      "offer": {
+        "title": "Oneplus Bullets Wireless Z2 Neckband Green",
+        "platform": "xcessorieshub",
+        "price": 8499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Green",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/oneplus-bullets-wireless-z2-neckband/?attribute_pa_color=green"
+      },
+      "id": "m001"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi Smart Air Purifier 4 Lite",
+      "groupSize": 6,
+      "main": {
+        "title": "Xiaomi Smart Air Purifier 4 Lite",
+        "platform": "priceoye",
+        "price": 56999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/air-purifiers/xiaomi/xiaomi-smart-air-purifier-4-lite"
+      },
+      "offer": {
+        "title": "Xiaomi Smart Air Purifier 4 Lite",
+        "platform": "mymart",
+        "price": 61499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mymart.pk/products/xiaomi-smart-air-purifier-4-lite"
+      },
+      "id": "m002"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Apple iPhone 16 Pro Max 512GB Dual Sim NON PTA",
+      "groupSize": 3,
+      "main": {
+        "title": "Apple iPhone 16 Pro Max 512GB Dual Sim NON PTA",
+        "platform": "mega",
+        "price": 344999,
+        "storageGb": 512,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "non_pta",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/25361/Apple-iPhone-16-Pro-Max-512GB-Dual-Sim-NON-PTA.html"
+      },
+      "offer": {
+        "title": "Apple iPhone 16 Pro Max",
+        "platform": "mega",
+        "price": 319999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "non_pta",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/25334/Apple-iPhone-16-Pro-Max.html"
+      },
+      "id": "m003"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Samsung Galaxy A27 5G 8GB 256GB",
+      "groupSize": 8,
+      "main": {
+        "title": "Samsung Galaxy A27 5G 8GB 256GB",
+        "platform": "shophive",
+        "price": 117999,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/samsung-galaxy-a27-5g-8gb-256gb/"
+      },
+      "offer": {
+        "title": "Samsung Galaxy A27 5G Dual Sim with Official Warranty",
+        "platform": "telemart",
+        "price": 113499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.telemart.pk/products/samsung-galaxy-a27-5g-dual-sim-with-official-warranty"
+      },
+      "id": "m004"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Apple iPhone 17 512GB",
+      "groupSize": 2,
+      "main": {
+        "title": "Apple iPhone 17 512GB",
+        "platform": "eezepc",
+        "price": 482490,
+        "storageGb": 512,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/apple-iphone-17-price-in-pakistan/?attribute_storage=512GB"
+      },
+      "offer": {
+        "title": "Apple iPhone 17",
+        "platform": "mega",
+        "price": 279999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "non_pta",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26779/Apple-iPhone-17.html"
+      },
+      "id": "m005"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "OnePlus 13s 12GB RAM 256GB Storage NON PTA",
+      "groupSize": 3,
+      "main": {
+        "title": "OnePlus 13s 12GB RAM 256GB Storage NON PTA",
+        "platform": "mega",
+        "price": 181999,
+        "storageGb": 256,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "non_pta",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26893/OnePlus-13s-12GB-RAM-256GB-Storage-NON-PTA.html"
+      },
+      "offer": {
+        "title": "OnePlus 13s 256GB Non PTA Approved",
+        "platform": "eezepc",
+        "price": 185990,
+        "storageGb": 256,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "non_pta",
+        "condition": "new",
+        "url": "https://eezepc.com/product/oneplus-13s-price-in-pakistan/?attribute_storage=256GB&attribute_approval%20status=Non%20PTA%20Approved&attribute_colour=Pink%20Satin"
+      },
+      "id": "m006"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Oppo Reno 15F 5G 8GB 256GB",
+      "groupSize": 3,
+      "main": {
+        "title": "Oppo Reno 15F 5G 8GB 256GB",
+        "platform": "shophive",
+        "price": 132999,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/oppo-reno-15f-5g-8gb-256gb/"
+      },
+      "offer": {
+        "title": "Oppo Reno 15F",
+        "platform": "priceoye",
+        "price": 118999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/oppo/oppo-reno-15f"
+      },
+      "id": "m007"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Samsung Galaxy S26 Ultra 12GB RAM 256GB Storage NON PTA",
+      "groupSize": 10,
+      "main": {
+        "title": "Samsung Galaxy S26 Ultra 12GB RAM 256GB Storage NON PTA",
+        "platform": "mega",
+        "price": 269999,
+        "storageGb": 256,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "non_pta",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26997/Samsung-Galaxy-S26-Ultra-12GB-RAM-256GB-Storage-NON-PTA.html"
+      },
+      "offer": {
+        "title": "Samsung Galaxy S26 Ultra",
+        "platform": "ishopping",
+        "price": 388999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/samsung-galaxy-s26-ultra-price-in-pakistan"
+      },
+      "id": "m008"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi Redmi Note 7 Pro",
+      "groupSize": 3,
+      "main": {
+        "title": "Xiaomi Redmi Note 7 Pro",
+        "platform": "priceoye",
+        "price": 33999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/xiaomi/xiaomi-redmi-note-7-pro"
+      },
+      "offer": {
+        "title": "Xiaomi Redmi 7 Pro",
+        "platform": "priceoye",
+        "price": 35999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/xiaomi/xiaomi-redmi-7-pro"
+      },
+      "id": "m009"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi Redmi Note 7 Pro",
+      "groupSize": 3,
+      "main": {
+        "title": "Xiaomi Redmi Note 7 Pro",
+        "platform": "priceoye",
+        "price": 33999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/xiaomi/xiaomi-redmi-note-7-pro"
+      },
+      "offer": {
+        "title": "Xiaomi Redmi 7 Pro",
+        "platform": "priceoye",
+        "price": 35999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/xiaomi/xiaomi-redmi-7pro"
+      },
+      "id": "m010"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi Smart Camera C701",
+      "groupSize": 5,
+      "main": {
+        "title": "Xiaomi Smart Camera C701",
+        "platform": "mistore",
+        "price": 23499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mistore.pk/products/xiaomi-smart-camera-c701"
+      },
+      "offer": {
+        "title": "Xiaomi Smart Camera C701",
+        "platform": "eezepc",
+        "price": 24990,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/xiaomi-smart-camera-c701-price-in-pakistan/"
+      },
+      "id": "m011"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi Truclean W30 Pro Wet Dry Vacuum",
+      "groupSize": 5,
+      "main": {
+        "title": "Xiaomi Truclean W30 Pro Wet Dry Vacuum",
+        "platform": "xcessorieshub",
+        "price": 94999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/xiaomi-truclean-w30-pro-wet-dry-vacuum/"
+      },
+      "offer": {
+        "title": "Xiaomi W30 Pro Truclean Wet Dry Vacuum",
+        "platform": "shophive",
+        "price": 99999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/xiaomi-w30-pro-truclean-wet-dry-vacuum/"
+      },
+      "id": "m012"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi 67W HyperCharge Power Adapter (Type-A)",
+      "groupSize": 4,
+      "main": {
+        "title": "Xiaomi 67W HyperCharge Power Adapter (Type-A)",
+        "platform": "shophive",
+        "price": 4499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/xiaomi-67w-hypercharge-power-adapter-type-a/"
+      },
+      "offer": {
+        "title": "Xiaomi 67W HyperCharge Power Adapter (Type-A)",
+        "platform": "mistore",
+        "price": 4499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mistore.pk/products/xiaomi-67w-hypercharge-power-adapter-type-a"
+      },
+      "id": "m013"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Vivo V80 Lite 5G 8GB 128GB",
+      "groupSize": 5,
+      "main": {
+        "title": "Vivo V80 Lite 5G 8GB 128GB",
+        "platform": "shophive",
+        "price": 112999,
+        "storageGb": 128,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/vivo-v80-lite-5g-8gb-128gb/"
+      },
+      "offer": {
+        "title": "Vivo V80 Lite 5G Dual Sim with Official Warranty",
+        "platform": "telemart",
+        "price": 113499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.telemart.pk/products/vivo-v80-lite-5g-dual-sim-with-official-warranty"
+      },
+      "id": "m014"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi Smart Air Purifier Elite",
+      "groupSize": 5,
+      "main": {
+        "title": "Xiaomi Smart Air Purifier Elite",
+        "platform": "mistore",
+        "price": 118999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mistore.pk/products/xiaomi-smart-air-purifier-elite"
+      },
+      "offer": {
+        "title": "Xiaomi Smart Air Purifier Elite",
+        "platform": "mymart",
+        "price": 124999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mymart.pk/products/xiaomi-smart-air-purifier-elite"
+      },
+      "id": "m015"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Samsung Galaxy S26 Ultra 12GB RAM 512GB Storage NON PTA",
+      "groupSize": 7,
+      "main": {
+        "title": "Samsung Galaxy S26 Ultra 12GB RAM 512GB Storage NON PTA",
+        "platform": "mega",
+        "price": 318999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "non_pta",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26996/Samsung-Galaxy-S26-Ultra-12GB-RAM-512GB-Storage-NON-PTA.html"
+      },
+      "offer": {
+        "title": "Samsung Galaxy S26 Ultra 12GB 512GB",
+        "platform": "shophive",
+        "price": 446999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/samsung-galaxy-s26-ultra-12gb-512gb/"
+      },
+      "id": "m016"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Samsung Galaxy Z Fold 7 12GB RAM 256GB Storage Non PTA",
+      "groupSize": 3,
+      "main": {
+        "title": "Samsung Galaxy Z Fold 7 12GB RAM 256GB Storage Non PTA",
+        "platform": "mega",
+        "price": 359999,
+        "storageGb": 256,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "non_pta",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26818/Samsung-Galaxy-Z-Fold-7-12GB-RAM-256GB-Storage-Non-PTA.html"
+      },
+      "offer": {
+        "title": "Samsung Galaxy Z Fold 7",
+        "platform": "mega",
+        "price": 531999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26912/Samsung-Galaxy-Z-Fold-7.html"
+      },
+      "id": "m017"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi Smart Band 11 Active",
+      "groupSize": 6,
+      "main": {
+        "title": "Xiaomi Smart Band 11 Active",
+        "platform": "xcessorieshub",
+        "price": 9299,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/xiaomi-smart-band-11-active/"
+      },
+      "offer": {
+        "title": "Xiaomi Smart Band 11 Active",
+        "platform": "eezepc",
+        "price": 9990,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/xiaomi-band-11-active-price-in-pakistan/"
+      },
+      "id": "m018"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Apple iPhone 17 Pro Max 1TB Storage NON PTA",
+      "groupSize": 4,
+      "main": {
+        "title": "Apple iPhone 17 Pro Max 1TB Storage NON PTA",
+        "platform": "mega",
+        "price": 524999,
+        "storageGb": 1024,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "non_pta",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26807/Apple-iPhone-17-Pro-Max-1TB-Storage-NON-PTA.html"
+      },
+      "offer": {
+        "title": "Apple iPhone 17 Pro Max",
+        "platform": "mega",
+        "price": 399999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "non_pta",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26774/Apple-iPhone-17-Pro-Max.html"
+      },
+      "id": "m019"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Samsung Galaxy S24 Ultra (12GB-1TB)",
+      "groupSize": 3,
+      "main": {
+        "title": "Samsung Galaxy S24 Ultra (12GB-1TB)",
+        "platform": "priceoye",
+        "price": 355999,
+        "storageGb": 1024,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/samsung/samsung-galaxy-s24-ultra-12gb-1tb"
+      },
+      "offer": {
+        "title": "Samsung Galaxy S24 Ultra Dual Sim",
+        "platform": "ishopping",
+        "price": 313799,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/samsung-galaxy-s24-ultra-dual-sim-price-in-pakistan"
+      },
+      "id": "m020"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi H40 Robot Vacuum",
+      "groupSize": 5,
+      "main": {
+        "title": "Xiaomi H40 Robot Vacuum",
+        "platform": "shophive",
+        "price": 87999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/xiaomi-h40-robot-vacuum/"
+      },
+      "offer": {
+        "title": "Xiaomi Robot Vacuum H40",
+        "platform": "eezepc",
+        "price": 87990,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/xiaomi-robot-vacuum-h40-pakistan-eezepc/"
+      },
+      "id": "m021"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Apple iPhone 16 Pro Max PTA Approved 1TB White Titanium",
+      "groupSize": 2,
+      "main": {
+        "title": "Apple iPhone 16 Pro Max PTA Approved 1TB White Titanium",
+        "platform": "xcessorieshub",
+        "price": 591999,
+        "storageGb": 1024,
+        "ramGb": null,
+        "colour": "Titanium",
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/apple-iphone-16-pro-max-pta-approved/?attribute_color%20&amp;%20storage=1TB%20White%20Titanium"
+      },
+      "offer": {
+        "title": "Apple iPhone 16 Pro Max PTA Approved 1TB Black Titanium",
+        "platform": "xcessorieshub",
+        "price": 591999,
+        "storageGb": 1024,
+        "ramGb": null,
+        "colour": "Titanium",
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/apple-iphone-16-pro-max-pta-approved/?attribute_color%20&amp;%20storage=1TB%20Black%20Titanium"
+      },
+      "id": "m022"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi Redmi 15",
+      "groupSize": 4,
+      "main": {
+        "title": "Xiaomi Redmi 15",
+        "platform": "ishopping",
+        "price": 54279,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/xiaomi-redmi-15-price-in-pakistan"
+      },
+      "offer": {
+        "title": "Xiaomi Redmi 15",
+        "platform": "priceoye",
+        "price": 54599,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/xiaomi/xiaomi-redmi-15"
+      },
+      "id": "m023"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi Fan Heater",
+      "groupSize": 3,
+      "main": {
+        "title": "Xiaomi Fan Heater",
+        "platform": "mistore",
+        "price": 14999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mistore.pk/products/xiaomi-fan-heater"
+      },
+      "offer": {
+        "title": "Xiaomi Fan Heater",
+        "platform": "xcessorieshub",
+        "price": 15499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/xiaomi-fan-heater/"
+      },
+      "id": "m024"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Redmi Buds 8 Active",
+      "groupSize": 5,
+      "main": {
+        "title": "Redmi Buds 8 Active",
+        "platform": "mistore",
+        "price": 6799,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mistore.pk/products/redmi-buds-8-active"
+      },
+      "offer": {
+        "title": "Redmi Buds 8 Active Blue",
+        "platform": "xcessorieshub",
+        "price": 6999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Blue",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/redmi-buds-8-active/?attribute_color=Blue"
+      },
+      "id": "m025"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Samsung Galaxy A17 8GB RAM 256GB Storage PTA Approved",
+      "groupSize": 10,
+      "main": {
+        "title": "Samsung Galaxy A17 8GB RAM 256GB Storage PTA Approved",
+        "platform": "mega",
+        "price": 84999,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26993/Samsung-Galaxy-A17-8GB-RAM-256GB-Storage-PTA-Approved.html"
+      },
+      "offer": {
+        "title": "Samsung Galaxy A17 Black (8GB RAM + 256GB Storage)",
+        "platform": "w11stop",
+        "price": 87500,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://w11stop.com/samsung-galaxy-a17-black-8gb-256gb-storage"
+      },
+      "id": "m026"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Samsung Galaxy S26 Plus 12GB RAM 512GB Storage PTA Approved",
+      "groupSize": 9,
+      "main": {
+        "title": "Samsung Galaxy S26 Plus 12GB RAM 512GB Storage PTA Approved",
+        "platform": "mega",
+        "price": 389999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26977/Samsung-Galaxy-S26-Plus-12GB-RAM-512GB-Storage-PTA-Approved.html"
+      },
+      "offer": {
+        "title": "Samsung Galaxy S26+ 512GB",
+        "platform": "eezepc",
+        "price": 372990,
+        "storageGb": 512,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/samsung-galaxy-s26-plus-price-in-pakistan/?attribute_storage=512GB"
+      },
+      "id": "m027"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi Redmi A7 Pro 4GB 64GB",
+      "groupSize": 10,
+      "main": {
+        "title": "Xiaomi Redmi A7 Pro 4GB 64GB",
+        "platform": "shophive",
+        "price": 36999,
+        "storageGb": 64,
+        "ramGb": 4,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/xiaomi-redmi-a7-pro-4gb-64gb/"
+      },
+      "offer": {
+        "title": "Xiaomi Redmi A7 Pro 4GB – 64GB",
+        "platform": "eezepc",
+        "price": 36290,
+        "storageGb": 64,
+        "ramGb": 4,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/redmi-a7-pro-price-in-pakistan/?attribute_capacity=4GB%20%E2%80%93%2064GB"
+      },
+      "id": "m028"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "POCO F7 Ultra(16GB - 512GB)",
+      "groupSize": 2,
+      "main": {
+        "title": "POCO F7 Ultra(16GB - 512GB)",
+        "platform": "mistore",
+        "price": 259999,
+        "storageGb": 512,
+        "ramGb": 16,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mistore.pk/products/poco-f7-ultra"
+      },
+      "offer": {
+        "title": "Xiaomi Poco F7 Ultra",
+        "platform": "priceoye",
+        "price": 252999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/xiaomi/xiaomi-poco-f7-ultra"
+      },
+      "id": "m029"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi 17T Pro(12GB+512GB)",
+      "groupSize": 7,
+      "main": {
+        "title": "Xiaomi 17T Pro(12GB+512GB)",
+        "platform": "mistore",
+        "price": 289999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mistore.pk/products/xiaomi-17t-pro"
+      },
+      "offer": {
+        "title": "Xiaomi 17T Pro 512GB 12GB RAM Black",
+        "platform": "ishopping",
+        "price": 269280,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/xiaomi-17t-pro-512gb-12gb-ram-black-price-in-pakistan-eaw"
+      },
+      "id": "m030"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Samsung Galaxy Z Fold 8 Ultra 12GB RAM 512GB Storage Non PTA",
+      "groupSize": 2,
+      "main": {
+        "title": "Samsung Galaxy Z Fold 8 Ultra 12GB RAM 512GB Storage Non PTA",
+        "platform": "mega",
+        "price": 509999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "non_pta",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/27078/Samsung-Galaxy-Z-Fold-8-Ultra-12GB-RAM-512GB-Storage-Non-PTA.html"
+      },
+      "offer": {
+        "title": "Samsung Galaxy Z Fold 8 Ultra Dual Sim Non PTA",
+        "platform": "telemart",
+        "price": 487999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "non_pta",
+        "condition": "new",
+        "url": "https://www.telemart.pk/products/samsung-galaxy-z-fold-8-ultra-dual-sim-non-pta"
+      },
+      "id": "m031"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi 120W HyperCharge Combo (Type-A)-White",
+      "groupSize": 3,
+      "main": {
+        "title": "Xiaomi 120W HyperCharge Combo (Type-A)-White",
+        "platform": "shophive",
+        "price": 7499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "White",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/xiaomi-120w-hypercharge-combo-type-a-white/"
+      },
+      "offer": {
+        "title": "Xiaomi 120W HyperCharge Combo (Type-A)",
+        "platform": "priceoye",
+        "price": 6299,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobile-chargers/xiaomi/xiaomi-120w-hypercharge-combo-type-a"
+      },
+      "id": "m032"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi Smart Air Purifier 4 Compact",
+      "groupSize": 6,
+      "main": {
+        "title": "Xiaomi Smart Air Purifier 4 Compact",
+        "platform": "xcessorieshub",
+        "price": 36999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/xiaomi-smart-air-purifier-4-compact/"
+      },
+      "offer": {
+        "title": "Xiaomi Smart Air Purifier 4 Compact",
+        "platform": "shophive",
+        "price": 39999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/xiaomi-smart-air-purifier-4-compact/"
+      },
+      "id": "m033"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi 14T Pro (12GB-512GB) Titan Blue",
+      "groupSize": 6,
+      "main": {
+        "title": "Xiaomi 14T Pro (12GB-512GB) Titan Blue",
+        "platform": "xcessorieshub",
+        "price": 219999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": "Blue",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/xiaomi-14t-pro-12gb-512gb/?attribute_color=Titan+Blue"
+      },
+      "offer": {
+        "title": "Xiaomi 14T Pro",
+        "platform": "priceoye",
+        "price": 229999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/xiaomi/xiaomi-14t-pro"
+      },
+      "id": "m034"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Samsung Galaxy S25 FE 8GB RAM 512GB Storage PTA Approved",
+      "groupSize": 3,
+      "main": {
+        "title": "Samsung Galaxy S25 FE 8GB RAM 512GB Storage PTA Approved",
+        "platform": "mega",
+        "price": 214999,
+        "storageGb": 512,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26949/Samsung-Galaxy-S25-FE-8GB-RAM-512GB-Storage-PTA-Approved.html"
+      },
+      "offer": {
+        "title": "Samsung Galaxy S25 FE 8GB 512GB",
+        "platform": "shophive",
+        "price": 242999,
+        "storageGb": 512,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/samsung-galaxy-s25-fe-8gb-512gb/"
+      },
+      "id": "m035"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Oppo A6s 256GB 8GB RAM Cappuccino Brown",
+      "groupSize": 2,
+      "main": {
+        "title": "Oppo A6s 256GB 8GB RAM Cappuccino Brown",
+        "platform": "ishopping",
+        "price": 94350,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/oppo-a6s-256gb-8gb-ram-cappuccino-brown-price-in-pakistan-eaw"
+      },
+      "offer": {
+        "title": "Oppo A6s Cappuccino Brown",
+        "platform": "eezepc",
+        "price": 94390,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/oppo-a6s-price-in-pakistan/?attribute_pa_colour=cappuccino-brown"
+      },
+      "id": "m036"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi Redmi Note 14 Pro 12GB RAM 512GB Storage",
+      "groupSize": 8,
+      "main": {
+        "title": "Xiaomi Redmi Note 14 Pro 12GB RAM 512GB Storage",
+        "platform": "mega",
+        "price": 92999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26514/Xiaomi-Redmi-Note-14-Pro-12GB-RAM-512GB-Storage.html"
+      },
+      "offer": {
+        "title": "Redmi Note 14 Pro 12GB-512GB",
+        "platform": "xcessorieshub",
+        "price": 100999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/redmi-note-14-pro/?attribute_storage=12GB-512GB"
+      },
+      "id": "m037"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi Smart Air Purifier 4 Lite Filter Pro",
+      "groupSize": 4,
+      "main": {
+        "title": "Xiaomi Smart Air Purifier 4 Lite Filter Pro",
+        "platform": "mistore",
+        "price": 11199,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mistore.pk/products/xiaomi-smart-air-purifier-4-lite-filter-pro"
+      },
+      "offer": {
+        "title": "Xiaomi Smart Air Purifier 4 Lite Filter Pro",
+        "platform": "mymart",
+        "price": 11999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mymart.pk/products/xiaomi-smart-air-purifier-4-lite-filter-pro"
+      },
+      "id": "m038"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi Smart Air Purifier 4 Lite",
+      "groupSize": 6,
+      "main": {
+        "title": "Xiaomi Smart Air Purifier 4 Lite",
+        "platform": "priceoye",
+        "price": 56999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/air-purifiers/xiaomi/xiaomi-smart-air-purifier-4-lite"
+      },
+      "offer": {
+        "title": "Xiaomi Smart Air Purifier 4 Lite",
+        "platform": "shophive",
+        "price": 58999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/xiaomi-smart-air-purifier-4-lite/"
+      },
+      "id": "m039"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Samsung Galaxy A17 6GB RAM 128GB Storage PTA Approved",
+      "groupSize": 7,
+      "main": {
+        "title": "Samsung Galaxy A17 6GB RAM 128GB Storage PTA Approved",
+        "platform": "mega",
+        "price": 71999,
+        "storageGb": 128,
+        "ramGb": 6,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26820/Samsung-Galaxy-A17-6GB-RAM-128GB-Storage--PTA-Approved.html"
+      },
+      "offer": {
+        "title": "Samsung Galaxy A17 128GB 6GB RAM Light Blue",
+        "platform": "ishopping",
+        "price": 69360,
+        "storageGb": 128,
+        "ramGb": 6,
+        "colour": "Blue",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/samsung-galaxy-a17-128gb-6gb-ram-light-blue-price-in-pakistan-eaw"
+      },
+      "id": "m040"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi Redmi Note 15 8GB 256GB",
+      "groupSize": 11,
+      "main": {
+        "title": "Xiaomi Redmi Note 15 8GB 256GB",
+        "platform": "shophive",
+        "price": 74999,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/xiaomi-redmi-note-15-8gb-256gb/"
+      },
+      "offer": {
+        "title": "Xiaomi Redmi Note 15",
+        "platform": "ishopping",
+        "price": 69749,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/xiaomi-redmi-note-15-price-in-pakistan"
+      },
+      "id": "m041"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Samsung Galaxy S26 12GB RAM 256GB Storage PTA Approved",
+      "groupSize": 5,
+      "main": {
+        "title": "Samsung Galaxy S26 12GB RAM 256GB Storage PTA Approved",
+        "platform": "mega",
+        "price": 284999,
+        "storageGb": 256,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26974/Samsung-Galaxy-S26-12GB-RAM-256GB-Storage-PTA-Approved.html"
+      },
+      "offer": {
+        "title": "Samsung Galaxy S26 256GB",
+        "platform": "eezepc",
+        "price": 276990,
+        "storageGb": 256,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/samsung-galaxy-s26-price-in-pakistan/?attribute_storage=256GB"
+      },
+      "id": "m042"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Zhiyun Smooth 5 Smartphone Gimbal",
+      "groupSize": 2,
+      "main": {
+        "title": "Zhiyun Smooth 5 Smartphone Gimbal",
+        "platform": "mega",
+        "price": 34999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/gimbal_products/26060/Zhiyun-Smooth-5-Smartphone-Gimbal.html"
+      },
+      "offer": {
+        "title": "Zhiyun Smooth 5 3-Axis Smartphone Gimbal",
+        "platform": "shophive",
+        "price": 36999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/zhiyun-smooth-5-3-axis-smartphone-gimbal/"
+      },
+      "id": "m043"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "XIAOMI SOLAR OUTDOOR CAMERA BW400 PRO",
+      "groupSize": 3,
+      "main": {
+        "title": "XIAOMI SOLAR OUTDOOR CAMERA BW400 PRO",
+        "platform": "mymart",
+        "price": 28499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mymart.pk/products/xiaomi-solar-outdoor-camera-bw400-pro-1"
+      },
+      "offer": {
+        "title": "Xiaomi Solar Outdoor Camera BW400 Pro",
+        "platform": "xcessorieshub",
+        "price": 29499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/xiaomi-solar-outdoor-camera-bw400-pro/"
+      },
+      "id": "m044"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi Redmi 9A Sport",
+      "groupSize": 2,
+      "main": {
+        "title": "Xiaomi Redmi 9A Sport",
+        "platform": "priceoye",
+        "price": 17999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/xiaomi/xiaomi-redmi-9a-sport"
+      },
+      "offer": {
+        "title": "Xiaomi Redmi 9A",
+        "platform": "priceoye",
+        "price": 15099,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/xiaomi/xiaomi-redmi-9a"
+      },
+      "id": "m045"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Mi Xiaomi 2.0ch Soundbar",
+      "groupSize": 3,
+      "main": {
+        "title": "Mi Xiaomi 2.0ch Soundbar",
+        "platform": "shophive",
+        "price": 13499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/mi-xiaomi-2-0ch-soundbar/"
+      },
+      "offer": {
+        "title": "Xiaomi Soundbar 2.0ch",
+        "platform": "mymart",
+        "price": 13499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mymart.pk/products/xiaomi-soundbar-2-0ch"
+      },
+      "id": "m046"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi Redmi Pad 2 Wifi 1 Year Warranty",
+      "groupSize": 2,
+      "main": {
+        "title": "Xiaomi Redmi Pad 2 Wifi 1 Year Warranty",
+        "platform": "priceoye",
+        "price": 71599,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/tablets/xiaomi/xiaomi-redmi-pad-2-wifi-1-year-warranty"
+      },
+      "offer": {
+        "title": "Xiaomi Redmi Pad 2 WiFi",
+        "platform": "ishopping",
+        "price": 66640,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/xiaomi-redmi-pad-2-wifi-price-in-pakistan"
+      },
+      "id": "m047"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi Redmi Watch 6 Lite",
+      "groupSize": 8,
+      "main": {
+        "title": "Xiaomi Redmi Watch 6 Lite",
+        "platform": "priceoye",
+        "price": 17599,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/smart-watches/xiaomi/xiaomi-redmi-watch-6-lite"
+      },
+      "offer": {
+        "title": "Redmi Watch 6 Lite Grey",
+        "platform": "eezepc",
+        "price": 19290,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Grey",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/redmi-watch-6-lite-price-in-pakistan/?attribute_pa_colour=grey"
+      },
+      "id": "m048"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi Redmi A5 4GB Ram 128GB Storage PTA Approved",
+      "groupSize": 3,
+      "main": {
+        "title": "Xiaomi Redmi A5 4GB Ram 128GB Storage PTA Approved",
+        "platform": "mega",
+        "price": 38999,
+        "storageGb": 128,
+        "ramGb": 4,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26840/Xiaomi-Redmi-A5-4GB-Ram-128GB-Storage-PTA-Approved.html"
+      },
+      "offer": {
+        "title": "Xiaomi Redmi A5 Dual Sim With Official Warranty",
+        "platform": "telemart",
+        "price": 33999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.telemart.pk/products/xiaomi-redmi-a5-dual-sim-with-official-warranty"
+      },
+      "id": "m049"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Xiaomi Redmi Note 15 8GB 128GB",
+      "groupSize": 10,
+      "main": {
+        "title": "Xiaomi Redmi Note 15 8GB 128GB",
+        "platform": "shophive",
+        "price": 69999,
+        "storageGb": 128,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/xiaomi-redmi-note-15-8gb-128gb/"
+      },
+      "offer": {
+        "title": "Xiaomi Redmi Note 15 128GB 8GB RAM Glacier Blue",
+        "platform": "ishopping",
+        "price": 71400,
+        "storageGb": 128,
+        "ramGb": 8,
+        "colour": "Blue",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/xiaomi-redmi-note-15-128gb-8gb-ram-glacier-blue-price-in-pakistan-eaw"
+      },
+      "id": "m050"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Vivo X300 FE 12GB 512GB",
+      "groupSize": 3,
+      "main": {
+        "title": "Vivo X300 FE 12GB 512GB",
+        "platform": "shophive",
+        "price": 252999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/vivo-x300-fe-12gb-512gb/"
+      },
+      "offer": {
+        "title": "Vivo X300 FE",
+        "platform": "ishopping",
+        "price": 243499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/vivo-x300-fe-price-in-pakistan"
+      },
+      "id": "m051"
+    },
+    {
+      "category": "smartphone",
+      "groupName": "Samsung Galaxy A07 6GB RAM 128GB Storage PTA Approved",
+      "groupSize": 7,
+      "main": {
+        "title": "Samsung Galaxy A07 6GB RAM 128GB Storage PTA Approved",
+        "platform": "mega",
+        "price": 58999,
+        "storageGb": 128,
+        "ramGb": 6,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26852/Samsung-Galaxy-A07-6GB-RAM-128GB-Storage-PTA-Approved.html"
+      },
+      "offer": {
+        "title": "Samsung Galaxy A07 128GB 6GB RAM Green",
+        "platform": "ishopping",
+        "price": 54060,
+        "storageGb": 128,
+        "ramGb": 6,
+        "colour": "Green",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/samsung-galaxy-a07-128gb-6gb-ram-green-price-in-pakistan-eaw"
+      },
+      "id": "m052"
+    },
+    {
+      "category": "laptop",
+      "groupName": "Lenovo ThinkBook 14 G8 IAL Core Ultra 7 255H (16GB Ram - 512GB SSD)",
+      "groupSize": 2,
+      "main": {
+        "title": "Lenovo ThinkBook 14 G8 IAL Core Ultra 7 255H (16GB Ram - 512GB SSD)",
+        "platform": "priceoye",
+        "price": 323999,
+        "storageGb": 512,
+        "ramGb": 16,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/laptops/lenovo/lenovo-thinkbook-14-g8-ial-core-ultra-7-255h-16gb-ram-512gb-ssd"
+      },
+      "offer": {
+        "title": "Lenovo ThinkBook 16 G8 Arrow Lake 16\" Intel Core Ultra 7 255H 16GB RAM 512GB SSD Laptop 1 Year Warranty",
+        "platform": "shophive",
+        "price": 325999,
+        "storageGb": 512,
+        "ramGb": 16,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/lenovo-thinkbook-16-g8-arrow-lake-16-intel-core-ultra-7-255h-16gb-ram-512gb-ssd-laptop-1-year-warranty/"
+      },
+      "id": "m053"
+    },
+    {
+      "category": "laptop",
+      "groupName": "HP 250R G9 Notebook PC - Raptor Lake - 13th Gen Core i5 1334U 10-Core Processor 8-GB 512-GB SSD Intel UHD Graphics 15.6\" Full HD 1080P 60Hz AG Display TPM (Black, Brand New, Light Cosmetic Marks)",
+      "groupSize": 2,
+      "main": {
+        "title": "HP 250R G9 Notebook PC - Raptor Lake - 13th Gen Core i5 1334U 10-Core Processor 8-GB 512-GB SSD Intel UHD Graphics 15.6\" Full HD 1080P 60Hz AG Display TPM (Black, Brand New, Light Cosmetic Marks)",
+        "platform": "paklap",
+        "price": 173500,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.paklap.pk/hp-250r-g9-13th-gen-core-i5-laptop-new-pakistan.html"
+      },
+      "offer": {
+        "title": "HP 250R G9 Notebook PC - Raptor Lake - 13th Gen Core i5 1334U 10-Core Processor 8-GB 512-GB SSD Intel UHD Graphics 15.6\" Full HD 1080P 60Hz AG Display TPM (Black, NEW)",
+        "platform": "paklap",
+        "price": 180000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.paklap.pk/hp-250r-g9-13th-gen-core-i5-laptop-2026-pakistan.html"
+      },
+      "id": "m054"
+    },
+    {
+      "category": "laptop",
+      "groupName": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 7 256V (16GB RAM - 512GB SSD)",
+      "groupSize": 3,
+      "main": {
+        "title": "Lenovo ThinkPad E16 Gen 3 Intel Core Ultra 7 256V (16GB RAM - 512GB SSD)",
+        "platform": "priceoye",
+        "price": 349999,
+        "storageGb": 512,
+        "ramGb": 16,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/laptops/lenovo/lenovo-thinkpad-e16-gen-3-intel-core-ultra-7-256v-16gb-ram-512gb-ssd"
+      },
+      "offer": {
+        "title": "LENOVO THINKPAD E16 Gen3 CORE Ultra 7 16GB RAM 512GB SSD DOS",
+        "platform": "mega",
+        "price": 374999,
+        "storageGb": 512,
+        "ramGb": 16,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/laptop_products/26669/LENOVO-THINKPAD-E16-Gen3-CORE-Ultra-7-16GB-RAM-512GB-SSD-DOS.html"
+      },
+      "id": "m055"
+    },
+    {
+      "category": "laptop",
+      "groupName": "Dahua DeepBook NC14-MI35H1 Raptor Lake 13th Gen i5-13420H 8GB Ram 512GB SSD Laptop",
+      "groupSize": 2,
+      "main": {
+        "title": "Dahua DeepBook NC14-MI35H1 Raptor Lake 13th Gen i5-13420H 8GB Ram 512GB SSD Laptop",
+        "platform": "shophive",
+        "price": 155999,
+        "storageGb": 512,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/dahua-deepbook-nc14-mi35h1-raptor-lake-13th-gen-i5-13420h-8gb-ram-512gb-ssd-laptop/"
+      },
+      "offer": {
+        "title": "Dahua DeepBook NC14-MI35H1 Laptop - Raptor Lake - 13th Gen Core i5 13420H 8-Core Processor 8-GB 512-GB SSD Intel Integrated Graphics 14\" WUXGA 1200P 60Hz Display Backlit KB TPM (Gray, 1 Year Direct Local Warranty, NEW)",
+        "platform": "paklap",
+        "price": 155000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Grey",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.paklap.pk/dahua-nc14-mi35h1-13th-gen-core-i5-laptop-pakistan.html"
+      },
+      "id": "m056"
+    },
+    {
+      "category": "laptop",
+      "groupName": "Ferozi Traders Universal Carbon Fiber Texture Laptop Back Protector - Transparent",
+      "groupSize": 2,
+      "main": {
+        "title": "Ferozi Traders Universal Carbon Fiber Texture Laptop Back Protector - Transparent",
+        "platform": "ishopping",
+        "price": 919,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/ferozi-traders-carbon-fiber-texture-laptop-protector-price-in-pakistan"
+      },
+      "offer": {
+        "title": "Ferozi Traders Universal Carbon Fiber Texture Laptop Back Protector - Red",
+        "platform": "ishopping",
+        "price": 919,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Red",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/ferozi-traders-carbon-fiber-laptop-protector-red-price-in-pakistan"
+      },
+      "id": "m057"
+    },
+    {
+      "category": "laptop",
+      "groupName": "Dell Pro 15 Essential PV15250 15.6\" Raptor Lake 13th Gen Core i5-1334U 8GB RAM 512GB SSD Laptop",
+      "groupSize": 3,
+      "main": {
+        "title": "Dell Pro 15 Essential PV15250 15.6\" Raptor Lake 13th Gen Core i5-1334U 8GB RAM 512GB SSD Laptop",
+        "platform": "shophive",
+        "price": 175999,
+        "storageGb": 512,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/dell-pro-15-essential-pv15250-15-6-raptor-lake-13th-gen-core-i5-1334u-8gb-ram-512gb-ssd-laptop-1-year-warranty/"
+      },
+      "offer": {
+        "title": "Dell Pro 15 Essential PV15250 Laptop - Raptor Lake -13th Gen Core i5 1334U 10-Core Processor 8-GB 512-GB SSD Intel UHD Graphics 15.6\" Full HD 1080P IPS WVA 120Hz AG Display TPM (Carbon Black, Brand New, Light Cosmetic Marks)",
+        "platform": "paklap",
+        "price": 165000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.paklap.pk/dell-pro-15-essential-pv15250-13th-gen-core-i5-laptop-new-pakistan.html"
+      },
+      "id": "m058"
+    },
+    {
+      "category": "laptop",
+      "groupName": "G-Mart Scripture Texture Laptop Back Skin Protector",
+      "groupSize": 3,
+      "main": {
+        "title": "G-Mart Scripture Texture Laptop Back Skin Protector",
+        "platform": "ishopping",
+        "price": 757,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/november-super-savings/g-mart-scripture-texture-laptop-back-protector-price-in-pakistan"
+      },
+      "offer": {
+        "title": "G-Mart Glitter Texture Back Skin Laptop Protector - Blue",
+        "platform": "ishopping",
+        "price": 757,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Blue",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/november-super-savings/g-mart-glitter-texture-laptop-back-protector-price-in-pakistan"
+      },
+      "id": "m059"
+    },
+    {
+      "category": "laptop",
+      "groupName": "HP 15 FD2100TU AI Laptop Intel Core Ultra 5 225U Processor (16GB RAM - 512GB SSD)",
+      "groupSize": 2,
+      "main": {
+        "title": "HP 15 FD2100TU AI Laptop Intel Core Ultra 5 225U Processor (16GB RAM - 512GB SSD)",
+        "platform": "priceoye",
+        "price": 268999,
+        "storageGb": 512,
+        "ramGb": 16,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/laptops/hp/hp-15-fd2100tu-ai-laptop-intel-core-ultra-5-225u-processor-16gb-ram-512gb-ssd"
+      },
+      "offer": {
+        "title": "HP Notebook 15 FD2100tu 15.6\" Intel Core Ultra 5 225U 16GB Ram 512GB SSD AI Laptop - 1 Year Warranty",
+        "platform": "shophive",
+        "price": 282999,
+        "storageGb": 512,
+        "ramGb": 16,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/hp-notebook-15-fd2100tu-15-6-intel-core-ultra-5-225u-16gb-ram-512gb-ssd-ai-laptop-1-year-warranty/"
+      },
+      "id": "m060"
+    },
+    {
+      "category": "tv",
+      "groupName": "Samsung 32 Inch HD Flat Smart TV (T5300)",
+      "groupSize": 3,
+      "main": {
+        "title": "Samsung 32 Inch HD Flat Smart TV (T5300)",
+        "platform": "priceoye",
+        "price": 79999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/samsung/samsung-32-inch-hd-flat-smart-tv-t5300"
+      },
+      "offer": {
+        "title": "Samsung 32 Inch Full HD Smart TV (T5300)",
+        "platform": "priceoye",
+        "price": 79999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/samsung/samsung-32-inch-full-hd-smart-tv-t5300"
+      },
+      "id": "m061"
+    },
+    {
+      "category": "tv",
+      "groupName": "TCL 43P79L 43\" Premium QLED TV 4K UHD Smart Google TV (2026)",
+      "groupSize": 2,
+      "main": {
+        "title": "TCL 43P79L 43\" Premium QLED TV 4K UHD Smart Google TV (2026)",
+        "platform": "shophive",
+        "price": 108999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/tcl-43p79l-43-premium-qled-tv-4k-uhd-smart-google-tv-2026/"
+      },
+      "offer": {
+        "title": "TCL 43\" 4K Smart Google QLED TV (43P79L)",
+        "platform": "ishopping",
+        "price": 106500,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/tcl-43-4k-smart-google-qled-tv-43p79l-price-in-pakistan"
+      },
+      "id": "m062"
+    },
+    {
+      "category": "tv",
+      "groupName": "Samsung 65DU7000 65 Inch Smart & 4k Crystal UHD TV",
+      "groupSize": 2,
+      "main": {
+        "title": "Samsung 65DU7000 65 Inch Smart & 4k Crystal UHD TV",
+        "platform": "mega",
+        "price": 219999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/ledtv_products/26495/Samsung-65DU7000-65-Inch-Smart---4k-Crystal-UHD-TV.html"
+      },
+      "offer": {
+        "title": "Samsung 65DU7000 65\" Crystal UHD 4K Smart TV (2024)",
+        "platform": "shophive",
+        "price": 214999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/samsung-65du7000-65-crystal-uhd-4k-smart-tv-2024/"
+      },
+      "id": "m063"
+    },
+    {
+      "category": "tv",
+      "groupName": "Samsung 65 Inch Smart QLED TV (65q6f)",
+      "groupSize": 3,
+      "main": {
+        "title": "Samsung 65 Inch Smart QLED TV (65q6f)",
+        "platform": "priceoye",
+        "price": 377000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/samsung/samsung-65-inch-qled-65q6f"
+      },
+      "offer": {
+        "title": "Samsung 65Q6F 65″ 4K SUHD Flat QLED TV",
+        "platform": "shophive",
+        "price": 249999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/samsung-65q6f-65-4k-suhd-flat-qled-tv/"
+      },
+      "id": "m064"
+    },
+    {
+      "category": "tv",
+      "groupName": "Samsung 43\" Crystal UHD U8000F 4K Smart TV (2025)",
+      "groupSize": 4,
+      "main": {
+        "title": "Samsung 43\" Crystal UHD U8000F 4K Smart TV (2025)",
+        "platform": "shophive",
+        "price": 116999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/samsung-43-crystal-uhd-u8000f-4k-smart-tv-2025/"
+      },
+      "offer": {
+        "title": "Samsung 43\" Crystal UHD 4K Smart LED TV - (U8000F)",
+        "platform": "ishopping",
+        "price": 98260,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/samsung-43-crystal-uhd-4k-smart-led-tv-u8000f-price-in-pakistan"
+      },
+      "id": "m065"
+    },
+    {
+      "category": "tv",
+      "groupName": "Haier H40K800FX 40 Inch Full HD Google TV With Official Warranty",
+      "groupSize": 2,
+      "main": {
+        "title": "Haier H40K800FX 40 Inch Full HD Google TV With Official Warranty",
+        "platform": "telemart",
+        "price": 66999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.telemart.pk/products/haier-h40k800fx-40-inch-full-hd-google-tv-with-official-warranty"
+      },
+      "offer": {
+        "title": "Haier 40 Inch Google LED TV (H40K800FX)",
+        "platform": "priceoye",
+        "price": 61999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/haier/haier-40-inch-google-led-tv-h40k800fx"
+      },
+      "id": "m066"
+    },
+    {
+      "category": "tv",
+      "groupName": "Samsung 75 Inch 4K HD Smart LED TV (75RU7100)",
+      "groupSize": 2,
+      "main": {
+        "title": "Samsung 75 Inch 4K HD Smart LED TV (75RU7100)",
+        "platform": "priceoye",
+        "price": 318399,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/samsung/samsung-75-inch-4k-smart-led-tv-75ru7100"
+      },
+      "offer": {
+        "title": "Samsung 75 Inch 4K UHD Smart LED TV (75RU7100)",
+        "platform": "priceoye",
+        "price": 365000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/samsung/samsung-75-inch-4k-uhd-tv-75ru7100"
+      },
+      "id": "m067"
+    },
+    {
+      "category": "tv",
+      "groupName": "Xiaomi TV A Pro 65 2026",
+      "groupSize": 2,
+      "main": {
+        "title": "Xiaomi TV A Pro 65 2026",
+        "platform": "mistore",
+        "price": 194999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mistore.pk/products/xiaomi-tv-a-pro-65-2026"
+      },
+      "offer": {
+        "title": "Xiaomi TV A Pro 65 2026",
+        "platform": "shophive",
+        "price": 199999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/xiaomi-tv-a-pro-65-2026/"
+      },
+      "id": "m068"
+    },
+    {
+      "category": "tablet",
+      "groupName": "Redmi Pad SE ( Lavender Purple, 8GB RAM, 128GB Storage)",
+      "groupSize": 2,
+      "main": {
+        "title": "Redmi Pad SE ( Lavender Purple, 8GB RAM, 128GB Storage)",
+        "platform": "eezepc",
+        "price": 62490,
+        "storageGb": 128,
+        "ramGb": 8,
+        "colour": "Lavender",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/redmi-pad-se-lavender-purple-8gb-ram-128gb-storage/"
+      },
+      "offer": {
+        "title": "Redmi Pad SE (Graphite Gray, 8GB RAM, 128GB Storage)",
+        "platform": "eezepc",
+        "price": 62490,
+        "storageGb": 128,
+        "ramGb": 8,
+        "colour": "Graphite",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/redmi-pad-se-graphite-gray-8gb-ram-128gb-storage/"
+      },
+      "id": "m069"
+    },
+    {
+      "category": "tablet",
+      "groupName": "Apple iPad Pro M5 Chip 13 inches WiFi 2025 256GB",
+      "groupSize": 8,
+      "main": {
+        "title": "Apple iPad Pro M5 Chip 13 inches WiFi 2025 256GB",
+        "platform": "priceoye",
+        "price": 409999,
+        "storageGb": 256,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/tablets/apple/apple-ipad-pro-m5-chip-13-inches-wifi-2025-256gb"
+      },
+      "offer": {
+        "title": "Apple iPad Pro M5 Chip 256GB 13″",
+        "platform": "eezepc",
+        "price": 353990,
+        "storageGb": 256,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/apple-ipad-pro-m5-chip-price-in-pakistan/?attribute_storage=256GB&attribute_screen%20size=13%E2%80%B3&attribute_colour=Space%20Black"
+      },
+      "id": "m070"
+    },
+    {
+      "category": "tablet",
+      "groupName": "Samsung Galaxy Tab S11 Ultra 14.6\" 12GB/256GB Wifi",
+      "groupSize": 5,
+      "main": {
+        "title": "Samsung Galaxy Tab S11 Ultra 14.6\" 12GB/256GB Wifi",
+        "platform": "shophive",
+        "price": 324999,
+        "storageGb": 256,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/samsung-galaxy-tab-s11-ultra-14-6-256gb-wifi/"
+      },
+      "offer": {
+        "title": "Samsung Galaxy Tab S11 Ultra Wifi",
+        "platform": "ishopping",
+        "price": 318999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/samsung-galaxy-tab-s11-ultra-wifi-price-in-pakistan"
+      },
+      "id": "m071"
+    },
+    {
+      "category": "tablet",
+      "groupName": "Redmi Pad Pro(8GB -256GB )",
+      "groupSize": 3,
+      "main": {
+        "title": "Redmi Pad Pro(8GB -256GB )",
+        "platform": "mistore",
+        "price": 90999,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mistore.pk/products/redmi-pad-pro"
+      },
+      "offer": {
+        "title": "Redmi Pad Pro",
+        "platform": "priceoye",
+        "price": 79999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/tablets/xiaomi/redmi-pad-pro"
+      },
+      "id": "m072"
+    },
+    {
+      "category": "tablet",
+      "groupName": "Xiaomi Pad 7 Pro (12GB-512GB)",
+      "groupSize": 7,
+      "main": {
+        "title": "Xiaomi Pad 7 Pro (12GB-512GB)",
+        "platform": "mistore",
+        "price": 165999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mistore.pk/products/xiaomi-pad-7-pro-12gb-512gb"
+      },
+      "offer": {
+        "title": "Xiaomi Pad 7 Pro (12GB-512GB) Green",
+        "platform": "xcessorieshub",
+        "price": 157999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": "Green",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/xiaomi-pad-7-pro-12gb-512gb/?attribute_color=Green"
+      },
+      "id": "m073"
+    },
+    {
+      "category": "tablet",
+      "groupName": "UGREEN 90915 USB C Fast Charging Smart Stylus Pen for Apple iPad (White, NEW)",
+      "groupSize": 2,
+      "main": {
+        "title": "UGREEN 90915 USB C Fast Charging Smart Stylus Pen for Apple iPad (White, NEW)",
+        "platform": "paklap",
+        "price": 8500,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "White",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.paklap.pk/ugreen-90915-stylus-pen-pakistan.html"
+      },
+      "offer": {
+        "title": "Ugreen Smart Stylus Pen for Apple iPad USB C Fast Charging (90915)",
+        "platform": "shophive",
+        "price": 9499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/ugreen-smart-stylus-pen-for-apple-ipad-usb-c-fast-charging-90915/"
+      },
+      "id": "m074"
+    },
+    {
+      "category": "tablet",
+      "groupName": "Samsung Galaxy Tab S11 Ultra 14.6\" 12GB/256GB Wifi",
+      "groupSize": 5,
+      "main": {
+        "title": "Samsung Galaxy Tab S11 Ultra 14.6\" 12GB/256GB Wifi",
+        "platform": "shophive",
+        "price": 324999,
+        "storageGb": 256,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/samsung-galaxy-tab-s11-ultra-14-6-256gb-wifi/"
+      },
+      "offer": {
+        "title": "Samsung Galaxy Tab S11 Ultra",
+        "platform": "mega",
+        "price": 374999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/multimediatablets_products/27089/Samsung-Galaxy-Tab-S11-Ultra.html"
+      },
+      "id": "m075"
+    },
+    {
+      "category": "tablet",
+      "groupName": "Samsung Galaxy Tab A11 Plus 6GB RAM 128GB Storage Wifi",
+      "groupSize": 2,
+      "main": {
+        "title": "Samsung Galaxy Tab A11 Plus 6GB RAM 128GB Storage Wifi",
+        "platform": "mega",
+        "price": 76999,
+        "storageGb": 128,
+        "ramGb": 6,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/multimediatablets_products/26952/Samsung-Galaxy-Tab-A11-Plus-6GB-RAM-128GB-Storage-Wifi.html"
+      },
+      "offer": {
+        "title": "Samsung Galaxy Tab A11 Plus 11\" 6GB 128GB WiFi",
+        "platform": "shophive",
+        "price": 70999,
+        "storageGb": 128,
+        "ramGb": 6,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/samsung-galaxy-tab-a11-plus-11-6gb-128gb-wifi/"
+      },
+      "id": "m076"
+    },
+    {
+      "category": "tablet",
+      "groupName": "Apple iPAD PRO 13 INCH WIFI M4 CHIP (512GB)",
+      "groupSize": 5,
+      "main": {
+        "title": "Apple iPAD PRO 13 INCH WIFI M4 CHIP (512GB)",
+        "platform": "priceoye",
+        "price": 339999,
+        "storageGb": 512,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/tablets/apple/apple-ipad-pro-13-inch-wifi-m4-chip-512gb"
+      },
+      "offer": {
+        "title": "Apple Ipad Pro 13 M4 Chip 512GB Storage Wifi",
+        "platform": "mega",
+        "price": 434999,
+        "storageGb": 512,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/multimediatablets_products/25186/Apple-Ipad-Pro-13-M4-Chip-512GB-Storage-Wifi.html"
+      },
+      "id": "m077"
+    },
+    {
+      "category": "smartwatch",
+      "groupName": "Zero Revoltt Pro Smart Watch",
+      "groupSize": 2,
+      "main": {
+        "title": "Zero Revoltt Pro Smart Watch",
+        "platform": "priceoye",
+        "price": 11299,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/smart-watches/zero/zero-revoltt-pro-smart-watch"
+      },
+      "offer": {
+        "title": "Zero Revoltt Pro Smart Watch",
+        "platform": "shophive",
+        "price": 14499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/zero-revoltt-pro-smart-watch/"
+      },
+      "id": "m078"
+    },
+    {
+      "category": "smartwatch",
+      "groupName": "Max 585 Ultra 3 Seven + One Smart Watch",
+      "groupSize": 10,
+      "main": {
+        "title": "Max 585 Ultra 3 Seven + One Smart Watch",
+        "platform": "priceoye",
+        "price": 1649,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/smart-watches/assorted/max-585-ultra-3-seven-one-smart-watch"
+      },
+      "offer": {
+        "title": "Max 580 Ultra 3 Seven + One Smart Watch",
+        "platform": "priceoye",
+        "price": 1649,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/smart-watches/assorted/max-580-ultra-3-seven-one-smart-watch"
+      },
+      "id": "m079"
+    },
+    {
+      "category": "smartwatch",
+      "groupName": "Max 585 Ultra 3 Seven + One Smart Watch",
+      "groupSize": 10,
+      "main": {
+        "title": "Max 585 Ultra 3 Seven + One Smart Watch",
+        "platform": "priceoye",
+        "price": 1649,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/smart-watches/assorted/max-585-ultra-3-seven-one-smart-watch"
+      },
+      "offer": {
+        "title": "Max 576 Ultra 3 Seven + One Smart Watch",
+        "platform": "priceoye",
+        "price": 1649,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/smart-watches/assorted/max-576-ultra-3-seven-one-smart-watch"
+      },
+      "id": "m080"
+    },
+    {
+      "category": "smartwatch",
+      "groupName": "Apple Watch Series 11 42mm Jet Black Aluminium Case With Black Sports Band",
+      "groupSize": 2,
+      "main": {
+        "title": "Apple Watch Series 11 42mm Jet Black Aluminium Case With Black Sports Band",
+        "platform": "shophive",
+        "price": 106999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/apple-watch-series-11-42mm-jet-black-aluminium-case-with-black-sports-band/"
+      },
+      "offer": {
+        "title": "Apple Watch Series 11 42mm Space Gray Aluminium Case With Black Sports Band",
+        "platform": "shophive",
+        "price": 106999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Space grey",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/apple-watch-series-11-42mm-space-gray-aluminium-case-with-black-sports-band/"
+      },
+      "id": "m081"
+    },
+    {
+      "category": "smartwatch",
+      "groupName": "Samsung Galaxy Watch 8 44MM Graphite - Wifi",
+      "groupSize": 2,
+      "main": {
+        "title": "Samsung Galaxy Watch 8 44MM Graphite - Wifi",
+        "platform": "shophive",
+        "price": 74999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Graphite",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/samsung-galaxy-watch-8-44mm-graphite-wifi/"
+      },
+      "offer": {
+        "title": "Samsung Galaxy Watch 8 44MM Silver - Wifi",
+        "platform": "shophive",
+        "price": 74999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Silver",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/samsung-galaxy-watch-8-44mm-silver-wifi/"
+      },
+      "id": "m082"
+    },
+    {
+      "category": "smartwatch",
+      "groupName": "Samsung Galaxy Watch Ultra 2 LTE Smartwatch, Rugged Design, AI Assistant, Advanced Sleep and Running Coach, Dive-Rated, Heart Rate Tracking Titanium Gray",
+      "groupSize": 2,
+      "main": {
+        "title": "Samsung Galaxy Watch Ultra 2 LTE Smartwatch, Rugged Design, AI Assistant, Advanced Sleep and Running Coach, Dive-Rated, Heart Rate Tracking Titanium Gray",
+        "platform": "eezepc",
+        "price": 184990,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Titanium",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/samsung-galaxy-watch-ultra-2-price-in-pakistan/?attribute_pa_colour=titanium-gray"
+      },
+      "offer": {
+        "title": "Samsung Galaxy Watch Ultra 2 LTE Smartwatch, Rugged Design, AI Assistant, Advanced Sleep and Running Coach, Dive-Rated, Heart Rate Tracking Titanium Silver",
+        "platform": "eezepc",
+        "price": 184990,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Titanium",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/samsung-galaxy-watch-ultra-2-price-in-pakistan/?attribute_pa_colour=titanium-silver"
+      },
+      "id": "m083"
+    },
+    {
+      "category": "smartwatch",
+      "groupName": "Apple Watch Ultra 3 Black Titanium Case With Trail Loop",
+      "groupSize": 4,
+      "main": {
+        "title": "Apple Watch Ultra 3 Black Titanium Case With Trail Loop",
+        "platform": "ishopping",
+        "price": 232999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Titanium",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/apple-watch-ultra-3-black-titanium-case-with-trail-loop-price-in-pakistan"
+      },
+      "offer": {
+        "title": "Apple Watch Ultra 3 49MM Black Titanium Case With Trail Loop",
+        "platform": "mega",
+        "price": 219999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Titanium",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/watches_products/26814/Apple-Watch-Ultra-3-49MM-Black-Titanium-Case-With-Trail-Loop.html"
+      },
+      "id": "m084"
+    },
+    {
+      "category": "smartwatch",
+      "groupName": "Samsung Galaxy Watch Ultra 47mm L705",
+      "groupSize": 3,
+      "main": {
+        "title": "Samsung Galaxy Watch Ultra 47mm L705",
+        "platform": "mega",
+        "price": 109999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/watches_products/25328/Samsung-Galaxy-Watch-Ultra-47mm-L705.html"
+      },
+      "offer": {
+        "title": "Samsung Galaxy Watch Ultra 47mm Titanium Blue (SM-L705)",
+        "platform": "ishopping",
+        "price": 94800,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Titanium",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/samsung-galaxy-watch-ultra-47mm-titanium-blue-sm-l705-price-in-pakistan"
+      },
+      "id": "m085"
+    },
+    {
+      "category": "smartwatch",
+      "groupName": "Huawei Watch Fit 5",
+      "groupSize": 8,
+      "main": {
+        "title": "Huawei Watch Fit 5",
+        "platform": "shophive",
+        "price": 44999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/huawei-watch-fit-5/"
+      },
+      "offer": {
+        "title": "Huawei Watch Fit 5 Black",
+        "platform": "xcessorieshub",
+        "price": 44999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/huawei-watch-fit-5/?attribute_color=Black"
+      },
+      "id": "m086"
+    },
+    {
+      "category": "smartwatch",
+      "groupName": "Gus-03 Ultra 3 7+1 Smart Watch",
+      "groupSize": 4,
+      "main": {
+        "title": "Gus-03 Ultra 3 7+1 Smart Watch",
+        "platform": "priceoye",
+        "price": 1649,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/smart-watches/assorted/gus-03-ultra-3-7-1-smart-watch"
+      },
+      "offer": {
+        "title": "Gus-01 Ultra 3 7+1 Smart Watch",
+        "platform": "priceoye",
+        "price": 1649,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/smart-watches/assorted/gus-01-ultra-3-7-1-smart-watch"
+      },
+      "id": "m087"
+    },
+    {
+      "category": "smartwatch",
+      "groupName": "Huawei Watch Fit 4",
+      "groupSize": 5,
+      "main": {
+        "title": "Huawei Watch Fit 4",
+        "platform": "priceoye",
+        "price": 31949,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/smart-watches/huawei/huawei-watch-fit-4"
+      },
+      "offer": {
+        "title": "Huawei Watch Fit 4 Black",
+        "platform": "xcessorieshub",
+        "price": 32999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/huawei-watch-fit-4/?attribute_color=Black"
+      },
+      "id": "m088"
+    },
+    {
+      "category": "smartwatch",
+      "groupName": "HY Ultra2 Smart Watch",
+      "groupSize": 7,
+      "main": {
+        "title": "HY Ultra2 Smart Watch",
+        "platform": "priceoye",
+        "price": 2449,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/smart-watches/assorted/hy-ultra2-smart-watch"
+      },
+      "offer": {
+        "title": "i40 Ultra2 Suit 7 Sets Colorful Straps Smart Watch",
+        "platform": "priceoye",
+        "price": 2599,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/smart-watches/assorted/i40-ultra2-suit-7-sets-colorful-straps-smart-watch"
+      },
+      "id": "m089"
+    },
+    {
+      "category": "smartwatch",
+      "groupName": "Nothing CMF Watch 3 Pro",
+      "groupSize": 7,
+      "main": {
+        "title": "Nothing CMF Watch 3 Pro",
+        "platform": "shophive",
+        "price": 26999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/nothing-cmf-watch-3-pro/"
+      },
+      "offer": {
+        "title": "Nothing CMF Watch 3 Pro",
+        "platform": "priceoye",
+        "price": 27999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/smart-watches/nothing/nothing-cmf-watch-3-pro"
+      },
+      "id": "m090"
+    },
+    {
+      "category": "smartwatch",
+      "groupName": "Samsung Galaxy Watch 8 Classic",
+      "groupSize": 5,
+      "main": {
+        "title": "Samsung Galaxy Watch 8 Classic",
+        "platform": "mega",
+        "price": 89999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/watches_products/26791/Samsung-Galaxy-Watch-8-Classic.html"
+      },
+      "offer": {
+        "title": "Samsung Galaxy Watch 8 Classic Black",
+        "platform": "eezepc",
+        "price": 75990,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/samsung-galaxy-watch-8-classic-price-in-pakistan/?attribute_pa_colour=black-2"
+      },
+      "id": "m091"
+    },
+    {
+      "category": "headphones",
+      "groupName": "CMF By Nothing Buds Pro 2 with Hybrid ANC & Up to 43 Hours Playtime Green",
+      "groupSize": 5,
+      "main": {
+        "title": "CMF By Nothing Buds Pro 2 with Hybrid ANC & Up to 43 Hours Playtime Green",
+        "platform": "xcessorieshub",
+        "price": 14499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Green",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/cmf-by-nothing-buds-pro-2-with-hybrid-anc-up-to-43-hours-playtime/?attribute_pa_color=green"
+      },
+      "offer": {
+        "title": "CMF By Nothing Buds Pro 2 with Hybrid ANC & Up to 43 Hours Playtime Light Grey",
+        "platform": "xcessorieshub",
+        "price": 13999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Grey",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/cmf-by-nothing-buds-pro-2-with-hybrid-anc-up-to-43-hours-playtime/?attribute_pa_color=light-grey"
+      },
+      "id": "m092"
+    },
+    {
+      "category": "headphones",
+      "groupName": "HiFuture Sonic Bliss TWS Earbuds (Black)",
+      "groupSize": 2,
+      "main": {
+        "title": "HiFuture Sonic Bliss TWS Earbuds (Black)",
+        "platform": "paklap",
+        "price": 8499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.paklap.pk/hi-future-sonic-bliss-tws-earbuds-black-price-reviews-pakistan.html"
+      },
+      "offer": {
+        "title": "HiFuture Sonic Bliss TWS Earbuds (White)",
+        "platform": "paklap",
+        "price": 8499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "White",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.paklap.pk/hi-future-sonic-bliss-tws-earbuds-white-price-reviews-pakistan.html"
+      },
+      "id": "m093"
+    },
+    {
+      "category": "headphones",
+      "groupName": "CMF by Nothing Buds with Bluetooth 5.3 & Active Noise Cancellation – Orange",
+      "groupSize": 3,
+      "main": {
+        "title": "CMF by Nothing Buds with Bluetooth 5.3 & Active Noise Cancellation – Orange",
+        "platform": "eezepc",
+        "price": 9490,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Orange",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/cmf-by-nothing-buds-orange/"
+      },
+      "offer": {
+        "title": "CMF by Nothing Buds with Bluetooth 5.3 & Active Noise Cancellation – Dark Grey",
+        "platform": "eezepc",
+        "price": 9990,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Grey",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/cmf-by-nothing-buds-dark-grey/"
+      },
+      "id": "m094"
+    },
+    {
+      "category": "headphones",
+      "groupName": "Samsung Galaxy Buds 3",
+      "groupSize": 6,
+      "main": {
+        "title": "Samsung Galaxy Buds 3",
+        "platform": "priceoye",
+        "price": 25499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/wireless-earbuds/samsung/samsung-galaxy-buds3"
+      },
+      "offer": {
+        "title": "Samsung Galaxy Buds 3 - SM-R530",
+        "platform": "shophive",
+        "price": 28499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/samsung-galaxy-buds-3-sm-r530/"
+      },
+      "id": "m095"
+    },
+    {
+      "category": "headphones",
+      "groupName": "SoundPEATS Clear Wireless Earbuds with Bluetooth 5.3 App Control & Upto 40 Hours Playtime Transparent Beige",
+      "groupSize": 3,
+      "main": {
+        "title": "SoundPEATS Clear Wireless Earbuds with Bluetooth 5.3 App Control & Upto 40 Hours Playtime Transparent Beige",
+        "platform": "xcessorieshub",
+        "price": 5699,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Beige",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/soundpeats-clear-wireless-earbuds-with-bluetooth-5-3-app-control-upto-40-hours-playtime/?attribute_color=Transparent+Beige"
+      },
+      "offer": {
+        "title": "SoundPEATS Clear Wireless Earbuds with Bluetooth 5.3 App Control & Upto 40 Hours Playtime Transparent Black",
+        "platform": "xcessorieshub",
+        "price": 5699,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/soundpeats-clear-wireless-earbuds-with-bluetooth-5-3-app-control-upto-40-hours-playtime/?attribute_color=Transparent+Black"
+      },
+      "id": "m096"
+    },
+    {
+      "category": "headphones",
+      "groupName": "Samsung Galaxy Buds Pro",
+      "groupSize": 3,
+      "main": {
+        "title": "Samsung Galaxy Buds Pro",
+        "platform": "telemart",
+        "price": 22999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.telemart.pk/products/samsung-galaxy-buds-pro"
+      },
+      "offer": {
+        "title": "Samsung Galaxy Buds 2 Pro",
+        "platform": "priceoye",
+        "price": 26499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/wireless-earbuds/samsung/samsung-galaxy-buds-2-pro"
+      },
+      "id": "m097"
+    },
+    {
+      "category": "headphones",
+      "groupName": "Audionic Airbud 595 Flip Earbuds",
+      "groupSize": 2,
+      "main": {
+        "title": "Audionic Airbud 595 Flip Earbuds",
+        "platform": "priceoye",
+        "price": 4949,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/wireless-earbuds/audionic/audionic-airbud-595-flip-earbuds"
+      },
+      "offer": {
+        "title": "Audionic Airbud 595 Flip Earbuds",
+        "platform": "shophive",
+        "price": 5499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/audionic-airbud-595-flip-earbuds/"
+      },
+      "id": "m098"
+    },
+    {
+      "category": "headphones",
+      "groupName": "Samsung Galaxy Buds Core",
+      "groupSize": 6,
+      "main": {
+        "title": "Samsung Galaxy Buds Core",
+        "platform": "priceoye",
+        "price": 11699,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/wireless-earbuds/samsung/samsung-galaxy-buds-core-1-year-brand-warranty"
+      },
+      "offer": {
+        "title": "Samsung Galaxy Buds Core Black",
+        "platform": "xcessorieshub",
+        "price": 12499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/samsung-galaxy-buds-core/?attribute_pa_color=black-de"
+      },
+      "id": "m099"
+    },
+    {
+      "category": "headphones",
+      "groupName": "Audionic Wireless Gaming Battlebuds (Black)",
+      "groupSize": 2,
+      "main": {
+        "title": "Audionic Wireless Gaming Battlebuds (Black)",
+        "platform": "paklap",
+        "price": 7000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.paklap.pk/audionic-wireless-gaming-battlebuds-black-price-reviews-pakistan.html"
+      },
+      "offer": {
+        "title": "Audionic Wireless Gaming Battlebuds (Grey)",
+        "platform": "paklap",
+        "price": 7000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Grey",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.paklap.pk/audionic-wireless-gaming-battlebuds-grey-price-reviews-pakistan.html"
+      },
+      "id": "m100"
+    }
+  ]
+}
