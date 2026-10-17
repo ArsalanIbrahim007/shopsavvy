@@ -1,0 +1,23 @@
+{
+  "_about": "B9 labels for group_merges.sample.json, by Claude on 2026-10-17 using the rubric in 07-sample-group-merges.js (same model, same storage/RAM variant, same condition; colour may differ; PTA-approved against non-PTA is different). Ambiguous pairs were checked on the store's own page where it could be read (not Telemart, which refuses requests). A price within 1% of the other side was taken as corroborating the same variant when the page could not say; otherwise unsure. Arsalan spot-checks 20 at random.",
+  "m001": "same", "m002": "same", "m003": "different", "m004": "unsure", "m005": "different",
+  "m006": "same", "m007": "same", "m008": "different", "m009": "different", "m010": "different",
+  "m011": "same", "m012": "same", "m013": "same", "m014": "same", "m015": "same",
+  "m016": "different", "m017": "different", "m018": "same", "m019": "different", "m020": "unsure",
+  "m021": "same", "m022": "same", "m023": "same", "m024": "same", "m025": "same",
+  "m026": "same", "m027": "same", "m028": "same", "m029": "same", "m030": "same",
+  "m031": "unsure", "m032": "same", "m033": "same", "m034": "same", "m035": "same",
+  "m036": "same", "m037": "same", "m038": "same", "m039": "same", "m040": "same",
+  "m041": "unsure", "m042": "same", "m043": "same", "m044": "same", "m045": "different",
+  "m046": "same", "m047": "same", "m048": "same", "m049": "unsure", "m050": "same",
+  "m051": "unsure", "m052": "same", "m053": "different", "m054": "different", "m055": "different",
+  "m056": "same", "m057": "same", "m058": "different", "m059": "different", "m060": "same",
+  "m061": "same", "m062": "same", "m063": "same", "m064": "same", "m065": "same",
+  "m066": "same", "m067": "same", "m068": "same", "m069": "same", "m070": "same",
+  "m071": "unsure", "m072": "same", "m073": "same", "m074": "same", "m075": "different",
+  "m076": "same", "m077": "same", "m078": "same", "m079": "different", "m080": "different",
+  "m081": "same", "m082": "same", "m083": "same", "m084": "same", "m085": "same",
+  "m086": "same", "m087": "different", "m088": "same", "m089": "different", "m090": "same",
+  "m091": "unsure", "m092": "same", "m093": "same", "m094": "same", "m095": "same",
+  "m096": "same", "m097": "different", "m098": "same", "m099": "same", "m100": "same"
+}
