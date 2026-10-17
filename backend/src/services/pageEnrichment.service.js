@@ -13,6 +13,7 @@ import Listing from "../models/listing.model.js";
 import { extractColourOptions } from "./colourPage.service.js";
 import { extractPtaFromPage } from "./ptaPage.service.js";
 import { extractPriceOyeRating } from "./ratingPage.service.js";
+import { readSpecSheet, SPEC_CATEGORIES } from "./specsEngine.service.js";
 
 // Where a colour choice is useful. PTA only applies to the first two.
 export const PAGE_CATEGORIES = ["smartphone", "tablet", "smartwatch", "headphones", "laptop"];
@@ -73,13 +74,15 @@ export async function defaultFetchPage(listing) {
  * @param {string} [options.match]        only listings whose title contains this text (case-insensitive), to fill in one product first
  * @param {number} [options.now]          epoch ms, injectable for tests
  * @param {Function} [options.fetchPage]  (listing) => html, injectable for tests
+ * @param {Function} [options.readSpecs]  (platform, html, {log}) => canonical sheet | null: the Specs engine (specsEngine.service.js),
+ *                                        which answers null until Muzammil's engine is merged; injectable for tests
  * @param {object} [options.model]        the Listing model, injectable for tests
  * @param {Function} [options.log]
- * @returns {Promise<{checked: number, approved: number, nonPta: number, unknown: number, withColours: number, failed: number, dry: boolean, results: object[]}>}
+ * @returns {Promise<{checked: number, approved: number, nonPta: number, unknown: number, withColours: number, withSpecs: number, failed: number, dry: boolean, results: object[]}>}
  */
 export async function enrichFromPages({
   limit = DEFAULT_LIMIT, delayMs = 2500, dry = false, again = false, stores = null, match = null, now = Date.now(),
-  fetchPage = defaultFetchPage, model = Listing, log = () => {},
+  fetchPage = defaultFetchPage, readSpecs = readSpecSheet, model = Listing, log = () => {},
 } = {}) {
   const due = new Date(now - RECHECK_DAYS * DAY_MS);
   const filter = {
@@ -94,7 +97,7 @@ export async function enrichFromPages({
   const candidates = await model.find(filter).sort({ pageCheckedAt: 1, lastScrapedAt: -1 }).limit(Math.max(limit, 0)).lean();
   const queue = interleaveByStore(candidates);
 
-  const summary = { checked: 0, approved: 0, nonPta: 0, unknown: 0, withColours: 0, withRating: 0, failed: 0, dry, results: [] };
+  const summary = { checked: 0, approved: 0, nonPta: 0, unknown: 0, withColours: 0, withRating: 0, withSpecs: 0, failed: 0, dry, results: [] };
 
   for (const [index, listing] of queue.entries()) {
     if (index > 0 && delayMs > 0) await sleep(delayMs);
@@ -102,11 +105,14 @@ export async function enrichFromPages({
     let pta;
     let colours;
     let rated = null;
+    let sheet = null;
     try {
       const html = await fetchPage(listing);
       pta = extractPtaFromPage(html, { productName: listing.title });
       colours = extractColourOptions(html);
       rated = RATING_READERS.get(String(listing.platform).toLowerCase())?.(html) ?? null;
+      // The Specs engine guards itself: a parser error is logged and gives null, never a failed page.
+      if (SPEC_CATEGORIES.includes(listing.productCategory)) sheet = await readSpecs(listing.platform, html, { log });
     } catch (err) {
       summary.failed += 1;
       log(`[pages] ${listing.platform} "${listing.title}": ${err.message}`);
@@ -126,8 +132,9 @@ export async function enrichFromPages({
     }
     if (colours.length > 0) summary.withColours += 1;
     if (rated) summary.withRating += 1;
-    summary.results.push({ id: String(listing._id), platform: listing.platform, title: listing.title, status: ptaApplies ? pta.status : "n/a", evidence: pta.evidence, colours, rating: rated });
-    log(`[pages] ${listing.platform} "${listing.title}": ${ptaApplies ? pta.status : "pta n/a"}${pta.evidence && ptaApplies ? ` (${pta.evidence})` : ""}; colours: ${colours.map((c) => c.colour).join(", ") || "none"}${rated ? `; rating: ${rated.rating} (${rated.reviewCount})` : ""}`);
+    if (sheet) summary.withSpecs += 1;
+    summary.results.push({ id: String(listing._id), platform: listing.platform, title: listing.title, status: ptaApplies ? pta.status : "n/a", evidence: pta.evidence, colours, rating: rated, specs: sheet });
+    log(`[pages] ${listing.platform} "${listing.title}": ${ptaApplies ? pta.status : "pta n/a"}${pta.evidence && ptaApplies ? ` (${pta.evidence})` : ""}; colours: ${colours.map((c) => c.colour).join(", ") || "none"}${rated ? `; rating: ${rated.rating} (${rated.reviewCount})` : ""}${sheet ? `; specs: ${Object.keys(sheet).length} fields` : ""}`);
 
     if (dry) continue;
     const set = { pageCheckedAt: new Date(now) };
@@ -137,6 +144,7 @@ export async function enrichFromPages({
     }
     if (colours.length > 0) set.colourOptions = colours; // a page that says nothing leaves an earlier answer alone
     if (rated) Object.assign(set, rated);
+    if (sheet) set.specSheet = sheet; // likewise: a page whose specifications could not be read keeps the earlier sheet
     await model.updateOne({ _id: listing._id }, { $set: set });
   }
 

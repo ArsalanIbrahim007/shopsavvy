@@ -111,6 +111,9 @@ const listingSchema = new mongoose.Schema(
     reviewCount: { type: Number, default: null, min: 0 },
     // Flat label -> value strings from the store's specification table.
     specs:       { type: mongoose.Schema.Types.Mixed, default: null },
+    // The typed, canonical specifications read from the store's product page by the Specs engine (specsEngine.service.js), written
+    // only by the page check. Separate from `specs`, which every scrape rewrites from the search results.
+    specSheet:   { type: mongoose.Schema.Types.Mixed, default: null },
   },
   {
     timestamps: true,
