@@ -90,3 +90,5 @@ export function createAdminLimiter({ windowMs = 15 * 60 * 1000, limit = 30 } = {
 }
 export const adminLimiter = createAdminLimiter();
 export const suggestLimiter = createReadLimiter({ limit: 900 });
+// The browser extension asks once per product page a shopper opens; answers are cached for ten minutes.
+export const matchLimiter = createReadLimiter({ limit: 300 });

@@ -4,7 +4,8 @@ import { VISIBLE_PLATFORMS_FILTER } from "../config/platforms.js";
 import Listing from "../models/listing.model.js";
 import { detectCategory, detectQueryCategory } from "../scrapers/productCategory.js";
 import { attachPriceHistory } from "../services/historyEnrichment.service.js";
-import { selectCandidates } from "../services/candidateSelection.service.js";
+import { buildProductView } from "../services/productView.service.js";
+import { LIMITS as MATCH_LIMITS, matchPage } from "../services/productMatch.service.js";
 import { normalizeTitle } from "../services/normalizeTitle.service.js";
 import { parsePagination } from "../services/pagination.service.js";
 import { textParam, numberParam } from "../services/queryParams.service.js";
@@ -25,7 +26,6 @@ import {
 } from "../services/priceHistory.service.js";
 import {
   attachRecommendation,
-  attachRecommendations,
 } from "../services/recommendation/recommendation.service.js";
 import {
   fetchAndRefreshListings,
@@ -482,6 +482,56 @@ console.log("[search]", refreshResult);
   });
 }
 
+// Answers to the extension are kept for a while: a shopper moves between the same few pages, and the stored prices only change when
+// a scrape runs. Keyed by everything that can change the answer.
+const MATCH_CACHE_MS = 10 * 60 * 1000;
+const MATCH_CACHE_SIZE = 500;
+const matchCache = new Map();
+
+export function clearMatchCache() {
+  matchCache.clear();
+}
+
+/** "PKR 1,23,456", "Rs. 123456" or "123456" as a number; undefined when absent. */
+function pageprice(value) {
+  const text = textParam(value);
+  if (text === undefined) return undefined;
+  return Number(text.replace(/^(rs\.?|pkr)\s*/i, "").replace(/[,\s]/g, ""));
+}
+
+/**
+ * GET /api/listings/match?url=&title=&price= — the product a store page shows, and the same product at the other stores. For the
+ * browser extension. Read-only: it never scrapes (see productMatch.service.js).
+ */
+export async function getProductMatch(req, res) {
+  const url = textParam(req.query.url);
+  const title = textParam(req.query.title)?.replace(/\s+/g, " ");
+  const price = pageprice(req.query.price);
+
+  const errors = [];
+  if (!url) errors.push({ field: "url", message: "The page address is required." });
+  else if (url.length > MATCH_LIMITS.url) errors.push({ field: "url", message: `The page address is longer than ${MATCH_LIMITS.url} characters.` });
+  if (title && title.length > MATCH_LIMITS.title) errors.push({ field: "title", message: `The title is longer than ${MATCH_LIMITS.title} characters.` });
+  if (price !== undefined && !(price >= MATCH_LIMITS.minPrice && price <= MATCH_LIMITS.maxPrice)) {
+    errors.push({ field: "price", message: "The price must be a number of rupees." });
+  }
+  if (errors.length) throw AppError.validation(errors);
+
+  const strategy = resolveMatchStrategy(req);
+  const key = JSON.stringify([strategy, url, title ?? null, price ?? null]);
+  const cached = matchCache.get(key);
+  if (cached && Date.now() - cached.at < MATCH_CACHE_MS) {
+    res.json({ success: true, ...cached.result });
+    return;
+  }
+
+  const result = await matchPage({ url, title, price }, { strategy });
+  matchCache.delete(key);
+  matchCache.set(key, { at: Date.now(), result });
+  if (matchCache.size > MATCH_CACHE_SIZE) matchCache.delete(matchCache.keys().next().value);
+  res.json({ success: true, ...result });
+}
+
 export async function getListingDetails(req, res) {
   const { id } = req.params;
 
@@ -495,56 +545,9 @@ export async function getListingDetails(req, res) {
     throw AppError.notFound("Listing not found");
   }
 
-  /*
-   * Candidates for "the same product elsewhere": listings in the same
-   * product category whose titles overlap this one, not every listing that
-   * shares the coarse "Electronics" category. See selectCandidates.
-   */
-  const categoryPool = await Listing.find({
-    ...VISIBLE_PLATFORMS_FILTER,
-    productCategory: listing.productCategory || "other",
-    _id: { $ne: listing._id },
-  }).sort({ price: 1 });
-
-  const possibleMatches = selectCandidates(listing, categoryPool);
-
-  /*
-   * Price history must be attached before grouping so the
-   * fake-discount and deal-ranking engines can use it.
-   */
-  const enrichedMatches =
-    await attachPriceHistory(possibleMatches);
-
-  const recommendedGroups =
-    await groupListings(enrichedMatches, { strategy: resolveMatchStrategy(req) });
-
-  const selectedGroup =
-    recommendedGroups.find((group) =>
-      (group.offers || []).some(
-        (offer) =>
-          offer._id?.toString() ===
-          listing._id.toString()
-      )
-    ) || null;
-
-  let offers;
-
-  if (selectedGroup) {
-    offers = selectedGroup.offers;
-  } else {
-    const enrichedListing =
-      await attachPriceHistory([listing]);
-
-    offers =
-      attachRecommendations(enrichedListing);
-  }
-
-  const selectedListing =
-    offers.find(
-      (offer) =>
-        offer._id?.toString() ===
-        listing._id.toString()
-    ) || attachRecommendation(listing);
+  // This listing and the same product at other stores (shared with the extension's /match lookup).
+  const { selectedListing, selectedGroup, offers } =
+    await buildProductView(listing, { strategy: resolveMatchStrategy(req) });
 
   // An offer flagged as a probable listing error must not set the lowest price or
   // the "you can save" figure.

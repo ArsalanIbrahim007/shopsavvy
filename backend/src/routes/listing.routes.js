@@ -6,6 +6,7 @@ import {
   getListingStats,
   getDeals,
   getPriceDropsFeed,
+  getProductMatch,
   getCategoryCatalog,
   suggestListings,
   searchListings,
@@ -18,7 +19,7 @@ import {
   validateCreateListing,
 } from "../middleware/validation.middleware.js";
 import { requireAdminKey } from "../middleware/adminKey.middleware.js";
-import { searchLimiter, dealsLimiter, suggestLimiter, detailLimiter, readLimiter, adminLimiter } from "../middleware/rateLimit.middleware.js";
+import { searchLimiter, dealsLimiter, suggestLimiter, detailLimiter, readLimiter, adminLimiter, matchLimiter } from "../middleware/rateLimit.middleware.js";
 
 const router = express.Router();
 
@@ -253,6 +254,51 @@ router.get("/deals", dealsLimiter, getDeals);
  *         description: Unknown category.
  */
 router.get("/drops", dealsLimiter, getPriceDropsFeed);
+
+/**
+ * @swagger
+ * /api/listings/match:
+ *   get:
+ *     summary: Which product is this store page? (browser extension)
+ *     description: >
+ *       The product a store's product page shows, and the same product at the other stores, as the product page groups it.
+ *       Read-only: never scrapes, never writes. The page is found by its address (the query string picks the variant where the
+ *       store keeps it there), else by the same store's listing with the same title, else, when the page is not stored at all, by
+ *       grouping it as a temporary offer with the stored listings of its category ("similar"; needs title and price). A listing
+ *       whose title contradicts the page title (capacity, PTA status, model) is never taken for it. Answers are cached for ten
+ *       minutes.
+ *     tags:
+ *       - Listings
+ *     parameters:
+ *       - in: query
+ *         name: url
+ *         required: true
+ *         schema: { type: string, maxLength: 2048 }
+ *         description: The address of the product page.
+ *       - in: query
+ *         name: title
+ *         schema: { type: string, maxLength: 300 }
+ *         description: The product title shown on the page.
+ *       - in: query
+ *         name: price
+ *         schema: { type: string, example: "PKR 1,23,456" }
+ *         description: The price shown on the page, in rupees ("PKR 1,23,456", "Rs. 123456" and "123456" are all read).
+ *     responses:
+ *       200:
+ *         description: >
+ *           `found`, `matchedBy` (url, title, similar or null), `listing` (our record of this page; null for "similar"), `offers`
+ *           (the other offers of the product, cheapest first, each with platform, title, price, url, inStock, lastScrapedAt,
+ *           outOfDate, unusualPrice, ptaStatus, ptaAssessment, condition), `cheapest` (the cheapest offer a shopper can act on, with
+ *           `saving` against the page price and `cheaperThanThisPage`), `atLow` (the "lowest we've recorded" claim or null),
+ *           `discountVerdict` ({discount, market, price}, each null or a code and reason), `advice` (buy or wait), `pta` ({product,
+ *           thisPage}), `productUrl` (the product on ShopSavvy), `searchUrl`. When not found, `reason` is store_not_covered,
+ *           not_stored or no_match.
+ *       400:
+ *         description: Missing or over-long address, over-long title, or a price that is not a number of rupees.
+ *       429:
+ *         description: Too many requests.
+ */
+router.get("/match", matchLimiter, getProductMatch);
 
 /**
  * @swagger
