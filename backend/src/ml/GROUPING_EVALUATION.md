@@ -10,7 +10,7 @@ Who labelled, and how: B9 labels for group_merges.sample.json, by Claude on 2026
 **Merge precision: 78.3%** (72 of 92 judged merges correct; 95% interval 68.8% to 85.5%).
 Weighted by each category's real share of merges: **78.8%**.
 Unsure: 8. Not yet labelled: 0.
-Blind human spot-check: pending.
+Blind human spot-check (Arsalan, 20 merges drawn at random): agreed with these labels on **14 of 20** (70.0%; 95% interval 48.1% to 85.5%). Disagreements: m020 (labelled unsure, spot-check different); m045 (labelled different, spot-check same); m049 (labelled unsure, spot-check different); m051 (labelled unsure, spot-check different); m058 (labelled different, spot-check same); m075 (labelled different, spot-check same).
 
 | Category | Merges in catalogue | Sampled | Same | Different | Unsure | Precision | 95% interval |
 |---|---|---|---|---|---|---|---|
