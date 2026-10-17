@@ -82,6 +82,81 @@ export function seriesNumbers(text = "") {
   return found;
 }
 
+// A number followed by these words counts something sold with the product ("1 Year Warranty", "7 Sets Straps"), not the model.
+const COUNTED_WORDS = new Set([
+  "year", "years", "yr", "month", "months", "day", "days", "set", "sets", "pcs", "pieces", "piece", "straps", "strap", "colors", "colours",
+]);
+
+/**
+ * The bare numbers of a title (up to three digits) with the word before each: "ThinkBook 14" gives ["thinkbook", "14"], "Max 585"
+ * ["max", "585"], "Gus-03" ["gus", "03"], and a decimal its two halves ("2.1 ch" gives ["2", "1"]). A number after a word naming an
+ * operating system or CPU family, or one counting something ("1 Year Warranty"), is left out.
+ */
+function slotNumbers(text = "") {
+  const tokens = tokenize(modelTokens(text));
+  const found = [];
+  tokens.forEach((token, i) => {
+    const before = tokens[i - 1];
+    // A trailing letter is part of the model ("Note 11T", "Redmi 15C") unless it is a unit or marker ("5G", "4K", "65W").
+    const isNumber = /^\d{1,3}$/.test(token) || (/^\d{1,3}[a-z]$/.test(token) && !UNIT_SUFFIX_LETTERS.has(token.slice(-1)));
+    if (!isNumber || !before) return;
+    if (NON_MODEL_NUMBER_PRECEDERS.has(before) || COUNTED_WORDS.has(tokens[i + 1])) return;
+    found.push([before, token]);
+  });
+  return found;
+}
+
+/**
+ * The numbers of a title keyed by the word before them. Two titles that put different numbers after the same word name different
+ * models: "ThinkBook 14" / "ThinkBook 16", "Max 585" / "Max 580", "Gus-03" / "Gus-01". seriesNumbers alone missed these whenever
+ * the titles shared some other number ("Core Ultra 7" in both ThinkBooks, "Ultra 3" in both watches).
+ */
+export function numberSlots(text = "") {
+  const slots = new Map();
+  for (const [word, number] of slotNumbers(text)) {
+    if (!slots.has(word)) slots.set(word, new Set());
+    slots.get(word).add(number);
+  }
+  return slots;
+}
+
+/**
+ * True when one title carries no model number and the other carries exactly one, written inside the model name, before a tier word.
+ * "Galaxy Buds Pro" against "Galaxy Buds 2 Pro": the unnumbered one is the first generation, a different product. A number only
+ * added at the end ("Galaxy Watch Ultra" / "Watch Ultra 2 47mm") is left alone, as stores use it loosely for a newer edition of the
+ * same watch. Laptop titles carry several numbers and never reach this.
+ */
+function unnumberedGeneration(textA, textB) {
+  const a = slotNumbers(textA);
+  const b = slotNumbers(textB);
+  const [numbered, numberedText] = a.length === 0 ? [b, textB] : b.length === 0 ? [a, textA] : [null, null];
+  if (!numbered || numbered.length !== 1) return false;
+  const [word, number] = numbered[0];
+  const tokens = tokenize(modelTokens(numberedText));
+  return VARIANT_TOKENS.has(tokens[tokens.indexOf(number, tokens.indexOf(word)) + 1]);
+}
+
+// Words that name a separate product line of a brand, never store wording: Redmi Note 7 Pro is not Redmi 7 Pro, nor Redmi 9A Sport a
+// Redmi 9A, Galaxy Watch 8 Classic a Galaxy Watch 8, Galaxy S7 edge a Galaxy S7, Redmi 10 Prime a Redmi 10, Honor 10 GT an Honor 10,
+// or Redmi 9 Power a Redmi 9.
+const LINE_WORDS = new Set(["note", "sport", "classic", "fold", "flip", "edge", "prime", "gt", "power"]);
+
+/**
+ * "cellular" when a title says the unit has a SIM connection, "wifi" when it says Wi-Fi and nothing cellular, else null. A tablet's
+ * Wi-Fi and cellular versions are different products at different prices ("Redmi Pad 2 4G" against "Redmi Pad 2 8GB 256GB - Wifi",
+ * "Tab S11 Ultra 5G" against "Wifi"). A cellular unit usually also lists Wi-Fi, so cellular words win.
+ */
+export function connectivity(text = "") {
+  const lower = String(text).toLowerCase();
+  if (/\b(cellular|lte|[345]g)\b/.test(lower)) return "cellular";
+  if (/\bwi-?fi\b/.test(lower)) return "wifi";
+  return null;
+}
+
+export function lineWords(text = "") {
+  return new Set(tokenize(modelTokens(text)).filter((t) => LINE_WORDS.has(t)));
+}
+
 // A trailing letter that is a unit or a connectivity/resolution marker, not part of
 // a model name: "5G", "4K", "65W", "1L", "10M", "5V", "50P".
 const UNIT_SUFFIX_LETTERS = new Set(["g", "k", "w", "l", "m", "h", "v", "p"]);
@@ -206,6 +281,22 @@ export function attributeConflict(textA, textB, { ignoreUnstatedStorage = false 
     const valuesB = idsB.get(slot);
     if (valuesB && ![...valuesA].some((v) => valuesB.has(v))) return true;
   }
+
+  // The same word followed by different numbers (see numberSlots), and a first generation against a numbered one.
+  const slotsA = numberSlots(textA);
+  const slotsB = numberSlots(textB);
+  for (const [word, valuesA] of slotsA) {
+    const valuesB = slotsB.get(word);
+    if (valuesB && ![...valuesA].some((v) => valuesB.has(v))) return true;
+  }
+  if (unnumberedGeneration(textA, textB)) return true;
+
+  if (!sameSet(lineWords(textA), lineWords(textB))) return true;
+
+  // Wi-Fi only against cellular, when both titles say (most phone titles say neither, or only "5G").
+  const linkA = connectivity(textA);
+  const linkB = connectivity(textB);
+  if (linkA !== null && linkB !== null && linkA !== linkB) return true;
 
   if (!sameSet(extractVariants(textA), extractVariants(textB))) return true;
 

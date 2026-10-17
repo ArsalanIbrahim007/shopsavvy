@@ -135,10 +135,42 @@ const ptaConflict = (a, b) => {
 };
 
 /**
+ * True when an offer of unstated PTA status costs far more than a non-PTA one: it is the PTA-approved unit (B9 found S26 Ultra 12/512
+ * non-PTA at PKR 318,999 merged with an unstated one at PKR 446,999, and four more like it). The mirror image of separateLikelyNonPta
+ * below, which moves unstated offers priced far BELOW the approved ones; the same 15% gap is used.
+ */
+const ptaPriceConflict = (a, b) => {
+  if (!PTA_SENSITIVE.has(a.productCategory) && !PTA_SENSITIVE.has(b.productCategory)) return false;
+  const first = ptaOf(a);
+  const second = ptaOf(b);
+  if (first === "non_pta" && second === "unknown") return a.price < b.price * NON_PTA_PRICE_RATIO;
+  if (second === "non_pta" && first === "unknown") return b.price < a.price * NON_PTA_PRICE_RATIO;
+  return false;
+};
+
+/**
+ * How far apart one store may price two of its own pages for them still to be one product. A store charges one price for one
+ * product, so two pages of a model, one stating a capacity and one not, priced apart are two variants: Mega's bare "iPhone 16 Pro
+ * Max" at PKR 319,999 beside its "512GB NON PTA" at PKR 344,999 is the cheaper capacity. 5% allows for a page not yet updated.
+ */
+const SAME_STORE_PRICE_GAP = 0.05;
+
+// Not when either says PTA approved: then the cheaper page is most likely the non-PTA unit, and separateLikelyNonPta moves it out
+// and labels it as such for the shopper, which this rule (acting earlier) would prevent.
+const sameStoreVariant = (a, b, titleA, titleB) =>
+  a.platform === b.platform &&
+  ptaOf(a) !== "pta_approved" && ptaOf(b) !== "pta_approved" &&
+  (extractStorage(titleA) === null) !== (extractStorage(titleB) === null) &&
+  a.price > 0 && b.price > 0 &&
+  Math.abs(a.price - b.price) / Math.min(a.price, b.price) > SAME_STORE_PRICE_GAP;
+
+/**
  * The first group in `candidates` the listing may join, or null. The strategy decides whether it looks like the
  * group's product; on top of that it must not conflict with any member (see the comment inside).
  */
 function findMatchingGroup(listing, rawTitle, listingStorage, candidates, matchStrategy, networkFamilies) {
+  let nearest = null;
+  let nearestGap = Infinity;
   for (const group of candidates) {
     const capacityConflict =
       group.storage !== null &&
@@ -161,14 +193,27 @@ function findMatchingGroup(listing, rawTitle, listingStorage, candidates, matchS
       matchStrategy(rawTitle, group, listing, listingStorage) &&
       !group.offers.some((member) =>
         ptaConflict(listing, member) ||
+        ptaPriceConflict(listing, member) ||
+        sameStoreVariant(listing, member, rawTitle, member.title || member.normalizedTitle || "") ||
         attributeConflict(rawTitle, member.title || member.normalizedTitle || "", { ignoreUnstatedStorage: true }) ||
         isNetworkSplit(rawTitle, member.title || member.normalizedTitle || "", networkFamilies)
       )
     ) {
-      return group;
+      // A listing that states its capacity has one variant to join: the first match, as before. So does one that matches a group
+      // with no capacity either, unless it already matched a capacity variant.
+      if (listingStorage !== null || (group.storage === null && nearest === null)) return group;
+      if (group.storage === null) continue;
+      // A bare title ("Redmi Note 15 Pro") can match several capacity variants of its model; it belongs with the one priced
+      // nearest it. Taking the first one put PKR 92,000 offers in the 12GB/512GB group at PKR 113,000 beside an 8GB/256GB group
+      // at PKR 93,000.
+      const gap = Math.abs(listing.price - (group.lowestPrice + group.highestPrice) / 2);
+      if (gap < nearestGap) {
+        nearest = group;
+        nearestGap = gap;
+      }
     }
   }
-  return null;
+  return nearest;
 }
 
 function newGroup(listing, rawTitle, listingStorage) {
@@ -271,7 +316,12 @@ export function groupListingsByProduct(listings = [], { matchStrategy = ruleMatc
   let groups = [];
   const networkFamilies = splitNetworkFamilies(listings);
 
-  listings.forEach((listing) => {
+  // Listings that state a capacity go first, so each capacity variant has its group before a bare title has to choose between
+  // them (findMatchingGroup). The sort is stable: categories where no title states one (televisions) keep their order.
+  const statesCapacity = (listing) => extractStorage(listing.title || listing.normalizedTitle || "") !== null;
+  const ordered = [...listings].sort((a, b) => statesCapacity(b) - statesCapacity(a));
+
+  ordered.forEach((listing) => {
     const rawTitle = listing.title || listing.normalizedTitle || "";
     const normalizedListingTitle = normalizeTitle(rawTitle);
     const listingStorage = extractStorage(rawTitle);
