@@ -8,6 +8,9 @@
 // SVG, so it is sharp at any size). Mymart publishes nothing larger than its 32 px icon, which looks a little soft at 28 px.
 // iShopping has none: its site refuses scripted downloads and has no favicon at the usual address, so it
 // keeps the monogram. Telemart's site now redirects to telex.pk, and its icon is the Telex one.
+// The eleven stores added on 2026-10-22 were downloaded the same day, again with Arsalan's permission: each store's own icon as its
+// homepage names it, checked to be a real image. The Shopify stores' icons were asked for at 128 px (Zero Lifestyle has none larger
+// than 51 px); AlfaMall publishes only its favicon.ico.
 
 import { canonicalPlatform } from "./platforms.js";
 
@@ -24,6 +27,17 @@ export const STORE_LOGO_FILES = {
   xcessorieshub: "xcessorieshub.png",
   eezepc: "eezepc.webp",
   ledshop: "ledshop.png",
+  techroid: "techroid.png",
+  subhanelectronics: "subhanelectronics.jpg",
+  jalalelectronics: "jalalelectronics.png",
+  japanelectronics: "japanelectronics.png",
+  zerolifestyle: "zerolifestyle.png",
+  audionic: "audionic.png",
+  ronin: "ronin.png",
+  baseus: "baseus.jpg",
+  infinix: "infinix.webp",
+  alfamall: "alfamall.ico",
+  digimall: "digimall.png",
 };
 
 /** The address of the store's bundled logo, or null when there is none. */

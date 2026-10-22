@@ -101,7 +101,7 @@ describe("StoreLogo", () => {
   it("only ever points at our own files, never at a store's website", () => {
     for (const id of Object.keys(STORE_LOGO_FILES)) {
       const src = logoSrc(id);
-      expect(src, id).toMatch(/^\/stores\/[a-z0-9]+\.(png|ico|webp|svg)$/);
+      expect(src, id).toMatch(/^\/stores\/[a-z0-9]+\.(png|jpg|ico|webp|svg)$/);
       expect(src).not.toMatch(/^(https?:)?\/\//);
     }
     expect(logoSrc("PriceOye")).toBe(logoSrc("priceoye"));
@@ -119,11 +119,12 @@ describe("StoreLogo", () => {
       expect(bytes.length, id).toBeLessThan(30000);
       const isPng = bytes.subarray(0, 4).toString("hex") === "89504e47";
       const isIco = bytes.subarray(0, 4).toString("hex") === "00000100";
+      const isJpg = bytes.subarray(0, 3).toString("hex") === "ffd8ff";
       const isWebp = bytes.subarray(0, 4).toString("latin1") === "RIFF" && bytes.subarray(8, 12).toString("latin1") === "WEBP";
       const text = bytes.toString("utf8");
       const isSvg = file.endsWith(".svg") && /^\s*<svg[\s>]/.test(text);
-      expect(isPng || isIco || isWebp || isSvg, id).toBe(true);
-      const matchesExtension = file.endsWith(".png") ? isPng : file.endsWith(".webp") ? isWebp : file.endsWith(".svg") ? isSvg : isIco;
+      expect(isPng || isJpg || isIco || isWebp || isSvg, id).toBe(true);
+      const matchesExtension = file.endsWith(".png") ? isPng : file.endsWith(".jpg") ? isJpg : file.endsWith(".webp") ? isWebp : file.endsWith(".svg") ? isSvg : isIco;
       expect(matchesExtension, id).toBe(true); // the extension tells the truth
       if (isSvg) {
         // an SVG shown as an image cannot run scripts, but a logo should still be only shapes: no script, handler, link or embedded page
