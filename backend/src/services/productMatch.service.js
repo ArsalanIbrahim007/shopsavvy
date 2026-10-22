@@ -41,6 +41,15 @@ export const STORE_HOSTS = Object.freeze({
   "mymart.pk": "mymart",
   "alfatah.pk": "alfatah",
   "ledshop.pk": "ledshop",
+  "techroid.com": "techroid",
+  "subhanelectronics.pk": "subhanelectronics",
+  "jalalelectronics.com": "jalalelectronics",
+  "japanelectronics.com.pk": "japanelectronics",
+  "zerolifestyle.co": "zerolifestyle",
+  "audionic.co": "audionic",
+  "ronin.pk": "ronin",
+  "baseus.pk": "baseus",
+  "infinix.pk": "infinix",
   // Not scraped (switched off, see config/platforms.js), so its pages can only be found as "similar".
   "daraz.pk": "daraz",
 });
