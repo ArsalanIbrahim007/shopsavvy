@@ -21,6 +21,16 @@ const STORES = {
   xcessorieshub: { name: "XcessoriesHub", domain: "xcessorieshub.com", color: "#0097a7" },
   eezepc: { name: "eezepc", domain: "eezepc.com", color: "#3949ab" },
   ledshop: { name: "LEDshop.pk", domain: "ledshop.pk", color: "#e65100" },
+  // added 2026-10-22 (backend scrapers/stores.js); no logo files yet, so they show the monogram
+  techroid: { name: "Techroid", domain: "techroid.com", color: "#00838f" },
+  subhanelectronics: { name: "Subhan Electronics", domain: "subhanelectronics.pk", color: "#5d4037" },
+  jalalelectronics: { name: "Jalal Electronics", domain: "jalalelectronics.com", color: "#ad1457" },
+  japanelectronics: { name: "Japan Electronics", domain: "japanelectronics.com.pk", color: "#c62828" },
+  zerolifestyle: { name: "Zero Lifestyle", domain: "zerolifestyle.co", color: "#263238" },
+  audionic: { name: "Audionic", domain: "audionic.co", color: "#4527a0" },
+  ronin: { name: "Ronin", domain: "ronin.pk", color: "#bf360c" },
+  baseus: { name: "Baseus", domain: "baseus.pk", color: "#1565c0" },
+  infinix: { name: "Infinix.pk", domain: "infinix.pk", color: "#558b2f" },
 };
 
 /** "PriceOye", "priceoye.pk", "PRICEOYE" -> "priceoye" */

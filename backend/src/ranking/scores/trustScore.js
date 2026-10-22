@@ -22,6 +22,17 @@ const PLATFORM_TRUST_SCORES = {
   xcessorieshub: 0.75,
   eezepc: 0.75,
   ledshop: 0.75,
+  // Added 2026-10-22 (scrapers/stores.js), on the same judgement: a brand selling its own products is trusted like an official
+  // store; an established electronics chain a little above the default; the smaller shops just above it.
+  audionic: 0.85,
+  ronin: 0.82,
+  zerolifestyle: 0.82,
+  baseus: 0.78,
+  infinix: 0.75,
+  jalalelectronics: 0.78,
+  japanelectronics: 0.78,
+  subhanelectronics: 0.75,
+  techroid: 0.75,
 };
 
 // Maps domain-style names onto their canonical platform key.
