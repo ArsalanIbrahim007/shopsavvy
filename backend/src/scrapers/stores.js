@@ -29,12 +29,25 @@
 // and jazz.com.pk (refuse requests: 403); rbtechngames.com (sells PC parts and accessories, none of our categories); stores on
 // Magento (galaxy.pk, alfamall.com, digimall.faysalbank.com, homecart.pk), which need an adapter of their own.
 //
+// Mi Store's terms say users may not collect "users' content or information" by automated means; Arsalan decided on 2026-10-22 to
+// keep it (product listings and prices are not users' content).
+//
+// Checked 2026-10-22, the marketplaces (many of the "stores" Qeemat lists are their sellers: CLICKTOBRANDS, Authentico, GNEXT,
+// Pak Mobiles... on AlfaMall, Home Cart on DigiMall), read through storefront.scraper.js. robots.txt on both shops allows everything
+// ("Allow: /"), their search backends publish none (no rules), the search answers a plain request with no login or bot check, and
+// both terms pages (read in a browser) say nothing against automated access:
+//   alfamall.com              AlfaMall (Bank Alfalah's marketplace): phones, laptops, TVs, everything
+//   digimall.faysalbank.com   Faysal Islami DigiMall (Faysal Bank's marketplace): the same range
+// Not added 2026-10-22: cubeonline.pk (its terms exclude "any collection and use of any product listings, descriptions, or prices"),
+// jazz.com.pk/estore (behind a Cloudflare bot check), the Magento stores (none has a public product search).
+//
 // `sells` (optional): the query categories a single-brand or single-range store is asked about. Its search is not sent for a
 // query of another known category (Audionic is not asked about an iPhone every night); a query whose category is unknown
 // ("other", which is also what "infinix hot 60" reads as) goes to every store. A store without `sells` is asked about everything.
 
 import { detectQueryCategory } from "./productCategory.js";
 import { scrapeShopifySearch } from "./shopify.scraper.js";
+import { scrapeStorefrontSearch } from "./storefront.scraper.js";
 import { scrapeWooSearch } from "./woocommerce.scraper.js";
 
 export const STORES = [
@@ -53,9 +66,27 @@ export const STORES = [
   { platform: "ronin", type: "shopify", baseUrl: "https://ronin.pk", sells: ["headphones", "smartwatch"] },
   { platform: "baseus", type: "shopify", baseUrl: "https://baseus.pk", sells: ["headphones"] },
   { platform: "infinix", type: "woocommerce", baseUrl: "https://infinix.pk", sells: ["smartphone", "tablet", "laptop"] },
+  {
+    platform: "alfamall",
+    type: "storefront",
+    baseUrl: "https://alfamall.com",
+    apiUrl: "https://be.alfamall.com/storefront/search_products",
+    // Exactly what AlfaMall's own search page sends: its backend names the store by domain and refuses the search without the
+    // literal "storefront=undefined" beside it (checked: every other form answers "storefront not found").
+    params: { storefront: "undefined", isFashion: "undefined", storefront_domain: "alfamall.com" },
+    productPath: "/",
+  },
+  {
+    platform: "digimall",
+    type: "storefront",
+    baseUrl: "https://digimall.faysalbank.com",
+    apiUrl: "https://digimall-be.faysalbank.com/storefront/search_products",
+    params: { storefront: "23" }, // DigiMall's store number on its backend, as its own search page sends it
+    productPath: "/product/",
+  },
 ];
 
-const ADAPTERS = { shopify: scrapeShopifySearch, woocommerce: scrapeWooSearch };
+const ADAPTERS = { shopify: scrapeShopifySearch, woocommerce: scrapeWooSearch, storefront: scrapeStorefrontSearch };
 
 /** True when `store` is to be asked about `query` (see `sells` above). */
 export function storeSells(store, query) {

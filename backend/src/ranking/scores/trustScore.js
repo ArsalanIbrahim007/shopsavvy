@@ -33,6 +33,9 @@ const PLATFORM_TRUST_SCORES = {
   japanelectronics: 0.78,
   subhanelectronics: 0.75,
   techroid: 0.75,
+  // Banks' marketplaces (2026-10-22): an established operator, but each product is sold by one of many sellers.
+  alfamall: 0.8,
+  digimall: 0.8,
 };
 
 // Maps domain-style names onto their canonical platform key.

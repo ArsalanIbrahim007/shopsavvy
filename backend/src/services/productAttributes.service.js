@@ -107,6 +107,8 @@ export function extractCondition(title = "") {
 
   if (/\brefurb(ished)?\b/.test(text)) return "refurbished";
   if (/\b(used|pre[\s-]?owned|second hand)\b/.test(text)) return "used";
+  // Marketplace sellers (AlfaMall) sell used laptops as "Like New"; a new one never needs saying so.
+  if (/\blike[\s-]?new\b/.test(text)) return "used";
   if (/\b(open box|openbox)\b/.test(text)) return "open_box";
   // Paklap sells marked units as "Brand New, Light Cosmetic Marks" beside plain "NEW" ones of the same laptop, cheaper. The words
   // "brand new" are in the title, but the unit is not the one a shopper buying new gets: closest to an open-box unit.

@@ -17,6 +17,7 @@ import "./Layout.css";
 const STORES = [
   "priceoye", "shophive", "ishopping", "telemart", "mega", "paklap", "w11stop", "mistore", "mymart", "alfatah", "xcessorieshub", "eezepc", "ledshop",
   "techroid", "subhanelectronics", "jalalelectronics", "japanelectronics", "zerolifestyle", "audionic", "ronin", "baseus", "infinix",
+  "alfamall", "digimall",
 ];
 
 // The header's shortcuts: the categories people browse most, and the verified deals on the home page.

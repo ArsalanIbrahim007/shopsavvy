@@ -121,6 +121,10 @@ describe("condition: a unit sold with cosmetic marks is not a new one", () => {
   it("reads Paklap's 'Brand New, Light Cosmetic Marks' as open box (m054, m058)", () => {
     expect(extractCondition("HP 250R G9 Notebook PC (Black, Brand New, Light Cosmetic Marks)")).toBe("open_box");
     expect(extractCondition("Dell Laptop - Minor Cosmetic Marks")).toBe("open_box");
+    // AlfaMall sellers' used laptops (2026-10-22)
+    expect(extractCondition("Dell Latitude 5440 Core i5 8GB RAM 128GB Storage Like New")).toBe("used");
+    expect(extractCondition("HP EliteBook 840 G5 (Like-New)")).toBe("used");
+    expect(extractCondition("Samsung Galaxy A17 Brand New")).toBe("new");
     expect(extractCondition("HP 250R G9 Notebook PC (Black, NEW)")).toBe("new");
     expect(conflict(
       "HP 250R G9 Notebook PC - 13th Gen Core i5 1334U 8-GB 512-GB SSD (Black, Brand New, Light Cosmetic Marks)",
