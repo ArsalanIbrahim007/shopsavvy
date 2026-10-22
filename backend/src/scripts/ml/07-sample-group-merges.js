@@ -24,14 +24,17 @@ import mongoose from "mongoose";
 
 import { VISIBLE_PLATFORMS_FILTER } from "../../config/platforms.js";
 import Listing from "../../models/listing.model.js";
-import { DEAL_CATEGORIES } from "../../services/dealsFeed.service.js";
 import { closeGroupingPool, groupListings } from "../../services/grouping.service.js";
+import { mergeSet } from "./mergeSets.js";
 
-export const SAMPLE_SIZE = 100;
-export const MIN_PER_CATEGORY = 8;
+// --set=core (the B9 sample, the default) or --set=appliances: see mergeSets.js.
+const SET = mergeSet();
+const SAMPLE_SIZE = SET.size;
+const MIN_PER_CATEGORY = SET.minPerCategory;
+const CATEGORIES = SET.categories;
 const seedArg = process.argv.find((a) => a.startsWith("--seed="));
-const SEED = seedArg ? Number(seedArg.split("=")[1]) : 20261015;
-const OUT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "ml", "dataset", "group_merges.sample.json");
+const SEED = seedArg ? Number(seedArg.split("=")[1]) : SET.seed;
+const OUT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "ml", "dataset", `${SET.file}.sample.json`);
 
 /** mulberry32: a small seeded random number generator, so the same seed draws the same sample. */
 function random(seed) {
@@ -55,7 +58,7 @@ const rand = random(SEED);
 const population = {}; // category -> merges
 const started = Date.now();
 
-for (const category of DEAL_CATEGORIES) {
+for (const category of CATEGORIES) {
   const listings = await Listing.find({ ...VISIBLE_PLATFORMS_FILTER, isActive: true, productCategory: category }).lean();
   const groups = await groupListings(listings, { strategy: "ml", recommend: false, priority: "background", timeoutMs: 20 * 60 * 1000 });
   const merges = [];
@@ -83,7 +86,7 @@ for (let i = 0; sum !== SAMPLE_SIZE && i < 1000; i++) {
 }
 
 const sample = [];
-for (const category of DEAL_CATEGORIES) {
+for (const category of CATEGORIES) {
   const pool = [...population[category]];
   for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; } // Fisher-Yates
   sample.push(...pool.slice(0, quota[category]));
@@ -91,7 +94,7 @@ for (const category of DEAL_CATEGORIES) {
 sample.forEach((merge, i) => { merge.id = `m${String(i + 1).padStart(3, "0")}`; });
 
 writeFileSync(OUT, JSON.stringify({
-  drawnAt: new Date().toISOString(), seed: SEED, strategy: "ml", sampleSize: sample.length,
+  set: SET.name, drawnAt: new Date().toISOString(), seed: SEED, strategy: "ml", sampleSize: sample.length,
   population: Object.fromEntries(Object.entries(population).map(([c, m]) => [c, m.length])), quota, merges: sample,
 }, null, 2));
 console.log(`\n${total} merges in all; sampled ${sample.length} (${Object.entries(quota).map(([c, q]) => `${c} ${q}`).join(", ")}) in ${Math.round((Date.now() - started) / 1000)} s -> ${OUT}`);

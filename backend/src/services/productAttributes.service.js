@@ -93,6 +93,74 @@ export function extractNetworkGeneration(title = "") {
   return null;
 }
 
+// ---- Appliances (air conditioners, refrigerators, washing machines; added 2026-10-22) ----
+// Each reads the RAW title, before normalisation splits "1.5" into "1 5", and each answers null when the title does not say: as
+// with PTA status, a matching rule then applies only when both titles state the attribute.
+
+/** An air conditioner's cooling capacity in tons: "1.5 Ton", "1-ton", "2 Tons". */
+export function extractTonnage(title = "") {
+  const match = String(title).toLowerCase().match(/(\d+(?:\.\d+)?)\s*-?\s*tons?\b/);
+  if (!match) return null;
+  const tons = Number(match[1]);
+  return tons >= 0.5 && tons <= 5 ? tons : null;
+}
+
+/**
+ * The weights a washing machine states, in kg, as a sorted list: "11.5KG" -> [11.5]; a washer-dryer "11.5KG+8KG" -> [8, 11.5].
+ * Null when none, or when a value is not a plausible drum (3 to 30 kg).
+ */
+export function extractCapacityKg(title = "") {
+  const values = [...String(title).toLowerCase().matchAll(/(\d+(?:\.\d+)?)\s*kgs?\b/g)].map((m) => Number(m[1]));
+  if (values.length === 0 || values.some((v) => v < 3 || v > 30)) return null;
+  return [...new Set(values)].sort((a, b) => a - b);
+}
+
+const LITRES_PER_CUBIC_FOOT = 28.3168;
+
+/** A refrigerator's volume in litres: "350 Ltr", "350L", "15 cu ft" / "15 CFT" (converted). Null when unstated or implausible. */
+export function extractVolumeLitres(title = "") {
+  const text = String(title).toLowerCase();
+  const litres = text.match(/(\d{2,4})\s*(?:l|lt|ltr|ltrs|litres?|liters?)\b/);
+  if (litres) {
+    const value = Number(litres[1]);
+    return value >= 40 && value <= 1500 ? value : null;
+  }
+  const cubic = text.match(/(\d+(?:\.\d+)?)\s*(?:cu\.?\s*ft\.?|cft|cubic\s*f(?:ee|oo)t)/);
+  if (cubic) {
+    const value = Math.round(Number(cubic[1]) * LITRES_PER_CUBIC_FOOT);
+    return value >= 40 && value <= 1500 ? value : null;
+  }
+  return null;
+}
+
+/** "inverter" or "non_inverter" as the title says ("DC Inverter", "Non-Inverter"), else null. */
+export function extractInverter(title = "") {
+  const text = String(title).toLowerCase();
+  if (/\bnon[\s-]?inverter\b/.test(text)) return "non_inverter";
+  if (/\binverter\b/.test(text)) return "inverter";
+  return null;
+}
+
+/**
+ * The kind of appliance a title names within its category, when it names one: an air conditioner's "split", "window",
+ * "portable" or "floor" (standing); a washing machine's "front" or "top" load, or "twin" tub (semi-automatic); a refrigerator's
+ * "side_by_side", "double_door", "single_door" or "freezer" (a deep, chest or upright freezer). Null when it names none, or more
+ * than one of the same family (a listing of several kinds).
+ */
+export function extractApplianceType(title = "") {
+  const text = String(title).toLowerCase();
+  const families = [
+    [["split", /\bsplit\b/], ["window", /\bwindow\s*(?:ac|air)/], ["portable", /\bportable\b/], ["floor", /\bfloor\s*stand/]],
+    [["front", /\bfront[\s-]*load/], ["top", /\btop[\s-]*load/], ["twin", /\btwin[\s-]*tub|\bsemi[\s-]*auto/]],
+    [["side_by_side", /\bside[\s-]*by[\s-]*side\b/], ["double_door", /\b(?:double|two|2)[\s-]*door/], ["single_door", /\b(?:single|one|1)[\s-]*door/], ["freezer", /\b(?:deep|chest|upright)\s*freezer\b/]],
+  ];
+  for (const family of families) {
+    const found = family.filter(([, pattern]) => pattern.test(text)).map(([name]) => name);
+    if (found.length === 1) return found[0];
+  }
+  return null;
+}
+
 /** A title with its network-generation words removed, so "A17" and "A17 5G" have the same family key. */
 export function networkFamilyKey(title = "") {
   return String(title)

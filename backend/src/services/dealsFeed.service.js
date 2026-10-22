@@ -17,8 +17,13 @@ import { attachPriceHistory } from "./historyEnrichment.service.js";
 import { DEFAULT_MAX_AGE_HOURS } from "./dealsRanking.service.js";
 import { computeDealsOffThread } from "./grouping.service.js";
 
-// Categories where "the same product at several stores" is the point of the site.
-export const DEAL_CATEGORIES = ["smartphone", "laptop", "tv", "tablet", "smartwatch", "headphones"];
+// Categories where "the same product at several stores" is the point of the site. The last four were added on 2026-10-22: the stores
+// already sold them (about 1,300 listings, then filed as "appliance" or "other"), and they have matching rules of their own
+// (tonnage, drum weight, volume, inverter type: productAttributes.service.js).
+export const DEAL_CATEGORIES = [
+  "smartphone", "laptop", "tv", "tablet", "smartwatch", "headphones",
+  "air_conditioner", "refrigerator", "washing_machine", "monitor",
+];
 export const isDealCategory = (value) => DEAL_CATEGORIES.includes(value);
 
 const CACHE_TTL_MS = 10 * 60 * 1000;

@@ -229,17 +229,27 @@ const CATEGORIES = {
     },
 
     monitor: {
+        // Not "display": hair clippers, chargers and cables "with Digital Display", and laptops listing their display, were all
+        // read as monitors (2026-10-22, before monitors became a category of their own on the site).
         keywords: [
             "monitor",
             "gaming monitor",
             "computer monitor",
-            "display",
+            "led monitor",
+            "lcd monitor",
         ],
         exclude: [
             "monitor stand",
             "monitor arm",
             "monitor mount",
             "screen protector",
+            "baby monitor",
+            "blood pressure",
+            "bp monitor",
+            "heart rate",
+            "glucose",
+            "tyre pressure",
+            "tire pressure",
         ],
     },
 
@@ -303,18 +313,87 @@ const CATEGORIES = {
         ],
     },
 
-    appliance: {
+    // Air conditioners, refrigerators and washing machines are categories of their own (2026-10-22, Arsalan's go-ahead): they
+    // are compared on tonnage, volume and drum weight (productAttributes.service.js), not lumped in with ovens and vacuums.
+    air_conditioner: {
         keywords: [
-            "refrigerator",
-            "fridge",
-            "washing machine",
-            "microwave",
             "air conditioner",
-            "air conditioner",
-            "air cooler",
             "split ac",
             "inverter ac",
             "window ac",
+            "portable ac",
+            "floor standing ac",
+            "dc inverter",
+            "ton inverter",
+            "ton split",
+            "0.75 ton",
+            "1 ton",
+            "1.0 ton",
+            "1.5 ton",
+            "2 ton",
+            "2.5 ton",
+            "4 ton",
+        ],
+        // Accessories named after the appliance. Not plain "stand": "floor standing" and "free-standing" are the appliance itself.
+        exclude: [
+            "stabilizer",
+            "stabiliser",
+            "cover",
+            "remote",
+            "bracket",
+            "ac stand",
+            "copper pipe",
+            "gas refill",
+        ],
+    },
+
+    refrigerator: {
+        keywords: [
+            "refrigerator",
+            "fridge",
+            "deep freezer",
+            "chest freezer",
+            "upright freezer",
+            "freezer",
+        ],
+        exclude: [
+            "fridge magnet",
+            "cover",
+            "fridge stand",
+            "refrigerator stand",
+            "fridge mat",
+            "water filter",
+            "gasket",
+        ],
+    },
+
+    washing_machine: {
+        keywords: [
+            "washing machine",
+            "washer dryer",
+            "washer & dryer",
+            "front load",
+            "top load",
+            "twin tub",
+            "automatic washer",
+        ],
+        exclude: [
+            "cover",
+            "washing machine stand",
+            "inlet",
+            "hose",
+            "pressure washer",
+            "car washer",
+            "dish",
+            "bag", // "Top Load Laptop Bag"
+            "backpack",
+        ],
+    },
+
+    appliance: {
+        keywords: [
+            "microwave",
+            "air cooler",
             "air fryer",
             // Matched on its own word below, not as a substring -- "oven"
             // is also the last four letters of "TechWoven", Apple's name

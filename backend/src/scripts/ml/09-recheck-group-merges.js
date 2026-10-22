@@ -24,9 +24,9 @@ import mongoose from "mongoose";
 
 import { VISIBLE_PLATFORMS_FILTER } from "../../config/platforms.js";
 import Listing from "../../models/listing.model.js";
-import { DEAL_CATEGORIES } from "../../services/dealsFeed.service.js";
 import { closeGroupingPool, groupListings } from "../../services/grouping.service.js";
 import { tally } from "./08-score-group-merges.js";
+import { mergeSet } from "./mergeSets.js";
 
 const ML = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "ml");
 const arg = (name) => process.argv.find((a) => a.startsWith(`--${name}=`))?.split("=").slice(1).join("=");
@@ -58,11 +58,12 @@ export function recheck(merges, groupsByCategory) {
 
 const isMain = process.argv[1] && fileURLToPath(import.meta.url).replace(/\\/g, "/") === process.argv[1].replace(/\\/g, "/");
 if (isMain) {
+  const SET = mergeSet(); // --set=core (the default) or --set=appliances: see mergeSets.js
   await mongoose.connect(process.env.MONGO_URI);
   const started = Date.now();
   const groupsByCategory = {};
   const titleOf = new Map();
-  for (const category of DEAL_CATEGORIES) {
+  for (const category of SET.categories) {
     const listings = await Listing.find({ ...VISIBLE_PLATFORMS_FILTER, isActive: true, productCategory: category }).lean();
     const groups = await groupListings(listings, { strategy: "ml", recommend: false, priority: "background", timeoutMs: 20 * 60 * 1000 });
     groupsByCategory[category] = groups.map((g) => g.offers.map(urlOf).filter(Boolean));
@@ -79,8 +80,8 @@ if (isMain) {
     console.log(`snapshot -> ${save}`);
   }
 
-  const sample = JSON.parse(readFileSync(join(ML, "dataset", "group_merges.sample.json"), "utf8"));
-  const labels = JSON.parse(readFileSync(join(ML, "dataset", "group_merges.labels.json"), "utf8"));
+  const sample = JSON.parse(readFileSync(join(ML, "dataset", `${SET.file}.sample.json`), "utf8"));
+  const labels = JSON.parse(readFileSync(join(ML, "dataset", `${SET.file}.labels.json`), "utf8"));
   const states = recheck(sample.merges, groupsByCategory);
   const byLabel = {};
   for (const s of states) {
@@ -143,8 +144,8 @@ if (isMain) {
 
   // --record: keep the result for the report (08-score-group-merges.js prints it under "After the matcher fixes").
   if (process.argv.includes("--record")) {
-    writeFileSync(join(ML, "dataset", "group_merges.recheck.json"), JSON.stringify(record, null, 2));
-    console.log("\nrecorded -> src/ml/dataset/group_merges.recheck.json");
+    writeFileSync(join(ML, "dataset", `${SET.file}.recheck.json`), JSON.stringify(record, null, 2));
+    console.log(`\nrecorded -> src/ml/dataset/${SET.file}.recheck.json`);
   }
   process.exit(0);
 }
