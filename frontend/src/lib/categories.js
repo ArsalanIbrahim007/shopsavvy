@@ -10,6 +10,9 @@ export const CATEGORY_NAMES = {
   headphones: "Headphones",
   smartwatch: "Smartwatches",
   monitor: "Monitors",
+  air_conditioner: "Air conditioners",
+  refrigerator: "Refrigerators",
+  washing_machine: "Washing machines",
   gaming_console: "Gaming consoles",
   accessory: "Accessories",
   appliance: "Appliances",
@@ -25,7 +28,10 @@ export const isKnownCategory = (category) => Object.hasOwn(CATEGORY_NAMES, categ
 // The categories the site is about, in the order they are offered when counts tie.
 // "accessory", "other", "appliance" and the like are stored but are not what a shopper
 // comes here to compare, so they are not promoted on the home page.
-export const FEATURED_CATEGORIES = ["smartphone", "tv", "laptop", "smartwatch", "tablet", "headphones"];
+export const FEATURED_CATEGORIES = [
+  "smartphone", "tv", "laptop", "smartwatch", "tablet", "headphones",
+  "air_conditioner", "refrigerator", "washing_machine", "monitor",
+];
 
 // A category with fewer listings than this would look empty, so it gets no tile.
 export const MIN_TILE_COUNT = 20;
@@ -48,6 +54,9 @@ export const FACETS_BY_CATEGORY = {
   laptop: ["brand", "storage", "ram", "screen", "colour", "condition"],
   tv: ["brand", "screen", "resolution", "condition"],
   monitor: ["brand", "screen", "resolution", "condition"],
+  air_conditioner: ["brand", "condition"],
+  refrigerator: ["brand", "colour", "condition"],
+  washing_machine: ["brand", "condition"],
   smartwatch: ["brand", "colour", "condition"],
   headphones: ["brand", "colour", "condition"],
   camera: ["condition"],

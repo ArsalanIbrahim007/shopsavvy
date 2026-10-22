@@ -173,8 +173,9 @@ function classifyTitleTokens(title, { minCodeLength = 3 } = {}) {
     } else if (GPU_PREFIX.has(token) && /^\d{3,4}$/.test(next ?? "")) {
       addSpec("gpu", `${token}${next}`);
       consumed.add(i + 1);
-    } else if (!consumed.has(i) && !/^\d+(gb|tb|mb)$/.test(token) && codePattern.test(token)) {
-      // Capacities are handled separately and are not model codes either.
+    } else if (!consumed.has(i) && !/^\d+(gb|tb|mb|kg|kgs|ltr|ltrs|l|lt|ton|tons|cft)$/.test(token) && codePattern.test(token)) {
+      // Capacities are handled separately and are not model codes either: storage, and an appliance's weight, volume or
+      // tonnage ("11.5KG" arrives as "5kg", which matched washing machines of different sizes as one model).
       codes.add(token);
     }
   });

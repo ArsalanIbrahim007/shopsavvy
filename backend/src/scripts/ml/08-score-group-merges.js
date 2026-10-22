@@ -13,6 +13,8 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { mergeSet } from "./mergeSets.js";
+
 const ML = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "ml");
 
 /** 95% Wilson score interval for k successes in n trials, as [low, high] proportions; null for n = 0. */
@@ -51,12 +53,14 @@ const range = (iv) => (iv ? `${pct(iv[0])} to ${pct(iv[1])}` : "–");
 
 const isMain = process.argv[1] && fileURLToPath(import.meta.url).replace(/\\/g, "/") === process.argv[1].replace(/\\/g, "/");
 if (isMain) {
-  const sample = JSON.parse(readFileSync(join(ML, "dataset", "group_merges.sample.json"), "utf8"));
-  const labels = JSON.parse(readFileSync(join(ML, "dataset", "group_merges.labels.json"), "utf8"));
+  // --set=core (the B9 evaluation, the default) or --set=appliances: see mergeSets.js.
+  const SET = mergeSet();
+  const sample = JSON.parse(readFileSync(join(ML, "dataset", `${SET.file}.sample.json`), "utf8"));
+  const labels = JSON.parse(readFileSync(join(ML, "dataset", `${SET.file}.labels.json`), "utf8"));
   const about = labels._about ?? "";
   let reasons = {};
   try {
-    reasons = JSON.parse(readFileSync(join(ML, "dataset", "group_merges.reasons.json"), "utf8"));
+    reasons = JSON.parse(readFileSync(join(ML, "dataset", `${SET.file}.reasons.json`), "utf8"));
   } catch {
     /* reasons are optional */
   }
@@ -71,7 +75,7 @@ if (isMain) {
   // The blind human spot-check (group_merges.spotcheck.json: { "m010": "same", ... }), made without seeing the labels above.
   let spot = null;
   try {
-    spot = JSON.parse(readFileSync(join(ML, "dataset", "group_merges.spotcheck.json"), "utf8"));
+    spot = JSON.parse(readFileSync(join(ML, "dataset", `${SET.file}.spotcheck.json`), "utf8"));
   } catch {
     /* not done yet */
   }
@@ -85,7 +89,7 @@ if (isMain) {
   // The same labelled merges after a change to the matcher (09-recheck-group-merges.js --record), if that has been run.
   let recheck = null;
   try {
-    recheck = JSON.parse(readFileSync(join(ML, "dataset", "group_merges.recheck.json"), "utf8"));
+    recheck = JSON.parse(readFileSync(join(ML, "dataset", `${SET.file}.recheck.json`), "utf8"));
   } catch {
     /* not rechecked */
   }
@@ -127,10 +131,10 @@ if (isMain) {
     return `| ${c} | ${sample.population[c]} | ${t.same + t.different + t.unsure} | ${t.same} | ${t.different} | ${t.unsure} | ${pct(t.precision)} | ${range(t.interval)} |`;
   });
   const md = [
-    "# Grouping evaluation (B9): how often the live site puts an offer under the right product",
+    `# ${SET.title}`,
     "",
     `Sample drawn ${sample.drawnAt.slice(0, 10)} with seed ${sample.seed} (\`src/scripts/ml/07-sample-group-merges.js\`): ${sample.sampleSize} merges, chosen at random from`,
-    `${Object.values(sample.population).reduce((a, b) => a + b, 0)} made by the production grouping (trained matcher, \`${sample.strategy}\`) over every visible active listing of the six deal categories.`,
+    `${Object.values(sample.population).reduce((a, b) => a + b, 0)} made by the production grouping (trained matcher, \`${sample.strategy}\`) over every visible active listing of ${SET.categories.length === 6 ? "the six deal categories" : SET.categories.join(", ")}.`,
     "A merge is an offer the site placed under a product, judged against that product's main offer using the rubric: same model, same",
     "storage and RAM variant, same condition; colour may differ. Scored by `src/scripts/ml/08-score-group-merges.js`.",
     "",
@@ -158,6 +162,6 @@ if (isMain) {
     "did not merge. Pair-level scores for the trained matcher are in EVALUATION_REPORT.md.",
     "",
   ].join("\n");
-  writeFileSync(join(ML, "GROUPING_EVALUATION.md"), md);
+  writeFileSync(join(ML, SET.report), md);
   console.log(md);
 }

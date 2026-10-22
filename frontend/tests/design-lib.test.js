@@ -11,7 +11,8 @@ describe("featuredCategories", () => {
   ];
 
   it("keeps only the categories the site is about, biggest first, with readable names", () => {
-    expect(featuredCategories(counts).map((t) => t.category)).toEqual(["smartphone", "tv", "laptop", "smartwatch", "tablet", "headphones"]);
+    // Monitors are featured since 2026-10-22; "accessory", "other" and the leftover "appliance" bucket are not.
+    expect(featuredCategories(counts).map((t) => t.category)).toEqual(["smartphone", "tv", "laptop", "smartwatch", "tablet", "headphones", "monitor"]);
     expect(featuredCategories(counts)[0]).toEqual({ category: "smartphone", name: "Smartphones", count: 1368 });
   });
 

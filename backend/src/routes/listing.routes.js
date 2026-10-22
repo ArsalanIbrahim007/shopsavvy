@@ -167,7 +167,7 @@ router.get("/stats", readLimiter, getListingStats);
  *         name: category
  *         schema:
  *           type: string
- *           enum: [smartphone, laptop, tv, tablet, smartwatch, headphones]
+ *           enum: [smartphone, laptop, tv, tablet, smartwatch, headphones, air_conditioner, refrigerator, washing_machine, monitor]
  *         description: Restrict to one category. Omitted means all of them.
  *       - in: query
  *         name: limit
@@ -239,7 +239,7 @@ router.get("/deals", dealsLimiter, getDeals);
  *         name: category
  *         schema:
  *           type: string
- *           enum: [smartphone, laptop, tv, tablet, smartwatch, headphones]
+ *           enum: [smartphone, laptop, tv, tablet, smartwatch, headphones, air_conditioner, refrigerator, washing_machine, monitor]
  *         description: Restrict to one category. Omitted means all of them.
  *       - in: query
  *         name: limit
@@ -340,7 +340,7 @@ router.get("/compare", detailLimiter, getProductComparison);
  *   get:
  *     summary: Browse a category
  *     description: >
- *       The products of one category (smartphone, laptop, tv, tablet, smartwatch or headphones), most
+ *       The products of one category (smartphone, laptop, tv, tablet, smartwatch, headphones, air_conditioner, refrigerator, washing_machine or monitor), most
  *       compared first, in pages. Each product is a group of offers with the same shape as the groups
  *       in /api/listings/search, except that offers carry no price history (the product page loads it).
  *       Grouping a category is expensive, so it is computed once in the worker pool and cached for ten
@@ -353,7 +353,7 @@ router.get("/compare", detailLimiter, getProductComparison);
  *         required: true
  *         schema:
  *           type: string
- *           enum: [smartphone, laptop, tv, tablet, smartwatch, headphones]
+ *           enum: [smartphone, laptop, tv, tablet, smartwatch, headphones, air_conditioner, refrigerator, washing_machine, monitor]
  *       - in: query
  *         name: limit
  *         schema:

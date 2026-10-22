@@ -6,7 +6,10 @@ import {
   extractModelCodes,
   extractSpecs,
 } from "./normalizeTitle.service.js";
-import { extractRamGb, extractCondition, extractNetworkGeneration } from "./productAttributes.service.js";
+import {
+  extractRamGb, extractCondition, extractNetworkGeneration,
+  extractTonnage, extractCapacityKg, extractVolumeLitres, extractInverter, extractApplianceType,
+} from "./productAttributes.service.js";
 
 /**
  * Words marking a distinct product tier rather than describing the same
@@ -153,6 +156,23 @@ export function connectivity(text = "") {
   return null;
 }
 
+// Two volumes within this share are one refrigerator: stores convert cubic feet to litres and round differently.
+const VOLUME_TOLERANCE = 0.05;
+
+/** True when two titles state a different tonnage, drum weight, volume, inverter type or appliance kind (see productAttributes). */
+export function applianceConflict(textA, textB) {
+  const differ = (a, b) => a !== null && b !== null && a !== b;
+  if (differ(extractTonnage(textA), extractTonnage(textB))) return true;
+  const kgA = extractCapacityKg(textA);
+  const kgB = extractCapacityKg(textB);
+  if (kgA && kgB && kgA.join("+") !== kgB.join("+")) return true;
+  const litresA = extractVolumeLitres(textA);
+  const litresB = extractVolumeLitres(textB);
+  if (litresA !== null && litresB !== null && Math.abs(litresA - litresB) / Math.max(litresA, litresB) > VOLUME_TOLERANCE) return true;
+  if (differ(extractInverter(textA), extractInverter(textB))) return true;
+  return differ(extractApplianceType(textA), extractApplianceType(textB));
+}
+
 export function lineWords(text = "") {
   return new Set(tokenize(modelTokens(text)).filter((t) => LINE_WORDS.has(t)));
 }
@@ -297,6 +317,11 @@ export function attributeConflict(textA, textB, { ignoreUnstatedStorage = false 
   const linkA = connectivity(textA);
   const linkB = connectivity(textB);
   if (linkA !== null && linkB !== null && linkA !== linkB) return true;
+
+  // Appliances: a 1-ton and a 1.5-ton air conditioner, an 8 kg and a 10 kg washing machine, a 350- and a 450-litre refrigerator,
+  // an inverter and a non-inverter model, a window and a split AC are different products. Like every rule here, each applies only
+  // when both titles state the attribute.
+  if (applianceConflict(textA, textB)) return true;
 
   if (!sameSet(extractVariants(textA), extractVariants(textB))) return true;
 
