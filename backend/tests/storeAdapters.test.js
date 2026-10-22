@@ -411,24 +411,33 @@ describe("the store list", () => {
     const ids = STORES.map((s) => s.platform);
     expect(new Set(ids).size).toBe(ids.length);
     for (const store of STORES) {
-      expect(["shopify", "woocommerce"]).toContain(store.type);
+      expect(["shopify", "woocommerce", "storefront"]).toContain(store.type);
+      if (store.type === "storefront") {
+        expect(store.apiUrl, store.platform).toMatch(/^https:\/\/[a-z0-9.-]+\/storefront\/search_products$/);
+        expect(store.params, store.platform).toBeTypeOf("object");
+        expect(["/", "/product/"]).toContain(store.productPath);
+      }
       expect(store.baseUrl).toMatch(/^https:\/\/[a-z0-9.-]+$/);
       expect(store.platform).toMatch(/^[a-z0-9]+$/);
     }
     expect(ids).toEqual([
       "mistore", "mymart", "alfatah", "xcessorieshub", "eezepc", "ledshop",
       "techroid", "subhanelectronics", "jalalelectronics", "japanelectronics", "zerolifestyle", "audionic", "ronin", "baseus", "infinix",
+      "alfamall", "digimall",
     ]);
   });
 
   it("asks a single-range store only about what it sells, and every store about a search of unknown category", () => {
     const asked = (query) => storeTasks(query).map((t) => t.platform);
-    const general = STORES.filter((s) => !s.sells).map((s) => s.platform);
-    expect(asked("iphone 17")).toEqual([...general, "infinix"]);
-    expect(asked("samsung 55 inch tv")).toEqual([...general, "subhanelectronics", "jalalelectronics", "japanelectronics"]);
-    expect(asked("earbuds")).toEqual([...general, "zerolifestyle", "audionic", "ronin", "baseus"]);
-    expect(asked("smart watch")).toEqual([...general, "zerolifestyle", "audionic", "ronin"]);
-    expect(asked("dell laptop")).toEqual([...general, "infinix"]);
+    // every store without `sells`, plus the named single-range ones, in the order of STORES
+    const general = (...also) => STORES.filter((s) => !s.sells || also.includes(s.platform)).map((s) => s.platform);
+    expect(asked("iphone 17")).toEqual(general("infinix"));
+    expect(asked("samsung 55 inch tv")).toEqual(general("subhanelectronics", "jalalelectronics", "japanelectronics"));
+    expect(asked("earbuds")).toEqual(general("zerolifestyle", "audionic", "ronin", "baseus"));
+    expect(asked("smart watch")).toEqual(general("zerolifestyle", "audionic", "ronin"));
+    expect(asked("dell laptop")).toEqual(general("infinix"));
+    expect(asked("iphone 17")).toEqual(expect.arrayContaining(["alfamall", "digimall", "mistore", "techroid"]));
+    expect(asked("iphone 17")).not.toContain("audionic");
     expect(asked("infinix hot 60")).toEqual(STORES.map((s) => s.platform)); // reads as "other": nobody is left out
     expect(asked("xiaomi")).toEqual(STORES.map((s) => s.platform));
   });
@@ -452,16 +461,17 @@ describe("the store list", () => {
   it("makes one task per store, in the shape the scraper run uses, each asking its own address", async () => {
     const asked = [];
     // "xiaomi" reads as no particular category, so every store is asked.
-    const tasks = storeTasks("xiaomi", { fetchJson: async (url) => { asked.push(url); return url.includes("suggest.json") ? shopifyResponse() : []; } });
+    const tasks = storeTasks("xiaomi", { fetchJson: async (url) => { asked.push(url); return url.includes("suggest.json") ? shopifyResponse() : url.includes("search_products") ? { results: [] } : []; } });
     expect(tasks.map((t) => t.platform)).toEqual(STORES.map((s) => s.platform));
     await Promise.all(tasks.map((t) => t.fn()));
-    for (const store of STORES) expect(asked.some((url) => url.startsWith(store.baseUrl))).toBe(true);
+    for (const store of STORES) expect(asked.some((url) => url.startsWith(store.apiUrl ?? store.baseUrl)), store.platform).toBe(true);
     expect(asked.filter((url) => url.includes("/search/suggest.json"))).toHaveLength(STORES.filter((s) => s.type === "shopify").length);
     expect(asked.filter((url) => url.includes("/wp-json/wc/store/v1/products"))).toHaveLength(STORES.filter((s) => s.type === "woocommerce").length);
+    expect(asked.filter((url) => url.includes("/storefront/search_products"))).toHaveLength(STORES.filter((s) => s.type === "storefront").length);
   });
 
   it("one store failing does not stop the others", async () => {
-    const tasks = storeTasks("iphone", { fetchJson: async (url) => { if (url.includes("mistore")) throw new Error("mistore.pk: HTTP 503"); return url.includes("suggest.json") ? shopifyResponse(shopifyProduct()) : []; } });
+    const tasks = storeTasks("iphone", { fetchJson: async (url) => { if (url.includes("mistore")) throw new Error("mistore.pk: HTTP 503"); return url.includes("suggest.json") ? shopifyResponse(shopifyProduct()) : url.includes("search_products") ? { results: [] } : []; } });
     const settled = await Promise.allSettled(tasks.map((t) => t.fn()));
     expect(settled.map((s) => s.status)).toEqual(tasks.map((t) => (t.platform === "mistore" ? "rejected" : "fulfilled")));
     expect(settled.length).toBeGreaterThan(5);

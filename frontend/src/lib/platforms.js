@@ -31,6 +31,8 @@ const STORES = {
   ronin: { name: "Ronin", domain: "ronin.pk", color: "#bf360c" },
   baseus: { name: "Baseus", domain: "baseus.pk", color: "#1565c0" },
   infinix: { name: "Infinix.pk", domain: "infinix.pk", color: "#558b2f" },
+  alfamall: { name: "AlfaMall", domain: "alfamall.com", color: "#b8860b" },
+  digimall: { name: "DigiMall", domain: "digimall.faysalbank.com", color: "#00796b" },
 };
 
 /** "PriceOye", "priceoye.pk", "PRICEOYE" -> "priceoye" */

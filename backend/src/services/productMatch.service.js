@@ -50,6 +50,8 @@ export const STORE_HOSTS = Object.freeze({
   "ronin.pk": "ronin",
   "baseus.pk": "baseus",
   "infinix.pk": "infinix",
+  "alfamall.com": "alfamall",
+  "digimall.faysalbank.com": "digimall",
   // Not scraped (switched off, see config/platforms.js), so its pages can only be found as "similar".
   "daraz.pk": "daraz",
 });
