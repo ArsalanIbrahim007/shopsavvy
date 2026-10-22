@@ -197,4 +197,25 @@ describe("scrapeAllPlatforms — withReport:true", () => {
     expect(r.status).toBe("paused");
     expect(r.until).toBe(until);
   });
+
+  // S5: smart routing
+  it("smartphone query skips ishopping, paklap, telemart (status: skipped)", async () => {
+    // detectQueryCategory is mocked to return "phone" — but storeRouting uses "smartphone"
+    // Re-mock it for this test to return smartphone
+    const { detectQueryCategory } = await import("../src/scrapers/productCategory.js");
+    vi.mocked(detectQueryCategory).mockReturnValueOnce({ category: "smartphone" });
+    const { report } = await scrapeAllPlatforms("iphone 17 pro max", { withReport: true });
+    const skipped = report.filter((r) => r.status === "skipped").map((r) => r.platform);
+    expect(skipped).toContain("ishopping");
+    expect(skipped).toContain("paklap");
+    expect(skipped).toContain("telemart");
+  });
+
+  it("other category runs all platforms (none skipped)", async () => {
+    const { detectQueryCategory } = await import("../src/scrapers/productCategory.js");
+    vi.mocked(detectQueryCategory).mockReturnValue({ category: "other" });
+    const { report } = await scrapeAllPlatforms("generic item", { withReport: true });
+    const skipped = report.filter((r) => r.status === "skipped");
+    expect(skipped).toHaveLength(0);
+  });
 });

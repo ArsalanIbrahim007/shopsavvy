@@ -9,6 +9,10 @@ vi.mock("../src/scrapers/w11stop.scraper.js", () => ({ scrapeW11StopSearch: vi.f
 vi.mock("../src/scrapers/telemart.scraper.js", () => ({ scrapeTelemartSearch: vi.fn() }));
 vi.mock("../src/scrapers/ishopping.scraper.js", () => ({ scrapeIShoppingSearch: vi.fn() }));
 vi.mock("../src/scrapers/stores.js", () => ({ storeTasks: vi.fn(() => []) }));
+vi.mock("../src/scrapers/storeRouting.js", () => ({
+  allowedPlatforms: vi.fn(() => null), // no routing restriction — breaker tests need all stores to run
+  STORE_ROUTING: {},
+}));
 
 import { scrapePriceOyeSearch } from "../src/scrapers/priceoye.scraper.js";
 import { scrapePaklapSearch } from "../src/scrapers/paklap.scraper.js";
@@ -24,9 +28,9 @@ const phone = (platform) => ({ platform, title: "Samsung Galaxy A17 128GB", pric
 
 beforeEach(() => {
   storeBreaker.reset();
-  vi.spyOn(console, "log").mockImplementation(() => {});
-  vi.spyOn(console, "warn").mockImplementation(() => {});
-  vi.spyOn(console, "error").mockImplementation(() => {});
+  vi.spyOn(console, "log").mockImplementation(() => { });
+  vi.spyOn(console, "warn").mockImplementation(() => { });
+  vi.spyOn(console, "error").mockImplementation(() => { });
   for (const fn of [scrapePriceOyeSearch, scrapeMegaSearch, scrapeShophiveSearch, scrapePaklapSearch, scrapeW11StopSearch, scrapeTelemartSearch, scrapeIShoppingSearch]) {
     vi.mocked(fn).mockReset().mockResolvedValue([]);
   }

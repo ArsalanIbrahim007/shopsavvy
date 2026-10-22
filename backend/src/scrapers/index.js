@@ -14,6 +14,7 @@ import { storeTasks } from "./stores.js";
 // Store breaker: pauses a store after 5 consecutive failures (5 min, then 15, then 30).
 // One probe request is sent after each pause to check if the store recovered.
 import { storeBreaker } from "./storeBreaker.js";
+import { allowedPlatforms } from "./storeRouting.js";
 import { detectCategory, detectQueryCategory } from "./productCategory.js";
 import { quote } from "../config/logSafe.js";
 
@@ -118,10 +119,12 @@ async function scrapeFixedPlatforms(query, opts = {}) {
   const report = [];
   const live = [];
 
-  // FIX 2: storeBreaker.until() does not exist.
-  // storeBreaker.paused() returns [{platform, failures, until}] for all paused stores.
   const pausedEntries = storeBreaker.paused();
   const pausedMap = new Map(pausedEntries.map((e) => [e.platform, e]));
+
+  // S5: smart routing — skip platforms that never carry this category
+  const { category: qCategory } = detectQueryCategory(query.toLowerCase().trim());
+  const allowed = allowedPlatforms(qCategory);
 
   for (const task of tasks) {
     if (!storeBreaker.allow(task.platform)) {
@@ -134,6 +137,9 @@ async function scrapeFixedPlatforms(query, opts = {}) {
         durationMs: 0,
         ...(entry?.until !== undefined && { until: entry.until }),
       });
+    } else if (allowed !== null && !allowed.has(task.platform)) {
+      // this platform has never returned results for this category — skip it
+      report.push({ platform: task.platform, status: "skipped", fetched: 0, relevant: 0, durationMs: 0 });
     } else {
       live.push(task);
     }
