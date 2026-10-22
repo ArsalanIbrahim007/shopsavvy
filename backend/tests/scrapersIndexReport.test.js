@@ -1,32 +1,32 @@
 // backend/tests/scrapersIndexReport.test.js
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-vi.mock("../src/scrapers/priceoye.scraper.js",  () => ({ scrapePriceOyeSearch:  vi.fn() }));
-vi.mock("../src/scrapers/mega.scraper.js",       () => ({ scrapeMegaSearch:      vi.fn() }));
-vi.mock("../src/scrapers/shophive.scraper.js",   () => ({ scrapeShophiveSearch:  vi.fn() }));
-vi.mock("../src/scrapers/paklap.scraper.js",     () => ({ scrapePaklapSearch:    vi.fn() }));
-vi.mock("../src/scrapers/w11stop.scraper.js",    () => ({ scrapeW11StopSearch:   vi.fn() }));
-vi.mock("../src/scrapers/telemart.scraper.js",   () => ({ scrapeTelemartSearch:  vi.fn() }));
-vi.mock("../src/scrapers/ishopping.scraper.js",  () => ({ scrapeIShoppingSearch: vi.fn() }));
-vi.mock("../src/scrapers/stores.js",             () => ({ storeTasks: vi.fn(() => []) }));
-vi.mock("../src/scrapers/storeBreaker.js",       () => ({
-  storeBreaker: { allow: vi.fn(() => true), success: vi.fn(), failure: vi.fn() },
+vi.mock("../src/scrapers/priceoye.scraper.js", () => ({ scrapePriceOyeSearch: vi.fn() }));
+vi.mock("../src/scrapers/mega.scraper.js", () => ({ scrapeMegaSearch: vi.fn() }));
+vi.mock("../src/scrapers/shophive.scraper.js", () => ({ scrapeShophiveSearch: vi.fn() }));
+vi.mock("../src/scrapers/paklap.scraper.js", () => ({ scrapePaklapSearch: vi.fn() }));
+vi.mock("../src/scrapers/w11stop.scraper.js", () => ({ scrapeW11StopSearch: vi.fn() }));
+vi.mock("../src/scrapers/telemart.scraper.js", () => ({ scrapeTelemartSearch: vi.fn() }));
+vi.mock("../src/scrapers/ishopping.scraper.js", () => ({ scrapeIShoppingSearch: vi.fn() }));
+vi.mock("../src/scrapers/stores.js", () => ({ storeTasks: vi.fn(() => []) }));
+vi.mock("../src/scrapers/storeBreaker.js", () => ({
+  storeBreaker: { allow: vi.fn(() => true), success: vi.fn(), failure: vi.fn(), paused: vi.fn(() => []) },
 }));
 vi.mock("../src/scrapers/productCategory.js", () => ({
-  detectCategory:      vi.fn(() => ({ category: "phone", confidence: 0.9 })),
+  detectCategory: vi.fn(() => ({ category: "phone", confidence: 0.9 })),
   detectQueryCategory: vi.fn(() => ({ category: "phone" })),
 }));
 vi.mock("../src/config/logSafe.js", () => ({ quote: vi.fn((s) => `"${s}"`) }));
 
-import { scrapePriceOyeSearch }  from "../src/scrapers/priceoye.scraper.js";
-import { scrapeMegaSearch }      from "../src/scrapers/mega.scraper.js";
-import { scrapeShophiveSearch }  from "../src/scrapers/shophive.scraper.js";
-import { scrapePaklapSearch }    from "../src/scrapers/paklap.scraper.js";
-import { scrapeW11StopSearch }   from "../src/scrapers/w11stop.scraper.js";
-import { scrapeTelemartSearch }  from "../src/scrapers/telemart.scraper.js";
+import { scrapePriceOyeSearch } from "../src/scrapers/priceoye.scraper.js";
+import { scrapeMegaSearch } from "../src/scrapers/mega.scraper.js";
+import { scrapeShophiveSearch } from "../src/scrapers/shophive.scraper.js";
+import { scrapePaklapSearch } from "../src/scrapers/paklap.scraper.js";
+import { scrapeW11StopSearch } from "../src/scrapers/w11stop.scraper.js";
+import { scrapeTelemartSearch } from "../src/scrapers/telemart.scraper.js";
 import { scrapeIShoppingSearch } from "../src/scrapers/ishopping.scraper.js";
-import { storeBreaker }          from "../src/scrapers/storeBreaker.js";
-import { scrapeAllPlatforms }    from "../src/scrapers/index.js";
+import { storeBreaker } from "../src/scrapers/storeBreaker.js";
+import { scrapeAllPlatforms } from "../src/scrapers/index.js";
 
 // Minimal listing stub — matches scraper.schema.js required fields
 const stub = (platform) => ({
@@ -36,7 +36,7 @@ const stub = (platform) => ({
   originalPrice: null,
   sourceUrl: `https://${platform}.pk/product/s24`,
   productUrl: `https://${platform}.pk/product/s24`,
-  imageUrl:   `https://${platform}.pk/img/s24.jpg`,
+  imageUrl: `https://${platform}.pk/img/s24.jpg`,
   brand: "Samsung",
   inStock: true,
   scrapedAt: new Date(),
@@ -44,8 +44,8 @@ const stub = (platform) => ({
 
 function silenceAll() {
   [scrapePriceOyeSearch, scrapeMegaSearch, scrapeShophiveSearch,
-   scrapePaklapSearch, scrapeW11StopSearch, scrapeTelemartSearch,
-   scrapeIShoppingSearch].forEach((m) => m.mockResolvedValue([]));
+    scrapePaklapSearch, scrapeW11StopSearch, scrapeTelemartSearch,
+    scrapeIShoppingSearch].forEach((m) => m.mockResolvedValue([]));
 }
 
 beforeEach(() => {
@@ -135,5 +135,66 @@ describe("scrapeAllPlatforms — withReport:true", () => {
     expect(platforms).toContain("telemart");
     expect(platforms).toContain("ishopping");
     expect(platforms).toContain("paklap");
+  });
+
+  // FIX 6a: 429 error must be counted as "blocked", not "error"
+  it("status blocked on HTTP 429 error", async () => {
+    vi.mocked(scrapePriceOyeSearch).mockRejectedValueOnce(
+      new Error("fetchHtml failed: HTTP 429 Too Many Requests")
+    );
+    const { report } = await scrapeAllPlatforms("laptop", { withReport: true });
+    const r = report.find((x) => x.platform === "priceoye");
+    expect(r.status).toBe("blocked");
+  });
+
+  // FIX 6b: relevance filter must actually drop irrelevant listings
+  // (assert relevant < fetched when one listing does not match)
+  it("relevant count reflects filtered results, not raw count", async () => {
+    vi.mocked(scrapePriceOyeSearch).mockResolvedValueOnce([
+      { title: "Samsung Galaxy S24 Ultra 256GB", price: 250000, platform: "priceoye", sourceUrl: "https://priceoye.pk/s24", inStock: true, scrapedAt: new Date() },
+      { title: "Targus Laptop Bag Carry Case Accessory", price: 5000, platform: "priceoye", sourceUrl: "https://priceoye.pk/bag", inStock: true, scrapedAt: new Date() },
+    ]);
+    // query "samsung galaxy s24" — the laptop bag should be filtered out
+    const { report } = await scrapeAllPlatforms("samsung galaxy s24", { withReport: true });
+    const r = report.find((x) => x.platform === "priceoye");
+    expect(r.fetched).toBe(2);
+    expect(r.relevant).toBe(1);  // bag dropped
+  });
+
+  // FIX 6c: durationMs must be > 0 for a slow store
+  it("durationMs is greater than zero for a store that takes time", async () => {
+    vi.mocked(scrapePriceOyeSearch).mockImplementationOnce(
+      () => new Promise((resolve) =>
+        setTimeout(() => resolve([{ title: "iPhone 17 Pro", price: 380000, platform: "priceoye", sourceUrl: "https://priceoye.pk/iphone17", inStock: true, scrapedAt: new Date() }]), 20)
+      )
+    );
+    const { report } = await scrapeAllPlatforms("iphone 17 pro", { withReport: true });
+    const r = report.find((x) => x.platform === "priceoye");
+    expect(r.durationMs).toBeGreaterThan(0);
+  });
+
+  // FIX 6d: durationMs is also recorded for a store that fails (not 0)
+  it("durationMs is greater than zero for a store that fails after a delay", async () => {
+    vi.mocked(scrapePriceOyeSearch).mockImplementationOnce(
+      () => new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("timeout after 20ms")), 20)
+      )
+    );
+    const { report } = await scrapeAllPlatforms("iphone", { withReport: true });
+    const r = report.find((x) => x.platform === "priceoye");
+    expect(r.status).toBe("error");
+    expect(r.durationMs).toBeGreaterThan(0);
+  });
+
+  it("until field appears in paused report entry when storeBreaker.paused returns it", async () => {
+    const until = Date.now() + 60_000;
+    vi.mocked(storeBreaker.allow).mockImplementation((p) => p !== "priceoye");
+    vi.mocked(storeBreaker.paused).mockReturnValueOnce([
+      { platform: "priceoye", failures: 5, until },
+    ]);
+    const { report } = await scrapeAllPlatforms("iphone", { withReport: true });
+    const r = report.find((x) => x.platform === "priceoye");
+    expect(r.status).toBe("paused");
+    expect(r.until).toBe(until);
   });
 });
