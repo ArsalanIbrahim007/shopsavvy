@@ -1,0 +1,1701 @@
+{
+  "set": "appliances",
+  "drawnAt": "2026-10-22T16:33:18.728Z",
+  "seed": 20261022,
+  "strategy": "ml",
+  "sampleSize": 60,
+  "population": {
+    "air_conditioner": 124,
+    "refrigerator": 64,
+    "washing_machine": 83,
+    "monitor": 10
+  },
+  "quota": {
+    "air_conditioner": 23,
+    "refrigerator": 12,
+    "washing_machine": 15,
+    "monitor": 10
+  },
+  "merges": [
+    {
+      "category": "air_conditioner",
+      "groupName": "TCL 12T3-PRO-11 Breeze In Series WIFI-T3 1.0 Ton Inverter Ac",
+      "groupSize": 4,
+      "main": {
+        "title": "TCL 12T3-PRO-11 Breeze In Series WIFI-T3 1.0 Ton Inverter Ac",
+        "platform": "shophive",
+        "price": 124999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/tcl-12t3-pro-11-breeze-in-series-wifi-t3-1-0-ton-inverter-ac/"
+      },
+      "offer": {
+        "title": "TCL 1.0 Ton T-Pro Series AC (TAC-12T3-PRO-D2)",
+        "platform": "priceoye",
+        "price": 121899,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/ac/tcl/tcl-1-0-ton-t-pro-series-ac-tac-12t3-pro-d2"
+      },
+      "id": "m001"
+    },
+    {
+      "category": "air_conditioner",
+      "groupName": "Haier Puri Inverter Heat & Cool Air Conditioner 1.5 Ton White (HSU-18HJ)",
+      "groupSize": 2,
+      "main": {
+        "title": "Haier Puri Inverter Heat & Cool Air Conditioner 1.5 Ton White (HSU-18HJ)",
+        "platform": "ishopping",
+        "price": 194900,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "White",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/haier-puri-inverter-heat-cool-ac-1-5-ton-hsu-18hj-price-in-pakistan"
+      },
+      "offer": {
+        "title": "Haier Puri Inverter Heat & Cool Air Conditioner 1.5 Ton - Silver (HSU-18HJ)",
+        "platform": "ishopping",
+        "price": 227900,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Silver",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/haier-puri-inverter-heat-cool-air-conditioner-1-5-ton-silver-hsu-18hj-price-in-pakistan"
+      },
+      "id": "m002"
+    },
+    {
+      "category": "air_conditioner",
+      "groupName": "TCL 12T3-PRO-11 Breeze In Series WIFI-T3 1.0 Ton Inverter Ac",
+      "groupSize": 4,
+      "main": {
+        "title": "TCL 12T3-PRO-11 Breeze In Series WIFI-T3 1.0 Ton Inverter Ac",
+        "platform": "shophive",
+        "price": 124999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/tcl-12t3-pro-11-breeze-in-series-wifi-t3-1-0-ton-inverter-ac/"
+      },
+      "offer": {
+        "title": "TCL 1.0 Ton T-Pro Series AC (TAC-12T3-PRO-C2)",
+        "platform": "priceoye",
+        "price": 121899,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/ac/tcl/tcl-1-0-ton-t-pro-series-ac-tac-12t3-pro-c2"
+      },
+      "id": "m003"
+    },
+    {
+      "category": "air_conditioner",
+      "groupName": "HAIER HSU-13HFAB W 1.0 TON T3 INVERTER",
+      "groupSize": 4,
+      "main": {
+        "title": "HAIER HSU-13HFAB W 1.0 TON T3 INVERTER",
+        "platform": "mega",
+        "price": 132999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/airconditioners_products/26648/HAIER-HSU-13HFAB-W-10-TON-T3-INVERTER.html"
+      },
+      "offer": {
+        "title": "Haier Split AC Inverter 1.0 Ton HSU-13HFAB (T3) Grey",
+        "platform": "japanelectronics",
+        "price": 128000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Grey",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://japanelectronics.com.pk/products/haier-split-ac-inverter-1-0-ton-hsu-13hfab-t3-grey"
+      },
+      "id": "m004"
+    },
+    {
+      "category": "air_conditioner",
+      "groupName": "TCL 18T5 SMT-C BreezeIN Smart 1.5 Ton Inverter Air Conditioner",
+      "groupSize": 6,
+      "main": {
+        "title": "TCL 18T5 SMT-C BreezeIN Smart 1.5 Ton Inverter Air Conditioner",
+        "platform": "shophive",
+        "price": 196499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/tcl-18t5-smt-c-breezein-smart-1-5-ton-inverter-air-conditioner/"
+      },
+      "offer": {
+        "title": "TCL TAC-18T5 FreshIN 3.0 1.5 Ton Inverter Split Air Conditioner (2025)",
+        "platform": "shophive",
+        "price": 227999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/tcl-tac-18t5-freshin-3-0-1-5-ton-inverter-split-air-conditioner-2025/"
+      },
+      "id": "m005"
+    },
+    {
+      "category": "air_conditioner",
+      "groupName": "Haier 1.0 Ton Puri Inverter AC(HSU-12HJ/012USDC(G)",
+      "groupSize": 3,
+      "main": {
+        "title": "Haier 1.0 Ton Puri Inverter AC(HSU-12HJ/012USDC(G)",
+        "platform": "priceoye",
+        "price": 143171,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/ac/haier/haier-1-0-ton-puri-inverter-ac-hsu-12hj-012usdc-g"
+      },
+      "offer": {
+        "title": "Haier 1.0 Ton Puri Inverter Series AC(HSU-12HJ/012USDC(W)",
+        "platform": "priceoye",
+        "price": 80000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/ac/haier/haier-1-0-ton-puri-inverter-series-ac-hsu-12hj-012usdc-w"
+      },
+      "id": "m006"
+    },
+    {
+      "category": "air_conditioner",
+      "groupName": "Dawlance 1.5 Ton Magna T3 Milky White Textured Series Inverter Split AC",
+      "groupSize": 2,
+      "main": {
+        "title": "Dawlance 1.5 Ton Magna T3 Milky White Textured Series Inverter Split AC",
+        "platform": "priceoye",
+        "price": 183300,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "White",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/ac/dawlance/dawlance-1-5-ton-magna-t3-milky-white-textured-series-inverter-split-ac"
+      },
+      "offer": {
+        "title": "Dawlance 1.5 Ton Hyper T3 White Series Inverter Split AC",
+        "platform": "priceoye",
+        "price": 183300,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "White",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/ac/dawlance/dawlance-1-5-ton-hyper-t3-white-series-inverter-split-ac"
+      },
+      "id": "m007"
+    },
+    {
+      "category": "air_conditioner",
+      "groupName": "TCL 1.5 Ton Inverter AC (TAC-18T5-SMART)",
+      "groupSize": 8,
+      "main": {
+        "title": "TCL 1.5 Ton Inverter AC (TAC-18T5-SMART)",
+        "platform": "priceoye",
+        "price": 194900,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/ac/tcl/tcl-1-5-ton-inverter-ac-tac-18t5-smart"
+      },
+      "offer": {
+        "title": "TCL 1.5 Ton T5 Smart Series AC (TAC-18T5-SMART-C)",
+        "platform": "priceoye",
+        "price": 184999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/ac/tcl/tcl-1-5-ton-t5-smart-series-ac-tac-18t5-smart-c"
+      },
+      "id": "m008"
+    },
+    {
+      "category": "air_conditioner",
+      "groupName": "TCL 18T5 SMT-C BreezeIN Smart 1.5 Ton Inverter Air Conditioner",
+      "groupSize": 6,
+      "main": {
+        "title": "TCL 18T5 SMT-C BreezeIN Smart 1.5 Ton Inverter Air Conditioner",
+        "platform": "shophive",
+        "price": 196499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/tcl-18t5-smt-c-breezein-smart-1-5-ton-inverter-air-conditioner/"
+      },
+      "offer": {
+        "title": "TCL FreshIN 3.0 Series Inverter Split Air Conditioner 1.5 Ton (TAC-18T5)",
+        "platform": "ishopping",
+        "price": 203800,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/home-living-test/large-appliances/air-conditioners/tcl-freshin-3-0-series-inverter-split-ac-1-5-ton-tac-18t5-price-in-pakistan"
+      },
+      "id": "m009"
+    },
+    {
+      "category": "air_conditioner",
+      "groupName": "Dawlance Sprinter X 30 1.5 Ton Inverter Split Air Conditioner",
+      "groupSize": 5,
+      "main": {
+        "title": "Dawlance Sprinter X 30 1.5 Ton Inverter Split Air Conditioner",
+        "platform": "shophive",
+        "price": 142999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/dawlance-sprinter-x-30-1-5-ton-inverter-split-air-conditioner/"
+      },
+      "offer": {
+        "title": "Dawlance 30 Sprinter X T3 Inverter Split Air Conditioner 1.5 Ton",
+        "platform": "ishopping",
+        "price": 134850,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/dawlance-30-sprinter-x-t3-inverter-split-air-conditioner-1-5-ton-price-in-pakistan"
+      },
+      "id": "m010"
+    },
+    {
+      "category": "air_conditioner",
+      "groupName": "TCL 1.5 Ton Miracle Series AC (TAC-18T3B-2)",
+      "groupSize": 2,
+      "main": {
+        "title": "TCL 1.5 Ton Miracle Series AC (TAC-18T3B-2)",
+        "platform": "priceoye",
+        "price": 174900,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/ac/tcl/tcl-1-5-ton-miracle-series-ac-tac-18t3b-2"
+      },
+      "offer": {
+        "title": "TCL 1.5 Ton Miracle Series AC (TAC-18T3B)",
+        "platform": "priceoye",
+        "price": 18000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/ac/tcl/tcl-1-5-ton-miracle-series-ac-tac-18t3b"
+      },
+      "id": "m011"
+    },
+    {
+      "category": "air_conditioner",
+      "groupName": "Haier 1.0 Ton Turbo Cool Series(HSU-12CFCM-013L(W)",
+      "groupSize": 2,
+      "main": {
+        "title": "Haier 1.0 Ton Turbo Cool Series(HSU-12CFCM-013L(W)",
+        "platform": "priceoye",
+        "price": 116499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/ac/haier/haier-1-0-ton-turbo-cool-series-hsu-12cfcm-013l-w"
+      },
+      "offer": {
+        "title": "Haier 1.0 Ton Turbo Cool (HSU-12CFCM/013L(W))",
+        "platform": "priceoye",
+        "price": 105000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/ac/haier/haier-1-0-ton-turbo-cool-hsu-12cfcm-013l-w"
+      },
+      "id": "m012"
+    },
+    {
+      "category": "air_conditioner",
+      "groupName": "Dawlance 1.5 Ton Magna T3 Silver Plain Series Split AC",
+      "groupSize": 2,
+      "main": {
+        "title": "Dawlance 1.5 Ton Magna T3 Silver Plain Series Split AC",
+        "platform": "priceoye",
+        "price": 183300,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Silver",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/ac/dawlance/dawlance-1-5-ton-magna-t3-silver-plain-series-split-ac"
+      },
+      "offer": {
+        "title": "Dawlance 1.5 Ton Magna T3 Milky White Plain Series Inverter Split AC",
+        "platform": "priceoye",
+        "price": 183300,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "White",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/ac/dawlance/dawlance-1-5-ton-magna-t3-milky-white-plain-series-inverter-split-ac"
+      },
+      "id": "m013"
+    },
+    {
+      "category": "air_conditioner",
+      "groupName": "Dawlance 1.0 Ton Infinity Plus Series AC (15)",
+      "groupSize": 3,
+      "main": {
+        "title": "Dawlance 1.0 Ton Infinity Plus Series AC (15)",
+        "platform": "priceoye",
+        "price": 51999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/ac/dawlance/dawlance-1-0-ton-infinity-series-ac-plus15"
+      },
+      "offer": {
+        "title": "Dawlance 1.0 Ton Designer Plus Series Inverter AC (15)",
+        "platform": "priceoye",
+        "price": 53499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/ac/dawlance/dawlance-1-0-ton-designer-series-inverter-ac-plus-15"
+      },
+      "id": "m014"
+    },
+    {
+      "category": "air_conditioner",
+      "groupName": "TCL 1.5 Ton T-Pro Series AC (TAC-18T3-PRO-2)",
+      "groupSize": 6,
+      "main": {
+        "title": "TCL 1.5 Ton T-Pro Series AC (TAC-18T3-PRO-2)",
+        "platform": "priceoye",
+        "price": 174999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/ac/tcl/tcl-1-5-ton-t-pro-series-ac-tac-18t3-pro-2"
+      },
+      "offer": {
+        "title": "TCL TAC 18T3 PRO C2 1.5 Ton T-PRO DC Inverter AC",
+        "platform": "mega",
+        "price": 187999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/airconditioners_products/26484/TCL-TAC-18T3-PRO-C2-15-Ton-T-PRO-DC-Inverter-AC.html"
+      },
+      "id": "m015"
+    },
+    {
+      "category": "air_conditioner",
+      "groupName": "HAIER HSU-13HFCA W 1.0 TON TRIPLE INVERTER",
+      "groupSize": 2,
+      "main": {
+        "title": "HAIER HSU-13HFCA W 1.0 TON TRIPLE INVERTER",
+        "platform": "mega",
+        "price": 122999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/airconditioners_products/26650/HAIER-HSU-13HFCA-W-10-TON-TRIPLE-INVERTER.html"
+      },
+      "offer": {
+        "title": "Haier split AC Inverter 1.0 Ton HSU-13HFCA (White)",
+        "platform": "japanelectronics",
+        "price": 112000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "White",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://japanelectronics.com.pk/products/haier-split-ac-inverter-1-0-ton-hsu-13hfca-white"
+      },
+      "id": "m016"
+    },
+    {
+      "category": "air_conditioner",
+      "groupName": "Dawlance Magna 30 1.5 Ton Inverter Split Air Condition Textured White",
+      "groupSize": 4,
+      "main": {
+        "title": "Dawlance Magna 30 1.5 Ton Inverter Split Air Condition Textured White",
+        "platform": "shophive",
+        "price": 157999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "White",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/dawlance-magna-30-1-5-ton-inverter-split-air-condition-textured-white/"
+      },
+      "offer": {
+        "title": "Dawlance Magna T3 Inverter 30 Split Air Condition 1.5 Ton Milky White Plain",
+        "platform": "ishopping",
+        "price": 154800,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "White",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/dawlance-magna-t3-inverter-30-split-air-condition-1-5-ton-milky-white-plain-price-in-pakistan"
+      },
+      "id": "m017"
+    },
+    {
+      "category": "air_conditioner",
+      "groupName": "Dawlance Sprinter X 30 1.5 Ton Inverter Split Air Conditioner",
+      "groupSize": 5,
+      "main": {
+        "title": "Dawlance Sprinter X 30 1.5 Ton Inverter Split Air Conditioner",
+        "platform": "shophive",
+        "price": 142999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/dawlance-sprinter-x-30-1-5-ton-inverter-split-air-conditioner/"
+      },
+      "offer": {
+        "title": "Dawlance Elegance X Inverter Split Air Conditioner 1.5 Ton",
+        "platform": "ishopping",
+        "price": 144300,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/dawlance-elegance-x-inverter-split-air-conditioner-1-5-ton-price-in-pakistan"
+      },
+      "id": "m018"
+    },
+    {
+      "category": "air_conditioner",
+      "groupName": "TCL 1.5 Ton Inverter AC (TAC-18T5-SMART)",
+      "groupSize": 8,
+      "main": {
+        "title": "TCL 1.5 Ton Inverter AC (TAC-18T5-SMART)",
+        "platform": "priceoye",
+        "price": 194900,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/ac/tcl/tcl-1-5-ton-inverter-ac-tac-18t5-smart"
+      },
+      "offer": {
+        "title": "TCL 1.5 Ton Smart Series AC (TAC-18T5-SMART)",
+        "platform": "priceoye",
+        "price": 217900,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/ac/tcl/tcl-1-5-ton-smart-series-ac-tac-18t5-smart"
+      },
+      "id": "m019"
+    },
+    {
+      "category": "air_conditioner",
+      "groupName": "Dawlance Sprinter X 30 1.5 Ton Inverter Split Air Conditioner",
+      "groupSize": 5,
+      "main": {
+        "title": "Dawlance Sprinter X 30 1.5 Ton Inverter Split Air Conditioner",
+        "platform": "shophive",
+        "price": 142999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/dawlance-sprinter-x-30-1-5-ton-inverter-split-air-conditioner/"
+      },
+      "offer": {
+        "title": "Dawlance 30 Econo + Inverter Split Air Conditioner 1.5 Ton",
+        "platform": "ishopping",
+        "price": 141150,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/dawlance-econo-inverter-split-1-5-ton-30-price-in-pakistan"
+      },
+      "id": "m020"
+    },
+    {
+      "category": "air_conditioner",
+      "groupName": "Haier Split AC Inverter 1.5 Ton HSU-19HFS T3 Pro (White)",
+      "groupSize": 3,
+      "main": {
+        "title": "Haier Split AC Inverter 1.5 Ton HSU-19HFS T3 Pro (White)",
+        "platform": "japanelectronics",
+        "price": 154000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "White",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://japanelectronics.com.pk/products/haier-split-ac-inverter-1-5-ton-hsu-19hfs-t3-pro-white"
+      },
+      "offer": {
+        "title": "Haier Split AC Inverter 1.5 Ton HSU-19HFS T3 Pro (Silver)",
+        "platform": "japanelectronics",
+        "price": 159000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Silver",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://japanelectronics.com.pk/products/haier-split-ac-inverter-1-5-ton-hsu-19hfs-t3-pro-silver"
+      },
+      "id": "m021"
+    },
+    {
+      "category": "air_conditioner",
+      "groupName": "HAIER HSU-19HFAB W 1.5 TON T3 INVERTER",
+      "groupSize": 4,
+      "main": {
+        "title": "HAIER HSU-19HFAB W 1.5 TON T3 INVERTER",
+        "platform": "mega",
+        "price": 171999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/airconditioners_products/26657/HAIER-HSU-19HFAB-W-15-TON-T3-INVERTER.html"
+      },
+      "offer": {
+        "title": "HAIER HSU-19HFAB 1.5 TON T3 INVERTER GREY",
+        "platform": "mega",
+        "price": 171999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Grey",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/airconditioners_products/26656/HAIER-HSU-19HFAB-15-TON-T3-INVERTER-GREY.html"
+      },
+      "id": "m022"
+    },
+    {
+      "category": "air_conditioner",
+      "groupName": "TCL 1.5 Ton Extreme Series Inverter AC (18HEF)",
+      "groupSize": 2,
+      "main": {
+        "title": "TCL 1.5 Ton Extreme Series Inverter AC (18HEF)",
+        "platform": "priceoye",
+        "price": 144900,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/ac/tcl/tcl-1-5-ton-extreme-series-inverter-ac-18hef"
+      },
+      "offer": {
+        "title": "TCL 1.5 Ton Extreme Series AC (TAC-18HEF)",
+        "platform": "priceoye",
+        "price": 129900,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/ac/tcl/tcl-1-5-ton-extreme-series-ac-tac-18hef"
+      },
+      "id": "m023"
+    },
+    {
+      "category": "refrigerator",
+      "groupName": "Dawlance E Chrome Freezer-On-Top Refrigerator 11.5 Cu Ft Metallic Gold (9173-WB)",
+      "groupSize": 2,
+      "main": {
+        "title": "Dawlance E Chrome Freezer-On-Top Refrigerator 11.5 Cu Ft Metallic Gold (9173-WB)",
+        "platform": "ishopping",
+        "price": 80850,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Gold",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/home-living-test/large-appliances/refrigerators/dawlance-e-chrome-freezer-on-top-refrigerator-11-5-cu-ft-metallic-gold-9173-wb-price-in-pakistan-mp"
+      },
+      "offer": {
+        "title": "Dawlance E Chrome Freezer-On-Top Refrigerator 11.5 Cu Ft Metallic Grey (9173-WB)",
+        "platform": "ishopping",
+        "price": 80850,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Grey",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/dawlance-e-chrome-freezer-on-top-refrigerator-11-5-cu-ft-metallic-grey-9173-wb-price-in-pakistan"
+      },
+      "id": "m024"
+    },
+    {
+      "category": "refrigerator",
+      "groupName": "Haier E-star Top Mount Refrigerator HRF-276EPB",
+      "groupSize": 2,
+      "main": {
+        "title": "Haier E-star Top Mount Refrigerator HRF-276EPB",
+        "platform": "shophive",
+        "price": 82999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/haier-e-star-top-mount-refrigerator-hrf-276epb/"
+      },
+      "offer": {
+        "title": "Haier E-Star Freezer-On-Top Refrigerator 8.5 Cu Ft (HRF-276EPB)",
+        "platform": "ishopping",
+        "price": 73425,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/haier-e-star-freezer-on-top-refrigerator-8-5-cu-ft-hrf-276epb-price-in-pakistan"
+      },
+      "id": "m025"
+    },
+    {
+      "category": "refrigerator",
+      "groupName": "Dawlance 9169WB GD 11 CFT Top Mount Inverter Avante Refrigerator Pearl Red",
+      "groupSize": 2,
+      "main": {
+        "title": "Dawlance 9169WB GD 11 CFT Top Mount Inverter Avante Refrigerator Pearl Red",
+        "platform": "shophive",
+        "price": 88999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Red",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/dawlance-9169wb-gd-11-cft-top-mount-inverter-avante-refrigerator-pearl-red/"
+      },
+      "offer": {
+        "title": "DAWLANCE REFRIGERATOR 9169WB CHROME PEARL COPPER",
+        "platform": "jalalelectronics",
+        "price": 76000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Copper",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://jalalelectronics.com/products/dawlance-refrigerator-9169wb-chrome-pearl-copper"
+      },
+      "id": "m026"
+    },
+    {
+      "category": "refrigerator",
+      "groupName": "Dawlance AVANTE+ IOT Freezer-On-Top Refrigerator 14 Cu Ft Silky Red (9193LF-GD)",
+      "groupSize": 2,
+      "main": {
+        "title": "Dawlance AVANTE+ IOT Freezer-On-Top Refrigerator 14 Cu Ft Silky Red (9193LF-GD)",
+        "platform": "ishopping",
+        "price": 141350,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Red",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/dawlance-avante-iot-refrigerator-14-cu-ft-red-9193lf-gd-price-in-pakistan"
+      },
+      "offer": {
+        "title": "Dawlance AVANTE+ IOT Freezer-On-Top Refrigerator 14 Cu Ft Silky Black (9193LF-GD)",
+        "platform": "ishopping",
+        "price": 122850,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/dawlance-avante-iot-refrigerator-14-cu-ft-black-9193lf-gd-price-in-pakistan"
+      },
+      "id": "m027"
+    },
+    {
+      "category": "refrigerator",
+      "groupName": "Dawlance 9160LF Chrome Pro Hairline Silver Double Door Refrigerator",
+      "groupSize": 2,
+      "main": {
+        "title": "Dawlance 9160LF Chrome Pro Hairline Silver Double Door Refrigerator",
+        "platform": "shophive",
+        "price": 82999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Silver",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/dawlance-9160lf-chrome-pro-hairline-silver-double-door-refrigerator/"
+      },
+      "offer": {
+        "title": "Dawlance Chrome Pro Freezer-On-Top Refrigerator Hairline Silver (9160LF)",
+        "platform": "ishopping",
+        "price": 90099,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Silver",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/dawlance-chrome-pro-freezer-on-top-refrigerator-hairline-silver-9160lf-price-in-pakistan"
+      },
+      "id": "m028"
+    },
+    {
+      "category": "refrigerator",
+      "groupName": "PEL PRLP-21860 Life Pro 12 CFT Top Mount Refrigerator",
+      "groupSize": 3,
+      "main": {
+        "title": "PEL PRLP-21860 Life Pro 12 CFT Top Mount Refrigerator",
+        "platform": "shophive",
+        "price": 96999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/pel-prlp-21860-life-pro-12-cft-top-mount-refrigerator/"
+      },
+      "offer": {
+        "title": "PEL PRLP-6460 Life Pro 12 CFT Top Mount Refrigerator",
+        "platform": "shophive",
+        "price": 94499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/pel-prlp-6460-life-pro-12-cft-top-mount-refrigerator/"
+      },
+      "id": "m029"
+    },
+    {
+      "category": "refrigerator",
+      "groupName": "Dawlance Chrome Pro Inv Freezer-On-Top Refrigerator (REF-9149)",
+      "groupSize": 2,
+      "main": {
+        "title": "Dawlance Chrome Pro Inv Freezer-On-Top Refrigerator (REF-9149)",
+        "platform": "ishopping",
+        "price": 73500,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/dawlance-chrome-pro-inv-freezer-on-top-refrigerator-ref-9149-price-in-pakistan"
+      },
+      "offer": {
+        "title": "Dawlance Chrome Pro Inv Freezer-On-Top Refrigerator (REF-9140)",
+        "platform": "ishopping",
+        "price": 65625,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/dawlance-chrome-pro-inv-freezer-on-top-refrigerator-ref-9140-price-in-pakistan"
+      },
+      "id": "m030"
+    },
+    {
+      "category": "refrigerator",
+      "groupName": "Dawlance Chrome Freezer-On-Top Refrigerator 7 Cu Ft Pearl Copper (9140-WB)",
+      "groupSize": 2,
+      "main": {
+        "title": "Dawlance Chrome Freezer-On-Top Refrigerator 7 Cu Ft Pearl Copper (9140-WB)",
+        "platform": "ishopping",
+        "price": 60375,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Copper",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/dawlance-chrome-refrigerator-7-cu-ft-copper-9140-wb-price-in-pakistan"
+      },
+      "offer": {
+        "title": "Dawlance Chrome Freezer-On-Top Refrigerator 7 Cu Ft Hairline Black (9140-WB)",
+        "platform": "ishopping",
+        "price": 60375,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/dawlance-chrome-refrigerator-7-cu-ft-black-9140-wb-price-in-pakistan"
+      },
+      "id": "m031"
+    },
+    {
+      "category": "refrigerator",
+      "groupName": "Dawlance Avante+ Inverter Freezer-On-Top Refrigerator Ruby Red (9169-WB)",
+      "groupSize": 3,
+      "main": {
+        "title": "Dawlance Avante+ Inverter Freezer-On-Top Refrigerator Ruby Red (9169-WB)",
+        "platform": "ishopping",
+        "price": 89775,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Red",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/dawlance-avante-inverter-refrigerator-ruby-red-9169-wb-price-in-pakistan"
+      },
+      "offer": {
+        "title": "Dawlance Avante+ Freezer-On-Top Refrigerator Burgundy (9169-WB)",
+        "platform": "ishopping",
+        "price": 89775,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/home-living-test/large-appliances/refrigerators/dawlance-avante-freezer-on-top-refrigerator-burgundy-9169-wb-price-in-pakistan"
+      },
+      "id": "m032"
+    },
+    {
+      "category": "refrigerator",
+      "groupName": "Dawlance AVANTE+ Freezer-On-Top Refrigerator 20 Cu Ft White (91999-WB)",
+      "groupSize": 3,
+      "main": {
+        "title": "Dawlance AVANTE+ Freezer-On-Top Refrigerator 20 Cu Ft White (91999-WB)",
+        "platform": "ishopping",
+        "price": 136100,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "White",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/home-living-test/large-appliances/refrigerators/dawlance-avante-refrigerator-20-cu-ft-white-91999-wb-price-in-pakistan"
+      },
+      "offer": {
+        "title": "Dawlance Avante+ Freezer-On-Top Refrigerator 20 Cu Ft Ruby Red (91999-WB)",
+        "platform": "ishopping",
+        "price": 132950,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Red",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/dawlance-avante-refrigerator-20-cu-ft-ruby-red-91999-wb-price-in-pakistan"
+      },
+      "id": "m033"
+    },
+    {
+      "category": "refrigerator",
+      "groupName": "Haier Smart Inverter Freezer-On-Top Refrigerator 12 cu FT - Green (HRF-346 IPGA)",
+      "groupSize": 2,
+      "main": {
+        "title": "Haier Smart Inverter Freezer-On-Top Refrigerator 12 cu FT - Green (HRF-346 IPGA)",
+        "platform": "ishopping",
+        "price": 89175,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Green",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/haier-smart-inverter-top-mount-refrigerator-12-cu-ft-green-hrf-346-ipga-price-in-pakistan"
+      },
+      "offer": {
+        "title": "Haier Smart Inverter Freezer-On-Top Refrigerator 12 cu FT - Red (HRF-346 IPRA)",
+        "platform": "ishopping",
+        "price": 89175,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Red",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/home-living-test/large-appliances/refrigerators/haier-smart-inverter-top-mount-refrigerator-12-cu-ft-red-hrf-346-ipra-price-in-pakistan"
+      },
+      "id": "m034"
+    },
+    {
+      "category": "refrigerator",
+      "groupName": "Haier HDF-245SD Chest Deep Freezer",
+      "groupSize": 2,
+      "main": {
+        "title": "Haier HDF-245SD Chest Deep Freezer",
+        "platform": "shophive",
+        "price": 78999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/haier-hdf-245sd/"
+      },
+      "offer": {
+        "title": "Haier 8.6 cu ft Single Door Deep Freezer (HDF-245SD)",
+        "platform": "priceoye",
+        "price": 72499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/refrigerators/haier/haier-8-6-cu-ft-single-door-deep-freezer-hdf-245sd"
+      },
+      "id": "m035"
+    },
+    {
+      "category": "washing_machine",
+      "groupName": "SUPER ASIA 7 kg Single Tub Washing Machine",
+      "groupSize": 2,
+      "main": {
+        "title": "SUPER ASIA 7 kg Single Tub Washing Machine",
+        "platform": "digimall",
+        "price": 32500,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/super-asia-7-kg-single-tub-washing-machine"
+      },
+      "offer": {
+        "title": "Super Asia SA 518 Single Tub Washing Machine (7 KG)",
+        "platform": "digimall",
+        "price": 28404,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/super-asia-sa-518-single-tub-washing-machine-7-kg"
+      },
+      "id": "m036"
+    },
+    {
+      "category": "washing_machine",
+      "groupName": "Super Asia SA-210 Single Tub 3KG Washing Machine",
+      "groupSize": 15,
+      "main": {
+        "title": "Super Asia SA-210 Single Tub 3KG Washing Machine",
+        "platform": "alfamall",
+        "price": 21800,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfamall.com/super-asia-sa-210-single-tub-3kg-washing-machine-2"
+      },
+      "offer": {
+        "title": "Super Asia SA-210 Single Tub 3KG Washing Machine",
+        "platform": "alfamall",
+        "price": 21800,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfamall.com/super-asia-sa-210-single-tub-3kg-washing-machine"
+      },
+      "id": "m037"
+    },
+    {
+      "category": "washing_machine",
+      "groupName": "SUPER ASIA 10 kg Single Tub Washing Machine",
+      "groupSize": 3,
+      "main": {
+        "title": "SUPER ASIA 10 kg Single Tub Washing Machine",
+        "platform": "digimall",
+        "price": 31000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/super-asia-10-kg-single-tub-washing-machine"
+      },
+      "offer": {
+        "title": "SUPER ASIA 10 kg Single Tub Washing Machine",
+        "platform": "digimall",
+        "price": 32100,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/super-asia-10-kg-single-tub-washing-machine-1"
+      },
+      "id": "m038"
+    },
+    {
+      "category": "washing_machine",
+      "groupName": "Dawlance DW 10600 W FL Twin Tub Washing Machine",
+      "groupSize": 2,
+      "main": {
+        "title": "Dawlance DW 10600 W FL Twin Tub Washing Machine",
+        "platform": "shophive",
+        "price": 49999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/dawlance-dw-10600-w-fl-twin-tub-washing-machine/"
+      },
+      "offer": {
+        "title": "Dawlance DW-10600 Twin Tub Washing Machine 13Kg",
+        "platform": "mega",
+        "price": 54999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/washingmachine_products/25498/Dawlance-DW-10600-Twin-Tub-Washing-Machine-13Kg.html"
+      },
+      "id": "m039"
+    },
+    {
+      "category": "washing_machine",
+      "groupName": "HAIER WASHING MACHINE TOP LOAD HWM150-688S8",
+      "groupSize": 2,
+      "main": {
+        "title": "HAIER WASHING MACHINE TOP LOAD HWM150-688S8",
+        "platform": "alfatah",
+        "price": 92900,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfatah.pk/products/haier-washing-machine-top-load-hwm150-688s8"
+      },
+      "offer": {
+        "title": "Haier Top Load Fully Automatic Washing Machine 10.5 KG (HWM150-688S8)",
+        "platform": "ishopping",
+        "price": 89650,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/haier-top-load-fully-automatic-washing-machine-10-5-kg-hwm150-688s8-price-in-pakistan"
+      },
+      "id": "m040"
+    },
+    {
+      "category": "washing_machine",
+      "groupName": "Samsung WD11TP34DSX/FQ with QuickDrive and AI Control, 11+7KG Washing Machine",
+      "groupSize": 2,
+      "main": {
+        "title": "Samsung WD11TP34DSX/FQ with QuickDrive and AI Control, 11+7KG Washing Machine",
+        "platform": "shophive",
+        "price": 319999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/samsung-samsung-wd11tp34dsx-fq-with-quickdrive-and-ai-control-11-7kg-washing-machine-washing-machine/"
+      },
+      "offer": {
+        "title": "SAMSUNG WASHER DRYER 11/7KG WD11TP34DSX/FQ",
+        "platform": "alfatah",
+        "price": 325000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfatah.pk/products/samsung-washer-dryer-11-7kg-wd11tp34dsx-fq"
+      },
+      "id": "m041"
+    },
+    {
+      "category": "washing_machine",
+      "groupName": "Super Asia SA-210 Single Tub 3KG Washing Machine",
+      "groupSize": 15,
+      "main": {
+        "title": "Super Asia SA-210 Single Tub 3KG Washing Machine",
+        "platform": "alfamall",
+        "price": 21800,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfamall.com/super-asia-sa-210-single-tub-3kg-washing-machine-2"
+      },
+      "offer": {
+        "title": "Super Asia 3Kg Single Tub Washing Machine Model Sa-210 With Free Home Delivery",
+        "platform": "alfamall",
+        "price": 21900,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfamall.com/super-asia-3kg-single-tub-washing-machine-model-sa-210-with-free-home-delivery-21"
+      },
+      "id": "m042"
+    },
+    {
+      "category": "washing_machine",
+      "groupName": "Samsung Front Load AI Ecobubble Washing Machine (WW90DG5U34ABFA)",
+      "groupSize": 2,
+      "main": {
+        "title": "Samsung Front Load AI Ecobubble Washing Machine (WW90DG5U34ABFA)",
+        "platform": "shophive",
+        "price": 219999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/samsung-front-load-ai-ecobubble-washing-machine-ww90dg5u34abfa/"
+      },
+      "offer": {
+        "title": "Samsung Front Load Fully Automatic Washing Machine 9Kg Black (WW90DG5U34ABFA)",
+        "platform": "ishopping",
+        "price": 226100,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/samsung-front-load-fully-automatic-washing-machine-9kg-black-ww90dg5u34abfa-price-in-pakistan"
+      },
+      "id": "m043"
+    },
+    {
+      "category": "washing_machine",
+      "groupName": "Dawlance DW-6550 Twin Tub Washing Machine",
+      "groupSize": 2,
+      "main": {
+        "title": "Dawlance DW-6550 Twin Tub Washing Machine",
+        "platform": "shophive",
+        "price": 41499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/dawlance-dw-6550-twin-tub-washing-machine/"
+      },
+      "offer": {
+        "title": "Dawlance DW 6550 W Twin Tub Washing Machine 8Kg",
+        "platform": "mega",
+        "price": 40999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/washingmachine_products/25483/Dawlance-DW-6550-W-Twin-Tub-Washing-Machine-8Kg.html"
+      },
+      "id": "m044"
+    },
+    {
+      "category": "washing_machine",
+      "groupName": "PEL PAWM-1100 Top Load Automatic Washing Machine",
+      "groupSize": 3,
+      "main": {
+        "title": "PEL PAWM-1100 Top Load Automatic Washing Machine",
+        "platform": "shophive",
+        "price": 69999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/pel-pawm-1100-top-load-automatic-washing-machine/"
+      },
+      "offer": {
+        "title": "PEL WASHING MACHINE AUTOMATIC PAWM-1100",
+        "platform": "alfatah",
+        "price": 84900,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfatah.pk/products/pel-washing-machine-automatic-pawm-1100"
+      },
+      "id": "m045"
+    },
+    {
+      "category": "washing_machine",
+      "groupName": "Haier Twin Tub Top Load Semi Automatic Washing Machine 10kg (HTW 100-196G)",
+      "groupSize": 2,
+      "main": {
+        "title": "Haier Twin Tub Top Load Semi Automatic Washing Machine 10kg (HTW 100-196G)",
+        "platform": "ishopping",
+        "price": 34525,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/haier-twin-tub-top-load-semi-automatic-washing-machine-10kg-htw-100-196g-price-in-pakistan"
+      },
+      "offer": {
+        "title": "HAIER W.M (HWM-100-196G) TWIN TUB",
+        "platform": "japanelectronics",
+        "price": 34500,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://japanelectronics.com.pk/products/haier-w-m-hwm-100-196g-twin-tub"
+      },
+      "id": "m046"
+    },
+    {
+      "category": "washing_machine",
+      "groupName": "DAWLANCE WASHING MACHINE DW-10095 GB TWIN TUB BLACK LID",
+      "groupSize": 3,
+      "main": {
+        "title": "DAWLANCE WASHING MACHINE DW-10095 GB TWIN TUB BLACK LID",
+        "platform": "jalalelectronics",
+        "price": 32500,
+        "storageGb": 10095,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://jalalelectronics.com/products/dawlance-washing-machine-dw-10095-gb-twin-tub-black-lid"
+      },
+      "offer": {
+        "title": "Dawlance Twin Tub Washing Machine (DW-6550C)",
+        "platform": "ishopping",
+        "price": 38775,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/dawlance-twin-tub-washing-machine-dw-6550c-price-in-pakistan"
+      },
+      "id": "m047"
+    },
+    {
+      "category": "washing_machine",
+      "groupName": "DAWLANCE WASHING MACHINE DW-10095 GB TWIN TUB BLACK LID",
+      "groupSize": 3,
+      "main": {
+        "title": "DAWLANCE WASHING MACHINE DW-10095 GB TWIN TUB BLACK LID",
+        "platform": "jalalelectronics",
+        "price": 32500,
+        "storageGb": 10095,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://jalalelectronics.com/products/dawlance-washing-machine-dw-10095-gb-twin-tub-black-lid"
+      },
+      "offer": {
+        "title": "Dawlance Twin Tub Washing Machine (DW-6550W)",
+        "platform": "ishopping",
+        "price": 37200,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/dawlance-twin-tub-washing-machine-dw-6550w-price-in-pakistan"
+      },
+      "id": "m048"
+    },
+    {
+      "category": "washing_machine",
+      "groupName": "Haier Twin Tub Top Load Semi Automatic Washing Machine 10KG (HTW-100-196E)",
+      "groupSize": 2,
+      "main": {
+        "title": "Haier Twin Tub Top Load Semi Automatic Washing Machine 10KG (HTW-100-196E)",
+        "platform": "ishopping",
+        "price": 33475,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/haier-twin-tub-top-load-semi-automatic-washing-machine-10kg-htw-100-196e-price-in-pakistan"
+      },
+      "offer": {
+        "title": "HAIER W.M (HWM-100-196E) TWIN TUB",
+        "platform": "japanelectronics",
+        "price": 33000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://japanelectronics.com.pk/products/haier-w-m-hwm-100-196e-twin-tub"
+      },
+      "id": "m049"
+    },
+    {
+      "category": "washing_machine",
+      "groupName": "Haier Top Load Automatic Dryer Machine 6KG (HWS-60-50)",
+      "groupSize": 2,
+      "main": {
+        "title": "Haier Top Load Automatic Dryer Machine 6KG (HWS-60-50)",
+        "platform": "ishopping",
+        "price": 20669,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/haier-top-load-dryer-machine-6kg-hws-60-50-price-in-pakistan"
+      },
+      "offer": {
+        "title": "Haier Top Load Automatic Dryer Machine 6KG (HD-60-50)",
+        "platform": "ishopping",
+        "price": 19825,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/haier-automatic-dryer-machine-6kg-hd-60-50-price-in-pakistan"
+      },
+      "id": "m050"
+    },
+    {
+      "category": "monitor",
+      "groupName": "ViewSonic VX2766-2K-PRO-9 27” 320Hz 2K QHD Gaming Monitor",
+      "groupSize": 2,
+      "main": {
+        "title": "ViewSonic VX2766-2K-PRO-9 27” 320Hz 2K QHD Gaming Monitor",
+        "platform": "shophive",
+        "price": 81999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/viewsonic-vx2766-2k-pro-9-27-320hz-2k-qhd-gaming-monitor/"
+      },
+      "offer": {
+        "title": "ViewSonic VX2766-2K-PRO-9 27-Inch QHD 1440p 320 Hz IPS Panel Gaming Monitor (Black, 1 Year Local Warranty, NEW)",
+        "platform": "paklap",
+        "price": 85000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.paklap.pk/viewsonic-vx2766-2k-pro-9-27-inch-monitor-pakistan.html"
+      },
+      "id": "m051"
+    },
+    {
+      "category": "monitor",
+      "groupName": "Asus TUF Series 5 VG259QL5A 24.5\" Full HD 1080p 200Hz Fast IPS Panel Gaming Monitor (Black, NEW)",
+      "groupSize": 2,
+      "main": {
+        "title": "Asus TUF Series 5 VG259QL5A 24.5\" Full HD 1080p 200Hz Fast IPS Panel Gaming Monitor (Black, NEW)",
+        "platform": "paklap",
+        "price": 48500,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.paklap.pk/asus-tuf-vg259ql5a-monitor-pakistan.html"
+      },
+      "offer": {
+        "title": "Asus TUF VG259QL5A 24.5\" 200Hz Fast IPS Gaming Monitor",
+        "platform": "shophive",
+        "price": 46999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/asus-tuf-vg259ql5a-24-5-200hz-fast-ips-gaming-monitor/"
+      },
+      "id": "m052"
+    },
+    {
+      "category": "monitor",
+      "groupName": "ViewSonic VX2779A-HD-PRO 27'' 240Hz Gaming Monitor",
+      "groupSize": 2,
+      "main": {
+        "title": "ViewSonic VX2779A-HD-PRO 27'' 240Hz Gaming Monitor",
+        "platform": "shophive",
+        "price": 47999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/viewsonic-vx2779a-hd-pro-27-240hz-gaming-monitor/"
+      },
+      "offer": {
+        "title": "ViewSonic VX2779A-HD-PRO 27-Inch Full HD 1080p 240 Hz IPS Panel Gaming Monitor (Black, 1 Year Local Warranty, NEW)",
+        "platform": "paklap",
+        "price": 49000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.paklap.pk/viewsonic-vx2779a-hd-pro-27-inch-monitor-price-reviews-pakistan.html"
+      },
+      "id": "m053"
+    },
+    {
+      "category": "monitor",
+      "groupName": "Lenovo ThinkVision T24-40 23.8-Inch FHD 1080p 120Hz IPS Panel Monitor (Eclipse Black, Lenovo Direct Local Warranty, NEW)",
+      "groupSize": 2,
+      "main": {
+        "title": "Lenovo ThinkVision T24-40 23.8-Inch FHD 1080p 120Hz IPS Panel Monitor (Eclipse Black, Lenovo Direct Local Warranty, NEW)",
+        "platform": "paklap",
+        "price": 54000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.paklap.pk/lenovo-thinkvision-t24-40-monitor-pakistan.html"
+      },
+      "offer": {
+        "title": "Lenovo ThinkVision T24-4v 23.8-Inch FHD 1080p 120Hz IPS Panel Monitor (Eclipse Black, Lenovo Direct Local Warranty, NEW)",
+        "platform": "paklap",
+        "price": 73500,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.paklap.pk/lenovo-thinkvision-t24-4v-monitor-pakistan.html"
+      },
+      "id": "m054"
+    },
+    {
+      "category": "monitor",
+      "groupName": "Asus TUF Series 5 VG27AQML5A 27\" QHD 1440p 300Hz Fast IPS Panel Gaming Monitor (Black, NEW)",
+      "groupSize": 2,
+      "main": {
+        "title": "Asus TUF Series 5 VG27AQML5A 27\" QHD 1440p 300Hz Fast IPS Panel Gaming Monitor (Black, NEW)",
+        "platform": "paklap",
+        "price": 91000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.paklap.pk/asus-tuf-vg27aqml5a-monitor-pakistan.html"
+      },
+      "offer": {
+        "title": "Asus Tuf Series 5 VG27AQML5A 27\" 300Hz QHD Fast IPS Gaming Monitor",
+        "platform": "shophive",
+        "price": 95999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/asus-tuf-series-5-vg27aqml5a-27-300hz-qhd-fast-ips-gaming-monitor/"
+      },
+      "id": "m055"
+    },
+    {
+      "category": "monitor",
+      "groupName": "AOC U27G4 27-Inch 4K UHD 2160p 160 Hz IPS Panel Gaming Monitor (Black,1 Year Local Warranty, NEW)",
+      "groupSize": 2,
+      "main": {
+        "title": "AOC U27G4 27-Inch 4K UHD 2160p 160 Hz IPS Panel Gaming Monitor (Black,1 Year Local Warranty, NEW)",
+        "platform": "paklap",
+        "price": 109000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.paklap.pk/aoc-27-inch-u27g4-gaming-monitor-pakistan.html"
+      },
+      "offer": {
+        "title": "AOC U27G4 27\" 4K UHD / FHD Dual Mode IPS Gaming Monitor",
+        "platform": "shophive",
+        "price": 107999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/aoc-u27g4-27-4k-uhd-fhd-dual-mode-ips-gaming-monitor/"
+      },
+      "id": "m056"
+    },
+    {
+      "category": "monitor",
+      "groupName": "ViewSonic VX2479A-HD-PRO 24” 240Hz 1ms Gaming Monitor",
+      "groupSize": 2,
+      "main": {
+        "title": "ViewSonic VX2479A-HD-PRO 24” 240Hz 1ms Gaming Monitor",
+        "platform": "shophive",
+        "price": 40999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/viewsonic-vx2479a-hd-pro-24-240hz-1ms-gaming-monitor/"
+      },
+      "offer": {
+        "title": "ViewSonic VX2479A-HD-PRO 24-Inch Full HD 1080p 240 Hz IPS Panel Gaming Monitor (Black, 1 Year Local Warranty, NEW)",
+        "platform": "paklap",
+        "price": 43000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.paklap.pk/viewsonic-vx2479a-hd-pro-led-monitor-price-reviews-pakistan.html"
+      },
+      "id": "m057"
+    },
+    {
+      "category": "monitor",
+      "groupName": "AOC CU34G4H 34\" WQHD 1440p 200Hz Fast VA Panel Curved Frameless Gaming LED Monitor (Black, 1 Year Direct Local Warranty, NEW)",
+      "groupSize": 2,
+      "main": {
+        "title": "AOC CU34G4H 34\" WQHD 1440p 200Hz Fast VA Panel Curved Frameless Gaming LED Monitor (Black, 1 Year Direct Local Warranty, NEW)",
+        "platform": "paklap",
+        "price": 106000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.paklap.pk/aoc-cu34g4h-led-monitor-pakistan.html"
+      },
+      "offer": {
+        "title": "AOC CU34G4H 34\" WQHD 200Hz Curved Monitor Gaming Monitor",
+        "platform": "shophive",
+        "price": 104999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/aoc-cu34g4h-34-wqhd-200hz-curved-monitor-gaming-monitor/"
+      },
+      "id": "m058"
+    },
+    {
+      "category": "monitor",
+      "groupName": "Lenovo Legion R24S 24\" 144Hz LED Monitor",
+      "groupSize": 2,
+      "main": {
+        "title": "Lenovo Legion R24S 24\" 144Hz LED Monitor",
+        "platform": "shophive",
+        "price": 45999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/lenovo-legion-r24s-24-144hz-led-monitor/"
+      },
+      "offer": {
+        "title": "Lenovo Legion R24s 24-Inch FHD 1080p 144Hz IPS Display LED Gaming Monitor (Black, 3 Year Local Warranty, NEW)",
+        "platform": "paklap",
+        "price": 54900,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.paklap.pk/lenovo-legion-r24s-24-inch-led-gaming-monitor-price-pakistan.html"
+      },
+      "id": "m059"
+    },
+    {
+      "category": "monitor",
+      "groupName": "ViewSonic VP3481A 34-Inch UWQHD 1440p 100 Hz VA Panel Frameless Curved Monitor (Black, 1 Year Local Warranty, NEW)",
+      "groupSize": 2,
+      "main": {
+        "title": "ViewSonic VP3481A 34-Inch UWQHD 1440p 100 Hz VA Panel Frameless Curved Monitor (Black, 1 Year Local Warranty, NEW)",
+        "platform": "paklap",
+        "price": 215000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.paklap.pk/viewsonic-vp3481a-monitor-price-reviews-pakistan.html"
+      },
+      "offer": {
+        "title": "ViewSonic 34” 21:9 Curved 100 Hz USB Type-C Docking LCD Monitor (VP3481a)",
+        "platform": "ishopping",
+        "price": 215250,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/viewsonic-34-21-9-curved-100-hz-usb-type-c-docking-lcd-monitor-vp3481a-price-in-pakistan"
+      },
+      "id": "m060"
+    }
+  ]
+}

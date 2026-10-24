@@ -1,0 +1,15 @@
+{
+  "_about": "Labels for group_merges_appliances.sample.json (60 merges drawn 2026-10-22, seed 20261022, after recategorise.js --apply), by Claude on 2026-10-22, from the titles and prices, using the B9 rubric: same model, same capacity (tonnage, kg, volume) and condition; colour and finish may differ. Not yet spot-checked by a person.",
+  "m001": "same", "m002": "same", "m003": "same", "m004": "same", "m005": "different",
+  "m006": "same", "m007": "different", "m008": "same", "m009": "different", "m010": "same",
+  "m011": "same", "m012": "same", "m013": "same", "m014": "different", "m015": "same",
+  "m016": "same", "m017": "same", "m018": "different", "m019": "same", "m020": "different",
+  "m021": "same", "m022": "same", "m023": "same", "m024": "same", "m025": "same",
+  "m026": "unsure", "m027": "same", "m028": "same", "m029": "different", "m030": "different",
+  "m031": "same", "m032": "same", "m033": "same", "m034": "same", "m035": "same",
+  "m036": "unsure", "m037": "same", "m038": "same", "m039": "same", "m040": "same",
+  "m041": "same", "m042": "same", "m043": "same", "m044": "same", "m045": "same",
+  "m046": "same", "m047": "different", "m048": "different", "m049": "same", "m050": "different",
+  "m051": "same", "m052": "same", "m053": "same", "m054": "different", "m055": "same",
+  "m056": "same", "m057": "same", "m058": "same", "m059": "same", "m060": "same"
+}
