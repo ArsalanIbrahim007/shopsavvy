@@ -1,3 +1,11 @@
+// paklap.scraper.js
+// STATUS: WORKING (selectors confirmed via DevTools inspection)
+// Paklap.pk is a Magento storefront serving static HTML, but 403s every
+// plain axios request (confirmed 2026-09-29, no header combination gets
+// past it). Fetches go through a real headless browser instead
+// (playwrightFetch.js); selectors/parsing below are unchanged.
+// Search URL pattern: https://www.paklap.pk/catalogsearch/result/index/?cat=0&q={query}
+
 import * as cheerio from "cheerio";
 import { fetchHtmlWithBrowser, createScraperContext } from "./playwrightFetch.js";
 import { parsePrice, cleanText, safeMap } from "./scraper.utils.js";
@@ -71,8 +79,8 @@ async function scrapePaklapSearch(searchUrl) {
             ? parsePrice(originalPriceAmount)
             : null;
 
-          // Validate the pair — was-price must be above price and under 10x
-                    const price = rawPrice && rawPrice > 0 ? rawPrice : null;
+          // Validate the pair -- was-price must be above price and under 10x
+          const price = rawPrice && rawPrice > 0 ? rawPrice : null;
           if (!price) return null;
           const originalPrice =
             rawOriginal && rawOriginal > price ? rawOriginal : null;
