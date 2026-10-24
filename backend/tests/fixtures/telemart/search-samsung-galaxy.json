@@ -1,0 +1,116 @@
+{
+  "resources": {
+    "results": {
+      "products": [
+        {
+          "available": true,
+          "body": "",
+          "compare_at_price_max": "215000.00",
+          "compare_at_price_min": "165000.00",
+          "handle": "samsung-galaxy-a57-5g-dual-sim-with-official-warranty",
+          "id": 9428450246876,
+          "image": "https://cdn.shopify.com/s/files/1/0830/0897/9164/files/samsung-galaxy-a57-5g-pakistan-priceoye-bxvdj-500x.jpg?v=1781203050",
+          "price": "149849.00",
+          "price_max": "202749.00",
+          "price_min": "149849.00",
+          "tags": [
+            "5G smartphone Pakistan",
+            "A57 dual sim",
+            "latest Samsung phone",
+            "Mobiles & Tablets",
+            "official warranty mobile",
+            "PTA approved mobile",
+            "Samsung A57 12GB 256GB",
+            "Samsung A57 12GB 512GB",
+            "Samsung A57 5G",
+            "Samsung A57 8GB 256GB",
+            "Samsung Galaxy",
+            "Samsung Galaxy A series",
+            "Samsung Galaxy A57",
+            "Samsung Latest Phones",
+            "Samsung mobile Pakistan",
+            "Samsung Mobiles",
+            "Smart Phones"
+          ],
+          "title": "Samsung Galaxy A57 5G Dual Sim With Official Warranty",
+          "type": "Smart Phone",
+          "url": "/products/samsung-galaxy-a57-5g-dual-sim-with-official-warranty?_pos=1&_psq=samsung+galaxy&_psid=7e8796e57&_ss=e",
+          "variants": [],
+          "vendor": "Samsung",
+          "featured_image": {
+            "alt": "Samsung Galaxy A57 5G Dual Sim With Official Warranty",
+            "aspect_ratio": 1,
+            "height": 500,
+            "url": "https://cdn.shopify.com/s/files/1/0830/0897/9164/files/samsung-galaxy-a57-5g-pakistan-priceoye-bxvdj-500x.jpg?v=1781203050",
+            "width": 500
+          },
+          "body_html": ""
+        },
+        {
+          "available": true,
+          "body": "",
+          "compare_at_price_max": "400000.00",
+          "compare_at_price_min": "400000.00",
+          "handle": "samsung-galaxy-s26-ultra-dual-sim-with-official-warranty",
+          "id": 9428456079580,
+          "image": "https://cdn.shopify.com/s/files/1/0830/0897/9164/files/samsung-galaxy-s26-ultra-pakistan-priceoye-is7vv-5.jpg?v=1781204180",
+          "price": "387449.00",
+          "price_max": "446449.00",
+          "price_min": "387449.00",
+          "tags": [
+            "Mobiles & Tablets",
+            "Samsung Galaxy",
+            "Samsung Latest Phones",
+            "Samsung Mobiles",
+            "Smart Phones"
+          ],
+          "title": "Samsung Galaxy S26 Ultra Dual Sim With Official Warranty",
+          "type": "Smart Phone",
+          "url": "/products/samsung-galaxy-s26-ultra-dual-sim-with-official-warranty?_pos=2&_psq=samsung+galaxy&_psid=7e8796e57&_ss=e",
+          "variants": [],
+          "vendor": "Samsung",
+          "featured_image": {
+            "alt": "Samsung Galaxy S26 Ultra Dual Sim With Official Warranty",
+            "aspect_ratio": 1,
+            "height": 500,
+            "url": "https://cdn.shopify.com/s/files/1/0830/0897/9164/files/samsung-galaxy-s26-ultra-pakistan-priceoye-is7vv-5.jpg?v=1781204180",
+            "width": 500
+          },
+          "body_html": ""
+        },
+        {
+          "available": true,
+          "body": "",
+          "compare_at_price_max": "55000.00",
+          "compare_at_price_min": "38000.00",
+          "handle": "samsung-galaxy-a07-dual-sim-with-official-warranty",
+          "id": 9428500021468,
+          "image": "https://cdn.shopify.com/s/files/1/0830/0897/9164/files/samsung-galaxy-a07-pakistan-priceoye-capqs-500x500.jpg?v=1781208480",
+          "price": "36449.00",
+          "price_max": "52449.00",
+          "price_min": "36449.00",
+          "tags": [
+            "Mobiles & Tablets",
+            "Samsung Galaxy",
+            "Samsung Latest Phones",
+            "Samsung Mobiles",
+            "Smart Phones"
+          ],
+          "title": "Samsung Galaxy A07 Dual Sim With Official Warranty",
+          "type": "Smart Phone",
+          "url": "/products/samsung-galaxy-a07-dual-sim-with-official-warranty?_pos=3&_psq=samsung+galaxy&_psid=7e8796e57&_ss=e",
+          "variants": [],
+          "vendor": "Samsung",
+          "featured_image": {
+            "alt": "Samsung Galaxy A07 Dual Sim With Official Warranty",
+            "aspect_ratio": 1,
+            "height": 500,
+            "url": "https://cdn.shopify.com/s/files/1/0830/0897/9164/files/samsung-galaxy-a07-pakistan-priceoye-capqs-500x500.jpg?v=1781208480",
+            "width": 500
+          },
+          "body_html": ""
+        }
+      ]
+    }
+  }
+}
