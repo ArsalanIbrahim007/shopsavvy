@@ -24,14 +24,19 @@ const DEFAULT_HEADERS = {
  */
 const HOST_DELAY_MS = Number(process.env.SCRAPER_HOST_DELAY_MS) || 1500;
 
-/** Timestamp of the last request sent to each hostname. */
-const lastRequestAt = new Map();
+/** Timestamp of the next allowed request time for each hostname. */
+const nextAllowedAt = new Map();
 
 /**
  * Enforces a minimum delay between successive requests to the same host.
  * Call this before every page fetch inside a scraper loop.
  *
- * @param {string} url  Full URL of the next request (hostname is extracted).
+ * The slot is reserved before sleeping so concurrent callers for the same
+ * host queue up correctly: each one grabs the next available slot and waits
+ * for it, rather than all reading the same "last request" time and going out
+ * together.
+ *
+ * @param {string} url      Full URL of the next request (hostname is extracted).
  * @param {number} [delayMs]  Override the default HOST_DELAY_MS for this call.
  */
 async function politeDelay(url, delayMs = HOST_DELAY_MS) {
@@ -42,15 +47,28 @@ async function politeDelay(url, delayMs = HOST_DELAY_MS) {
     return; // unparseable URL — let fetchHtml surface the error
   }
 
-  const last = lastRequestAt.get(host) ?? 0;
-  const wait = delayMs - (Date.now() - last);
+  const now = Date.now();
+  const last = nextAllowedAt.get(host) ?? now;
+  // Reserve the slot first, then wait — prevents concurrent requests from
+  // reading the same last-request time and going out simultaneously.
+  const next = Math.max(now, last) + delayMs;
+  nextAllowedAt.set(host, next);
+  const wait = next - delayMs - now; // how long until our reserved slot starts
   if (wait > 0) await sleep(wait);
-  lastRequestAt.set(host, Date.now());
 }
 
 // ─── HTTP fetch ───────────────────────────────────────────────────────────────
 /**
  * Wrapper around axios.get with sane defaults + basic retry.
+ *
+ * Calls politeDelay before the first attempt and before every retry so we
+ * never hammer a host even when a request fails and is retried.
+ *
+ * The SSRF guard (assertPublicUrl / assertRedirectIsPublic) ensures we only
+ * ever fetch public internet addresses — never localhost, link-local, or cloud
+ * metadata addresses (169.254.x.x, fd00::/8, etc.). See
+ * services/outboundUrlGuard.service.js for the full list of blocked ranges.
+ *
  * @param {string} url
  * @param {object} [opts]
  * @param {number} [opts.retries=2]
@@ -66,11 +84,13 @@ async function fetchHtml(url, opts = {}) {
     skipDelay = false,
   } = opts;
 
-  if (!skipDelay) await politeDelay(url);
-
   let lastErr;
 
   for (let attempt = 0; attempt <= retries; attempt++) {
+    // Apply the delay before every attempt (including retries) so a failing
+    // request does not bypass the per-host rate limit on its retry.
+    if (!skipDelay) await politeDelay(url);
+
     try {
       await assertPublicUrl(url);
 
@@ -105,8 +125,6 @@ async function fetchHtml(url, opts = {}) {
         status !== 429;
 
       if (permanentClientError) break;
-
-      if (attempt < retries) await sleep(500 * (attempt + 1));
     }
   }
 
@@ -134,10 +152,15 @@ function parsePrice(raw) {
 /**
  * Validates a parsed price pair and enforces the project's data-quality rules:
  *
- *   - price must be a positive integer
+ *   - price must be >= PKR 100 (prices below 100 are almost always a parse
+ *     error: a blog article priced at PKR 20, a missing decimal, a currency
+ *     symbol read as digits)
  *   - originalPrice (the store's "was" price) must be strictly above price,
  *     or null — a was-price at or below the current price is almost always
  *     a parse error and would poison the fake-discount checks
+ *   - originalPrice must not exceed 10× the current price — a ratio above
+ *     that is almost certainly a misparse (e.g. Telemart Haier 98" TV:
+ *     price 786,999, was 11,005,000 — two numbers run together)
  *
  * The backend's priceSanity.service.js is a safety net, not a substitute.
  * Getting this right at the source means the backend's anomaly report stays
@@ -148,8 +171,6 @@ function parsePrice(raw) {
  * @returns {{ price: number|null, originalPrice: number|null }}
  */
 function validatePricePair(price, originalPrice) {
-  // Prices under PKR 100 are almost always a parse error
-  // (e.g. a blog article, a missing decimal, a currency symbol read as digits).
   const cleanPrice =
     typeof price === "number" && price >= 100 ? price : null;
 
@@ -159,8 +180,6 @@ function validatePricePair(price, originalPrice) {
     originalPrice > 0 &&
     cleanPrice !== null &&
     originalPrice > cleanPrice &&
-    // A was-price more than 10x the current price is almost certainly a
-    // misparse (e.g. Telemart Haier 98" TV: price 786,999, was 11,005,000).
     originalPrice <= cleanPrice * 10
   ) {
     cleanOriginal = originalPrice;
