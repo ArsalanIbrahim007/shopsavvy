@@ -1,3 +1,7 @@
+// iShopping uses a real headless browser (via playwrightFetch.js) because
+// plain HTTP requests return a 403. The cheerio parser works on the rendered
+// HTML and is separated into parseIShoppingHtml so tests can run without
+// making network requests.
 import * as cheerio from "cheerio";
 import { fetchHtmlWithBrowser } from "./playwrightFetch.js";
 import { parsePrice, cleanText, safeMap, validatePricePair } from "./scraper.utils.js";
@@ -5,6 +9,8 @@ import { makeListing } from "./scraper.schema.js";
 
 const PLATFORM = "ishopping";
 const BASE_URL = "https://www.ishopping.pk";
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function toAbsoluteUrl(value) {
   if (!value) return null;
@@ -36,20 +42,78 @@ function getProductCards($) {
 }
 
 /**
- * Scrapes one iShopping search page.
- * URL format: https://www.ishopping.pk/catalogsearch/result/?q=iphone
+ * Reads a price value from the first matching selector on a card.
+ *
+ * iShopping puts data-price-amount on the wrapper span itself in the
+ * Was/Now layout, so we check the matched element before looking at children.
  */
-async function scrapeIShoppingSearch(searchUrl) {
-  const html = await fetchIShoppingHtml(searchUrl);
+function readPrice(card, selectors) {
+  for (const selector of selectors) {
+    const element = card.find(selector).first();
+    if (!element.length) continue;
+
+    // data-price-amount may be on the element itself or on a child
+    const dataPrice =
+      element.attr("data-price-amount") ||
+      element.find("[data-price-amount]").first().attr("data-price-amount");
+
+    if (dataPrice) {
+      const value = Number(String(dataPrice).replace(/,/g, ""));
+      if (Number.isFinite(value) && value > 0) return Math.round(value);
+    }
+
+    const text = cleanText(element.text());
+    if (!text) continue;
+
+    const price = parsePrice(text);
+    if (price !== null && price > 0) return price;
+  }
+  return null;
+}
+
+function getStockStatus(card) {
+  const text = cleanText(
+    card.find([
+      ".stock", ".availability",
+      "[class*='stock']", "[class*='availability']",
+      ".ddnone",
+    ].join(", ")).text()
+  ).toLowerCase();
+
+  if (
+    text.includes("out of stock") ||
+    text.includes("sold out") ||
+    text.includes("unavailable")
+  ) {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Fetches a rendered iShopping search page via headless browser.
+ * Waits for .product-item-info — the real card wrapper on live pages.
+ * (.product-item matches 0 elements on a real results page.)
+ */
+async function fetchIShoppingHtml(url) {
+  return fetchHtmlWithBrowser(url, { waitForSelector: ".product-item-info" });
+}
+
+// ─── Parser ───────────────────────────────────────────────────────────────────
+
+/**
+ * Parses an iShopping search results HTML string into listings.
+ * Separated from fetching so tests can run against saved HTML without
+ * making network requests (plain requests to iShopping return 403).
+ *
+ * @param {string} html
+ * @returns {import('./scraper.schema').ScrapedListing[]}
+ */
+function parseIShoppingHtml(html) {
   const $ = cheerio.load(html);
   const cards = getProductCards($);
 
-  if (cards.length === 0) {
-    console.warn(`[${PLATFORM}] no product cards found`);
-    return [];
-  }
-
-  const listings = safeMap(
+  return safeMap(
     cards,
     (el) => {
       const card = $(el);
@@ -160,61 +224,29 @@ async function scrapeIShoppingSearch(searchUrl) {
     },
     PLATFORM
   );
+}
+
+// ─── Scraper entry point ──────────────────────────────────────────────────────
+
+/**
+ * Scrapes one iShopping search page.
+ * URL format: https://www.ishopping.pk/catalogsearch/result/?q=iphone
+ */
+async function scrapeIShoppingSearch(searchUrl) {
+  const html = await fetchIShoppingHtml(searchUrl);
+
+  if (!html) {
+    console.warn(`[${PLATFORM}] no HTML returned for ${searchUrl}`);
+    return [];
+  }
+
+  const listings = parseIShoppingHtml(html);
+
+  if (listings.length === 0) {
+    console.warn(`[${PLATFORM}] no product cards found`);
+  }
 
   return listings;
 }
 
-export { scrapeIShoppingSearch };
-
-async function fetchIShoppingHtml(url) {
-  return fetchHtmlWithBrowser(url, { waitForSelector: ".product-item" });
-}
-
-/**
- * Reads a price value from the first matching selector on a card.
- *
- * iShopping puts data-price-amount on the wrapper span itself in the
- * Was/Now layout, so we check the matched element before looking at children.
- */
-function readPrice(card, selectors) {
-  for (const selector of selectors) {
-    const element = card.find(selector).first();
-    if (!element.length) continue;
-
-    // data-price-amount may be on the element itself or on a child
-    const dataPrice =
-      element.attr("data-price-amount") ||
-      element.find("[data-price-amount]").first().attr("data-price-amount");
-
-    if (dataPrice) {
-      const value = Number(String(dataPrice).replace(/,/g, ""));
-      if (Number.isFinite(value) && value > 0) return Math.round(value);
-    }
-
-    const text = cleanText(element.text());
-    if (!text) continue;
-
-    const price = parsePrice(text);
-    if (price !== null && price > 0) return price;
-  }
-  return null;
-}
-
-function getStockStatus(card) {
-  const text = cleanText(
-    card.find([
-      ".stock", ".availability",
-      "[class*='stock']", "[class*='availability']",
-      ".ddnone",
-    ].join(", ")).text()
-  ).toLowerCase();
-
-  if (
-    text.includes("out of stock") ||
-    text.includes("sold out") ||
-    text.includes("unavailable")
-  ) {
-    return false;
-  }
-  return true;
-}
+export { scrapeIShoppingSearch, parseIShoppingHtml };
