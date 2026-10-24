@@ -1,0 +1,49 @@
+{
+  "manifest_version": 3,
+  "name": "ShopSavvy Price Comparison",
+  "version": "0.1.0",
+  "description": "Compare electronics prices across Pakistani stores instantly.",
+
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+
+  "host_permissions": [
+    "https://ishopping.pk/*",
+    "https://paklap.pk/*",
+    "https://telemart.pk/*"
+  ],
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://ishopping.pk/*",
+        "https://paklap.pk/*",
+        "https://telemart.pk/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "ShopSavvy",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShopSavvy</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <span class="logo-icon">🛒</span>
+      <span class="logo-text">ShopSavvy</span>
+    </div>
+    <p class="tagline">Pakistan's Price Comparison</p>
+  </header>
+
+  <main id="app">
+    <!-- State: not on a product page -->
+    <div id="state-idle" class="state hidden">
+      <div class="empty-icon">🔍</div>
+      <p class="empty-msg">Open a product page on iShopping, Paklap, or Telemart to compare prices.</p>
+    </div>
+
+    <!-- State: product detected, not yet searched -->
+    <div id="state-detected" class="state hidden">
+      <div class="product-card">
+        <p class="store-badge" id="detected-store">—</p>
+        <p class="product-name" id="detected-name">—</p>
+        <p class="product-price" id="detected-price">—</p>
+      </div>
+      <button id="btn-compare" class="btn-primary">Compare Prices</button>
+      <p class="note">Phase 2: results from all 13 stores</p>
+    </div>
+
+    <!-- State: loading -->
+    <div id="state-loading" class="state hidden">
+      <div class="spinner"></div>
+      <p class="loading-msg">Searching other stores…</p>
+    </div>
+
+    <!-- State: results (Phase 2 wire-up) -->
+    <div id="state-results" class="state hidden">
+      <p class="results-label">Prices found:</p>
+      <ul id="results-list" class="results-list"></ul>
+      <button id="btn-back" class="btn-secondary">← Back</button>
+    </div>
+  </main>
+
+  <footer>
+    <a href="#" id="link-site">shopsavvy.pk</a>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>
