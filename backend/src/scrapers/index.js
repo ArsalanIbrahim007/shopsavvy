@@ -18,7 +18,8 @@ import { scrapeMegaSearch } from "./mega.scraper.js";
 import { scrapeShophiveSearch } from "./shophive.scraper.js";
 import { scrapePaklapSearch } from "./paklap.scraper.js";
 import { scrapeW11StopSearch } from "./w11stop.scraper.js";
-import { scrapeTelemartSearch } from "./telemart.scraper.js";
+// Telemart is switched off (see the disabled task in scrapeFixedPlatforms below and config/platforms.js).
+// import { scrapeTelemartSearch } from "./telemart.scraper.js";
 import { scrapeIShoppingSearch } from "./ishopping.scraper.js";
 // Daraz is switched off (see the disabled task in scrapeFixedPlatforms below).
 // Re-enable by uncommenting this import and that block.
@@ -120,10 +121,12 @@ async function scrapeFixedPlatforms(query) {
       platform: "w11stop",
       fn: () => scrapeW11StopSearch(`https://w11stop.com/search?search=${encoded}`),
     },
-    {
-      platform: "telemart",
-      fn: () => scrapeTelemartSearch(`https://www.telemart.pk/search?q=${encoded}`),
-    },
+    // DISABLED 2026-10-25: Telemart (now telex.pk) forbids scraping in its terms; see config/platforms.js.
+    // The scraper file is kept intact. Re-enable by uncommenting this block and the import above.
+    // {
+    //   platform: "telemart",
+    //   fn: () => scrapeTelemartSearch(`https://www.telemart.pk/search?q=${encoded}`),
+    // },
     {
       platform: "ishopping",
       // Same 403-without-a-real-browser issue as Paklap.

@@ -162,6 +162,14 @@ describe("enrichFromPages", () => {
     expect(filterSeen.platform).toEqual({ $in: ["mega"] });
   });
 
+  it("never reads a switched-off store's pages (Daraz, Telemart), even when asked for by name", async () => {
+    model = modelReturning([]);
+    await enrichFromPages({ model, now: NOW, delayMs: 0 });
+    expect(filterSeen.platform).toEqual({ $nin: ["daraz", "telemart"] });
+    await enrichFromPages({ model, now: NOW, delayMs: 0, stores: ["telemart", "mega"] });
+    expect(filterSeen.platform).toEqual({ $in: ["mega"] });
+  });
+
   it("with `again` also takes pages read lately, but still only active listings of the right categories and stores", async () => {
     model = modelReturning([]);
     await enrichFromPages({ model, now: NOW, delayMs: 0, again: true, stores: ["priceoye"] });

@@ -9,6 +9,7 @@
 // Paklap) go through the same headless browser their scrapers already use. The pages read are the ones the scrapers already
 // list; nothing new is discovered or crawled.
 
+import { DISABLED_PLATFORMS } from "../config/platforms.js";
 import Listing from "../models/listing.model.js";
 import { extractColourOptions } from "./colourPage.service.js";
 import { extractPtaFromPage } from "./ptaPage.service.js";
@@ -91,7 +92,9 @@ export async function enrichFromPages({
   };
   // `again`: also the pages read lately (oldest first), to fill in a field that did not exist when they were read.
   if (!again) filter.$or = [{ pageCheckedAt: null }, { pageCheckedAt: { $lt: due } }];
-  if (stores?.length) filter.platform = { $in: stores };
+  // A switched-off store's pages are never read (its listings are hidden everywhere else too: config/platforms.js).
+  const allowed = (stores?.length ? stores : null)?.filter((s) => !DISABLED_PLATFORMS.includes(s));
+  filter.platform = allowed ? { $in: allowed } : { $nin: DISABLED_PLATFORMS };
   if (match) filter.title = { $regex: escapeRegex(String(match)), $options: "i" };
 
   const candidates = await model.find(filter).sort({ pageCheckedAt: 1, lastScrapedAt: -1 }).limit(Math.max(limit, 0)).lean();
