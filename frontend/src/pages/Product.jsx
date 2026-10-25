@@ -7,9 +7,10 @@ import { Link, useLocation, useParams, useSearchParams } from "react-router-dom"
 
 import { getListing } from "../api/endpoints.js";
 import { useAsync } from "../hooks/useAsync.js";
-import { usePageTitle } from "../hooks/usePageTitle.js";
+import { useCanonical, usePageDescription, usePageTitle } from "../hooks/usePageTitle.js";
 import { formatPrice } from "../lib/format.js";
 import { platformName } from "../lib/platforms.js";
+import { jsonLdText, productDescription, productJsonLd } from "../lib/structuredData.js";
 import { summarizeOffers } from "../lib/summary.js";
 import ErrorState from "../components/ErrorState.jsx";
 import AlertForm from "../components/product/AlertForm.jsx";
@@ -38,6 +39,12 @@ function Explainer() {
   );
 }
 
+/** The page's schema.org description for search engines (lib/structuredData.js); nothing when there is no price to state. */
+function StructuredData({ data }) {
+  if (!data) return null;
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdText(data) }} />;
+}
+
 // The API always includes the listing itself; the fallback only guards an empty answer.
 const offersOf = ({ listing, offers }) => (offers?.length > 0 ? offers : [listing]);
 
@@ -45,6 +52,15 @@ const offersOf = ({ listing, offers }) => (offers?.length > 0 ? offers : [listin
 function productName({ listing, productGroup }, state) {
   const clickedName = typeof state?.name === "string" && state.name.trim() ? state.name : null;
   return clickedName || productGroup?.productName || listing.title;
+}
+
+/**
+ * The product's one address: its page at the offer with the lowest price we believe, the one its card links to and the sitemap
+ * lists (backend/src/services/sitemap.service.js follows the same rule).
+ */
+function canonicalAddress(offers) {
+  const lowest = summarizeOffers(offers).lowest;
+  return lowest?._id ? `${window.location.origin}/product/${encodeURIComponent(lowest._id)}` : null;
 }
 
 /** The tab title: the product and its lowest price ("Apple iPhone 17 Pro 256GB from PKR 439,999"). */
@@ -58,6 +74,10 @@ export default function Product() {
   const { state } = useLocation();
   const product = useAsync((signal) => getListing(id, { signal }), [id]);
   usePageTitle(product.status === "success" ? productTitle(product.data, state) : product.status === "error" ? "Product" : null);
+  const loaded = product.status === "success" ? { name: productName(product.data, state), offers: offersOf(product.data) } : null;
+  usePageDescription(loaded ? productDescription(loaded) : null);
+  const canonical = loaded ? canonicalAddress(loaded.offers) : null;
+  useCanonical(canonical);
 
   // The chosen colour lives in the address (?colour=Blue), so a colour can be shared and survives a reload.
   const [searchParams, setSearchParams] = useSearchParams();
@@ -104,6 +124,7 @@ export default function Product() {
   return (
     <div className="container product">
       {back}
+      <StructuredData data={productJsonLd({ name: group.productName, offers: allOffers, url: canonical })} />
       <ResultGroup group={group} currentId={listing._id} colour={colour} onColour={chooseColour} />
 
       <PriceOutlook outlook={outlook} />

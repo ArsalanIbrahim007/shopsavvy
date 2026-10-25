@@ -23,14 +23,19 @@ export function newestScrape(offers) {
 
 const suspect = (offer) => offer?.priceCheck?.status?.startsWith("suspect");
 
-/**
- * What a shopper saves on one product by buying at the cheapest store instead of the dearest: only prices we believe, that
- * compare like with like (new, current, not priced like a non-PTA unit) and that can be bought now. 0 with fewer than two.
- */
-export function possibleSaving(offers) {
-  const prices = currentOffers(comparableOffers(offers))
+/** The prices we believe for one product: like with like (new, current, not priced like a non-PTA unit), buyable now. */
+export function believablePrices(offers) {
+  return currentOffers(comparableOffers(offers))
     .filter((offer) => !suspect(offer) && !offer.ptaAssessment && offer.inStock !== false)
     .map((offer) => offer.price);
+}
+
+/**
+ * What a shopper saves on one product by buying at the cheapest store instead of the dearest: only prices we believe (see
+ * believablePrices). 0 with fewer than two.
+ */
+export function possibleSaving(offers) {
+  const prices = believablePrices(offers);
   return prices.length > 1 ? Math.max(...prices) - Math.min(...prices) : 0;
 }
 

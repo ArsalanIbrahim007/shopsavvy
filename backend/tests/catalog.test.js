@@ -6,7 +6,7 @@ vi.mock("../src/services/historyEnrichment.service.js", () => ({
 
 import Listing from "../src/models/listing.model.js";
 import { createApp } from "../src/createApp.js";
-import { getCatalog, clearCatalogCache, isCatalogCategory, CATALOG_CATEGORIES } from "../src/services/catalogFeed.service.js";
+import { getCatalog, clearCatalogCache, isCatalogCategory, CATALOG_CATEGORIES, peekCatalogGroups } from "../src/services/catalogFeed.service.js";
 import { closeGroupingPool, groupingPoolStats, getGroupingPool } from "../src/services/grouping.service.js";
 
 const NOW = Date.now();
@@ -55,6 +55,17 @@ describe("getCatalog", () => {
     const run = vi.spyOn(getGroupingPool(), "run");
     await getCatalog({ category: "smartphone" });
     expect(run).toHaveBeenCalledWith("group", expect.anything(), { priority: "background" });
+  });
+
+  it("lets the sitemap peek at what was computed without ever computing (peekCatalogGroups)", async () => {
+    expect(peekCatalogGroups("smartphone")).toBeNull();
+    expect(find).not.toHaveBeenCalled(); // asking started nothing
+    await getCatalog({ category: "smartphone", now: NOW });
+    expect(peekCatalogGroups("smartphone").groups).toHaveLength(3);
+    expect(peekCatalogGroups("tv")).toBeNull();
+    // past its ten minutes it is still returned (a sitemap would rather list yesterday's products than none)
+    await getCatalog({ category: "smartphone", now: NOW + 11 * 60 * 1000 });
+    expect(peekCatalogGroups("smartphone").groups).toHaveLength(3);
   });
 
   it("leaves each offer's price history out of the cards", async () => {

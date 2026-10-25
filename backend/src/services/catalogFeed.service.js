@@ -72,6 +72,16 @@ async function categoryCatalog(category, now) {
   return computation;
 }
 
+/**
+ * A category's grouped products as last computed (even if past their ten minutes), or null when none has been: never starts a
+ * computation. For the sitemap, which must not make a crawler's request group a whole category (a minute or more of worker time
+ * at start-up, when the warm-up is already doing it).
+ */
+export function peekCatalogGroups(category) {
+  const entry = cache.get(category);
+  return entry ? { groups: entry.groups, generatedAt: entry.generatedAt } : null;
+}
+
 /** Every grouped product of a category, from the cache (computed first if needed). For reports that count across all of them. */
 export async function getCatalogGroups(category, now = Date.now()) {
   const entry = await categoryCatalog(category, now);

@@ -21,6 +21,7 @@ import analyticsRoutes from "./routes/analytics.routes.js";
 import integrityRoutes from "./routes/integrity.routes.js";
 import priceAlertRoutes from "./routes/priceAlert.routes.js";
 import alertPageRoutes from "./routes/alertPages.routes.js";
+import sitemapRoutes from "./routes/sitemap.routes.js";
 
 export function createApp(env = process.env) {
   const app = express();
@@ -58,6 +59,8 @@ export function createApp(env = process.env) {
   app.use("/api/alerts", priceAlertRoutes);
   // The pages the links in alert emails open (confirm / cancel).
   app.use("/alerts", alertPageRoutes);
+  // For search engines; the frontend's robots.txt points here.
+  app.use("/sitemap.xml", sitemapRoutes);
 
   // Must stay last: anything nothing above answered, and every error thrown above.
   app.use(notFoundHandler);
