@@ -8,7 +8,8 @@ import {
 } from "./normalizeTitle.service.js";
 import {
   extractRamGb, extractCondition, extractNetworkGeneration,
-  extractTonnage, extractCapacityKg, extractVolumeLitres, extractInverter, extractApplianceType,
+  extractTonnage, extractCapacityKg, extractVolumeLitres, extractInverter, extractApplianceType, extractAcSeries,
+  extractModelNumbers, isApplianceTitle, extractFridgeSeries, isFridgeTitle,
 } from "./productAttributes.service.js";
 
 /**
@@ -156,13 +157,28 @@ export function connectivity(text = "") {
   return null;
 }
 
+/** Both titles name a series, and none in common. */
+const disjointSeries = (a, b) => a.size > 0 && b.size > 0 && ![...a].some((s) => b.has(s));
+
 // Two volumes within this share are one refrigerator: stores convert cubic feet to litres and round differently.
 const VOLUME_TOLERANCE = 0.05;
 
-/** True when two titles state a different tonnage, drum weight, volume, inverter type or appliance kind (see productAttributes). */
+/**
+ * True when two titles state a different tonnage, drum weight, volume, inverter type or appliance kind (see productAttributes), or
+ * are two air conditioners (both state a tonnage) of different series: "Dawlance Magna T3" against "Hyper T3". The same full
+ * hyphenated model code on both outranks the series words. A short code does not: TCL uses "18T5" in its BreezeIN and FreshIN series.
+ */
 export function applianceConflict(textA, textB) {
   const differ = (a, b) => a !== null && b !== null && a !== b;
-  if (differ(extractTonnage(textA), extractTonnage(textB))) return true;
+  const tonsA = extractTonnage(textA);
+  const tonsB = extractTonnage(textB);
+  if (differ(tonsA, tonsB)) return true;
+  const hyphenB = hyphenModelCodes(textB);
+  const shareCode = [...hyphenModelCodes(textA)].some((a) => [...hyphenB].some((b) => sameHyphenCode(a, b)));
+  if (tonsA !== null && tonsB !== null && !shareCode) {
+    if (disjointSeries(extractAcSeries(textA), extractAcSeries(textB))) return true;
+  }
+  if (isFridgeTitle(textA) && isFridgeTitle(textB) && disjointSeries(extractFridgeSeries(textA), extractFridgeSeries(textB))) return true;
   const kgA = extractCapacityKg(textA);
   const kgB = extractCapacityKg(textB);
   if (kgA && kgB && kgA.join("+") !== kgB.join("+")) return true;
@@ -170,7 +186,17 @@ export function applianceConflict(textA, textB) {
   const litresB = extractVolumeLitres(textB);
   if (litresA !== null && litresB !== null && Math.abs(litresA - litresB) / Math.max(litresA, litresB) > VOLUME_TOLERANCE) return true;
   if (differ(extractInverter(textA), extractInverter(textB))) return true;
-  return differ(extractApplianceType(textA), extractApplianceType(textB));
+  if (differ(extractApplianceType(textA), extractApplianceType(textB))) return true;
+  // Two appliances whose model numbers differ ("DWT-1165PL" / "DWT 9560", "REF-9149" / "REF-9140"): different unless one title's
+  // numbers are all in the other (one store adds a version number). Only between two appliance titles, as phone and laptop titles
+  // carry other numbers.
+  if (isApplianceTitle(textA) && isApplianceTitle(textB)) {
+    const numbersA = extractModelNumbers(textA);
+    const numbersB = extractModelNumbers(textB);
+    const within = (small, big) => [...small].every((n) => big.has(n));
+    if (numbersA.size > 0 && numbersB.size > 0 && !within(numbersA, numbersB) && !within(numbersB, numbersA)) return true;
+  }
+  return false;
 }
 
 export function lineWords(text = "") {
@@ -199,6 +225,50 @@ export function shortModelIds(text = "") {
     else if (/^\d{1,2}[a-z]$/.test(token) && !UNIT_SUFFIX_LETTERS.has(token.slice(-1))) add("digits:" + token.slice(0, -1), token.slice(-1));
   });
   return slots;
+}
+
+// Words before a hyphen and a number that are not a model prefix ("Pro-11" is a unit version, "Gen-12" a generation, "ISPK-0577"
+// a DigiMall seller's code).
+const NOT_A_CODE_PREFIX = new Set([...VARIANT_TOKENS, ...LINE_WORDS, ...NON_MODEL_NUMBER_PRECEDERS, "type", "usb", "wifi", "in", "ispk"]);
+// The last lookahead leaves out a number followed by an appliance unit: "Haier-10 kg" is a capacity. Not GB: "DW-10095 GB" is a
+// washing machine's model.
+const HYPHEN_CODE =
+  /(?<![a-z0-9])([a-z]{1,5}\d{0,3})-(\d[a-z0-9]*(?:-[a-z0-9]*\d[a-z0-9]*)*)(?![a-z0-9])(?!\s*(?:kgs?|ltrs?|l|tons?|inch|cft|cu)\b)/g;
+// Single-letter units (w, l) are left out: in "DW-6550W" the W is the colour, not watts.
+const CAPACITY_PART = /^\d+(?:\.\d+)?(gb|tb|kg|kgs|ltr|ltrs|ton|tons|cft|inch|mah|hz|mm)$/;
+
+/**
+ * Model codes written with a hyphen, read from the raw title: "PRLP-21860", "HD-60-50", "T24-4v", lower-cased. normalizeTitle
+ * splits these into a word and a bare number, so extractModelCodes never sees them, and two appliances differing only in their
+ * model number ("REF-9149" / "REF-9140", "DW-10095" / "DW-6550C") were grouped (found by the appliance evaluation, 2026-10-22). A
+ * code needs two digits; a prefix that is a tier or generation word, or a capacity after the hyphen ("S24-256GB"), is not one.
+ */
+export function hyphenModelCodes(text = "") {
+  const codes = new Set();
+  for (const [code, prefix, rest] of String(text).toLowerCase().matchAll(HYPHEN_CODE)) {
+    if (NOT_A_CODE_PREFIX.has(prefix) || CAPACITY_PART.test(rest)) continue;
+    if ((code.match(/\d/g) ?? []).length >= 2) codes.add(code);
+  }
+  return codes;
+}
+
+/**
+ * The parts of a hyphenated code that name the model: a leading all-letter part is the store's or maker's prefix and is dropped
+ * ("HTW-100-196E" and "HWM-100-196E" are one Haier twin tub), and one letter after a number is a colour ("DW-6550C" / "DW-6550W").
+ */
+const codeParts = (code) => {
+  const parts = code.split("-").map((part) => part.replace(/(\d)[a-z]$/, "$1"));
+  return /^[a-z]+$/.test(parts[0]) ? parts.slice(1) : parts;
+};
+
+/**
+ * One model when the parts agree, when one code only adds parts at the end (a unit version: "TAC-18T3B" / "TAC-18T3B-2"), or when
+ * its last part only adds letters ("HDF-465" / "HDF-465INV", "DWT-1470" / "DWT-1470PL": stores drop the suffix or space it off).
+ */
+function sameHyphenCode(a, b) {
+  const [short, long] = [codeParts(a), codeParts(b)].sort((x, y) => x.length - y.length);
+  return short.every((part, i) => part === long[i] || (i === short.length - 1 && /^[a-z]+$/.test(long[i].slice(part.length))
+    && long[i].startsWith(part)));
 }
 
 export function sameSet(a, b) {
@@ -265,6 +335,11 @@ export function attributeConflict(textA, textB, { ignoreUnstatedStorage = false 
     codesB.size > 0 &&
     ![...codesA].some((a) => [...codesB].some((b) => sameModelCode(a, b)))
   ) return true;
+
+  // The same for hyphenated codes, which the check above never sees (see hyphenModelCodes).
+  const hyphenA = hyphenModelCodes(textA);
+  const hyphenB = hyphenModelCodes(textB);
+  if (hyphenA.size > 0 && hyphenB.size > 0 && ![...hyphenA].some((a) => [...hyphenB].some((b) => sameHyphenCode(a, b)))) return true;
 
   // A specification both titles state must share a value: a 40mm and a 44mm
   // watch, or a 12th- and 13th-gen laptop, are different products. Disjoint

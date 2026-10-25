@@ -100,7 +100,7 @@ if (isMain) {
     const still = tally(items.filter((i) => stateOf.get(i.id) === "kept"));
     const stillWrong = items.filter((i) => i.verdict === "different" && stateOf.get(i.id) === "kept");
     after.push(
-      `## After the matcher fixes (${recheck.at.slice(0, 10)})`,
+      `## After the matcher fixes (${new Date(recheck.at).toLocaleDateString("en-CA")})`,
       "",
       "The live catalogue regrouped with the fixes (`src/scripts/ml/09-recheck-group-merges.js`), and each labelled merge checked again:",
       "",
@@ -111,15 +111,14 @@ if (isMain) {
       "",
       stillWrong.length ? `Still wrong: ${stillWrong.map((w) => `${w.id} (${(reasons[w.id] ?? "").replace(/\.$/, "")})`).join("; ")}.` : "No sampled wrong merge remains.",
       ...items.filter((i) => i.verdict === "same" && stateOf.get(i.id) === "split").map((i) =>
-        `Lost: ${i.id}, ${i.main.platform} "${i.main.title}" and ${i.offer.platform} "${i.offer.title}" (neither states a capacity, and such titles are now placed by price, which put these two apart).`),
+        `Lost: ${i.id}, ${i.main.platform} "${i.main.title}" and ${i.offer.platform} "${i.offer.title}" (${SET.recheck.lostReason(i.id)}).`),
       "",
       "Read this with care: the sample was drawn from the grouping before the fixes, so it shows that known mistakes are gone and correct",
       "merges kept; it cannot score merges the fixes newly make." +
         (recheck.changedGroups != null
           ? ` Those are listed by the same script against a snapshot of the old grouping: ${recheck.groupsBefore} groups became ${recheck.groupsNow},` +
             ` ${recheck.newlyTogether} pairs of offers are newly together and ${recheck.newlyApart} newly apart, in ${recheck.changedGroups} changed groups,` +
-            " every one of which Claude read, before and after, before the fixes were kept; the new mistakes found that way (Galaxy S7 / S7 edge," +
-            " Redmi 10 / 10 Prime, Redmi Note 11T Pro / Note 15 Pro, a 4G tablet beside a Wi-Fi one) became rules and tests as well." +
+            ` ${SET.recheck.review}` +
             " An unbiased figure for the new grouping needs a fresh sample (07 with another seed)."
           : ""),
       "",

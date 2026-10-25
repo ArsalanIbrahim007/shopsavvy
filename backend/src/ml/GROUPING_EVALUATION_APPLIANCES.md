@@ -36,6 +36,23 @@ Blind human spot-check: pending.
 | m050 | washing_machine | ishopping: Haier Top Load Automatic Dryer Machine 6KG (HWS-60-50) | ishopping: Haier Top Load Automatic Dryer Machine 6KG (HD-60-50) | Haier HWS-60-50 against HD-60-50: different model codes. |
 | m054 | monitor | paklap: Lenovo ThinkVision T24-40 23.8-Inch FHD 1080p 120Hz IPS Panel Monitor (Eclipse Black, Lenovo Direct Local Warranty, NEW) | paklap: Lenovo ThinkVision T24-4v 23.8-Inch FHD 1080p 120Hz IPS Panel Monitor (Eclipse Black, Lenovo Direct Local Warranty, NEW) | Lenovo ThinkVision T24-40 against T24-4v: different models. |
 
+## After the matcher fixes (2026-10-26)
+
+The live catalogue regrouped with the fixes (`src/scripts/ml/09-recheck-group-merges.js`), and each labelled merge checked again:
+
+- wrong merges now split: **11 of 12**
+- correct merges kept: **43 of 46** (lost: 3)
+- unsure merges split: 1 of 2; offers no longer listed: 0
+- precision over the sampled merges still made: **97.7%** (43 of 44; 95% interval 88.2% to 99.6%)
+
+Still wrong: m050 (Haier HWS-60-50 against HD-60-50: different model codes).
+Lost: m001, shophive "TCL 12T3-PRO-11 Breeze In Series WIFI-T3 1.0 Ton Inverter Ac" and priceoye "TCL 1.0 Ton T-Pro Series AC (TAC-12T3-PRO-D2)" (the Shophive title names the Breeze In series beside the T-Pro's code 12T3-PRO, and the series rule believes it).
+Lost: m003, shophive "TCL 12T3-PRO-11 Breeze In Series WIFI-T3 1.0 Ton Inverter Ac" and priceoye "TCL 1.0 Ton T-Pro Series AC (TAC-12T3-PRO-C2)" (the Shophive title names the Breeze In series beside the T-Pro's code 12T3-PRO, and the series rule believes it).
+Lost: m015, priceoye "TCL 1.5 Ton T-Pro Series AC (TAC-18T3-PRO-2)" and mega "TCL TAC 18T3 PRO C2 1.5 Ton T-PRO DC Inverter AC" (no rule separates the two; the offer went to another group of the same model when the groups re-formed).
+
+Read this with care: the sample was drawn from the grouping before the fixes, so it shows that known mistakes are gone and correct
+merges kept; it cannot score merges the fixes newly make. Those are listed by the same script against a snapshot of the old grouping: 2247 groups became 2352, 497 pairs of offers are newly together and 1381 newly apart, in 172 changed groups, of which Claude read every pair whose titles disagree on a model number, code or series, and a sample of the rest; the new mistakes found that way (DigiMall's seller codes ISPK-0577 / ISPK-0621 read as model codes, the colour W of DW-6550W read as watts, "DW-10095 GB" read as gigabytes, "Haier-10 kg" read as a code, HDF-465 / HDF-465INV split, Dawlance 9178 Avante+ and Chrome refrigerators newly together) became rules and tests as well. Phones, laptops and the other core categories were rechecked the same way: their sampled precision is unchanged (95.8%), and the 21 pairs that moved are all corrections (two A4Tech headsets, HS-30i and HU-50, and four Dawlance washing machines filed there). An unbiased figure for the new grouping needs a fresh sample (07 with another seed).
+
 What this does and does not measure: precision only (a wrong merge shows a shopper a different product's price as this one's, the costlier
 error). It does not measure recall (two offers of one product left in separate groups), which needs a different sample: pairs the site
 did not merge. Pair-level scores for the trained matcher are in EVALUATION_REPORT.md.

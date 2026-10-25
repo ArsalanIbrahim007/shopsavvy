@@ -133,6 +133,78 @@ export function extractVolumeLitres(title = "") {
   return null;
 }
 
+// Air-conditioner series: one brand sells several at the same tonnage, at prices far apart (TCL BreezeIN against FreshIN 1.5 ton:
+// PKR 196,499 against 227,999 at one store). Taken from the words that recur in the catalogue's AC titles and from the appliance
+// evaluation's wrong merges (2026-10-22), so a series missing here is simply not compared. Feature words that several series share
+// ("turbo", "smart", "boost", "extreme") are left out.
+const AC_SERIES = [
+  // Dawlance
+  ["magna", /\bmagna\b/], ["hyper", /\bhyper\b/], ["infinity", /\binfinity\b/], ["designer", /\bdesigner\b/],
+  ["sprinter", /\bsprinter\b/], ["elegance", /\belegance\b/], ["econo", /\becono\b/], ["aura", /\baura\b/],
+  ["powercon", /\bpowercon\b/], ["mega", /\bmega\b/], ["inspire", /\binspire\b/], ["aeromax", /\baeromax\b/], ["chrome", /\bchrome\b/],
+  ["suave", /\bsuave\b/],
+  // TCL
+  ["breezein", /\bbreeze\s?in\b/], ["freshin", /\bfresh\s?in\b/], ["savein", /\bsave\s?in\b/], ["voxin", /\bvox\s?in\b/],
+  ["elite", /\belite\b/], ["miracle", /\bmiracle\b/], ["tpro", /\bt\s?-?\s?pro\b/],
+  // Orient, Gree, Haier, Kenwood
+  ["ultron", /\bultron\b/], ["ecomfort", /\be[\s-]?comfort\b/], ["airy", /\bairy\b/], ["pular", /\bpular\b/], ["fairy", /\bfairy\b/],
+  ["pearl", /\bpearl\b/], ["flexis", /\bflexis\b/], ["puri", /\bpuri\b/], ["onyx", /\bonyx\b/], ["enova", /\benova\b/], ["oasis", /\boasis\b/],
+];
+
+// Refrigerator series, the same way: Dawlance sells its 9178 (12 cu ft) as Chrome, Avante, Avante+ and Acce, at different prices.
+const FRIDGE_SERIES = [
+  ["chrome", /\bchrome\b/], ["avante", /\bavante\b(?!\s?(?:\+|plus))/], ["avanteplus", /\bavante\s?(?:\+|plus)/], ["acce", /\bacce\b/],
+];
+
+const seriesIn = (list, title) => {
+  const text = String(title).toLowerCase();
+  return new Set(list.filter(([, pattern]) => pattern.test(text)).map(([name]) => name));
+};
+
+/** The air-conditioner series a title names (see AC_SERIES), as a set; empty when it names none. */
+export function extractAcSeries(title = "") {
+  return seriesIn(AC_SERIES, title);
+}
+
+/** The refrigerator series a title names (see FRIDGE_SERIES), as a set; empty when it names none. */
+export function extractFridgeSeries(title = "") {
+  return seriesIn(FRIDGE_SERIES, title);
+}
+
+/** True when a title names a refrigerator or freezer. */
+export function isFridgeTitle(title = "") {
+  return /\b(?:refrigerator|fridge|freezer)\b/.test(String(title).toLowerCase());
+}
+
+// What is cut from an appliance title before its model numbers are read: capacities and sizes with their unit, years, and the
+// seller codes DigiMall appends ("ISPK-0577"), which differ between two sellers of one product. A bare "W" or "GB" after a number
+// is left: in "DW-6550W" and "DW-10095 GB" they are part of the model, not watts or gigabytes.
+const NOT_MODEL_NUMBERS = [
+  /\d+(?:\.\d+)?\s*(?:kgs?|ltrs?|litres?|liters?|l|cu\.?\s*ft\.?|cft|cubic\s*f\w+|tons?|inch(?:es)?|hz|watts?|mah|mm|cm|months?|years?|days?)\b/g,
+  /\b20[0-3]\d\b/g,
+  /\bispk-?\d+/g,
+  /\d+\s*%/g,
+];
+
+/**
+ * The model numbers in an appliance title: every run of 3 to 6 digits once capacities, years and seller codes are cut, as a set.
+ * "Dawlance DWT 9560" -> {9560}, "(DWT-1165PL)" -> {1165}, "HWM 100-826S6" -> {100, 826}. Stores write the code with a hyphen, a
+ * space or neither, so the digits are what two titles of one model share.
+ */
+export function extractModelNumbers(title = "") {
+  let text = String(title).toLowerCase();
+  for (const pattern of NOT_MODEL_NUMBERS) text = text.replace(pattern, " ");
+  return new Set(text.match(/(?<!\d)\d{3,6}(?!\d)/g) ?? []);
+}
+
+const APPLIANCE_NAME = /\b(?:refrigerator|fridge|freezer|washing\s*machine|washer|dryer|air\s*conditioner|split\s*ac)\b/;
+
+/** True when a title names an appliance: by what it is ("refrigerator"), its capacity (tonnage, drum weight, volume) or its kind. */
+export function isApplianceTitle(title = "") {
+  return APPLIANCE_NAME.test(String(title).toLowerCase()) || extractTonnage(title) !== null || extractCapacityKg(title) !== null
+    || extractVolumeLitres(title) !== null || extractApplianceType(title) !== null;
+}
+
 /** "inverter" or "non_inverter" as the title says ("DC Inverter", "Non-Inverter"), else null. */
 export function extractInverter(title = "") {
   const text = String(title).toLowerCase();

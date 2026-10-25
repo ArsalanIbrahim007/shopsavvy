@@ -1,6 +1,6 @@
 # Trained Matching Classifier — Evaluation Report
 
-Generated 2026-09-29T16:29:45.742Z. Pairs are mined from the live listing database, blocked
+Generated 2026-10-25T19:16:12.556Z. Pairs are mined from the live listing database, blocked
 by category (never all-pairs), labelled by hand against a written rubric
 (`dataset/LABELING_RUBRIC.md`) before any model output was consulted, with a 20-pair
 independent spot-check per labelling round. Train/test split seed: 20261120.
@@ -31,22 +31,22 @@ train and test, which flatters the score.)
 
 | Metric | Candidate classifier (model.artifact.v3-hardneg.json) | Rule baseline (Jaccard ≥ 0.70) |
 |---|---|---|
-| Accuracy | 83.5% | 82.9% |
-| Precision | 60.7% | 66.7% |
+| Accuracy | 84.8% | 83.5% |
+| Precision | 65.4% | 71.4% |
 | Recall | 51.5% | 30.3% |
-| F1 | 55.7% | 41.7% |
+| F1 | 57.6% | 42.6% |
 
 ### Confusion matrix — candidate classifier
 | | Predicted match | Predicted no-match |
 |---|---|---|
 | **Actually match** | 17 (TP) | 16 (FN) |
-| **Actually no-match** | 11 (FP) | 120 (TN) |
+| **Actually no-match** | 9 (FP) | 122 (TN) |
 
 ### Confusion matrix — rule baseline
 | | Predicted match | Predicted no-match |
 |---|---|---|
 | **Actually match** | 10 (TP) | 23 (FN) |
-| **Actually no-match** | 5 (FP) | 126 (TN) |
+| **Actually no-match** | 4 (FP) | 127 (TN) |
 
 Both pipelines run behind the same attribute-constraint veto (`attributeConflict`) — the
 comparison isolates the effect of replacing the fixed 0.70 Jaccard threshold with a trained
@@ -59,9 +59,9 @@ decision, not the constraint layer itself, which stays identical in both.
 | accessory | 2 | 0 | n/a | n/a | 100.0% |
 | appliance | 1 | 1 | 0.0% | 0.0% | 0.0% |
 | headphones | 6 | 2 | 0.0% | 0.0% | 66.7% |
-| laptop | 21 | 9 | 66.7% | 50.0% | 66.7% |
+| laptop | 21 | 9 | 70.0% | 50.0% | 71.4% |
 | other | 6 | 0 | n/a | n/a | 83.3% |
-| smartphone | 44 | 1 | 33.3% | 0.0% | 90.9% |
+| smartphone | 44 | 1 | 40.0% | 0.0% | 93.2% |
 | smartwatch | 11 | 6 | 50.0% | 28.6% | 63.6% |
 | tablet | 6 | 2 | 0.0% | 0.0% | 66.7% |
 | tv | 27 | 12 | 70.0% | 66.7% | 77.8% |
@@ -77,9 +77,9 @@ headphones), which the production model never saw in training:
 
 | Model | Accuracy | Precision | Recall | F1 |
 |---|---|---|---|---|
-| Production model (v1, phone-heavy, 106 training pairs, threshold 0.5) | 78.1% | 71.4% | 34.5% | 46.5% |
-| Candidate (model.artifact.v3-hardneg.json, 366 training pairs, threshold 0.6) | 74.3% | 54.2% | 44.8% | 49.1% |
-| Rule baseline | 74.3% | 58.3% | 24.1% | 34.1% |
+| Production model (v1, phone-heavy, 106 training pairs, threshold 0.5) | 79.0% | 76.9% | 34.5% | 47.6% |
+| Candidate (model.artifact.v3-hardneg.json, 366 training pairs, threshold 0.6) | 76.2% | 59.1% | 44.8% | 51.0% |
+| Rule baseline | 75.2% | 63.6% | 24.1% | 35.0% |
 
 ## Learned weights of the candidate (standardized scale)
 
@@ -96,7 +96,7 @@ headphones), which the production model never saw in training:
 | titleLenDiff | 0.2602 |
 | *(bias)* | -0.5940 |
 
-## Where the two pipelines disagree (first 10 of 19)
+## Where the two pipelines disagree (first 10 of 18)
 
 - **"Acer Predator Helios 18 Arrow Lake 18" Series 2 Intel Core Ultra 9 275HX RTX 5080 32GB RAM 1TB SSD Gaming Laptop 1 Year Warranty"** vs **"Acer Predator Helios 18 AI Laptop - Arrow Lake - Intel Core Ultra 9 275HX (Series 2) 24-Core Processor 32-GB 1-TB SSD 16-GB NVIDIA GeForce RTX 5080 GDDR7 GC 18" WQXGA IPS 250Hz Display BKB W11 TPM (Abyssal Black, Acer 2 Year Direct Local Warranty, NEW)"** — true label: match, ML said match, rule said no-match. (same Predator Helios 18, 275HX, RTX 5080, 32GB/1TB)
 - **"Lenovo ThinkPad E14 14 Inches Core i7 (8GB RAM - 512GB SSD)"** vs **"Lenovo ThinkPad E14 G4 14 Inches 12th Gen Core i7 DOS (8GB - 512GB)"** — true label: no-match, ML said match, rule said no-match. (E14 vs E14 G4, price gap 18% (rule 5))
@@ -104,20 +104,18 @@ headphones), which the production model never saw in training:
 - **"Samsung 43 Inch Full HD Smart TV (T5300)"** vs **"Pel 43 Inch ColorOn Full HD LED Smart TV"** — true label: no-match, ML said match, rule said no-match. (different brands)
 - **"Samsung 43 Inch Full HD Smart TV (F6000)"** vs **"Samsung 43" Full HD F6000 Smart LED TV (43F6000)"** — true label: match, ML said no-match, rule said match. (same Samsung 43in Full HD F6000; price 2.4x apart is a listing error, same model code)
 - **"Vivo Y05"** vs **"Vivo Y05 4GB 64GB"** — true label: match, ML said match, rule said no-match. (no attribute conflict, jaccard 1 ≥ 0.5, price drift 6%)
-- **"HP 15 FC0146DX Laptop - AMD Ryzen 5 7520U 4-Core Processor 8-GB 512-GB SSD AMD Radeon Graphics 15.6" Full HD 1080P Touchscreen MicroEdge AG Display W11 (Natural Silver, NEW)"** vs **"HP 15 FC0025DX Laptop - AMD Ryzen 5 7520U Processor 8-GB 512-GB SSD AMD Radeon Graphics 15.6" HD Touchscreen Micro-Edge Display TPM W11 (Silver, NEW)"** — true label: no-match, ML said match, rule said no-match. (HP 15 FC0146DX vs FC0025DX, different model codes)
 - **"Vivo X Fold"** vs **"Vivo X Fold 5"** — true label: no-match, ML said no-match, rule said match. (X Fold vs X Fold 5)
 - **"HP 15 FD2100TU AI Laptop Intel Core Ultra 5 225U Processor (16GB RAM - 512GB SSD)"** vs **"HP Notebook 15 FD2100tu 15.6" Intel Core Ultra 5 225U 16GB Ram 512GB SSD AI Laptop - 1 Year Warranty"** — true label: match, ML said match, rule said no-match. (same HP 15 FD2100TU, Ultra 5 225U, 16GB/512GB)
 - **"Acer Aspire GO 15 AG15-72P-71MA Intel Core 7-150U (1 Year Warranty)"** vs **"Acer Aspire Go 15 Intel Core 7 150U 8GB RAM 512GB SSD Laptop - 1 Year Warranty"** — true label: match, ML said match, rule said no-match. (same Aspire Go 15 Core 7 150U; one side omits RAM/SSD, price within 3%)
+- **"Lenovo Thinkpad T480 14” Core i5 8th Gen 16GB RAM 512GB SSD Laptop – 6 Month Warranty"** vs **"Dell Latitude 5400 14” Core I5 8th Gen 16GB RAM 512GB M2 SSD Laptop – 6 Month Warranty"** — true label: no-match, ML said match, rule said no-match. (different brands and models)
 
-## Where the candidate is wrong (27 of 164)
+## Where the candidate is wrong (25 of 164)
 
-- **"Huawei Honor 10 GT"** (58249) vs **"Huawei Honor 10"** (59999) — true label: no-match, ML said match. (Honor 10 GT vs Honor 10)
 - **"Lenovo ThinkPad E14 14 Inches Core i7 (8GB RAM - 512GB SSD)"** (194999) vs **"Lenovo ThinkPad E14 G4 14 Inches 12th Gen Core i7 DOS (8GB - 512GB)"** (230999) — true label: no-match, ML said match. (E14 vs E14 G4, price gap 18% (rule 5))
 - **"Samsung Galaxy Watch 9 Bluetooth WiFi 44mm With Sports Band"** (109999) vs **"Samsung Galaxy Watch 9 44mm"** (92999) — true label: match, ML said no-match. (same Galaxy Watch 9 44mm; accessory wording only)
 - **"Acer Predator Helios 18 AI 18" Intel Core Ultra 9 275HX 5080 64GB 1TB SSD Gaming Laptop"** (1089999) vs **"Acer Predator Helios Neo 18 AI Ultra 9 275HX 64GB RAM 1TB SSD RTX5070TI 12GB GC Gaming Laptop"** (1155499) — true label: no-match, ML said match. (Helios 18 vs Helios Neo 18, different GPU)
 - **"Samsung 43 Inch Full HD Smart TV (T5300)"** (63000) vs **"Pel 43 Inch ColorOn Full HD LED Smart TV"** (64900) — true label: no-match, ML said match. (different brands)
 - **"Samsung 43 Inch Full HD Smart TV (F6000)"** (225999) vs **"Samsung 43" Full HD F6000 Smart LED TV (43F6000)"** (94974) — true label: match, ML said no-match. (same Samsung 43in Full HD F6000; price 2.4x apart is a listing error, same model code)
-- **"HP 15 FC0146DX Laptop - AMD Ryzen 5 7520U 4-Core Processor 8-GB 512-GB SSD AMD Radeon Graphics 15.6" Full HD 1080P Touchscreen MicroEdge AG Display W11 (Natural Silver, NEW)"** (167999) vs **"HP 15 FC0025DX Laptop - AMD Ryzen 5 7520U Processor 8-GB 512-GB SSD AMD Radeon Graphics 15.6" HD Touchscreen Micro-Edge Display TPM W11 (Silver, NEW)"** (175000) — true label: no-match, ML said match. (HP 15 FC0146DX vs FC0025DX, different model codes)
 - **"Apple iPad Air 11inch (2026) 8th Generation M4 Chip Wifi"** (244999) vs **"Apple iPad Air 11" M4 2026 8th Gen 128GB Wi-Fi"** (239999) — true label: match, ML said no-match. (same iPad Air 11in M4 2026 Wifi; one side omits storage, price within 2%)
 - **"Acer Aspire GO 15 AG15-72P-531E Intel Core 5-120U"** (187999) vs **"Acer Aspire Go 15 Intel Core 5 120U 8GB RAM 512GB SSD Laptop - 1 Year Warranty"** (175999) — true label: match, ML said no-match. (same Aspire Go 15 Core 5 120U; one side omits RAM/SSD, price within 6%)
 - **"Lenovo Thinkpad T480 14” Core i5 8th Gen 16GB RAM 512GB SSD Laptop – 6 Month Warranty"** (84999) vs **"Dell Latitude 5400 14” Core I5 8th Gen 16GB RAM 512GB M2 SSD Laptop – 6 Month Warranty"** (104999) — true label: no-match, ML said match. (different brands and models)
