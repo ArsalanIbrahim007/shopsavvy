@@ -1,5 +1,5 @@
-import { normalizeTitle, extractStorage } from "./normalizeTitle.service.js";
-import { isSimilarProduct, attributeConflict } from "./similarity.service.js";
+import { normalizeTitle, extractStorage, modelTokens } from "./normalizeTitle.service.js";
+import { isSimilarProduct, attributeConflict, tokenize, VARIANT_TOKENS } from "./similarity.service.js";
 import { calculateDealScores } from "../ranking/dealScore.js";
 import { currentOffers } from "./offerFreshness.service.js";
 import { COLOURS, extractNetworkGeneration, extractPtaStatus, networkFamilyKey } from "./productAttributes.service.js";
@@ -312,9 +312,45 @@ function separateLikelyNonPta(groups, matchStrategy, networkFamilies) {
   return groups.filter((g) => g.offers.length > 0);
 }
 
-export function groupListingsByProduct(listings = [], { matchStrategy = ruleMatchStrategy } = {}) {
+/**
+ * Which groups a listing could join, without asking about every one. Comparing each listing with every group cost listings ×
+ * groups full comparisons: 3,146 phones against 1,846 groups took 186 s, past the 90 s the grouping worker allows, so the
+ * Smartphones catalog never loaded (found 2026-10-26). Two titles that share no model word (the normalised title without
+ * capacities such as "8gb" and tier words such as "pro") are never the same product: the rule strategy needs 70% of exactly
+ * those words in common, and the trained one compares them or a member's identical set. Indexing every word instead let "pro"
+ * and "8gb" connect nearly every group, which saved little. So the index maps each model word of a group's title and of its
+ * members' titles to the group, and a listing is compared only with the groups sharing one with it, in the order the groups
+ * were made (the first match still wins). A title with no model word is compared with every group, as before.
+ * `blocking: false` in groupListingsByProduct turns this off; the tests compare both, and both were compared on every category
+ * of the live catalogue.
+ */
+function groupIndex() {
+  const byWord = new Map();
+  const order = new Map();
+  const words = (text) => tokenize(modelTokens(text || "")).filter((word) => !VARIANT_TOKENS.has(word));
+
+  return {
+    add(group, text) {
+      if (!order.has(group)) order.set(group, order.size);
+      for (const word of words(text)) {
+        if (!byWord.has(word)) byWord.set(word, new Set());
+        byWord.get(word).add(group);
+      }
+    },
+    candidates(text, groups) {
+      const own = words(text);
+      if (own.length === 0) return groups;
+      const found = new Set();
+      for (const word of own) for (const group of byWord.get(word) ?? []) found.add(group);
+      return [...found].sort((a, b) => order.get(a) - order.get(b));
+    },
+  };
+}
+
+export function groupListingsByProduct(listings = [], { matchStrategy = ruleMatchStrategy, blocking = true } = {}) {
   let groups = [];
   const networkFamilies = splitNetworkFamilies(listings);
+  const index = groupIndex();
 
   // Listings that state a capacity go first, so each capacity variant has its group before a bare title has to choose between
   // them (findMatchingGroup). The sort is stable: categories where no title states one (televisions) keep their order.
@@ -326,7 +362,8 @@ export function groupListingsByProduct(listings = [], { matchStrategy = ruleMatc
     const normalizedListingTitle = normalizeTitle(rawTitle);
     const listingStorage = extractStorage(rawTitle);
 
-    let matchedGroup = findMatchingGroup(listing, rawTitle, listingStorage, groups, matchStrategy, networkFamilies);
+    const candidates = blocking ? index.candidates(rawTitle, groups) : groups;
+    let matchedGroup = findMatchingGroup(listing, rawTitle, listingStorage, candidates, matchStrategy, networkFamilies);
 
     if (!matchedGroup) {
       matchedGroup = newGroup(listing, rawTitle, listingStorage);
@@ -342,6 +379,8 @@ export function groupListingsByProduct(listings = [], { matchStrategy = ruleMatc
     }
 
     addOffer(matchedGroup, listing);
+    // The listing's title covers the group's title too: a new group's is the listing's, and an adopted one is the listing's.
+    index.add(matchedGroup, rawTitle);
   });
 
   groups = separateLikelyNonPta(groups, matchStrategy, networkFamilies);
