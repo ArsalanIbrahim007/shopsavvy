@@ -5,6 +5,8 @@
 // tone looks like belongs to the design system, so a redesign changes one
 // stylesheet, not this file.
 
+import { formatPrice } from "./format.js";
+
 export const RECOMMENDATIONS = {
   BUY_NOW: { label: "Buy now", tone: "good" },
   GOOD_DEAL: { label: "Good deal", tone: "good" },
@@ -27,6 +29,40 @@ export const DISCOUNT_VERDICTS = {
 /** Recommendation for an offer, with a safe fallback. */
 export function recommendationOf(offer) {
   return RECOMMENDATIONS[offer?.recommendation?.action] || RECOMMENDATIONS.NO_HISTORY;
+}
+
+// How far above the lowest price for the same product an offer may be and still be called a good deal. The server scores each
+// offer on its own (its history, its discount), so it called PriceOye's iPhone 17 Pro a good deal at PKR 34,000 (8%) above
+// Shophive's, and nearly every row of a product's table said "Good deal", which told the shopper nothing.
+export const GOOD_DEAL_MARGIN = 0.05;
+
+/**
+ * The recommendation to show for an offer, with its reason: the server's, except that a "Good deal" or "Buy now" for an offer
+ * priced more than GOOD_DEAL_MARGIN above `lowestPrice` (the lowest price we believe for the same product, from
+ * summarizeOffers) is shown as a fair price, saying how much cheaper the product is elsewhere.
+ * @returns {{label:string, tone:string, reason:string}}
+ */
+export function offerVerdict(offer, { lowestPrice = null } = {}) {
+  const recommendation = recommendationOf(offer);
+  const reason = offer?.recommendation?.reason || "";
+  const price = Number(offer?.price);
+  if (recommendation.tone === "good" && lowestPrice > 0 && price > lowestPrice * (1 + GOOD_DEAL_MARGIN)) {
+    return {
+      ...RECOMMENDATIONS.FAIR_PRICE,
+      reason: `${formatPrice(price - lowestPrice)} more than the lowest price we found for this product (${formatPrice(lowestPrice)}).`,
+    };
+  }
+  return { ...recommendation, reason };
+}
+
+/** The sentences of a server reason, for a list ("A. B. C." -> ["A.", "B.", "C."]). */
+export function reasonPoints(reason = "") {
+  return String(reason).split(/(?<=\.)\s+(?=[A-Z])/).map((sentence) => sentence.trim()).filter(Boolean);
+}
+
+/** The first sentence of a server reason, for a one-line note (the server joins up to six). */
+export function briefReason(reason = "") {
+  return reasonPoints(reason)[0] ?? "";
 }
 
 /**
@@ -58,18 +94,19 @@ export function offerFlags(offer) {
 
 /**
  * The badges for one offer on a card: its recommendation and its warnings, without contradicting
- * each other. A "Good deal" next to "Fake discount" tells the shopper two opposite things, and the
- * warning is the one that matters, so a bad-toned flag replaces a good-toned recommendation.
- * Each item: { id, tone, label, reason }.
+ * each other. A "Good deal" next to "Fake discount" or "Suspicious discount" tells the shopper two
+ * opposite things, and the warning is the one that matters, so any cautionary or bad flag replaces a
+ * good-toned recommendation (a neutral one, such as "Unverified discount", does not).
+ * `lowestPrice` is passed on to offerVerdict. Each item: { id, tone, label, reason }.
  */
-export function cardBadges(offer, { maxFlags = 2 } = {}) {
-  const recommendation = recommendationOf(offer);
+export function cardBadges(offer, { maxFlags = 2, lowestPrice = null } = {}) {
+  const verdict = offerVerdict(offer, { lowestPrice });
   const flags = offerFlags(offer);
-  const hasBadFlag = flags.some((flag) => flag.tone === "bad");
+  const hasWarning = flags.some((flag) => flag.tone === "bad" || flag.tone === "caution");
 
   const badges = [];
-  if (!(hasBadFlag && recommendation.tone === "good")) {
-    badges.push({ id: "recommendation", tone: recommendation.tone, label: recommendation.label, reason: offer?.recommendation?.reason || "" });
+  if (!(hasWarning && verdict.tone === "good")) {
+    badges.push({ id: "recommendation", tone: verdict.tone, label: verdict.label, reason: verdict.reason });
   }
   return [...badges, ...flags.slice(0, maxFlags)];
 }

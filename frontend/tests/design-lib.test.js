@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { featuredCategories, isKnownCategory, FEATURED_CATEGORIES } from "../src/lib/categories.js";
-import { cardBadges } from "../src/lib/verdicts.js";
+import { GOOD_DEAL_MARGIN, briefReason, cardBadges, offerVerdict, reasonPoints } from "../src/lib/verdicts.js";
+import { pageTitle, SITE_TITLE } from "../src/hooks/usePageTitle.js";
 
 describe("featuredCategories", () => {
   const counts = [
@@ -48,9 +49,17 @@ describe("cardBadges", () => {
   });
 
   it("shows the recommendation, then any warnings", () => {
-    const badges = cardBadges(offer("GOOD_DEAL", "suspicious"));
-    expect(badges.map((b) => b.label)).toEqual(["Good deal", "Suspicious discount"]);
+    const badges = cardBadges(offer("FAIR_PRICE", "suspicious"));
+    expect(badges.map((b) => b.label)).toEqual(["Fair price", "Suspicious discount"]);
     expect(badges[0].reason).toBe("because");
+  });
+
+  it("never shows a good recommendation next to a suspicious discount either (live: both on one iPhone card)", () => {
+    expect(cardBadges(offer("GOOD_DEAL", "suspicious")).map((b) => b.label)).toEqual(["Suspicious discount"]);
+  });
+
+  it("keeps a good recommendation next to a neutral flag", () => {
+    expect(cardBadges(offer("GOOD_DEAL", "unverified_discount")).map((b) => b.label)).toEqual(["Good deal", "Unverified discount"]);
   });
 
   it("never shows a good recommendation next to a fake discount: the warning replaces it", () => {
@@ -64,9 +73,15 @@ describe("cardBadges", () => {
     expect(cardBadges(offer("WAIT", "likely_fake")).map((b) => b.label)).toEqual(["Wait", "Fake discount"]);
   });
 
-  it("does not let an unusual price (caution) remove a good recommendation", () => {
+  it("does not call an unusual price a good deal: the site never counts it as the lowest price or a saving", () => {
     const labels = cardBadges({ ...offer("GOOD_DEAL"), priceCheck: { status: "suspect_low", reason: "far below" } }).map((b) => b.label);
-    expect(labels).toEqual(["Good deal", "Unusual price"]);
+    expect(labels).toEqual(["Unusual price"]);
+  });
+
+  it("passes the product's lowest price on, so a dear offer is not called a good deal", () => {
+    const dear = { ...offer("GOOD_DEAL"), price: 473999 };
+    expect(cardBadges(dear, { lowestPrice: 439999 }).map((b) => b.label)).toEqual(["Fair price"]);
+    expect(cardBadges(dear).map((b) => b.label)).toEqual(["Good deal"]); // nothing to compare with
   });
 
   it("limits the warnings shown, and falls back safely for an offer with no analysis", () => {
@@ -75,5 +90,56 @@ describe("cardBadges", () => {
     expect(cardBadges(many, { maxFlags: 1 })).toHaveLength(2);
     expect(cardBadges({}).map((b) => b.label)).toEqual(["Not enough history"]);
     expect(cardBadges(undefined).map((b) => b.label)).toEqual(["Not enough history"]);
+  });
+});
+
+describe("offerVerdict: a good deal is relative to the product's lowest price", () => {
+  const good = (price) => ({ price, recommendation: { action: "GOOD_DEAL", reason: "Score 72." } });
+
+  it("keeps the server's verdict and reason within the margin", () => {
+    expect(GOOD_DEAL_MARGIN).toBe(0.05);
+    expect(offerVerdict(good(439999), { lowestPrice: 439999 })).toEqual({ label: "Good deal", tone: "good", reason: "Score 72." });
+    expect(offerVerdict(good(461998), { lowestPrice: 439999 }).label).toBe("Good deal"); // 4.99% above
+  });
+
+  it("calls a dearer offer a fair price and says how much more it is (live: PriceOye's iPhone 17 Pro, 8% above Shophive)", () => {
+    expect(offerVerdict(good(473999), { lowestPrice: 439999 })).toEqual({
+      label: "Fair price", tone: "neutral",
+      reason: "PKR 34,000 more than the lowest price we found for this product (PKR 439,999).",
+    });
+    expect(offerVerdict({ ...good(473999), recommendation: { action: "BUY_NOW" } }, { lowestPrice: 439999 }).label).toBe("Fair price");
+  });
+
+  it("leaves cautious verdicts alone, and needs a lowest price to compare with", () => {
+    expect(offerVerdict({ price: 500000, recommendation: { action: "OVERPRICED", reason: "x" } }, { lowestPrice: 400000 }).label).toBe("Overpriced");
+    expect(offerVerdict(good(473999)).label).toBe("Good deal");
+    expect(offerVerdict(good(473999), { lowestPrice: 0 }).label).toBe("Good deal");
+    expect(offerVerdict(undefined)).toEqual({ label: "Not enough history", tone: "neutral", reason: "" });
+  });
+});
+
+describe("server reasons", () => {
+  const joined = "The claimed original price is significantly higher than usual. The current price is not lower. It is PKR 1.5 lakh.";
+
+  it("splits a joined reason into its sentences, and keeps decimals and a single sentence whole", () => {
+    expect(reasonPoints(joined)).toEqual([
+      "The claimed original price is significantly higher than usual.", "The current price is not lower.", "It is PKR 1.5 lakh.",
+    ]);
+    expect(reasonPoints("One sentence only.")).toEqual(["One sentence only."]);
+    expect(reasonPoints(undefined)).toEqual([]);
+  });
+
+  it("gives the first sentence for a one-line note", () => {
+    expect(briefReason(joined)).toBe("The claimed original price is significantly higher than usual.");
+    expect(briefReason("")).toBe("");
+  });
+});
+
+describe("pageTitle", () => {
+  it("names the page before the site, and uses the site's title when there is no page title", () => {
+    expect(pageTitle("iphone 17 pro prices")).toBe("iphone 17 pro prices · ShopSavvy");
+    expect(pageTitle("")).toBe(SITE_TITLE);
+    expect(pageTitle("   ")).toBe(SITE_TITLE);
+    expect(pageTitle(undefined)).toBe(SITE_TITLE);
   });
 });

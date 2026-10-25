@@ -16,7 +16,7 @@ import { platformName } from "../../lib/platforms.js";
 import { offerLink } from "../../lib/safeLink.js";
 import { ptaFlag } from "../../lib/pta.js";
 import { bestDealOffer } from "../../lib/score.js";
-import { offerFlags, recommendationOf } from "../../lib/verdicts.js";
+import { offerFlags, offerVerdict } from "../../lib/verdicts.js";
 import { summarizeOffers } from "../../lib/summary.js";
 import { Swatch } from "../ColourPicker.jsx";
 import StoreLogo from "../StoreLogo.jsx";
@@ -38,11 +38,11 @@ function DiscountCell({ offer }) {
   );
 }
 
-function VerdictCell({ offer }) {
-  const rec = recommendationOf(offer);
+function VerdictCell({ offer, lowestPrice }) {
+  const rec = offerVerdict(offer, { lowestPrice });
   return (
     <div className="offer-table__rec">
-      <VerdictBadge tone={rec.tone} label={rec.label} title={offer.recommendation?.reason} />
+      <VerdictBadge tone={rec.tone} label={rec.label} title={rec.reason} />
       <Sparkline offer={offer} />
     </div>
   );
@@ -64,7 +64,8 @@ function ColourTag({ entry, colour }) {
 export default function OfferTable({ offers, name, currentId, colour = null }) {
   // One row per store and price: a store's colour variants at one price are one offer that lists its colours.
   const entries = collapseVariants(offers, { colour, currentId }).sort((a, b) => a.offer.price - b.offer.price);
-  const lowestId = summarizeOffers(offers).lowest?._id;
+  const lowest = summarizeOffers(offers).lowest;
+  const lowestId = lowest?._id;
   const bestId = bestDealOffer(offers)?._id;
   const has = (entry, id) => entry.variants.some((variant) => variant._id === id);
 
@@ -114,7 +115,7 @@ export default function OfferTable({ offers, name, currentId, colour = null }) {
                 </td>
                 <td><DiscountCell offer={offer} /></td>
                 <td><ScoreCell offer={offer} /></td>
-                <td><VerdictCell offer={offer} /></td>
+                <td><VerdictCell offer={offer} lowestPrice={lowest?.price ?? null} /></td>
                 <td className="small">
                   {offer.inStock === false ? <span className="muted">Out of stock</span> : "In stock"}
                   {offer.lastScrapedAt && <span className="offer-table__age muted">{timeAgo(offer.lastScrapedAt)}</span>}

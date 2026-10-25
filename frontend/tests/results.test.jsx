@@ -75,9 +75,12 @@ describe("Results: summary", () => {
 
     const cards = screen.getByRole("group", { name: /summary of these results/i });
     expect(cards).toHaveTextContent("Stores compared4");
-    expect(cards).toHaveTextContent("PKR 64,000at PriceOye");
-    expect(cards).toHaveTextContent("PKR 83,313"); // (64000+65500+66000+67000+110000+112000+90000+92000) / 8 = 83,312.5
-    expect(cards).toHaveTextContent("PriceOyeDeal score 92 out of 100");
+    // The results hold phones and a TV: the price figures are about the phones, and say so.
+    expect(cards).toHaveTextContent("PKR 64,000Smartphones, at PriceOye");
+    // The biggest gap on one product (A17: 67,000 - 64,000); no average, which across different products describes nothing.
+    expect(cards).toHaveTextContent("Biggest savingPKR 3,000on Samsung Galaxy A17 256GB");
+    expect(cards).not.toHaveTextContent(/average/i);
+    expect(cards).toHaveTextContent("PriceOyeSmartphones, deal score 92 out of 100");
     expect(screen.getByText(/last updated just now/i)).toBeInTheDocument();
   });
 
@@ -86,7 +89,29 @@ describe("Results: summary", () => {
     await screen.findAllByRole("article");
     const cards = screen.getByRole("group", { name: /summary of these results/i });
     expect(cards).toHaveTextContent("Stores compared1");
-    expect(cards).toHaveTextContent("PKR 65,500at Mega.pk");
+    expect(cards).toHaveTextContent("PKR 65,500Smartphones, at Mega.pk");
+    expect(cards).toHaveTextContent("No product here is sold at two different prices");
+  });
+
+  it("never takes the lowest price or the biggest saving from another category", async () => {
+    // Live, 2026-10-26: "iphone 17 pro" found cases too, and a PKR 8,990 case was shown as the lowest price.
+    const cases = group("iPhone 17 Pro Silicone Case", [
+      offer("k1", "eezepc", 8990, { productCategory: "accessory", storageGb: null, ptaStatus: "unknown" }),
+      offer("k2", "mega", 19990, { productCategory: "accessory", storageGb: null, ptaStatus: "unknown" }),
+    ]);
+    serve([A17, cases]);
+    renderResults("/results?q=a17");
+    const cards = await screen.findByRole("group", { name: /summary of these results/i });
+    expect(cards).toHaveTextContent("PKR 64,000Smartphones, at PriceOye");
+    expect(cards).not.toHaveTextContent("PKR 8,990");
+    expect(cards).toHaveTextContent("Biggest savingPKR 3,000"); // not the cases' PKR 11,000
+  });
+
+  it("names no category when everything shown is in one", async () => {
+    serve([A17]);
+    renderResults("/results?q=a17");
+    const cards = await screen.findByRole("group", { name: /summary of these results/i });
+    expect(cards).toHaveTextContent("PKR 64,000at PriceOye");
   });
 
   it("never presents an offer flagged as an unusual price as the lowest price", async () => {
@@ -113,6 +138,24 @@ describe("Results: integrity strip", () => {
     const note = await screen.findByRole("note");
     expect(note).toHaveTextContent("ShopSavvy flagged 1 offer with a doubtful discount or price.");
     expect(note).toHaveTextContent("PriceOye: never sold at the claimed price");
+  });
+
+  it("quotes only the first sentence of a long reason (the product page has the rest)", async () => {
+    const reason = "The claimed original price is far above its usual price. The current price is not lower than usual. It is not a saving.";
+    serve([group("Samsung Galaxy S26 Plus", [
+      offer("f1", "priceoye", 300000, { originalPrice: 400000, discountAnalysis: { classification: "likely_fake", isFakeDiscount: true, reason } }),
+      offer("f2", "mega", 305000),
+    ])]);
+    renderResults("/results?q=s26");
+    const note = await screen.findByRole("note");
+    expect(note).toHaveTextContent("PriceOye: The claimed original price is far above its usual price.");
+    expect(note).not.toHaveTextContent("not lower than usual");
+  });
+
+  it("titles the tab after the search, or the category being browsed", async () => {
+    renderResults("/results?q=samsung");
+    await screen.findAllByRole("article");
+    expect(document.title).toBe("samsung prices · ShopSavvy");
   });
 
   it("is absent when nothing is doubtful", async () => {

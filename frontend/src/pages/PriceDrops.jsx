@@ -9,6 +9,7 @@ import DropCard from "../components/DropCard.jsx";
 import ErrorState from "../components/ErrorState.jsx";
 import { CardSkeleton } from "../components/Skeleton.jsx";
 import { useAsync } from "../hooks/useAsync.js";
+import { usePageTitle } from "../hooks/usePageTitle.js";
 import { FEATURED_CATEGORIES, categoryName } from "../lib/categories.js";
 import { rulesSentence } from "../lib/drops.js";
 import { timeAgo } from "../lib/format.js";
@@ -20,6 +21,7 @@ export default function PriceDrops() {
   const asked = params.get("category") ?? "";
   const category = FEATURED_CATEGORIES.includes(asked) ? asked : ""; // anything else shows all, rather than an error page
   const drops = useAsync((signal) => getPriceDrops({ category: category || undefined, limit: 48, signal }), [category]);
+  usePageTitle(category ? `${categoryName(category)} price drops` : "Price drops");
 
   return (
     <div className="container drops-page">

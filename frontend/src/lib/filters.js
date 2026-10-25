@@ -125,6 +125,11 @@ export function verifiedDiscount(offer) {
 
 const categoryOf = (offer) => offer.productCategory || "other";
 
+/** The offers of one category ("other" for those without one). */
+export function inCategory(offers, category) {
+  return offers.filter((offer) => categoryOf(offer) === category);
+}
+
 /** Offers that satisfy every selected filter. An empty selection means "no constraint". */
 export function applyFilters(offers, filters) {
   const platforms = filters.platforms?.length ? new Set(filters.platforms) : null;

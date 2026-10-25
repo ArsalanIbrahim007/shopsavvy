@@ -9,6 +9,7 @@ import { getIntegrity } from "../api/endpoints.js";
 import ErrorState from "../components/ErrorState.jsx";
 import { Skeleton } from "../components/Skeleton.jsx";
 import { useAsync } from "../hooks/useAsync.js";
+import { usePageTitle } from "../hooks/usePageTitle.js";
 import { formatDate, formatNumber, formatPrice, timeAgo } from "../lib/format.js";
 import { discountRows, formatScore, formatShare, markupRows, matcherRows, outlookJudgeable, outlookRows, perHundred, ptaRows, share } from "../lib/integrity.js";
 import { platformName } from "../lib/platforms.js";
@@ -293,6 +294,7 @@ function OutlookSection({ report }) {
 export default function HonestPrices() {
   // One request feeds all three sections.
   const report = useAsync((signal) => getIntegrity({ signal }), []);
+  usePageTitle("How accurate we are");
   return (
     <div className="container prose honest">
       <h1>How we keep prices honest</h1>

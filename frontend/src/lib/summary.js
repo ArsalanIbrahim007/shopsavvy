@@ -24,6 +24,27 @@ export function newestScrape(offers) {
 const suspect = (offer) => offer?.priceCheck?.status?.startsWith("suspect");
 
 /**
+ * What a shopper saves on one product by buying at the cheapest store instead of the dearest: only prices we believe, that
+ * compare like with like (new, current, not priced like a non-PTA unit) and that can be bought now. 0 with fewer than two.
+ */
+export function possibleSaving(offers) {
+  const prices = currentOffers(comparableOffers(offers))
+    .filter((offer) => !suspect(offer) && !offer.ptaAssessment && offer.inStock !== false)
+    .map((offer) => offer.price);
+  return prices.length > 1 ? Math.max(...prices) - Math.min(...prices) : 0;
+}
+
+/** The product with the largest possibleSaving among `groups`: { saving, group }, or null when none has one. */
+export function biggestSaving(groups) {
+  let best = null;
+  for (const group of groups) {
+    const saving = possibleSaving(group.offers ?? []);
+    if (saving > 0 && (best === null || saving > best.saving)) best = { saving, group };
+  }
+  return best;
+}
+
+/**
  * Used, refurbished and open-box offers are left out of every number here whenever there is a new offer to compare
  * (see lib/condition.js): their prices are shown in their own section, never as "the lowest price". `excluded` says how
  * many were left out, and `preOwnedOnly` that all that is left is pre-owned (a search for refurbished laptops).

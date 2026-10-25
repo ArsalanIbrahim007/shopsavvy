@@ -211,7 +211,7 @@ describe("Results: used, refurbished and open-box products", () => {
     expect(cards).toHaveTextContent("PKR 64,000at PriceOye");
     expect(cards).not.toHaveTextContent("PKR 40,000");
     expect(cards).toHaveTextContent("Stores compared3");
-    expect(cards).toHaveTextContent("PKR 65,167"); // (64000 + 65500 + 66000) / 3 = 65,166.7
+    expect(cards).toHaveTextContent("Biggest savingPKR 2,000"); // 66,000 - 64,000: the used PKR 40,000 is not a saving
   });
 
   it("points to the section from the top of the list, and says the summary leaves them out", async () => {

@@ -238,9 +238,29 @@ describe("DealVerdict", () => {
       discountAnomaly: { status: "anomalous", reason: "Above every other store." },
     }} />);
     const cards = screen.getAllByRole("heading", { level: 3 }).map((h) => h.closest(".verdict-card"));
-    expect(cards[0]).toHaveTextContent(/Should you buy?.*Buy now.*Lowest in 90 days./);
+    // "This store's price", not "Should you buy?": whether to buy now or wait is "Wait or buy?" above, for the product.
+    expect(cards[0]).toHaveTextContent(/This store's price.*Buy now.*Lowest in 90 days./);
     expect(cards[1]).toHaveTextContent(/Is the discount real?.*Fake discount.*Never sold at the claimed price./);
     expect(cards[2]).toHaveTextContent(/Compared with other stores.*Above market.*Above every other store./);
+    expect(screen.queryByText(/should you buy/i)).toBeNull();
+  });
+
+  it("calls a price well above the lowest for the product fair, not good, and says by how much", () => {
+    render(<DealVerdict lowestPrice={439999} listing={{ price: 473999, recommendation: { action: "GOOD_DEAL", reason: "Score 72." } }} />);
+    const card = screen.getByRole("heading", { level: 3, name: "This store's price" }).closest(".verdict-card");
+    expect(card).toHaveTextContent("Fair price");
+    expect(card).toHaveTextContent("PKR 34,000 more than the lowest price we found for this product (PKR 439,999).");
+    expect(card).not.toHaveTextContent("Good deal");
+  });
+
+  it("lists a reason the server joined from several sentences, one per line", () => {
+    render(<DealVerdict listing={{
+      discountAnalysis: { classification: "suspicious", reason: "The claimed price is high. The price is not lower than usual." },
+    }} />);
+    const card = screen.getByRole("heading", { level: 3, name: "Is the discount real?" }).closest(".verdict-card");
+    expect(within(card).getAllByRole("listitem").map((li) => li.textContent)).toEqual([
+      "The claimed price is high.", "The price is not lower than usual.",
+    ]);
   });
 
   it("says so plainly when there is nothing to report, instead of inventing a verdict", () => {

@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
 
+import { usePageTitle } from "../hooks/usePageTitle.js";
+
 export default function NotFound() {
+  usePageTitle("Page not found");
   return (
     <div className="container" style={{ paddingBlock: "var(--space-8)" }}>
       <div className="card" style={{ padding: "var(--space-6)", maxWidth: 560 }}>

@@ -6,9 +6,11 @@
 // whenever those reports are regenerated, and never round them up.
 
 import { Link } from "react-router-dom";
+import { usePageTitle } from "../hooks/usePageTitle.js";
 import "./HowItWorks.css";
 
 export default function HowItWorks() {
+  usePageTitle("How we check prices");
   return (
     <div className="container prose">
       <h1>How ShopSavvy checks prices</h1>

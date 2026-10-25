@@ -10,6 +10,7 @@ import { Link, useLocation } from "react-router-dom";
 
 import { getCatalog, getDeals, getStats } from "../api/endpoints.js";
 import { useAsync } from "../hooks/useAsync.js";
+import { usePageTitle } from "../hooks/usePageTitle.js";
 import { featuredCategories } from "../lib/categories.js";
 import { formatNumber, timeAgo } from "../lib/format.js";
 import { clearRecentSearches, getRecentSearches } from "../lib/recentSearches.js";
@@ -197,6 +198,7 @@ function HowWeCheck() {
 
 export default function Home() {
   const stats = useAsync((signal) => getStats({ signal }), []);
+  usePageTitle("");
 
   return (
     <>

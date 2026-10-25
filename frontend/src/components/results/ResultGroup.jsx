@@ -7,20 +7,18 @@
 
 import { categoryName } from "../../lib/categories.js";
 import { coloursOf, offersInColour, unstatedColourCount } from "../../lib/colours.js";
-import { comparableOffers, conditionFlag, conditionNotice } from "../../lib/condition.js";
-import { currentOffers, freshnessNotice, outOfDateFlag } from "../../lib/freshness.js";
+import { conditionFlag, conditionNotice } from "../../lib/condition.js";
+import { freshnessNotice, outOfDateFlag } from "../../lib/freshness.js";
 import { formatPrice } from "../../lib/format.js";
 import { platformName } from "../../lib/platforms.js";
 import { ptaFlag, ptaNotice } from "../../lib/pta.js";
-import { summarizeOffers } from "../../lib/summary.js";
+import { possibleSaving, summarizeOffers } from "../../lib/summary.js";
 import { cardBadges } from "../../lib/verdicts.js";
 import ColourPicker from "../ColourPicker.jsx";
 import ProductImage from "../ProductImage.jsx";
 import VerdictBadge from "../VerdictBadge.jsx";
 import OfferTable from "./OfferTable.jsx";
 import "./results.css";
-
-const isSuspect = (offer) => offer?.priceCheck?.status?.startsWith("suspect");
 
 export default function ResultGroup({ group, currentId, colour = null, onColour }) {
   const allOffers = group.offers ?? [];
@@ -36,8 +34,7 @@ export default function ResultGroup({ group, currentId, colour = null, onColour 
   if (!best) return null;
 
   // Only prices we believe, and that compare like with like, count towards "you can save".
-  const believable = currentOffers(comparableOffers(offers)).filter((offer) => !isSuspect(offer) && !offer.ptaAssessment && offer.inStock !== false).map((offer) => offer.price);
-  const saving = believable.length > 1 ? Math.max(...believable) - Math.min(...believable) : 0;
+  const saving = possibleSaving(offers);
   const badges = cardBadges(best);
   const category = best.productCategory;
   const pta = ptaFlag(best);

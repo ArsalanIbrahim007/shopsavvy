@@ -11,15 +11,16 @@ import { Link, useSearchParams } from "react-router-dom";
 
 import { getCatalog, searchListings } from "../api/endpoints.js";
 import { useAsync } from "../hooks/useAsync.js";
+import { usePageTitle } from "../hooks/usePageTitle.js";
 import { categoryName, FEATURED_CATEGORIES } from "../lib/categories.js";
 import { splitByCondition } from "../lib/condition.js";
 import {
   FACET_KEYS_FOR_RESET, activeCategory, applyFilters, buildFacets, categoryCounts, emptyFilters, filterGroups, filtersToParams,
-  groupKey, isFiltered, parseFilters, platformOptions, priceBounds, sortGroups,
+  groupKey, inCategory, isFiltered, parseFilters, platformOptions, priceBounds, sortGroups,
 } from "../lib/filters.js";
 import { formatNumber, timeAgo } from "../lib/format.js";
 import { linkStoreName } from "../lib/productLink.js";
-import { newestScrape, summarizeOffers } from "../lib/summary.js";
+import { biggestSaving, newestScrape, summarizeOffers } from "../lib/summary.js";
 import ErrorState from "../components/ErrorState.jsx";
 import FilterPanel from "../components/results/FilterPanel.jsx";
 import IntegrityStrip from "../components/results/IntegrityStrip.jsx";
@@ -96,6 +97,12 @@ function ResultsView({ groups, total, query, browseCategory, filters, searchPara
   // Used, refurbished and open-box products get a section of their own and are left out of the summary (lib/condition.js).
   const { fresh, preOwned } = splitByCondition(shown);
   const summary = summarizeOffers(keptOffers);
+  // The lowest price, best deal and biggest saving are about what was searched for (the biggest category in view): a search
+  // for "iphone 17 pro" also finds cases, and a PKR 8,990 case is not the lowest price of an iPhone.
+  const mainOffers = inCategory(keptOffers, category);
+  const mixed = mainOffers.length < keptOffers.length;
+  const main = mixed ? summarizeOffers(mainOffers) : summary;
+  const saving = biggestSaving(fresh.map((group) => ({ ...group, offers: inCategory(group.offers, category) })));
   const updated = newestScrape(allOffers);
 
   // When browsing a category, the category itself is not a filter the shopper can undo.
@@ -144,7 +151,9 @@ function ResultsView({ groups, total, query, browseCategory, filters, searchPara
 
       {linkHost && query && <LinkNotice store={linkStore} query={query} capacity={linkCapacity} />}
 
-      {allOffers.length > 0 && <SummaryCards summary={summary} />}
+      {allOffers.length > 0 && (
+        <SummaryCards summary={summary} main={main} mainCategory={mixed ? categoryName(category) : null} saving={saving} />
+      )}
       <IntegrityStrip offers={keptOffers} />
 
       <div className="results-layout">
@@ -216,6 +225,7 @@ export default function Results() {
   const browseCategory = !query && FEATURED_CATEGORIES.includes(filters.category) ? filters.category : "";
 
   const results = useResults(query, browseCategory);
+  usePageTitle(query ? `${query} prices` : browseCategory ? `${categoryName(browseCategory)} prices` : "Search");
 
   if (!query && !browseCategory) {
     return (

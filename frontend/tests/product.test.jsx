@@ -50,6 +50,30 @@ const four = () => [
   offer("p2", "mega", 65500), offer("p3", "shophive", 66000), offer("p4", "telemart", 67000),
 ];
 
+describe("Product page: the tab title and the relative verdict", () => {
+  it("titles the tab with the product and its lowest price", async () => {
+    serve(four(), { name: "Samsung Galaxy A17 256GB" });
+    renderProduct();
+    await screen.findByRole("heading", { level: 1, name: "Samsung Galaxy A17 256GB" });
+    expect(document.title).toBe("Samsung Galaxy A17 256GB from PKR 64,000 · ShopSavvy");
+  });
+
+  it("does not call a store well above the lowest price a good deal, in the table or in its verdict", async () => {
+    // Telemart at PKR 70,000 is 9% above PriceOye's PKR 64,000; the server scored it a good deal on its own.
+    const offers = [...four().slice(0, 3), offer("p4", "telemart", 70000, { recommendation: { action: "GOOD_DEAL", reason: "score 72" } })];
+    serve(offers, { current: offers[3] });
+    renderProduct("p4");
+    await screen.findByRole("heading", { level: 1 });
+    const dearRow = rowsOf().find((row) => priceOf(row) === "PKR 70,000");
+    expect(dearRow).toHaveTextContent("Fair price");
+    expect(dearRow).not.toHaveTextContent("Good deal");
+    expect(rowsOf()[0]).toHaveTextContent("Good deal"); // the cheapest keeps it
+    const verdict = screen.getByRole("heading", { level: 3, name: "This store's price" }).closest(".verdict-card");
+    expect(verdict).toHaveTextContent("Fair price");
+    expect(verdict).toHaveTextContent("PKR 6,000 more than the lowest price we found for this product (PKR 64,000).");
+  });
+});
+
 describe("Product page: the product and its offers", () => {
   it("shows the product's name, best price and store, saving and verdict, then every offer cheapest first", async () => {
     serve(four(), { name: "Samsung Galaxy A17 8GB RAM 256GB Storage PTA Approved" }); // the group's name, not this listing's own title

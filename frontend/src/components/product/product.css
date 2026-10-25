@@ -5,6 +5,7 @@
 .verdict-grid { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
 .verdict-card { padding: var(--space-4); display: grid; gap: var(--space-2); align-content: start; justify-items: start; }
 .verdict-card__title { font-size: 0.9375rem; }
+.verdict-card__points { margin: 0; padding-left: 1.1em; display: grid; gap: var(--space-1); }
 
 /* price history */
 .history { display: grid; gap: var(--space-3); }

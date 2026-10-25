@@ -7,7 +7,10 @@ import { Link, useLocation, useParams, useSearchParams } from "react-router-dom"
 
 import { getListing } from "../api/endpoints.js";
 import { useAsync } from "../hooks/useAsync.js";
+import { usePageTitle } from "../hooks/usePageTitle.js";
+import { formatPrice } from "../lib/format.js";
 import { platformName } from "../lib/platforms.js";
+import { summarizeOffers } from "../lib/summary.js";
 import ErrorState from "../components/ErrorState.jsx";
 import AlertForm from "../components/product/AlertForm.jsx";
 import CrossStoreSummary from "../components/product/CrossStoreSummary.jsx";
@@ -35,10 +38,26 @@ function Explainer() {
   );
 }
 
+// The API always includes the listing itself; the fallback only guards an empty answer.
+const offersOf = ({ listing, offers }) => (offers?.length > 0 ? offers : [listing]);
+
+/** The name the shopper clicked (kept in the link's state), else the product's, else the listing's title. */
+function productName({ listing, productGroup }, state) {
+  const clickedName = typeof state?.name === "string" && state.name.trim() ? state.name : null;
+  return clickedName || productGroup?.productName || listing.title;
+}
+
+/** The tab title: the product and its lowest price ("Apple iPhone 17 Pro 256GB from PKR 439,999"). */
+function productTitle(data, state) {
+  const lowest = summarizeOffers(offersOf(data)).lowest;
+  return lowest ? `${productName(data, state)} from ${formatPrice(lowest.price)}` : productName(data, state);
+}
+
 export default function Product() {
   const { id } = useParams();
   const { state } = useLocation();
   const product = useAsync((signal) => getListing(id, { signal }), [id]);
+  usePageTitle(product.status === "success" ? productTitle(product.data, state) : product.status === "error" ? "Product" : null);
 
   // The chosen colour lives in the address (?colour=Blue), so a colour can be shared and survives a reload.
   const [searchParams, setSearchParams] = useSearchParams();
@@ -78,11 +97,9 @@ export default function Product() {
     );
   }
 
-  const { listing, offers, productGroup, outlook } = product.data;
-  const clickedName = typeof state?.name === "string" && state.name.trim() ? state.name : null;
-  // The API always includes the listing itself; the fallback only guards an empty answer.
-  const allOffers = offers.length > 0 ? offers : [listing];
-  const group = { productName: clickedName || productGroup?.productName || listing.title, offers: allOffers };
+  const { listing, outlook } = product.data;
+  const allOffers = offersOf(product.data);
+  const group = { productName: productName(product.data, state), offers: allOffers };
 
   return (
     <div className="container product">
@@ -93,7 +110,7 @@ export default function Product() {
 
       <section className="product-section" aria-labelledby="verdict-heading">
         <h2 id="verdict-heading">Deal verdict for {platformName(listing.platform)}</h2>
-        <DealVerdict listing={listing} />
+        <DealVerdict listing={listing} lowestPrice={summarizeOffers(allOffers).lowest?.price ?? null} />
       </section>
 
       <section className="product-section" aria-labelledby="history-heading">
