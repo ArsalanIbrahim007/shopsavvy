@@ -26,6 +26,9 @@ const FOR_A_PHONE = [
 ];
 // The same for tablets: "Apple Magic Keyboard for iPad Pro", "Targus Triad for Samsung Galaxy Tab 3" were filed as tablets.
 const FOR_A_TABLET = ["for ipad", "for tablet", "for galaxy tab"];
+// A product that names a laptop but is kept out of laptops by an exclusion below ("G-Mart Laptop Back Skin Protector", "Easy
+// Shop Foldable Wooden Laptop Table") is an accessory too, rather than "other".
+const NAMES_A_LAPTOP = ["laptop", "macbook", "notebook", "chromebook"];
 
 const BRAND_CATEGORY = {
   iphone: "smartphone", apple: "smartphone", samsung: "smartphone",
@@ -150,6 +153,27 @@ const CATEGORIES = {
             "laptop desk",
             "ac adapter",
             "tablet holder",
+            // Parts and add-ons that name a laptop model ("Dell Latitude DJ1J0 For Battery Connection Cable", PKR 990, was the
+            // "dell latitude" search's lowest price; found 2026-10-26). Not a bare "battery": real laptop titles say "Long
+            // Battery Life".
+            "cell battery",
+            "original battery",
+            "battery for",
+            "cable",
+            "protector",
+            "laptop table",
+            "security alarm",
+            "mic for",
+            "microphone",
+            "multimedia speaker",
+            "sound card",
+            "book light",
+            "webcam",
+            // "tuf gaming" and "rog" are laptop keywords, and Asus sells PC parts under the same names.
+            "motherboard",
+            "cpu cooler",
+            "argb fan",
+            "best laptops under",
         ],
     },
 
@@ -200,6 +224,8 @@ const CATEGORIES = {
             // "Headset for iPhone/iPod/iPad", "Hub For iPhone IPAD": made for the device, not the device.
             ...FOR_A_PHONE,
             ...FOR_A_TABLET,
+            // "UGREEN USB C to DisplayPort 1.4 Cable ... MacBook, iPad": a cable that lists the iPad among what it fits.
+            "cable",
         ],
     },
 
@@ -536,7 +562,7 @@ function detectCategory(title) {
 
     // A product made for a phone or tablet that names nothing else we know ("Torras Ostand Q3 VegSkin for iPhone 17 Pro Max",
     // "Smart Folio for iPad Pro") is an accessory. Only as a fallback: one that names its kind ("Headset for iPhone") keeps it.
-    if (bestScore === 0 && [...FOR_A_PHONE, ...FOR_A_TABLET].some((phrase) => text.includes(phrase))) {
+    if (bestScore === 0 && [...FOR_A_PHONE, ...FOR_A_TABLET, ...NAMES_A_LAPTOP].some((phrase) => text.includes(phrase))) {
         return { category: "accessory", confidence: 1 / 3 };
     }
 

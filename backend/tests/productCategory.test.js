@@ -71,3 +71,37 @@ describe("detectCategory: products made for a phone or tablet", () => {
     expect(detectCategory("Gift voucher PKR 5000").category).toBe("other");
   });
 });
+
+// Parts and add-ons that name a laptop (2026-10-26): a PKR 990 "Dell Latitude ... Battery Connection Cable" was the "dell
+// latitude" search's lowest price, and 86 of 1,092 "laptops" cost under PKR 15,000. Live titles.
+describe("detectCategory: laptop parts and add-ons", () => {
+  it.each([
+    ["Dell Latitude DJ1J0 For Battery Connection Cable", "accessory"],
+    ["Dell Latitude 33YDH Battery Cable for Wired Laptop", "accessory"],
+    ["Samsung AA-PB9NS6B New Laptop 6 Cell Battery", "accessory"],
+    ["Replacement Battery for Dell Latitude E6400 E6410 E6500 E6510 Precision M2400 M4400 M4500 M6400 Laptop", "accessory"],
+    ["Dell Latitude NF2MW 52Wh 4-Cell New Original Battery", "other"], // out of laptops; names no laptop word for the fallback
+    ["G-Mart Ultra Clear Laptop Matte Skin Protector", "accessory"], // names no accessory word: the laptop fallback
+    ["Muzamil Store Premium Privacy Screen Protector For 13.3 Inch MacBook Air", "accessory"],
+    ["Easy Shop Foldable Wooden Laptop Table Black", "accessory"],
+    ["Boya Conference Mic for Windows Laptop - Black (BY-MC2)", "accessory"],
+    ["Best Laptops Under 1 Lakh in Pakistan 2026: Students, Freelancers & Office Use", "accessory"],
+    ["UGREEN USB C to DisplayPort 1.4 Cable 2m, 8K@60Hz 4K@240Hz Thunderbolt 4/3 to DisplayPort Cord USB C for MacBook Pro, iPad Pro", "accessory"],
+    ["ASUS TUF Gaming H1 Gen II Wired Headset, 40mm Petrol Speakers, 7.1 Virtual Surround Sound, TeamSpeak Certified Microphone, 297g Lightweight Design", "headphones"],
+  ])("%s -> %s", (title, expected) => {
+    expect(detectCategory(title).category).toBe(expected);
+  });
+
+  it("keeps Asus's PC parts, sold under its laptop names (TUF Gaming, ROG), out of laptops", () => {
+    expect(detectCategory("Asus TUF Gaming X670E Plus Wifi Motherboard").category).not.toBe("laptop");
+    expect(detectCategory("Asus TUF Gaming LC III 360 ARGB LCD All In One Liquid CPU Cooler").category).not.toBe("laptop");
+    expect(detectCategory("Asus TUF Gaming 120 ARGB Fan Single Pack").category).not.toBe("laptop");
+  });
+
+  it("leaves laptops themselves alone, including cheap ones whose titles praise the battery", () => {
+    expect(detectCategory("Acer C740 4gb / 16gb - Chromebook Laptop - With Play Store - Long Battery Life").category).toBe("laptop");
+    expect(detectCategory("Dell Latitude 14 5490 - Kaby Lake - 7th Gen Core i5 7300U 8-GB 256-GB SSD").category).toBe("laptop");
+    expect(detectCategory("Asus TUF Gaming A15 FA506NCR Ryzen 7 7435HS 16GB 512GB RTX 3050").category).toBe("laptop");
+    expect(detectCategory("Lenovo IdeaPad Flex 5 15.6 Inches Core i7 (16GB RAM - 512GB SSD)").category).toBe("laptop");
+  });
+});
