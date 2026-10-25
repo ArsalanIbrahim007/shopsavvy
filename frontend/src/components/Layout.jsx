@@ -93,7 +93,10 @@ function Footer() {
             Free to use. We don't take money from stores, and prices are shown as we found them.
             {lastScrape ? ` Prices last updated ${timeAgo(lastScrape)}.` : ""}
           </p>
-          <p><Link to="/how-it-works">How we check prices</Link> · <Link to="/honest-prices">How accurate we are</Link></p>
+          <p>
+            <Link to="/how-it-works">How we check prices</Link> · <Link to="/honest-prices">How accurate we are</Link> ·{" "}
+            <Link to="/privacy">Privacy</Link>
+          </p>
         </div>
       </div>
     </footer>

@@ -42,6 +42,7 @@ import PriceHistoryChart from "../src/components/product/PriceHistoryChart.jsx";
 import AlertForm from "../src/components/product/AlertForm.jsx";
 import Home from "../src/pages/Home.jsx";
 import HonestPrices from "../src/pages/HonestPrices.jsx";
+import Privacy from "../src/pages/Privacy.jsx";
 
 // Structural accessibility rules (names, roles, labels, landmarks, headings, duplicate ids) run on what the pages
 // render. Colour contrast is left to tests/theme.test.js (it needs real layout and colours, which jsdom does not
@@ -84,6 +85,11 @@ describe("accessibility (axe, structural rules)", () => {
   it("the home page", async () => {
     const { container, findByRole } = inRouter(<Home />);
     await findByRole("heading", { name: /browse by category/i });
+    expect(await violationsIn(container)).toEqual([]);
+  });
+
+  it("the privacy page, with its table", async () => {
+    const { container } = inRouter(<Privacy />);
     expect(await violationsIn(container)).toEqual([]);
   });
 

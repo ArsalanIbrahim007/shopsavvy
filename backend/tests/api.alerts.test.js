@@ -22,7 +22,7 @@ import Listing from "../src/models/listing.model.js";
 import PriceAlert from "../src/models/priceAlert.model.js";
 import { createApp } from "../src/createApp.js";
 import { sendAlertConfirmation, notifyAlert } from "../src/services/notification.service.js";
-import { checkAlerts, CONFIRM_WINDOW_HOURS } from "../src/services/priceAlert.service.js";
+import { checkAlerts, CLOSED_ALERT_RETENTION_DAYS, CONFIRM_WINDOW_HOURS } from "../src/services/priceAlert.service.js";
 import { signAlertToken } from "../src/services/alertTokens.service.js";
 
 const ID = (n) => `6a78a2af9c96f297ede773${String(n).padStart(2, "0")}`;
@@ -371,5 +371,21 @@ describe("the alert check", () => {
     expect(store.has(stale._id)).toBe(false);
     expect(store.has(fresh._id)).toBe(true);
     expect(store.has(oldButActive._id)).toBe(true);
+  });
+
+  it("deletes alerts that ended (cancelled or triggered) more than 30 days ago, as the privacy page says", async () => {
+    const daysAgo = (days) => new Date(Date.now() - days * 24 * 3600 * 1000);
+    expect(CLOSED_ALERT_RETENTION_DAYS).toBe(30);
+    const oldCancelled = seed("cancelled", { updatedAt: daysAgo(31) });
+    const oldTriggered = seed("triggered", { updatedAt: daysAgo(45) });
+    const recentCancelled = seed("cancelled", { updatedAt: daysAgo(5) }); // its cancel link still answers for a while
+    const longActive = seed("active", { updatedAt: daysAgo(200), targetPrice: 1000 }); // still waiting for its price: kept
+
+    const result = await checkAlerts();
+    expect(result.removed).toBe(2);
+    expect(store.has(oldCancelled._id)).toBe(false);
+    expect(store.has(oldTriggered._id)).toBe(false);
+    expect(store.has(recentCancelled._id)).toBe(true);
+    expect(store.has(longActive._id)).toBe(true);
   });
 });

@@ -27,6 +27,7 @@ const STATIC_PAGES = [
   { path: "/drops", changefreq: "daily", priority: "0.8" },
   { path: "/how-it-works", changefreq: "monthly", priority: "0.4" },
   { path: "/honest-prices", changefreq: "weekly", priority: "0.4" },
+  { path: "/privacy", changefreq: "yearly", priority: "0.2" },
 ];
 
 const XML_ESCAPES = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" };

@@ -505,12 +505,12 @@ describe("AlertForm", () => {
   };
 
   it("starts with a target about 5% below the price", () => {
-    render(<AlertForm listing={listing} />);
+    inRouter(<AlertForm listing={listing} />); // it links to the privacy page
     expect(screen.getByLabelText(/alert me at or below/i)).toHaveValue(61000);
   });
 
   it("shows a message next to each invalid field and sends nothing", () => {
-    render(<AlertForm listing={listing} />);
+    inRouter(<AlertForm listing={listing} />); // it links to the privacy page
     fill("not-an-email", "70000");
     fireEvent.click(screen.getByRole("button", { name: /notify me/i }));
     expect(screen.getByText("Enter a valid email address.")).toBeInTheDocument();
@@ -525,7 +525,7 @@ describe("AlertForm", () => {
 
   it("sends the listing id, the trimmed email and the target as a number, and shows the server's own words", async () => {
     vi.mocked(api.createAlert).mockResolvedValue({ alert: { _id: "A1", status: "pending" }, message: "Check your email: we sent a link to confirm this alert.", confirmationRequired: true, confirmationSent: true });
-    render(<AlertForm listing={listing} />);
+    inRouter(<AlertForm listing={listing} />); // it links to the privacy page
     fill("  shopper@example.com ", "60000");
     fireEvent.click(screen.getByRole("button", { name: /notify me/i }));
 
@@ -537,7 +537,7 @@ describe("AlertForm", () => {
 
   it("does not claim an alert is live when the server could not send the confirmation", async () => {
     vi.mocked(api.createAlert).mockResolvedValue({ alert: { status: "pending" }, message: "Alert saved but not active yet. It has to be confirmed from an email link, and this server cannot send email at the moment.", confirmationRequired: true, confirmationSent: false });
-    render(<AlertForm listing={listing} />);
+    inRouter(<AlertForm listing={listing} />); // it links to the privacy page
     fill("a@b.co", "60000");
     fireEvent.click(screen.getByRole("button", { name: /notify me/i }));
     const done = await screen.findByRole("status");
@@ -548,7 +548,7 @@ describe("AlertForm", () => {
 
   it("says 'Alert set' only when no confirmation was needed, and lets another alert be made", async () => {
     vi.mocked(api.createAlert).mockResolvedValue({ alert: { status: "active" }, message: "Alert created.", confirmationRequired: false, confirmationSent: false });
-    render(<AlertForm listing={listing} />);
+    inRouter(<AlertForm listing={listing} />); // it links to the privacy page
     fill("a@b.co", "60000");
     fireEvent.click(screen.getByRole("button", { name: /notify me/i }));
     expect(await screen.findByText("Alert set")).toBeInTheDocument();
@@ -558,7 +558,7 @@ describe("AlertForm", () => {
 
   it("puts the server's field errors next to their fields", async () => {
     vi.mocked(api.createAlert).mockRejectedValue(new ApiError({ status: 400, code: "VALIDATION_ERROR", details: [{ path: "email", msg: "email must be a valid email address" }, { path: "targetPrice", msg: "targetPrice must be greater than zero" }], requestId: "r-1" }));
-    render(<AlertForm listing={listing} />);
+    inRouter(<AlertForm listing={listing} />); // it links to the privacy page
     fill("a@b.co", "60000");
     fireEvent.click(screen.getByRole("button", { name: /notify me/i }));
     expect(await screen.findByText("email must be a valid email address")).toBeInTheDocument();
@@ -568,7 +568,7 @@ describe("AlertForm", () => {
 
   it("shows the server's limit message (for example too many alerts waiting) and keeps what was typed", async () => {
     vi.mocked(api.createAlert).mockRejectedValue(new ApiError({ status: 429, code: "RATE_LIMITED", message: "This address has alerts waiting to be confirmed." }));
-    render(<AlertForm listing={listing} />);
+    inRouter(<AlertForm listing={listing} />); // it links to the privacy page
     fill("a@b.co", "60000");
     fireEvent.click(screen.getByRole("button", { name: /notify me/i }));
     expect(await screen.findByRole("alert")).toHaveTextContent("This address has alerts waiting to be confirmed.");
@@ -578,7 +578,7 @@ describe("AlertForm", () => {
   it("disables the button while sending, so a double click sends one request", async () => {
     let resolve;
     vi.mocked(api.createAlert).mockReturnValue(new Promise((r) => { resolve = r; }));
-    render(<AlertForm listing={listing} />);
+    inRouter(<AlertForm listing={listing} />); // it links to the privacy page
     fill("a@b.co", "60000");
     fireEvent.click(screen.getByRole("button", { name: /notify me/i }));
     const button = await screen.findByRole("button", { name: /setting the alert/i });

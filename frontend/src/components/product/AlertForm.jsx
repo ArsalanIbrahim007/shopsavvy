@@ -4,6 +4,7 @@
 // the alert is live. Problems are shown next to the field they belong to.
 
 import { useId, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { createAlert } from "../../api/endpoints.js";
 import { describeError } from "../../api/errors.js";
@@ -76,7 +77,10 @@ export default function AlertForm({ listing }) {
       <button type="submit" className="btn btn-accent" disabled={state.status === "sending"}>
         {state.status === "sending" ? "Setting the alert..." : "Notify me when the price drops"}
       </button>
-      <p className="small muted">We email you once to confirm, and only when the price reaches your target. Never spam.</p>
+      <p className="small muted">
+        We email you once to confirm, and only when the price reaches your target. Never spam.{" "}
+        <Link to="/privacy">How we keep your email</Link>
+      </p>
     </form>
   );
 }

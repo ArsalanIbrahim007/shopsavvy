@@ -18,6 +18,10 @@ const MAX_ACTIVE_ALERTS_PER_EMAIL = 20;
 // the number waiting for confirmation is kept small.
 const MAX_PENDING_ALERTS_PER_EMAIL = 3;
 export const CONFIRM_WINDOW_HOURS = 48;
+// An alert that is over (cancelled, or its price was reached and the email sent) keeps the shopper's address for no purpose, so it
+// is deleted this many days after it ended, as the privacy page says. Not at once: the links in its emails keep answering
+// ("already cancelled") for a while instead of "invalid link".
+export const CLOSED_ALERT_RETENTION_DAYS = 30;
 
 const INVALID_LINK = "This link is invalid or has expired.";
 
@@ -162,16 +166,20 @@ export async function cancelAlertByToken(token) {
  * Checks every active alert against its listing's current price, triggers
  * and notifies the ones that have been met. Groups by listing first so an
  * N-alerts-on-the-same-product case (a popular listing) doesn't issue N
- * redundant Listing lookups. Also removes pending alerts nobody confirmed.
+ * redundant Listing lookups. Also removes pending alerts nobody confirmed (`expired`), and alerts that ended more than
+ * CLOSED_ALERT_RETENTION_DAYS ago (`removed`).
  *
- * @returns {Promise<{checked: number, triggered: number, expired: number}>}
+ * @returns {Promise<{checked: number, triggered: number, expired: number, removed: number}>}
  */
 export async function checkAlerts() {
   const cutoff = new Date(Date.now() - CONFIRM_WINDOW_HOURS * 3600 * 1000);
   const { deletedCount = 0 } = (await PriceAlert.deleteMany({ status: "pending", createdAt: { $lt: cutoff } })) ?? {};
+  const endedBefore = new Date(Date.now() - CLOSED_ALERT_RETENTION_DAYS * 24 * 3600 * 1000);
+  const { deletedCount: removed = 0 } =
+    (await PriceAlert.deleteMany({ status: { $in: ["cancelled", "triggered"] }, updatedAt: { $lt: endedBefore } })) ?? {};
 
   const activeAlerts = await PriceAlert.find({ status: "active" });
-  if (activeAlerts.length === 0) return { checked: 0, triggered: 0, expired: deletedCount };
+  if (activeAlerts.length === 0) return { checked: 0, triggered: 0, expired: deletedCount, removed };
 
   const listingIds = [...new Set(activeAlerts.map((a) => String(a.listing)))];
   const listings = await Listing.find({ _id: { $in: listingIds } });
@@ -194,5 +202,5 @@ export async function checkAlerts() {
     }
   }
 
-  return { checked: activeAlerts.length, triggered, expired: deletedCount };
+  return { checked: activeAlerts.length, triggered, expired: deletedCount, removed };
 }

@@ -16,9 +16,12 @@ export function startAlertCheckJob() {
   // Returned so a shutdown can stop it.
   return cron.schedule(CHECK_INTERVAL_CRON, async () => {
     try {
-      const { checked, triggered } = await checkAlerts();
+      const { checked, triggered, removed } = await checkAlerts();
       if (triggered > 0) {
         console.log(`[alertCheckJob] Checked ${checked} active alerts, ${triggered} triggered.`);
+      }
+      if (removed > 0) {
+        console.log(`[alertCheckJob] Deleted ${removed} alerts that ended over 30 days ago.`);
       }
     } catch (err) {
       console.error("[alertCheckJob] Check failed:", err.message);
