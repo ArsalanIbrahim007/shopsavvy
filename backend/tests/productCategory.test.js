@@ -39,3 +39,35 @@ describe("detectCategory (17 hand-labeled classification cases)", () => {
     }
   });
 });
+
+// "... for iPhone 17 Pro", "... for iPad Pro": made for the device, never the device (2026-10-26). A PKR 8,990 UNIQ bundle was
+// shown as the lowest price of the iPhone 17 Pro, and 56 iPad keyboards and folios were filed as tablets. Live titles.
+describe("detectCategory: products made for a phone or tablet", () => {
+  it.each([
+    ["UNIQ 3 in 1 ClearVue 360 Essential Bundle Pack for iPhone 17 Pro – Clear", "accessory"],
+    ["Torras Ostand Q3 VegSkin for iPhone 17 Pro Max", "accessory"], // names no accessory word: the fallback
+    ["Choetech B662 5000mAh Magnetic Wireless Powerbank For iPhone", "accessory"],
+    ["Umc Communication Back Transparent protector For Samsung A52", "accessory"],
+    ["Apple Magic Keyboard for iPad Pro 11-inch M4 US English Black MWR23", "accessory"],
+    ["Smart Folio for iPad Pro 13-inch (M4)", "accessory"], // the fallback, for a tablet
+    ["Targus Triad for Samsung Galaxy Tab 3 10.1\" (Black)", "accessory"],
+  ])("%s -> %s", (title, expected) => {
+    expect(detectCategory(title).category).toBe(expected);
+  });
+
+  it("keeps the kind of product a title names", () => {
+    expect(detectCategory("Sennheiser MM 50 IP Headset for iPhone (White)").category).toBe("headphones");
+    expect(detectCategory("Sennheiser HD 218i Headset for iPhone/iPod/iPad").category).toBe("headphones");
+  });
+
+  it("leaves the phones and tablets themselves alone", () => {
+    expect(detectCategory("Apple iPhone 17 Pro 256GB PTA Approved").category).toBe("smartphone");
+    expect(detectCategory("Samsung Galaxy S25 Ultra 12GB 256GB").category).toBe("smartphone");
+    expect(detectCategory("Apple iPad Pro 11-inch M4 256GB Wi-Fi").category).toBe("tablet");
+    expect(detectCategory("Samsung Galaxy Tab S10 FE 8GB 128GB").category).toBe("tablet");
+  });
+
+  it("leaves an unknown title unknown", () => {
+    expect(detectCategory("Gift voucher PKR 5000").category).toBe("other");
+  });
+});

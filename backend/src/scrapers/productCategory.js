@@ -12,6 +12,21 @@
  */
 const WORD_BOUNDARY_KEYWORDS = new Set(["tv", "oven"]);
 
+/**
+ * "... for iPhone 17 Pro", "... for Galaxy S25": a product made for a phone, never the phone. Like
+ * "for laptop" below, the phrasing marks an accessory. Without it a "Torras Ostand Q3 VegSkin for
+ * iPhone 17 Pro Max" scored as a smartphone on "iphone" alone, and a PKR 8,990 UNIQ bundle "for iPhone
+ * 17 Pro" was shown as the lowest price of the iPhone 17 Pro (found 2026-10-26; 27 listings).
+ */
+const FOR_A_PHONE = [
+    "for iphone", "for apple iphone", "for samsung", "for galaxy", "for xiaomi", "for redmi", "for poco",
+    "for oppo", "for vivo", "for realme", "for infinix", "for tecno", "for pixel", "for google pixel",
+    "for oneplus", "for huawei", "for honor", "for nokia", "for motorola", "for nothing phone",
+    "for mobile", "for smartphone", "for phone",
+];
+// The same for tablets: "Apple Magic Keyboard for iPad Pro", "Targus Triad for Samsung Galaxy Tab 3" were filed as tablets.
+const FOR_A_TABLET = ["for ipad", "for tablet", "for galaxy tab"];
+
 const BRAND_CATEGORY = {
   iphone: "smartphone", apple: "smartphone", samsung: "smartphone",
   xiaomi: "smartphone", redmi: "smartphone", oppo: "smartphone",
@@ -57,6 +72,7 @@ const CATEGORIES = {
             "tempered glass",
             "screen protector",
             "back cover",
+            ...FOR_A_PHONE,
         ],
     },
 
@@ -181,6 +197,9 @@ const CATEGORIES = {
             "tablet stand",
             "tablet keyboard",
             "screen protector",
+            // "Headset for iPhone/iPod/iPad", "Hub For iPhone IPAD": made for the device, not the device.
+            ...FOR_A_PHONE,
+            ...FOR_A_TABLET,
         ],
     },
 
@@ -513,6 +532,12 @@ function detectCategory(title) {
             bestScore = score;
             bestCategory = category;
         }
+    }
+
+    // A product made for a phone or tablet that names nothing else we know ("Torras Ostand Q3 VegSkin for iPhone 17 Pro Max",
+    // "Smart Folio for iPad Pro") is an accessory. Only as a fallback: one that names its kind ("Headset for iPhone") keeps it.
+    if (bestScore === 0 && [...FOR_A_PHONE, ...FOR_A_TABLET].some((phrase) => text.includes(phrase))) {
+        return { category: "accessory", confidence: 1 / 3 };
     }
 
     const confidence =
