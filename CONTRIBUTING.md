@@ -28,7 +28,12 @@ Examples:
    ```
    git push -u origin <name>/<feature>
    ```
-4. When a piece of work is ready, open a Pull Request into `main` on GitHub.
+4. When a piece of work is ready, open a Pull Request into `main` on GitHub. Before
+   that, rebase onto the latest `main` (`git fetch origin` then `git rebase origin/main`)
+   and run the tests yourself (`npm test` in `backend/`; `npm run lint`, `npm test`
+   and `npm run build` in `frontend/`).
+   GitHub runs the same checks on every pull request (`.github/workflows/ci.yml`);
+   a pull request whose checks are red is not merged.
 5. One of the other two reviews it before it gets merged. This is where conflicts
    get caught and resolved one PR at a time, instead of three copies of the app
    diverging in separate folders.

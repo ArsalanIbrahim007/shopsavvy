@@ -60,6 +60,7 @@ default set of queries to fill an empty database (`--clear` wipes existing listi
 | `PUBLIC_BASE_URL` | The API's public address, used in those links (default `http://localhost:<PORT>`) |
 | `ALERT_AUTO_CONFIRM` | `true` skips email confirmation of alerts. Demonstrations only |
 | `CORS_ORIGINS` | Websites allowed to read the API from a browser, comma separated origins (for example `https://shopsavvy.example`). Not set: only `localhost` pages, which is what local development needs. **Set it when deploying** |
+| `TRUST_PROXY` | Behind a host's proxy, the number of proxy hops to believe for the visitor's address (usually `1`). Not set: no proxy. **Set it when deploying**, or every visitor shares one rate limit |
 
 The frontend reads `VITE_API_URL` if the API is not on `http://localhost:5000/api`.
 
@@ -70,6 +71,9 @@ cd backend && npm test        # unit and API tests (Vitest); the API tests need 
 cd frontend && npm test           # unit and component tests (Vitest)
 cd frontend && npm run lint
 ```
+
+GitHub runs the backend tests and the frontend lint, tests and build on every push to `main` and every pull request
+(`.github/workflows/ci.yml`).
 
 `npm run check:grouping`, `check:grouping-ml`, `check:categories` and `check:api` (the last needs the API running)
 run the older script-style checks.

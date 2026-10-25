@@ -10,6 +10,7 @@ import swaggerUi from "swagger-ui-express";
 
 import { swaggerSpec } from "./config/swagger.js";
 import { buildCorsOptions } from "./config/cors.js";
+import { resolveTrustProxy } from "./config/proxy.js";
 import { apiDocsHeaders, apiHeaders } from "./config/securityHeaders.js";
 import { requestId } from "./middleware/requestId.middleware.js";
 import { requestLogger } from "./middleware/requestLogger.middleware.js";
@@ -21,11 +22,15 @@ import integrityRoutes from "./routes/integrity.routes.js";
 import priceAlertRoutes from "./routes/priceAlert.routes.js";
 import alertPageRoutes from "./routes/alertPages.routes.js";
 
-export function createApp() {
+export function createApp(env = process.env) {
   const app = express();
 
   // Do not advertise the framework in every response.
   app.disable("x-powered-by");
+
+  // Behind a host's proxy, the visitor's address (which every rate limit counts by) comes from X-Forwarded-For, believed only for
+  // the hops TRUST_PROXY names: see config/proxy.js.
+  app.set("trust proxy", resolveTrustProxy(env).value);
 
   // First, so every later log line and error body can carry the request id.
   app.use(requestId);

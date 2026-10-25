@@ -114,7 +114,9 @@ describe("tryStart / markDone / markFailed", () => {
   });
 });
 
-describe("run-scheduled-scrape.js skips a day that is already covered", () => {
+// Each test starts the real script in a new Node process (up to 20-30 s allowed below); the default 5 s test limit was shorter
+// than that, so a busy machine timed the tests out while the script was still starting.
+describe("run-scheduled-scrape.js skips a day that is already covered", { timeout: 40000 }, () => {
   const script = fileURLToPath(new URL("../src/scripts/run-scheduled-scrape.js", import.meta.url));
   const run = (state) => {
     writeFileSync(file, JSON.stringify(state));

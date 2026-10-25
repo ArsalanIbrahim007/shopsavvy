@@ -6,6 +6,10 @@ import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
 import Listing from "../src/models/listing.model.js";
 import { createApp } from "../src/createApp.js";
 
+// Each test sends up to 600 requests one after another: well under a second on an idle machine, but over the default 5 s limit on
+// a busy one (a scrape running, a CI runner).
+vi.setConfig({ testTimeout: 30000 });
+
 let server;
 let url;
 
