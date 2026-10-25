@@ -20,7 +20,7 @@ import {
 } from "../lib/filters.js";
 import { formatNumber, timeAgo } from "../lib/format.js";
 import { linkStoreName } from "../lib/productLink.js";
-import { biggestSaving, newestScrape, summarizeOffers } from "../lib/summary.js";
+import { biggestSaving, headlinePrices, newestScrape, summarizeOffers } from "../lib/summary.js";
 import ErrorState from "../components/ErrorState.jsx";
 import FilterPanel from "../components/results/FilterPanel.jsx";
 import IntegrityStrip from "../components/results/IntegrityStrip.jsx";
@@ -129,7 +129,7 @@ function ResultsView({ groups, total, refreshing = false, query, browseCategory,
   // for "iphone 17 pro" also finds cases, and a PKR 8,990 case is not the lowest price of an iPhone.
   const mainOffers = inCategory(keptOffers, category);
   const mixed = mainOffers.length < keptOffers.length;
-  const main = mixed ? summarizeOffers(mainOffers) : summary;
+  const main = { ...(mixed ? summarizeOffers(mainOffers) : summary), ...headlinePrices(mainOffers) };
   const saving = biggestSaving(fresh.map((group) => ({ ...group, offers: inCategory(group.offers, category) })));
   const updated = newestScrape(allOffers);
 

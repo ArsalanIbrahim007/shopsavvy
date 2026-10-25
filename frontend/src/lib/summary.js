@@ -39,6 +39,29 @@ export function possibleSaving(offers) {
   return prices.length > 1 ? Math.max(...prices) - Math.min(...prices) : 0;
 }
 
+/**
+ * The headline lowest price and best deal for offers that may mix PTA-approved and non-PTA phones (a search or a category,
+ * not one product: a product keeps the two apart). A non-PTA phone cannot use local SIMs without paying tax and sells far
+ * cheaper, so "the lowest price" of an iPhone 17 Pro search was a non-PTA unit at PKR 374,999 beside approved ones from
+ * PKR 434,999 (found 2026-10-26), and a shopper reads that number as one for a phone they can use. So where a PTA-approved
+ * offer exists, the headline lowest price and best deal are among the approved ones, and the cheaper non-PTA offer is
+ * returned beside them to be shown as such (`nonPta`). With no approved offer, the lowest stays what it is; the card then
+ * says it is non-PTA. Offers that say nothing about PTA are untouched.
+ * @returns {{ lowest: object|null, bestDeal: object|null, nonPta: object|null }}
+ */
+export function headlinePrices(offers) {
+  const all = summarizeOffers(offers);
+  const approved = offers.filter((offer) => offer.ptaStatus === "pta_approved");
+  if (approved.length === 0) return { lowest: all.lowest, bestDeal: all.bestDeal, nonPta: null };
+
+  const approvedSummary = summarizeOffers(approved);
+  return {
+    lowest: all.lowest?.ptaStatus === "non_pta" ? approvedSummary.lowest : all.lowest,
+    bestDeal: all.bestDeal?.ptaStatus === "non_pta" ? approvedSummary.bestDeal : all.bestDeal,
+    nonPta: all.lowest?.ptaStatus === "non_pta" ? all.lowest : null,
+  };
+}
+
 /** The product with the largest possibleSaving among `groups`: { saving, group }, or null when none has one. */
 export function biggestSaving(groups) {
   let best = null;

@@ -2,6 +2,7 @@
 .summary-cards { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
 .summary-card { padding: var(--space-4); display: grid; gap: 2px; }
 .summary-card__value { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; color: var(--brand); line-height: 1.2; }
+.summary-card__note { color: var(--caution); font-weight: 600; } /* the non-PTA price beside the headline (SummaryCards) */
 
 /* integrity strip */
 .integrity { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4); background: var(--caution-soft); border-color: var(--caution-line); }

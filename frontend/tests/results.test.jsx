@@ -537,3 +537,38 @@ describe("Results: prices refreshed in the background", () => {
     expect(screen.queryByText(/checking the stores/i)).toBeNull();
   });
 });
+
+// Non-PTA phones in the summary (2026-10-26): "iphone 17 pro" showed a non-PTA unit at PKR 374,999 as the lowest price, beside
+// PTA-approved ones from PKR 434,999, without saying so.
+describe("Results: PTA in the summary", () => {
+  const summaryCards = () => screen.findByRole("group", { name: /summary of these results/i });
+
+  it("leads with the cheapest PTA-approved price and names the cheaper non-PTA one beside it", async () => {
+    serve([
+      group("Apple iPhone 17 Pro 256GB", [offer("q1", "shophive", 439999), offer("q2", "priceoye", 449999)]),
+      group("Apple iPhone 17 Pro 256GB NON PTA", [offer("q3", "mega", 374999, { ptaStatus: "non_pta", dealScore: 95 })]),
+    ]);
+    renderResults("/results?q=iphone%2017%20pro");
+    const cards = await summaryCards();
+    expect(cards).toHaveTextContent("Lowest pricePKR 439,999PTA approved, at Shophive");
+    expect(cards).toHaveTextContent("Non-PTA from PKR 374,999 at Mega.pk");
+    // the best deal follows the same rule: the non-PTA unit scored higher, but an approved one exists
+    expect(cards).toHaveTextContent("Best dealShophivePTA approved, deal score 70 out of 100");
+  });
+
+  it("says a price is non-PTA when no PTA-approved offer is in view", async () => {
+    serve([group("Apple iPhone 17 Pro NON PTA", [offer("r1", "mega", 374999, { ptaStatus: "non_pta" }), offer("r2", "techroid", 380000, { ptaStatus: "non_pta" })])]);
+    renderResults("/results?q=iphone%2017%20pro");
+    const cards = await summaryCards();
+    expect(cards).toHaveTextContent("PKR 374,999Non-PTA, at Mega.pk");
+    expect(cards).not.toHaveTextContent("Non-PTA from");
+  });
+
+  it("says nothing about PTA where no non-PTA phone is in view", async () => {
+    serve([A17]);
+    renderResults("/results?q=a17");
+    const cards = await summaryCards();
+    expect(cards).toHaveTextContent("PKR 64,000at PriceOye");
+    expect(cards).not.toHaveTextContent(/PTA/);
+  });
+});
