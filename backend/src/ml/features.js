@@ -21,6 +21,8 @@ import {
   tokenize,
   calculateJaccardSimilarity,
   VARIANT_TOKENS,
+  statedSizes,
+  withoutSizePrefix,
 } from "../services/similarity.service.js";
 import { FILLER_WORDS } from "./fillerWords.js";
 
@@ -107,9 +109,13 @@ function matchFlag(valueA, valueB, unknownValue = null) {
 // feature too would shift the model's inputs away from its training data
 // (retraining on the small, phone-heavy labeled set was tried and made
 // whole-DB grouping worse -- see context.md).
+// A leading screen size is dropped from a code (withoutSizePrefix, 2026-10-26): "98DU9000" and "DU9000" are one code, which this
+// feature read as a conflict, scoring one Samsung 98 inch TV at two stores 0.14. Only codes whose leading number is a stated
+// screen size change (televisions and monitors); the pair evaluation was rerun to check nothing else moved.
 function modelCodeMatchFlag(titleA, titleB) {
-  const codesA = extractModelCodes(titleA, { minCodeLength: 4 });
-  const codesB = extractModelCodes(titleB, { minCodeLength: 4 });
+  const sizes = statedSizes(titleA, titleB);
+  const codesA = withoutSizePrefix(extractModelCodes(titleA, { minCodeLength: 4 }), sizes);
+  const codesB = withoutSizePrefix(extractModelCodes(titleB, { minCodeLength: 4 }), sizes);
   if (codesA.size === 0 || codesB.size === 0) return 0;
   if (codesA.size !== codesB.size) return -1;
   for (const code of codesA) if (!codesB.has(code)) return -1;

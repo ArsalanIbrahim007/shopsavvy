@@ -95,6 +95,35 @@ export function estimateRecall(strata, { draws = DRAWS, seed = 20261026 } = {}) 
 const pct = (x) => (x === null || x === undefined ? "n/a" : `${(x * 100).toFixed(1)}%`);
 const whole = (x) => Math.round(x).toLocaleString("en-US");
 
+/** The section for 12-recheck-recall.js's result (the same labelled pairs after a change to the matcher), when it has run. */
+function recheckSection() {
+  let recheck;
+  try {
+    recheck = read("group_recall.recheck.json");
+  } catch {
+    return [];
+  }
+  const ids = (list) => (list.length ? list.join(", ") : "none");
+  return [
+    `## After the fixes (${new Date(recheck.at).toLocaleDateString("en-CA")})`,
+    "",
+    "The live catalogue regrouped with the matcher fixed (`12-recheck-recall.js`): a title stating only its RAM no longer reads as storage,",
+    "and a television's model code matches with or without its screen size in front. The same labelled pairs, scored again:",
+    "",
+    `- **recall: ${pct(recheck.recall)}** (was the figure above); estimated ${whole(recheck.correct)} same-product pairs together, ${whole(recheck.missed)} apart`,
+    `- **pair precision: ${pct(recheck.precision)}**; estimated ${whole(recheck.wrong)} different-product pairs together`,
+    `- same-product pairs now together that were apart: ${ids(recheck.sameNowTogether)}; now apart that were together: ${ids(recheck.sameNowSplit)}`,
+    `- different-product pairs now together: ${ids(recheck.differentNowTogether)}; now apart that were together: ${ids(recheck.differentNowApart)}`,
+    "",
+    "The merge-precision sample (GROUPING_EVALUATION.md, 09 against a snapshot of the old grouping) was rechecked the same day: no",
+    "correct merge was newly split (the two split ones, m034 and m047, were split before), precision over the merges still made was",
+    "97.1%, and of the 3,103 pairs of offers newly together a random 40 and the 40 furthest apart in price were",
+    "read; all were the same product (store price differences such as instalment prices, not different models). The trained matcher's",
+    "pair scores (EVALUATION_REPORT.md) rose: accuracy 79.0% to 80.0%, precision 76.9% to 78.6%, recall 34.5% to 37.9%.",
+    "",
+  ];
+}
+
 function main() {
   const sample = read("group_recall.sample.json");
   const labels = read("group_recall.labels.json");
@@ -165,6 +194,7 @@ function main() {
     "|---|---|---|---|---|---|",
     ...judgement.map((p) => line({ ...p, id: `${p.id} (${p.verdict})` })),
     "",
+    ...recheckSection(),
     "## What this does and does not measure",
     "",
     "Pair recall among candidate pairs: one product split into two groups of five offers each counts as 25 missed pairs, as is usual for this",

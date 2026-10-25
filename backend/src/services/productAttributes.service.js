@@ -17,10 +17,12 @@ export const COLOURS = [
   "teal", "cream", "beige", "bronze", "copper", "navy", "mint",
 ];
 
+// A capacity followed by "RAM" or "memory" is RAM, never storage (see extractStorage in normalizeTitle.service.js): "Redmi Note 15
+// Pro 12GB RAM" states no storage, where it was filed under a "12 GB" storage filter.
 export function extractStorageGb(title = "") {
   const found = [];
 
-  for (const match of String(title).toLowerCase().matchAll(/\b(\d+)\s*(gb|tb)\b/g)) {
+  for (const match of String(title).toLowerCase().matchAll(/\b(\d+)\s*(gb|tb)\b(?![\s-]*(?:ram|memory)\b)/g)) {
     const value = Number(match[1]);
     found.push(match[2] === "tb" ? value * 1024 : value);
   }

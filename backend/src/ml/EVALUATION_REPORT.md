@@ -1,6 +1,6 @@
 # Trained Matching Classifier — Evaluation Report
 
-Generated 2026-10-25T19:16:12.556Z. Pairs are mined from the live listing database, blocked
+Generated 2026-10-25T23:23:24.192Z. Pairs are mined from the live listing database, blocked
 by category (never all-pairs), labelled by hand against a written rubric
 (`dataset/LABELING_RUBRIC.md`) before any model output was consulted, with a 20-pair
 independent spot-check per labelling round. Train/test split seed: 20261120.
@@ -77,7 +77,7 @@ headphones), which the production model never saw in training:
 
 | Model | Accuracy | Precision | Recall | F1 |
 |---|---|---|---|---|
-| Production model (v1, phone-heavy, 106 training pairs, threshold 0.5) | 79.0% | 76.9% | 34.5% | 47.6% |
+| Production model (v1, phone-heavy, 106 training pairs, threshold 0.5) | 80.0% | 78.6% | 37.9% | 51.2% |
 | Candidate (model.artifact.v3-hardneg.json, 366 training pairs, threshold 0.6) | 76.2% | 59.1% | 44.8% | 51.0% |
 | Rule baseline | 75.2% | 63.6% | 24.1% | 35.0% |
 

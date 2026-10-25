@@ -51,13 +51,17 @@ export function normalizeTitle(title = "") {
  * state a capacity.
  *
  * RAM is written as "8gb 256gb" on some stores, so when two capacities are
- * present the larger is taken as storage.
+ * present the larger is taken as storage. A capacity followed by "ram" or
+ * "memory" is RAM and never storage: DigiMall titles often state only the RAM
+ * ("Redmi Note 15 Pro 12GB RAM"), which was read as 12GB of storage and kept
+ * apart from every 512GB listing of the same phone (found by the recall
+ * sample, 2026-10-26). Such a title now states no storage.
  */
 export function extractStorage(title = "") {
   const normalized = normalizeTitle(title);
   const capacities = [];
 
-  for (const match of normalized.matchAll(/\b(\d+)(gb|tb)\b/g)) {
+  for (const match of normalized.matchAll(/\b(\d+)(gb|tb)\b(?!\s+(?:ram|memory)\b)/g)) {
     const value = Number(match[1]);
     capacities.push(match[2] === "tb" ? value * 1024 : value);
   }

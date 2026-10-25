@@ -271,6 +271,26 @@ function sameHyphenCode(a, b) {
     && long[i].startsWith(part)));
 }
 
+/**
+ * Model codes with a leading screen size dropped: stores write a television's code with or without its size in front ("98DU9000"
+ * / "DU9000", "75U8000F" / "U8000F"), which kept one Samsung 98 inch DU9000 at two stores apart (found by the recall sample,
+ * 2026-10-26). The prefix is dropped only when it is a screen size one of the two titles states (`sizes`, as strings), so a
+ * leading number that names the model ("12T3" against "18T3", two TCL air conditioners) is never dropped; the sizes themselves
+ * are compared separately. Used by the veto here and by the trained matcher's model-code feature (ml/features.js).
+ */
+export function withoutSizePrefix(codes, sizes) {
+  if (sizes.size === 0) return codes;
+  return new Set([...codes].map((code) => {
+    const match = /^(\d{2,3})([a-z][a-z0-9]{2,})$/.exec(code);
+    return match && sizes.has(match[1]) ? match[2] : code;
+  }));
+}
+
+/** The screen sizes two titles state, as whole-number strings, for withoutSizePrefix. */
+export function statedSizes(textA, textB) {
+  return new Set([extractScreenInches(textA), extractScreenInches(textB)].filter((size) => size !== null).map((size) => String(Math.round(size))));
+}
+
 export function sameSet(a, b) {
   if (a.size !== b.size) return false;
   for (const value of a) if (!b.has(value)) return false;
@@ -328,8 +348,9 @@ export function attributeConflict(textA, textB, { ignoreUnstatedStorage = false 
   // Ultra (SM-S928B)") from one that doesn't ("S24 Ultra") once short codes
   // like "s24" count; the same one-sided extra is not evidence of a
   // different product.
-  const codesA = extractModelCodes(textA);
-  const codesB = extractModelCodes(textB);
+  const sizes = statedSizes(textA, textB);
+  const codesA = withoutSizePrefix(extractModelCodes(textA), sizes);
+  const codesB = withoutSizePrefix(extractModelCodes(textB), sizes);
   if (
     codesA.size > 0 &&
     codesB.size > 0 &&

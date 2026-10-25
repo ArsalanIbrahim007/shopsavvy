@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-25T23:26:52.583Z",
+  "recall": 0.6426846873062513,
+  "precision": 0.987679670693949,
+  "correct": 13273.595000000001,
+  "missed": 7379.759999999999,
+  "wrong": 165.575,
+  "sameNowTogether": [
+    "r003",
+    "r035",
+    "r037",
+    "r058",
+    "r112",
+    "r151"
+  ],
+  "sameNowSplit": [],
+  "differentNowTogether": [],
+  "differentNowApart": [
+    "r040"
+  ],
+  "gone": []
+}
