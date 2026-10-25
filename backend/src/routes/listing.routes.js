@@ -453,9 +453,11 @@ router.get("/suggest", suggestLimiter, suggestListings);
  *     summary: Search, group and rank listings for a query
  *     description: >
  *       The primary endpoint. Checks whether stored data for the query is within the freshness
- *       window (30 minutes); if not, runs the live scrapers across all active platforms, saves
- *       the results, then groups matching listings into products, scores every offer and attaches
- *       a buying recommendation before returning.
+ *       window (30 minutes). When nothing is stored for it, runs the live scrapers across all
+ *       active platforms and waits for them. When listings are stored but older, answers from them
+ *       at once and refreshes in the background: `refresh.refreshing` is then true, and asking
+ *       again in about 20 seconds returns the new prices. Then groups matching listings into
+ *       products, scores every offer and attaches a buying recommendation before returning.
  *     tags:
  *       - Listings
  *     parameters:

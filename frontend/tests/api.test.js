@@ -115,7 +115,12 @@ describe("endpoints", () => {
 
   it("search tolerates missing fields", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(respond(200, { success: true })));
-    expect(await searchListings({ q: "x" })).toEqual({ offers: [], groups: [], groupCount: 0, summary: null });
+    expect(await searchListings({ q: "x" })).toEqual({ offers: [], groups: [], groupCount: 0, summary: null, refreshing: false });
+  });
+
+  it("search says when the server is refreshing the prices it answered with", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(respond(200, { success: true, refresh: { scraped: false, refreshing: true } })));
+    expect((await searchListings({ q: "x" })).refreshing).toBe(true);
   });
 
   it("stats and alerts hit the right endpoints", async () => {

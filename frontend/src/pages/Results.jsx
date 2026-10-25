@@ -6,7 +6,7 @@
 // only when the search text or the browsed category changes; filtering and sorting happen here on
 // the offers already loaded (see lib/filters.js).
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import { getCatalog, searchListings } from "../api/endpoints.js";
@@ -34,21 +34,49 @@ import "../components/results/results.css";
 const CATALOG_LIMIT = 50;
 const PAGE = 20;
 
+// A search answered from stored prices while the server fetches new ones from the stores (refreshing) is asked again after
+// REFRESH_DELAY_MS, which is about how long the stores take, and the new answer replaces the old in place: no loading state, the
+// filters and scroll position stay. At most REFRESH_ATTEMPTS times, in case the stores are slow.
+export const REFRESH_DELAY_MS = 20000;
+const REFRESH_ATTEMPTS = 3;
+
+const searchResult = (result) => ({ groups: result.groups, total: result.groupCount, refreshing: result.refreshing });
+
 function useResults(query, browseCategory) {
-  return useAsync(
+  const first = useAsync(
     async (signal) => {
       // Nothing to look up: no search text and not a category the server can browse. (Hooks run before the
       // page's early return, so without this guard a request with an empty category would be sent.)
-      if (!query && !browseCategory) return { groups: [], total: 0 };
-      if (query) {
-        const result = await searchListings({ q: query, signal });
-        return { groups: result.groups, total: result.groupCount };
-      }
+      if (!query && !browseCategory) return { groups: [], total: 0, refreshing: false };
+      if (query) return searchResult(await searchListings({ q: query, signal }));
       const result = await getCatalog({ category: browseCategory, limit: CATALOG_LIMIT, signal });
-      return { groups: result.groups, total: result.total };
+      return { groups: result.groups, total: result.total, refreshing: false };
     },
     [query, browseCategory]
   );
+
+  // The later answers, tied to the first answer they follow, so a new search never shows an older one's update.
+  const [later, setLater] = useState({ after: null, data: null, attempts: 0 });
+  const current = later.after === first.data && later.data ? later.data : first.data;
+  const attempts = later.after === first.data ? later.attempts : 0;
+
+  useEffect(() => {
+    if (first.status !== "success" || !current?.refreshing || !query || attempts >= REFRESH_ATTEMPTS) return undefined;
+    const controller = new AbortController();
+    const after = first.data;
+    const timer = setTimeout(() => {
+      searchListings({ q: query, signal: controller.signal }).then(
+        (result) => setLater({ after, data: searchResult(result), attempts: attempts + 1 }),
+        () => setLater((prev) => ({ after, data: prev.after === after ? prev.data : null, attempts: REFRESH_ATTEMPTS })), // keep what is shown
+      );
+    }, REFRESH_DELAY_MS);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [first.status, first.data, current, query, attempts]);
+
+  return first.status === "success" ? { ...first, data: current } : first;
 }
 
 function Empty({ query }) {
@@ -82,7 +110,7 @@ function GroupList({ groups }) {
   );
 }
 
-function ResultsView({ groups, total, query, browseCategory, filters, searchParams, setSearchParams }) {
+function ResultsView({ groups, total, refreshing = false, query, browseCategory, filters, searchParams, setSearchParams }) {
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const allOffers = groups.flatMap((group) => group.offers ?? []);
@@ -146,7 +174,11 @@ function ResultsView({ groups, total, query, browseCategory, filters, searchPara
             {!query && total > groups.length ? `. Showing the ${groups.length} most compared of ${formatNumber(total)}; filters apply to these` : ""}
           </p>
         </div>
-        {updated && <p className="small muted">Last updated {timeAgo(updated)}</p>}
+        <div className="small muted" style={{ textAlign: "end" }}>
+          {updated && <p>Last updated {timeAgo(updated)}</p>}
+          {/* Polite: announced once, without interrupting; the list then updates in place (useResults). */}
+          <p aria-live="polite">{refreshing ? "Checking the stores for newer prices; this list updates by itself." : ""}</p>
+        </div>
       </header>
 
       {linkHost && query && <LinkNotice store={linkStore} query={query} capacity={linkCapacity} />}
@@ -271,6 +303,7 @@ export default function Results() {
     <ResultsView
       groups={results.data.groups}
       total={results.data.total}
+      refreshing={results.data.refreshing}
       query={query}
       browseCategory={browseCategory}
       filters={filters}

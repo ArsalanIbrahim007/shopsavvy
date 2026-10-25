@@ -3,7 +3,8 @@
 //
 // When the search API is called, this service:
 //   1. Checks if fresh data exists in MongoDB for this query
-//   2. If data is stale or missing, runs live scrapers
+//   2. If data is missing, runs live scrapers and waits for them; if it is only stale, starts them in the
+//      background and returns at once (the search answers from what is stored)
 //   3. Saves results to MongoDB (listings + price history)
 //   4. Returns so the controller can proceed with grouping/ranking
 //
@@ -50,23 +51,17 @@ export function canonicalSourceUrl(url) {
   }
 }
 
-/**
- * Checks if we have fresh listings in MongoDB for a given query.
- * "Fresh" means scraped within the last STALE_THRESHOLD_MINUTES.
- */
-async function hasFreshData(query) {
+/** The stored listings a query's freshness is judged on: visible ones whose title contains the query. */
+function storedFilter(query) {
   const trimmed = query.trim();
   const normalizedQuery = normalizeTitle(trimmed);
-  const threshold = new Date(
-    Date.now() - STALE_THRESHOLD_MINUTES * 60 * 1000
-  );
 
   // A query made only of words normalizeTitle strips (e.g. "apple" alone)
   // normalises to an empty string, and an empty regex matches every
   // document -- see listing.controller.js for the same guard on the actual
   // search filter. Skipping the clause here keeps a freshness check for
   // "apple" from being satisfied by literally any recently scraped listing.
-  const count = await Listing.countDocuments({
+  return {
     ...VISIBLE_PLATFORMS_FILTER,
     $or: [
       { title: { $regex: escapeRegex(trimmed), $options: "i" } },
@@ -74,10 +69,28 @@ async function hasFreshData(query) {
         ? [{ normalizedTitle: { $regex: escapeRegex(normalizedQuery), $options: "i" } }]
         : []),
     ],
-    lastScrapedAt: { $gte: threshold },
-  });
+  };
+}
 
+const staleBefore = () => new Date(Date.now() - STALE_THRESHOLD_MINUTES * 60 * 1000);
+
+/**
+ * Checks if we have fresh listings in MongoDB for a given query.
+ * "Fresh" means scraped within the last STALE_THRESHOLD_MINUTES.
+ */
+async function hasFreshData(query) {
+  const count = await Listing.countDocuments({ ...storedFilter(query), lastScrapedAt: { $gte: staleBefore() } });
   return count > 0;
+}
+
+/**
+ * What we hold for a query: "fresh" (some matching listing scraped within STALE_THRESHOLD_MINUTES), "stale" (matching
+ * listings, all older) or "missing" (none at all).
+ */
+async function storedDataState(query) {
+  if (await hasFreshData(query)) return "fresh";
+  const any = await Listing.exists(storedFilter(query));
+  return any ? "stale" : "missing";
 }
 
 /**
@@ -200,46 +213,67 @@ async function runScrapersAndSave(query, opts = {}) {
 // the load on the shared Playwright queue instead of just waiting.
 const inFlightScrapes = new Map();
 
+/** The scrape for `query` already running, or a new one: a second request for the same query joins the first. */
+function startOrJoinScrape(query, { dynamic }) {
+  const dedupeKey = query.trim().toLowerCase();
+  const inFlight = inFlightScrapes.get(dedupeKey);
+  if (inFlight) return { promise: inFlight, joined: true };
+
+  // Never rejects: a scrape that fails saves nothing, and a background one has nobody waiting to be told.
+  const promise = runScrapersAndSave(query, { dynamic })
+    .catch((err) => {
+      console.error("[scraperService] Saving the scrape for %s failed: %s", quote(query), err.message);
+      return 0;
+    })
+    .finally(() => inFlightScrapes.delete(dedupeKey));
+  inFlightScrapes.set(dedupeKey, promise);
+  return { promise, joined: false };
+}
+
 /**
  * Main entry point called by the search controller.
- * Checks freshness and runs scrapers if needed before returning.
+ * Checks freshness and runs scrapers if needed.
+ *
+ * With `background`, a query we hold listings for, only older than STALE_THRESHOLD_MINUTES, is not made to wait: the
+ * scrape is started (or joined) and this returns at once with `refreshing: true`, so the shopper sees the stored prices
+ * now (each with its own "updated" time) instead of waiting 10 to 20 s for every store. `done` is the scrape's promise
+ * (resolving to the number saved), for a caller that finds nothing to show and must wait after all. A query we hold
+ * nothing for, and a forced refresh, still wait: there is nothing honest to show yet.
  *
  * @param {string} query
  * @param {object} [opts]
  * @param {boolean} [opts.force] - force re-scrape even if data is fresh
  * @param {boolean} [opts.dynamic] - use Google discovery layer
+ * @param {boolean} [opts.background] - refresh stale data without waiting
+ * @returns {Promise<{scraped: boolean, refreshing?: boolean, saved?: number, reason: string, done?: Promise<number>}>}
  */
 async function fetchAndRefreshListings(query, opts = {}) {
-  const { force = false, dynamic = false } = opts;
+  const { force = false, dynamic = false, background = false } = opts;
 
-  const fresh = await hasFreshData(query);
+  const state = await storedDataState(query);
 
-  if (fresh && !force) {
+  if (state === "fresh" && !force) {
     console.log("[scraperService] Fresh data found for %s, skipping scrape", quote(query));
     return { scraped: false, reason: "fresh_data" };
   }
 
-  const dedupeKey = query.trim().toLowerCase();
-  const inFlight = inFlightScrapes.get(dedupeKey);
+  const { promise, joined } = startOrJoinScrape(query, { dynamic });
 
-  if (inFlight) {
-    console.log("[scraperService] Scrape already in flight for %s, joining it", quote(query));
-    const saved = await inFlight;
-    return { scraped: true, saved, reason: "joined_in_flight" };
+  if (background && state === "stale" && !force) {
+    console.log("[scraperService] Stored data for %s is stale: answering now, refreshing in the background", quote(query));
+    return { scraped: false, refreshing: true, reason: joined ? "joined_in_flight_background" : "stale_refreshing", done: promise };
   }
 
-  const scrapePromise = runScrapersAndSave(query, { dynamic }).finally(() => {
-    inFlightScrapes.delete(dedupeKey);
-  });
-  inFlightScrapes.set(dedupeKey, scrapePromise);
-
-  const saved = await scrapePromise;
-  return { scraped: true, saved, reason: fresh ? "force_refresh" : "stale_or_missing" };
+  if (joined) console.log("[scraperService] Scrape already in flight for %s, joining it", quote(query));
+  const saved = await promise;
+  const reason = joined ? "joined_in_flight" : force && state === "fresh" ? "force_refresh" : "stale_or_missing";
+  return { scraped: true, saved, reason };
 }
 
 export {
   fetchAndRefreshListings,
   runScrapersAndSave,
   hasFreshData,
+  storedDataState,
   toListingDoc,
 };

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent, within } from "@testing-library/react";
+import { render, screen, fireEvent, within, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route, useLocation } from "react-router-dom";
 
 vi.mock("../src/api/endpoints.js", () => ({
@@ -55,7 +55,8 @@ describe("Product page: the tab title and the relative verdict", () => {
     serve(four(), { name: "Samsung Galaxy A17 256GB" });
     renderProduct();
     await screen.findByRole("heading", { level: 1, name: "Samsung Galaxy A17 256GB" });
-    expect(document.title).toBe("Samsung Galaxy A17 256GB from PKR 64,000 · ShopSavvy");
+    // set by an effect just after the page draws, so waited for rather than read at once
+    await waitFor(() => expect(document.title).toBe("Samsung Galaxy A17 256GB from PKR 64,000 · ShopSavvy"));
   });
 
   it("does not call a store well above the lowest price a good deal, in the table or in its verdict", async () => {

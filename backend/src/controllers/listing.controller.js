@@ -243,81 +243,8 @@ export async function suggestListings(req, res) {
   res.json({ success: true, count: data.length, data });
 }
 
-export async function searchListings(req, res) {
-  const q = textParam(req.query.q);
-
-  if (!q) {
-    throw AppError.badRequest("Search query is required. Example: /api/listings/search?q=iphone");
-  }
-
-  if (q.length > MAX_QUERY_LENGTH) {
-    throw AppError.badRequest(`Search query is too long (maximum ${MAX_QUERY_LENGTH} characters).`);
-  }
-  const trimmedQuery = q.trim();
-
-  const refreshResult = await fetchAndRefreshListings(trimmedQuery, {
-  // Forcing a re-scrape bypasses the freshness window and costs a full round of
-  // requests to every store, so it needs the admin key. Anyone else's
-  // ?refresh=true is ignored: they simply get the normal cached behaviour.
-  force: req.query.refresh === "true" && hasAdminKey(req),
-  dynamic: false,
-});
-
-console.log("[search]", refreshResult);
-  const normalizedQuery = normalizeTitle(trimmedQuery);
-
-/*
-   * The scrape-time category filter only governs what is written. Listings
-   * collected before that filter existed are still stored, so the category
-   * constraint is applied again here at query time. Without this, a search
-   * for "laptop" returns bags and batteries saved by earlier runs.
-   */
-  /*
-   * The category may be supplied explicitly by the caller, which the homepage
-   * carousels use to request only phones or only laptops. When it is not
-   * supplied it is inferred from the query text.
-   */
-  const requestedCategory = textParam(req.query.category);
-  const queryCategory = requestedCategory || detectQueryCategory(trimmedQuery).category;
-
-  /*
-   * The raw query can contain regex metacharacters ("iPhone (17)", "9+"),
-   * which would either throw or match something unintended if passed
-   * straight into $regex, so it is escaped before use.
-   * buildSpaceTolerantPattern also escapes, and additionally lets a
-   * missing space at a letter/digit boundary match either way, so
-   * "iphone17" still finds "iPhone 17" and vice versa.
-   *
-   * normalizeTitle strips whole words it considers noise (brand names such
-   * as "apple", compliance/marketing terms). A query consisting only of
-   * such words -- "apple" is itself one -- normalises to an empty string,
-   * and an empty pattern matches every document. That clause is therefore
-   * only added once there is still something left to match on.
-   */
-  const searchFilter = {
-    ...VISIBLE_PLATFORMS_FILTER,
-    $or: [
-      { title: { $regex: buildSpaceTolerantPattern(trimmedQuery), $options: "i" } },
-      ...(normalizedQuery
-        ? [{ normalizedTitle: { $regex: buildSpaceTolerantPattern(normalizedQuery), $options: "i" } }]
-        : []),
-    ],
-  };
-
-  if (queryCategory !== "other" && queryCategory !== "accessory") {
-    searchFilter.productCategory = queryCategory;
-  }
-
-  // Optional filters supplied by the user
-  const storage = numberParam(req.query.storage);
-  if (storage) searchFilter.storageGb = storage;
-  const colour = textParam(req.query.colour);
-  const condition = textParam(req.query.condition);
-  const pta = textParam(req.query.pta);
-  if (colour) searchFilter.colour = colour;
-  if (condition) searchFilter.condition = condition;
-  if (pta) searchFilter.ptaStatus = pta;
-
+/** The stored listings for a search: the exact match, else looser ones (see below), cheapest first. */
+async function findSearchListings(trimmedQuery, searchFilter) {
   let listings = await Listing.find(searchFilter).sort({
     price: 1,
     createdAt: -1,
@@ -377,6 +304,97 @@ console.log("[search]", refreshResult);
     if (fuzzyIds.length > 0) {
       listings = await Listing.find({ _id: { $in: fuzzyIds } }).sort({ price: 1, createdAt: -1 });
     }
+  }
+
+  return listings;
+}
+
+export async function searchListings(req, res) {
+  const q = textParam(req.query.q);
+
+  if (!q) {
+    throw AppError.badRequest("Search query is required. Example: /api/listings/search?q=iphone");
+  }
+
+  if (q.length > MAX_QUERY_LENGTH) {
+    throw AppError.badRequest(`Search query is too long (maximum ${MAX_QUERY_LENGTH} characters).`);
+  }
+  const trimmedQuery = q.trim();
+
+  const { done: refreshDone, ...refreshResult } = await fetchAndRefreshListings(trimmedQuery, {
+    // Forcing a re-scrape bypasses the freshness window and costs a full round of
+    // requests to every store, so it needs the admin key. Anyone else's
+    // ?refresh=true is ignored: they simply get the normal cached behaviour.
+    force: req.query.refresh === "true" && hasAdminKey(req),
+    dynamic: false,
+    // Stored but stale: answer from the database now and refresh in the background (see fetchAndRefreshListings).
+    background: true,
+  });
+
+  console.log("[search]", refreshResult);
+  const normalizedQuery = normalizeTitle(trimmedQuery);
+
+/*
+   * The scrape-time category filter only governs what is written. Listings
+   * collected before that filter existed are still stored, so the category
+   * constraint is applied again here at query time. Without this, a search
+   * for "laptop" returns bags and batteries saved by earlier runs.
+   */
+  /*
+   * The category may be supplied explicitly by the caller, which the homepage
+   * carousels use to request only phones or only laptops. When it is not
+   * supplied it is inferred from the query text.
+   */
+  const requestedCategory = textParam(req.query.category);
+  const queryCategory = requestedCategory || detectQueryCategory(trimmedQuery).category;
+
+  /*
+   * The raw query can contain regex metacharacters ("iPhone (17)", "9+"),
+   * which would either throw or match something unintended if passed
+   * straight into $regex, so it is escaped before use.
+   * buildSpaceTolerantPattern also escapes, and additionally lets a
+   * missing space at a letter/digit boundary match either way, so
+   * "iphone17" still finds "iPhone 17" and vice versa.
+   *
+   * normalizeTitle strips whole words it considers noise (brand names such
+   * as "apple", compliance/marketing terms). A query consisting only of
+   * such words -- "apple" is itself one -- normalises to an empty string,
+   * and an empty pattern matches every document. That clause is therefore
+   * only added once there is still something left to match on.
+   */
+  const searchFilter = {
+    ...VISIBLE_PLATFORMS_FILTER,
+    $or: [
+      { title: { $regex: buildSpaceTolerantPattern(trimmedQuery), $options: "i" } },
+      ...(normalizedQuery
+        ? [{ normalizedTitle: { $regex: buildSpaceTolerantPattern(normalizedQuery), $options: "i" } }]
+        : []),
+    ],
+  };
+
+  if (queryCategory !== "other" && queryCategory !== "accessory") {
+    searchFilter.productCategory = queryCategory;
+  }
+
+  // Optional filters supplied by the user
+  const storage = numberParam(req.query.storage);
+  if (storage) searchFilter.storageGb = storage;
+  const colour = textParam(req.query.colour);
+  const condition = textParam(req.query.condition);
+  const pta = textParam(req.query.pta);
+  if (colour) searchFilter.colour = colour;
+  if (condition) searchFilter.condition = condition;
+  if (pta) searchFilter.ptaStatus = pta;
+
+  let listings = await findSearchListings(trimmedQuery, searchFilter);
+
+  // The background refresh was started because the freshness check found stored listings, but the category and attribute filters
+  // here can leave none of them (a "laptop" search whose stored matches are all bags). With nothing to show, wait for the refresh
+  // after all, as a search for something new always has.
+  if (listings.length === 0 && refreshDone) {
+    const saved = await refreshDone;
+    Object.assign(refreshResult, { scraped: true, refreshing: false, saved, reason: "stale_nothing_to_show" });
+    listings = await findSearchListings(trimmedQuery, searchFilter);
   }
 
   /*

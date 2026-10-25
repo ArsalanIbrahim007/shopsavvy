@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent, within } from "@testing-library/react";
+import { render, screen, fireEvent, within, waitFor, act } from "@testing-library/react";
 import { MemoryRouter, Routes, Route, useLocation } from "react-router-dom";
 
 vi.mock("../src/api/endpoints.js", () => ({
@@ -11,7 +11,7 @@ vi.mock("../src/api/endpoints.js", () => ({
 
 import * as api from "../src/api/endpoints.js";
 import { ApiError } from "../src/api/errors.js";
-import Results from "../src/pages/Results.jsx";
+import Results, { REFRESH_DELAY_MS } from "../src/pages/Results.jsx";
 
 const NOW = new Date().toISOString();
 const offer = (id, platform, price, over = {}) => ({
@@ -155,7 +155,7 @@ describe("Results: integrity strip", () => {
   it("titles the tab after the search, or the category being browsed", async () => {
     renderResults("/results?q=samsung");
     await screen.findAllByRole("article");
-    expect(document.title).toBe("samsung prices · ShopSavvy");
+    await waitFor(() => expect(document.title).toBe("samsung prices · ShopSavvy"));
   });
 
   it("is absent when nothing is doubtful", async () => {
@@ -490,5 +490,50 @@ describe("Results: paging, and the states around the data", () => {
     vi.mocked(api.searchListings).mockReturnValue(new Promise(() => {}));
     renderResults("/results?q=iphone");
     expect(screen.getByRole("status")).toHaveTextContent(/can take up to a minute/i);
+  });
+});
+
+// Stored-first search (2026-10-26): the server answers from stored prices and refreshes them from the stores in the background.
+describe("Results: prices refreshed in the background", () => {
+  const answer = (groups, refreshing) => ({ offers: [], groups, groupCount: groups.length, summary: null, refreshing });
+  const newer = group("Samsung Galaxy A17 256GB", [offer("a1", "priceoye", 61000), offer("a2", "mega", 65500)]);
+
+  afterEach(() => vi.useRealTimers());
+
+  it("shows the stored prices at once, says it is checking, then updates the list in place", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.mocked(api.searchListings).mockReset()
+      .mockResolvedValueOnce(answer([A17], true))
+      .mockResolvedValueOnce(answer([newer], false));
+    renderResults("/results?q=a17");
+
+    const card = await screen.findByRole("article");
+    expect(card).toHaveTextContent("PKR 64,000");
+    expect(screen.getByText(/checking the stores for newer prices/i)).toBeInTheDocument();
+
+    await act(() => vi.advanceTimersByTimeAsync(REFRESH_DELAY_MS));
+    await waitFor(() => expect(screen.getByRole("article")).toHaveTextContent("PKR 61,000"));
+    expect(api.searchListings).toHaveBeenCalledTimes(2);
+    expect(screen.queryByText(/checking the stores/i)).toBeNull();
+    expect(screen.queryByText(/getting the latest prices/i)).toBeNull(); // never went back to the loading state
+  });
+
+  it("asks again at most three times while the stores are still being checked", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.mocked(api.searchListings).mockReset().mockResolvedValue(answer([A17], true));
+    renderResults("/results?q=a17");
+    await screen.findByRole("article");
+    for (let i = 0; i < 5; i++) await act(() => vi.advanceTimersByTimeAsync(REFRESH_DELAY_MS));
+    expect(api.searchListings).toHaveBeenCalledTimes(4); // the first answer and three more
+  });
+
+  it("does not ask again when the prices were already fresh", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.mocked(api.searchListings).mockReset().mockResolvedValue(answer([A17], false));
+    renderResults("/results?q=a17");
+    await screen.findByRole("article");
+    await act(() => vi.advanceTimersByTimeAsync(REFRESH_DELAY_MS * 2));
+    expect(api.searchListings).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText(/checking the stores/i)).toBeNull();
   });
 });

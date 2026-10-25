@@ -200,6 +200,31 @@ describe("GET /api/listings/search", () => {
     await json("/api/listings/search?q=galaxy&refresh=true", { headers: { "x-admin-key": "test-key-123" } });
     expect(fetchAndRefreshListings.mock.calls.at(-1)[1].force).toBe(true);
   });
+
+  it("answers from stored listings while a stale query refreshes, and says so (without leaking the scrape)", async () => {
+    vi.spyOn(Listing, "find").mockImplementation(() => chain(threeStores));
+    let finish;
+    const done = new Promise((resolve) => { finish = resolve; });
+    vi.mocked(fetchAndRefreshListings).mockResolvedValueOnce({ scraped: false, refreshing: true, reason: "stale_refreshing", done });
+
+    const { res, body } = await json("/api/listings/search?q=galaxy%20a17");
+    expect(res.status).toBe(200); // answered while the scrape is still running
+    expect(fetchAndRefreshListings.mock.calls.at(-1)[1].background).toBe(true);
+    expect(body.refresh).toEqual({ scraped: false, refreshing: true, reason: "stale_refreshing" });
+    expect(body.groupCount).toBe(1);
+    finish(3);
+  });
+
+  it("waits for the refresh after all when the stored listings leave nothing to show", async () => {
+    let refreshed = false;
+    vi.spyOn(Listing, "find").mockImplementation(() => chain(refreshed ? threeStores : []));
+    const done = new Promise((resolve) => setTimeout(() => { refreshed = true; resolve(3); }, 30));
+    vi.mocked(fetchAndRefreshListings).mockResolvedValueOnce({ scraped: false, refreshing: true, reason: "stale_refreshing", done });
+
+    const { body } = await json("/api/listings/search?q=galaxy%20a17");
+    expect(body.refresh).toEqual({ scraped: true, refreshing: false, saved: 3, reason: "stale_nothing_to_show" });
+    expect(body.groupCount).toBe(1);
+  });
 });
 
 describe("GET /api/listings/:id", () => {
