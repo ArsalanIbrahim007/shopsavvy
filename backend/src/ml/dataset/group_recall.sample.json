@@ -1,0 +1,4831 @@
+{
+  "set": "core",
+  "drawnAt": "2026-10-25T23:11:42.586Z",
+  "seed": 20261016,
+  "strategy": "ml",
+  "minSimilarity": 0.4,
+  "strata": {
+    "together": 6623,
+    "apart_high": 8888,
+    "apart_mid": 23031,
+    "apart_low": 195956
+  },
+  "sampled": {
+    "together": 40,
+    "apart_high": 50,
+    "apart_mid": 40,
+    "apart_low": 40
+  },
+  "population": {
+    "smartphone": {
+      "listings": 3146,
+      "groups": 1678,
+      "together": 3642,
+      "apart_high": 8089,
+      "apart_mid": 14888,
+      "apart_low": 95840
+    },
+    "laptop": {
+      "listings": 940,
+      "groups": 787,
+      "together": 96,
+      "apart_high": 11,
+      "apart_mid": 78,
+      "apart_low": 1482
+    },
+    "tv": {
+      "listings": 2264,
+      "groups": 1461,
+      "together": 1216,
+      "apart_high": 289,
+      "apart_mid": 5112,
+      "apart_low": 82219
+    },
+    "tablet": {
+      "listings": 450,
+      "groups": 238,
+      "together": 254,
+      "apart_high": 187,
+      "apart_mid": 581,
+      "apart_low": 3428
+    },
+    "smartwatch": {
+      "listings": 1150,
+      "groups": 790,
+      "together": 718,
+      "apart_high": 92,
+      "apart_mid": 969,
+      "apart_low": 6279
+    },
+    "headphones": {
+      "listings": 1743,
+      "groups": 1245,
+      "together": 697,
+      "apart_high": 220,
+      "apart_mid": 1403,
+      "apart_low": 6708
+    }
+  },
+  "pairs": [
+    {
+      "id": "r001",
+      "category": "tv",
+      "stratum": "apart_high",
+      "similarity": 0.8,
+      "a": {
+        "title": "Samsung 55 Inch Crystal UHD DU8000 4K Smart TV",
+        "platform": "digimall",
+        "price": 179500,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-55-inch-crystal-uhd-du8000-4k-smart-tv"
+      },
+      "b": {
+        "title": "Samsung 50 Inch 4K UHD Smart Crystal UHD TV (DU8000)",
+        "platform": "priceoye",
+        "price": 169999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/samsung/samsung-50-inch-4k-uhd-smart-crystal-uhd-tv-du8000"
+      }
+    },
+    {
+      "id": "r002",
+      "category": "headphones",
+      "stratum": "together",
+      "similarity": 1,
+      "a": {
+        "title": "A4Tech ComfortFit Stereo Headset (HU-50)",
+        "platform": "ishopping",
+        "price": 3036,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/a4tech-comfortfit-stereo-headset-hu-50-price-in-pakistan"
+      },
+      "b": {
+        "title": "A4Tech ComfortFit Stereo Headset (HU-50)",
+        "platform": "digimall",
+        "price": 3349,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/a4tech-comfortfit-stereo-headset-hu-50-2"
+      }
+    },
+    {
+      "id": "r003",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.71,
+      "a": {
+        "title": "Xiaomi Redmi Note 15 Pro 512GB 12GB RAM White Titanium",
+        "platform": "ishopping",
+        "price": 114240,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": "Titanium",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/xiaomi-redmi-note-15-pro-512gb-12gb-ram-white-titanium-price-in-pakistan-eaw"
+      },
+      "b": {
+        "title": "Xiaomi Redmi Note 15 Pro 12GB RAM",
+        "platform": "digimall",
+        "price": 121289,
+        "storageGb": 12,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/xiaomi-redmi-note-15-pro-12gb-ram-8"
+      }
+    },
+    {
+      "id": "r004",
+      "category": "smartphone",
+      "stratum": "together",
+      "similarity": 0.57,
+      "a": {
+        "title": "Xiaomi Redmi Note 15 Pro 12GB – 512GB",
+        "platform": "eezepc",
+        "price": 112990,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/xiaomi-redmi-note-15-pro-price-in-pakistan/?attribute_capacity=12GB%20%E2%80%93%20512GB"
+      },
+      "b": {
+        "title": "Xiaomi Redmi Note 15 Pro 512GB 12GB RAM Midnight Black",
+        "platform": "ishopping",
+        "price": 114240,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": "Midnight",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/xiaomi-redmi-note-15-pro-512gb-12gb-ram-midnight-black-price-in-pakistan-eaw"
+      }
+    },
+    {
+      "id": "r005",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Xiaomi Redmi Note 15 8GB 128GB",
+        "platform": "shophive",
+        "price": 70999,
+        "storageGb": 128,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/xiaomi-redmi-note-15-8gb-128gb/"
+      },
+      "b": {
+        "title": "Xiaomi Redmi Note 15 Pro Plus",
+        "platform": "ishopping",
+        "price": 162800,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/xiaomi-redmi-note-15-pro-plus-price-in-pakistan"
+      }
+    },
+    {
+      "id": "r006",
+      "category": "tv",
+      "stratum": "apart_mid",
+      "similarity": 0.62,
+      "a": {
+        "title": "Samsung LED 75 INCH Model 75U8000F SMART & 4K CRYSTAL UHD LED TV",
+        "platform": "alfamall",
+        "price": 417200,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfamall.com/samsung-led-75-inch-model-75u8000f-smart-4k-crystal-uhd-led-tv-10"
+      },
+      "b": {
+        "title": "Samsung 55DU7000 55 inch Smart & Crystal UHD 4K LED TV",
+        "platform": "mega",
+        "price": 154999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/ledtv_products/26296/Samsung-55DU7000-55-inch-Smart---Crystal-UHD-4K-LED-TV.html"
+      }
+    },
+    {
+      "id": "r007",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Apple iPhone 18 Pro Max 256GB PTA Approved",
+        "platform": "shophive",
+        "price": 604999,
+        "storageGb": 256,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.shophive.com/apple-iphone-18-pro-max-256gb-pta-approved/"
+      },
+      "b": {
+        "title": "Apple iPhone 18 Pro PTA Approved 2TB",
+        "platform": "xcessorieshub",
+        "price": 1099999,
+        "storageGb": 2048,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/apple-iphone-18-pro-pta-approved/?attribute_storage=2TB"
+      }
+    },
+    {
+      "id": "r008",
+      "category": "tv",
+      "stratum": "apart_mid",
+      "similarity": 0.75,
+      "a": {
+        "title": "iFFalcon 50\" Smart Google LED TV (S55)",
+        "platform": "digimall",
+        "price": 86149,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/iffalcon-50-smart-google-led-tv-s55-1"
+      },
+      "b": {
+        "title": "iFFalcon 43\" Smart Google LED TV (S55)",
+        "platform": "ishopping",
+        "price": 69580,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/iffalcon-43-smart-google-led-tv-s55-price-in-pakistan"
+      }
+    },
+    {
+      "id": "r009",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 0.8,
+      "a": {
+        "title": "Samsung Galaxy A17 256GB 8GB RAM Black",
+        "platform": "ishopping",
+        "price": 78030,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/mobiles/samsung-phones/samsung-galaxy-a17-256gb-8gb-ram-black-price-in-pakistan-eaw"
+      },
+      "b": {
+        "title": "Samsung Galaxy A17 6GB RAM",
+        "platform": "digimall",
+        "price": 73200,
+        "storageGb": 6,
+        "ramGb": 6,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-galaxy-a17-6gb-ram"
+      }
+    },
+    {
+      "id": "r010",
+      "category": "tv",
+      "stratum": "together",
+      "similarity": 0.63,
+      "a": {
+        "title": "Samsung 85 Inch Crystal UHD 4K Smart LED TV (UA85U8000)",
+        "platform": "digimall",
+        "price": 693999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-85-inch-crystal-uhd-4k-smart-led-tv-ua85u8000"
+      },
+      "b": {
+        "title": "Samsung | 85 Inch | 4K UHD | Crystal UHD | Smart LED TV | UA85U8000 - On Installment Upto 36 Months - ElectroEase",
+        "platform": "alfamall",
+        "price": 723049,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfamall.com/samsung-%7C-85-inch-%7C-4k-uhd-%7C-crystal-uhd-%7C-smart-led-tv-%7C-ua85u8000-on-installment-upto-36-months-electroease-1"
+      }
+    },
+    {
+      "id": "r011",
+      "category": "smartphone",
+      "stratum": "apart_low",
+      "similarity": 0.5,
+      "a": {
+        "title": "Xiaomi Redmi Buds 8 Lite Blue",
+        "platform": "xcessorieshub",
+        "price": 8099,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Blue",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/xiaomi-redmi-buds-8-lite/?attribute_color=Blue"
+      },
+      "b": {
+        "title": "Redmi Buds 8 Pro Black",
+        "platform": "techroid",
+        "price": 19999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://techroid.com/product/redmi-buds-8-pro/?attribute_pa_color=black"
+      }
+    },
+    {
+      "id": "r012",
+      "category": "smartphone",
+      "stratum": "together",
+      "similarity": 1,
+      "a": {
+        "title": "Xiaomi 90W HyperCharge Combo (Type-A)",
+        "platform": "mistore",
+        "price": 5499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mistore.pk/products/xiaomi-90w-hypercharge-combo"
+      },
+      "b": {
+        "title": "Xiaomi 90W HyperCharge Combo (Type-A)",
+        "platform": "xcessorieshub",
+        "price": 5499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/xiaomi-90w-hypercharge-combo-type-a/"
+      }
+    },
+    {
+      "id": "r013",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 0.8,
+      "a": {
+        "title": "Xiaomi Smart Air Purifier 4 Pro",
+        "platform": "shophive",
+        "price": 89999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/xiaomi-smart-air-purifier-4-pro/"
+      },
+      "b": {
+        "title": "Xiaomi Smart Air Purifier 4 Lite Filter Pro",
+        "platform": "mymart",
+        "price": 11999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mymart.pk/products/xiaomi-smart-air-purifier-4-lite-filter-pro"
+      }
+    },
+    {
+      "id": "r014",
+      "category": "tv",
+      "stratum": "apart_mid",
+      "similarity": 0.6,
+      "a": {
+        "title": "TCL 40\" QLED Smart TV (40S59K)",
+        "platform": "digimall",
+        "price": 76199,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/tcl-40-qled-smart-tv-40s59k-3"
+      },
+      "b": {
+        "title": "TCL - Smart Google TV QLED 40 inch - S59K - 40S59K - (SNS65)",
+        "platform": "alfamall",
+        "price": 78999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfamall.com/tcl-smart-google-tv-qled-40-inch-s59k-40s59k-sns65"
+      }
+    },
+    {
+      "id": "r015",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 0.8,
+      "a": {
+        "title": "Xiaomi Smart Air Purifier 4 Pro",
+        "platform": "mymart",
+        "price": 94999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mymart.pk/products/xiaomi-smart-air-purifier-4-pro"
+      },
+      "b": {
+        "title": "Xiaomi Smart Air Purifier 4 Lite Filter Pro",
+        "platform": "shophive",
+        "price": 14999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/xiaomi-smart-air-purifier-4-lite-filter-pro/"
+      }
+    },
+    {
+      "id": "r016",
+      "category": "smartwatch",
+      "stratum": "together",
+      "similarity": 1,
+      "a": {
+        "title": "Samsung Galaxy Watch 8 40mm",
+        "platform": "xcessorieshub",
+        "price": 59999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/samsung-galaxy-watch-8-40mm/"
+      },
+      "b": {
+        "title": "Samsung Galaxy Watch 8 40mm",
+        "platform": "mega",
+        "price": 71999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/watches_products/26849/Samsung-Galaxy-Watch-8-40mm.html"
+      }
+    },
+    {
+      "id": "r017",
+      "category": "smartphone",
+      "stratum": "together",
+      "similarity": 1,
+      "a": {
+        "title": "Xiaomi Truclean W30 Pro Wet Dry Vacuum",
+        "platform": "xcessorieshub",
+        "price": 94999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/xiaomi-truclean-w30-pro-wet-dry-vacuum/"
+      },
+      "b": {
+        "title": "Xiaomi Truclean W30 Pro Wet Dry Vacuum",
+        "platform": "mymart",
+        "price": 99999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mymart.pk/products/xiaomi-truclean-w30-pro-wet-dry-vacuum"
+      }
+    },
+    {
+      "id": "r018",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Apple iPhone 17 Pro PTA Approved 1TB",
+        "platform": "xcessorieshub",
+        "price": 662999,
+        "storageGb": 1024,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/apple-iphone-17-pro-pta-approved/?attribute_storage=1TB"
+      },
+      "b": {
+        "title": "Apple iPhone 17 Pro Max",
+        "platform": "mega",
+        "price": 399999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "non_pta",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26774/Apple-iPhone-17-Pro-Max.html"
+      }
+    },
+    {
+      "id": "r019",
+      "category": "smartphone",
+      "stratum": "together",
+      "similarity": 1,
+      "a": {
+        "title": "Apple iPhone 17 Pro Max 1TB PTA Approved",
+        "platform": "shophive",
+        "price": 695799,
+        "storageGb": 1024,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.shophive.com/apple-iphone-17-pro-max-1tb-pta-approved/"
+      },
+      "b": {
+        "title": "Apple iPhone 17 Pro Max PTA Approved 1TB",
+        "platform": "xcessorieshub",
+        "price": 731999,
+        "storageGb": 1024,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/apple-iphone-17-pro-max-pta-approved/?attribute_storage=1TB"
+      }
+    },
+    {
+      "id": "r020",
+      "category": "smartwatch",
+      "stratum": "together",
+      "similarity": 0.56,
+      "a": {
+        "title": "Samsung Galaxy Watch Ultra 47mm Titanium Blue (SM-L705)",
+        "platform": "ishopping",
+        "price": 94800,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Titanium",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/samsung-galaxy-watch-ultra-47mm-titanium-blue-sm-l705-price-in-pakistan"
+      },
+      "b": {
+        "title": "Samsung Galaxy Watch Ultra 47mm 2025 L705",
+        "platform": "digimall",
+        "price": 121999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-galaxy-watch-ultra-47mm-2025-l705-1"
+      }
+    },
+    {
+      "id": "r021",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Apple iPhone 17 Pro PTA Approved 256GB",
+        "platform": "xcessorieshub",
+        "price": 469999,
+        "storageGb": 256,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/apple-iphone-17-pro-pta-approved/?attribute_storage=256GB&attribute_color=Deep%20Blue,Silver"
+      },
+      "b": {
+        "title": "Iphone 17 Pro Max PTA Approved",
+        "platform": "digimall",
+        "price": 535600,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/iphone-17-pro-max-pta-approved-5"
+      }
+    },
+    {
+      "id": "r022",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 0.8,
+      "a": {
+        "title": "Redmi watch 6 active Black",
+        "platform": "techroid",
+        "price": 13999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://techroid.com/product/redmi-watch-6-active/?attribute_pa_color=black"
+      },
+      "b": {
+        "title": "Redmi Watch 6 Lite Black",
+        "platform": "eezepc",
+        "price": 19290,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/redmi-watch-6-lite-price-in-pakistan/?attribute_pa_colour=black-2"
+      }
+    },
+    {
+      "id": "r023",
+      "category": "smartphone",
+      "stratum": "together",
+      "similarity": 0.5,
+      "a": {
+        "title": "Xiaomi 14T Pro",
+        "platform": "mymart",
+        "price": 219999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mymart.pk/products/xiaomi-14t-pro"
+      },
+      "b": {
+        "title": "Xiaomi 14T Pro (12GB-512GB) Titan Grey",
+        "platform": "xcessorieshub",
+        "price": 219999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": "Grey",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/xiaomi-14t-pro-12gb-512gb/?attribute_color=Titan+Grey"
+      }
+    },
+    {
+      "id": "r024",
+      "category": "headphones",
+      "stratum": "together",
+      "similarity": 0.78,
+      "a": {
+        "title": "A4Tech USB Over-Ear Headphone Grey (FH200U)",
+        "platform": "ishopping",
+        "price": 3344,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Grey",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/a4tech-usb-over-ear-headphone-grey-fh200u-price-in-pakistan"
+      },
+      "b": {
+        "title": "A4Tech USB Over-Ear Headphone Grey (FH200U) - ISPK-0545",
+        "platform": "alfamall",
+        "price": 3726,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Grey",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfamall.com/a4tech-usb-over-ear-headphone-grey-fh200u-ispk-0545"
+      }
+    },
+    {
+      "id": "r025",
+      "category": "smartphone",
+      "stratum": "apart_low",
+      "similarity": 0.4,
+      "a": {
+        "title": "Samsung Galaxy S26 Ultra 12GB RAM 512GB Storage NON PTA",
+        "platform": "mega",
+        "price": 318999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "non_pta",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26996/Samsung-Galaxy-S26-Ultra-12GB-RAM-512GB-Storage-NON-PTA.html"
+      },
+      "b": {
+        "title": "Samsung Galaxy M60",
+        "platform": "priceoye",
+        "price": 59999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/samsung/samsung-galaxy-m60"
+      }
+    },
+    {
+      "id": "r026",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.67,
+      "a": {
+        "title": "Samsung Galaxy S26 Ultra Cobalt Violet (12GB RAM + 512GB Storage)",
+        "platform": "w11stop",
+        "price": 519999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://w11stop.com/samsung-galaxy-s26-ultra-cobalt-violet-12gb-ram-512gb-storage"
+      },
+      "b": {
+        "title": "Samsung Galaxy S26 12GB RAM 256GB Storage PTA Approved",
+        "platform": "mega",
+        "price": 284999,
+        "storageGb": 256,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26974/Samsung-Galaxy-S26-12GB-RAM-256GB-Storage-PTA-Approved.html"
+      }
+    },
+    {
+      "id": "r027",
+      "category": "smartphone",
+      "stratum": "together",
+      "similarity": 1,
+      "a": {
+        "title": "Samsung Galaxy S26 Ultra 12GB 256GB",
+        "platform": "shophive",
+        "price": 383999,
+        "storageGb": 256,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/samsung-galaxy-s26-ultra-12gb-256gb/"
+      },
+      "b": {
+        "title": "Samsung Galaxy S26 Ultra",
+        "platform": "priceoye",
+        "price": 387495,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/samsung/samsung-galaxy-s26-ultra"
+      }
+    },
+    {
+      "id": "r028",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.6,
+      "a": {
+        "title": "Xiaomi Redmi Note 15 Pro 12GB – 512GB",
+        "platform": "eezepc",
+        "price": 112990,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/xiaomi-redmi-note-15-pro-price-in-pakistan/?attribute_capacity=12GB%20%E2%80%93%20512GB"
+      },
+      "b": {
+        "title": "Xiaomi Redmi Note 11T",
+        "platform": "priceoye",
+        "price": 43999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/xiaomi/xiaomi-redmi-note-11t"
+      }
+    },
+    {
+      "id": "r029",
+      "category": "tv",
+      "stratum": "apart_low",
+      "similarity": 0.4,
+      "a": {
+        "title": "Samsung 55 Inch Crystal UHD 4K Smart LED TV (U8000F) - ISPK-0577",
+        "platform": "alfamall",
+        "price": 167873,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfamall.com/samsung-55-inch-crystal-uhd-4k-smart-led-tv-u8000f-ispk-0577"
+      },
+      "b": {
+        "title": "Samsung 65 Inch 4K UHD Smart QLED TV (Q7F)",
+        "platform": "priceoye",
+        "price": 248999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/samsung/samsung-65-inch-4k-uhd-smart-qled-tv-q7f"
+      }
+    },
+    {
+      "id": "r030",
+      "category": "tv",
+      "stratum": "together",
+      "similarity": 0.89,
+      "a": {
+        "title": "Samsung S90F OLED 4K Vision AI Smart TV",
+        "platform": "ledshop",
+        "price": 869999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://ledshop.pk/product/samsung-s90f-oled-4k-vision-ai-smart-tv/"
+      },
+      "b": {
+        "title": "SAMSUNG 83\"OLED S90F 4K Samsung Vision AI Smart TV",
+        "platform": "digimall",
+        "price": 1873500,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-83oled-s90f-4k-samsung-vision-ai-smart-tv"
+      }
+    },
+    {
+      "id": "r031",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Apple iPhone 16 128GB PTA Approved",
+        "platform": "shophive",
+        "price": 319999,
+        "storageGb": 128,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.shophive.com/apple-iphone-16-128gb-pta-approved/"
+      },
+      "b": {
+        "title": "iPhone 16 Pro Max 512GB",
+        "platform": "techroid",
+        "price": 548000,
+        "storageGb": 512,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://techroid.com/product/iphone-16-pro-max/?attribute_storage=512GB"
+      }
+    },
+    {
+      "id": "r032",
+      "category": "tv",
+      "stratum": "apart_mid",
+      "similarity": 0.6,
+      "a": {
+        "title": "Samsung 55\" 4K Smart QLED TV (55Q60D)",
+        "platform": "ishopping",
+        "price": 178880,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/samsung-55-4k-smart-qled-tv-55q60d-price-in-pakistan"
+      },
+      "b": {
+        "title": "Samsung 55 Inch 4K HD Smart QLED TV (55Q60)",
+        "platform": "priceoye",
+        "price": 298999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/samsung/samsung-55-inch-4k-smart-qled-tv-55q60r"
+      }
+    },
+    {
+      "id": "r033",
+      "category": "smartphone",
+      "stratum": "apart_low",
+      "similarity": 0.5,
+      "a": {
+        "title": "Xiaomi Redmi Note 15 Pro 8GB RAM 256GB Storage PTA APPROVED",
+        "platform": "mega",
+        "price": 96999,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/27059/Xiaomi-Redmi-Note-15-Pro-8GB-RAM-256GB-Storage-PTA-APPROVED.html"
+      },
+      "b": {
+        "title": "Xiaomi Redmi Note 13 Pro Plus",
+        "platform": "priceoye",
+        "price": 126499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/xiaomi/redmi-note-13-pro-plus"
+      }
+    },
+    {
+      "id": "r034",
+      "category": "tv",
+      "stratum": "apart_low",
+      "similarity": 0.4,
+      "a": {
+        "title": "Samsung 75 inch Crystal UHD 4K Smart TV Gaming Motion Xcelerator (UA75DU7000)",
+        "platform": "digimall",
+        "price": 386599,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-75-inch-crystal-uhd-4k-smart-tv-gaming-motion-xcelerator-ua75du7000-1"
+      },
+      "b": {
+        "title": "Samsung 50 Inch 4K UHD Smart LED TV (50MU7000)",
+        "platform": "priceoye",
+        "price": 86000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/samsung/samsung-50-inch-4k-uhd-smart-led-tv-50mu7000"
+      }
+    },
+    {
+      "id": "r035",
+      "category": "tv",
+      "stratum": "apart_mid",
+      "similarity": 0.7,
+      "a": {
+        "title": "Samsung 98 Inch 4K UHD Smart Crystal UHD TV (DU9000)",
+        "platform": "priceoye",
+        "price": 1099999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/samsung/samsung-98-inch-4k-uhd-smart-crystal-uhd-tv-du9000"
+      },
+      "b": {
+        "title": "Samsung 98DU9000 98\" Crystal UHD 4K Smart TV",
+        "platform": "shophive",
+        "price": 1079999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/samsung-98du9000-98-crystal-uhd-4k-smart-tv/"
+      }
+    },
+    {
+      "id": "r036",
+      "category": "smartwatch",
+      "stratum": "apart_high",
+      "similarity": 0.88,
+      "a": {
+        "title": "Samsung Galaxy Watch 8 Classic 46mm (L500)",
+        "platform": "digimall",
+        "price": 98999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-galaxy-watch-8-classic-46mm-l500-1"
+      },
+      "b": {
+        "title": "Samsung Galaxy Watch 8 Classic 46mm (SM-L500)",
+        "platform": "ishopping",
+        "price": 74350,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/samsung-galaxy-watch-8-classic-sm-l500-price-in-pakistan"
+      }
+    },
+    {
+      "id": "r037",
+      "category": "tv",
+      "stratum": "apart_high",
+      "similarity": 0.8,
+      "a": {
+        "title": "Samsung 75 inch Crystal UHD 4K Smart TV (75U8000F)",
+        "platform": "digimall",
+        "price": 363599,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-75-inch-crystal-uhd-4k-smart-tv-75u8000f-1"
+      },
+      "b": {
+        "title": "Samsung 75 Inch 4K UHD Smart Crystal UHD TV (U8000F)",
+        "platform": "priceoye",
+        "price": 429999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/samsung/samsung-75-inch-4k-uhd-smart-crystal-uhd-tv-u8000f"
+      }
+    },
+    {
+      "id": "r038",
+      "category": "smartphone",
+      "stratum": "apart_low",
+      "similarity": 0.5,
+      "a": {
+        "title": "Samsung Galaxy S26 Ultra (12GB RAM + 256GB Storage)",
+        "platform": "w11stop",
+        "price": 449999,
+        "storageGb": 256,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://w11stop.com/samsung-galaxy-s26-ultra-12gb-ram-256gb-storage"
+      },
+      "b": {
+        "title": "Samsung Galaxy A17 128GB 6GB RAM Grey",
+        "platform": "ishopping",
+        "price": 67830,
+        "storageGb": 128,
+        "ramGb": 6,
+        "colour": "Grey",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/samsung-galaxy-a17-128gb-6gb-ram-grey-price-in-pakistan-eaw"
+      }
+    },
+    {
+      "id": "r039",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Apple iPhone 17 PTA Approved 256GB",
+        "platform": "xcessorieshub",
+        "price": 389999,
+        "storageGb": 256,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/apple-iphone-17-pta-approved/?attribute_storage=256GB&attribute_color=Mist%20Blue,Lavender,White,Black"
+      },
+      "b": {
+        "title": "Iphone 17 Pro Max PTA Approved",
+        "platform": "digimall",
+        "price": 527999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/iphone-17-pro-max-pta-approved-4"
+      }
+    },
+    {
+      "id": "r040",
+      "category": "smartphone",
+      "stratum": "together",
+      "similarity": 0.75,
+      "a": {
+        "title": "Samsung Galaxy A07",
+        "platform": "ishopping",
+        "price": 36295,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/mobiles/samsung-phones/samsung-galaxy-a07-price-in-pakistan"
+      },
+      "b": {
+        "title": "Samsung Galaxy A07 4GB RAM",
+        "platform": "digimall",
+        "price": 39659,
+        "storageGb": 4,
+        "ramGb": 4,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-galaxy-a07-4gb-ram-13"
+      }
+    },
+    {
+      "id": "r041",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "iPhone 17 Pro Max 256GB",
+        "platform": "techroid",
+        "price": 485000,
+        "storageGb": 256,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://techroid.com/product/iphone-17-pro-max/?attribute_storage=256GB"
+      },
+      "b": {
+        "title": "Apple iPhone 17 Pro Max 512GB Storage PTA Approved",
+        "platform": "mega",
+        "price": 574999,
+        "storageGb": 512,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26961/Apple-iPhone-17-Pro-Max-512GB-Storage-PTA-Approved.html"
+      }
+    },
+    {
+      "id": "r042",
+      "category": "smartphone",
+      "stratum": "apart_low",
+      "similarity": 0.4,
+      "a": {
+        "title": "Samsung Galaxy S26 FE",
+        "platform": "ishopping",
+        "price": 231999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/mobiles/samsung-phones/samsung-galaxy-s26-fe-price-in-pakistan-ddd1"
+      },
+      "b": {
+        "title": "Samsung Galaxy S7 edge Dual SIM",
+        "platform": "priceoye",
+        "price": 46499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/samsung/samsung-galaxy-s7-edge-dual-sim"
+      }
+    },
+    {
+      "id": "r043",
+      "category": "smartphone",
+      "stratum": "apart_low",
+      "similarity": 0.5,
+      "a": {
+        "title": "Xiaomi Outdoor Camera CW100 Dual",
+        "platform": "mymart",
+        "price": 12999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mymart.pk/products/xiaomi-outdoor-camera-cw100-dual"
+      },
+      "b": {
+        "title": "Xiaomi Outdoor Camera BW500",
+        "platform": "eezepc",
+        "price": 21790,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/xiaomi-outdoor-camera-bw500/"
+      }
+    },
+    {
+      "id": "r044",
+      "category": "smartphone",
+      "stratum": "apart_low",
+      "similarity": 0.4,
+      "a": {
+        "title": "Xiaomi Redmi Note 15 Pro 8GB – 256GB",
+        "platform": "eezepc",
+        "price": 93790,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/xiaomi-redmi-note-15-pro-price-in-pakistan/?attribute_capacity=8GB%20%E2%80%93%20256GB"
+      },
+      "b": {
+        "title": "Redmi Note 13 Pro (8GB-256GB)",
+        "platform": "mymart",
+        "price": 58899,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mymart.pk/products/redmi-note-13-pro-8gb-256gb"
+      }
+    },
+    {
+      "id": "r045",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 0.8,
+      "a": {
+        "title": "Xiaomi Redmi Note 14 Pro 8GB RAM",
+        "platform": "digimall",
+        "price": 81549,
+        "storageGb": 8,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/xiaomi-redmi-note-14-pro-8gb-ram-7"
+      },
+      "b": {
+        "title": "Xiaomi Redmi Note 14 Pro Plus",
+        "platform": "priceoye",
+        "price": 139999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/xiaomi/xiaomi-redmi-note-14-pro-plus"
+      }
+    },
+    {
+      "id": "r046",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.6,
+      "a": {
+        "title": "Samsung Galaxy S26 Ultra 12GB RAM",
+        "platform": "digimall",
+        "price": 414099,
+        "storageGb": 12,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-galaxy-s26-ultra-12gb-ram-12"
+      },
+      "b": {
+        "title": "Samsung Galaxy S25 Ultra 12GB RAM 512GB Storage PTA Approved",
+        "platform": "mega",
+        "price": 384999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26592/Samsung-Galaxy-S25-Ultra-12GB-RAM-512GB-Storage-PTA-Approved.html"
+      }
+    },
+    {
+      "id": "r047",
+      "category": "smartphone",
+      "stratum": "together",
+      "similarity": 1,
+      "a": {
+        "title": "Vivo Y05e",
+        "platform": "priceoye",
+        "price": 36999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/vivo/vivo-y05e"
+      },
+      "b": {
+        "title": "Vivo Y05e 4GB +64GB",
+        "platform": "shophive",
+        "price": 38999,
+        "storageGb": 64,
+        "ramGb": 4,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/vivo-y05e-4gb-64gb/"
+      }
+    },
+    {
+      "id": "r048",
+      "category": "headphones",
+      "stratum": "apart_high",
+      "similarity": 0.8,
+      "a": {
+        "title": "Samsung Galaxy Buds 3 Pro – Silver",
+        "platform": "eezepc",
+        "price": 38990,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Silver",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/samsung-galaxy-buds-3-pro-silver/"
+      },
+      "b": {
+        "title": "Samsung Galaxy Buds 3",
+        "platform": "digimall",
+        "price": 30289,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-galaxy-buds-3"
+      }
+    },
+    {
+      "id": "r049",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Apple iPhone 16 PTA Approved 256GB",
+        "platform": "xcessorieshub",
+        "price": 334999,
+        "storageGb": 256,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/apple-iphone-16-pta-approved/?attribute_storage=256GB"
+      },
+      "b": {
+        "title": "iPhone 16 Plus 256GB",
+        "platform": "techroid",
+        "price": 393000,
+        "storageGb": 256,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://techroid.com/product/iphone-16-plus/?attribute_storage=256GB"
+      }
+    },
+    {
+      "id": "r050",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.75,
+      "a": {
+        "title": "Samsung Galaxy S25 FE 8GB RAM 512GB Storage PTA Approved",
+        "platform": "mega",
+        "price": 214999,
+        "storageGb": 512,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26949/Samsung-Galaxy-S25-FE-8GB-RAM-512GB-Storage-PTA-Approved.html"
+      },
+      "b": {
+        "title": "Samsung Galaxy S25 Ultra",
+        "platform": "priceoye",
+        "price": 354999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/samsung/samsung-galaxy-s25-ultra"
+      }
+    },
+    {
+      "id": "r051",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.6,
+      "a": {
+        "title": "Xiaomi Robot Vacuum E5",
+        "platform": "techroid",
+        "price": 31999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://techroid.com/product/xiaomi-robot-vacuum-e5/"
+      },
+      "b": {
+        "title": "Xiaomi Robot Vacuum X20 Pro",
+        "platform": "priceoye",
+        "price": 202999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/air-purifiers/xiaomi/xiaomi-robot-vacuum-x20-pro"
+      }
+    },
+    {
+      "id": "r052",
+      "category": "tv",
+      "stratum": "together",
+      "similarity": 0.89,
+      "a": {
+        "title": "Samsung 85 Inch 4K UHD Smart Crystal UHD TV (U8000F)",
+        "platform": "priceoye",
+        "price": 674999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/samsung/samsung-85-inch-4k-uhd-smart-crystal-uhd-tv-u8000f"
+      },
+      "b": {
+        "title": "SAMSUNG 85\" Crystal UHD U8000F 4K Smart TV",
+        "platform": "digimall",
+        "price": 689999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-85-crystal-uhd-u8000f-4k-smart-tv"
+      }
+    },
+    {
+      "id": "r053",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Apple iPhone 18 Pro 256GB PTA Approved",
+        "platform": "shophive",
+        "price": 564999,
+        "storageGb": 256,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.shophive.com/apple-iphone-18-pro-256gb-pta-approved/"
+      },
+      "b": {
+        "title": "Apple iPhone 18 Pro 512GB PTA Approved",
+        "platform": "eezepc",
+        "price": 659990,
+        "storageGb": 512,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://eezepc.com/product/apple-iphone-18-pro-price-in-pakistan/?attribute_storage=512GB&attribute_approval%20status=PTA%20Approved&attribute_colour=Silver"
+      }
+    },
+    {
+      "id": "r054",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.6,
+      "a": {
+        "title": "Xiaomi Redmi Note 15 Pro 8GB 256GB",
+        "platform": "shophive",
+        "price": 93999,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/xiaomi-redmi-note-15-pro-8gb-256gb/"
+      },
+      "b": {
+        "title": "Xiaomi Redmi Note 12S",
+        "platform": "priceoye",
+        "price": 69499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/xiaomi/xiaomi"
+      }
+    },
+    {
+      "id": "r055",
+      "category": "smartphone",
+      "stratum": "apart_low",
+      "similarity": 0.4,
+      "a": {
+        "title": "Samsung Galaxy A26 5G 8GB 256GB",
+        "platform": "shophive",
+        "price": 97999,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/samsung-galaxy-a26-5g-8gb-256gb/"
+      },
+      "b": {
+        "title": "Samsung Galaxy S25 12GB RAM",
+        "platform": "digimall",
+        "price": 315899,
+        "storageGb": 12,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-galaxy-s25-12gb-ram-12"
+      }
+    },
+    {
+      "id": "r056",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Samsung Galaxy S26 Ultra 256GB",
+        "platform": "eezepc",
+        "price": 394990,
+        "storageGb": 256,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/samsung-galaxy-s26-ultra-price-in-pakistan/?attribute_storage=256GB"
+      },
+      "b": {
+        "title": "Samsung Galaxy S26 Plus 12GB 512GB",
+        "platform": "shophive",
+        "price": 371999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/samsung-galaxy-s26-plus-12gb-512gb/"
+      }
+    },
+    {
+      "id": "r057",
+      "category": "tv",
+      "stratum": "apart_mid",
+      "similarity": 0.73,
+      "a": {
+        "title": "SAMSUNG 75\" QLED Q7F 4K Samsung Vision AI Smart TV",
+        "platform": "digimall",
+        "price": 434999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-75-qled-q7f-4k-samsung-vision-ai-smart-tv"
+      },
+      "b": {
+        "title": "SAMSUNG 75\" QLED Q8F 4K Samsung Vision AI Smart TV (QA75Q8FAAUSMM)",
+        "platform": "alfamall",
+        "price": 489999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfamall.com/samsung-75-qled-q8f-4k-samsung-vision-ai-smart-tv-qa75q8faausmm"
+      }
+    },
+    {
+      "id": "r058",
+      "category": "tv",
+      "stratum": "apart_low",
+      "similarity": 0.5,
+      "a": {
+        "title": "TCL iFFALCON 75\" U65A Pro 4K QLED TV - 2026",
+        "platform": "shophive",
+        "price": 260999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/tcl-iffalcon-75-u65a-pro-4k-qled-tv-2026/"
+      },
+      "b": {
+        "title": "Tcl iFFALCON 75 Inch 4K UHD QLED Google TV (75U65A Pro)",
+        "platform": "digimall",
+        "price": 291499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/tcl-iffalcon-75-inch-4k-uhd-qled-google-tv-75u65a-pro"
+      }
+    },
+    {
+      "id": "r059",
+      "category": "smartwatch",
+      "stratum": "together",
+      "similarity": 0.7,
+      "a": {
+        "title": "Samsung Galaxy Watch 8 Classic 46mm (SM-L500)",
+        "platform": "ishopping",
+        "price": 74350,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/samsung-galaxy-watch-8-classic-sm-l500-price-in-pakistan"
+      },
+      "b": {
+        "title": "Samsung Galaxy 8 L500 46mm Classic Smart Watch (White, NEW)",
+        "platform": "paklap",
+        "price": 77500,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "White",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.paklap.pk/samsung-galaxy-8-l500-watch-pakistan.html"
+      }
+    },
+    {
+      "id": "r060",
+      "category": "tv",
+      "stratum": "together",
+      "similarity": 0.67,
+      "a": {
+        "title": "Samsung 65\" Crystal UHD 4K Smart LED TV (U8000F)",
+        "platform": "ishopping",
+        "price": 229260,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/samsung-65-crystal-uhd-4k-smart-led-tv-u8000f-price-in-pakistan"
+      },
+      "b": {
+        "title": "SAMSUNG 65\" Crystal UHD U8000F 4K Smart TV-FOR KARACHI ONLY",
+        "platform": "digimall",
+        "price": 236800,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-65-crystal-uhd-u8000f-4k-smart-tv-for-karachi-only"
+      }
+    },
+    {
+      "id": "r061",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.6,
+      "a": {
+        "title": "Xiaomi Redmi Note 14 Pro",
+        "platform": "priceoye",
+        "price": 73999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/xiaomi/xiaomi-redmi-note-14-pro"
+      },
+      "b": {
+        "title": "Xiaomi Redmi Note 15 Pro 8GB – 256GB",
+        "platform": "eezepc",
+        "price": 93790,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/xiaomi-redmi-note-15-pro-price-in-pakistan/?attribute_capacity=8GB%20%E2%80%93%20256GB"
+      }
+    },
+    {
+      "id": "r062",
+      "category": "laptop",
+      "stratum": "apart_low",
+      "similarity": 0.43,
+      "a": {
+        "title": "Lenovo ThinkPad E14 Gen 7 Intel Core Ultra 7 256V (16GB RAM - 512GB SSD)",
+        "platform": "priceoye",
+        "price": 353999,
+        "storageGb": 512,
+        "ramGb": 16,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/laptops/lenovo/lenovo-thinkpad-e14-gen-7-intel-core-ultra-7-256v-16gb-ram-512gb-ssd"
+      },
+      "b": {
+        "title": "Lenovo Thinkpad T480 14” Core I7 8th Gen 16GB RAM 256GB SSD Laptop",
+        "platform": "ishopping",
+        "price": 68000,
+        "storageGb": 256,
+        "ramGb": 16,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/electronics/laptops-computers/lenovo-thinkpad-t480-14-core-i7-8th-gen-16gb-ram-256gb-ssd-laptop-6-month-warranty-price-in-pakistan"
+      }
+    },
+    {
+      "id": "r063",
+      "category": "tv",
+      "stratum": "apart_mid",
+      "similarity": 0.6,
+      "a": {
+        "title": "TCL 55T6D 55 Inch 4K Smart QLED TV Google tv",
+        "platform": "digimall",
+        "price": 145699,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/tcl-55t6d-55-inch-4k-smart-qled-tv-google-tv"
+      },
+      "b": {
+        "title": "TCL 55P79K 55'' 4K Smart QLED TV",
+        "platform": "shophive",
+        "price": 143999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/tcl-55p79k-55-4k-smart-qled-tv/"
+      }
+    },
+    {
+      "id": "r064",
+      "category": "tv",
+      "stratum": "apart_low",
+      "similarity": 0.4,
+      "a": {
+        "title": "Samsung 55 inch Crystal UHD 4K Smart TV Gaming Motion Xcelerator (UA55DU7000) - Best Price - With FREE SURPRISE GIFT - HomeCart",
+        "platform": "alfamall",
+        "price": 161699,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfamall.com/samsung-55-inch-crystal-uhd-4k-smart-tv-gaming-motion-xcelerator-ua55du7000-best-price-with-free-surprise-gift-homecart-2"
+      },
+      "b": {
+        "title": "Samsung 55 Inch 4K UHD Smart Crystal UHD TV (TU8500)",
+        "platform": "priceoye",
+        "price": 136999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/samsung/samsung-55-inch-4k-uhd-smart-crystal-uhd-tv-tu8500"
+      }
+    },
+    {
+      "id": "r065",
+      "category": "smartwatch",
+      "stratum": "apart_mid",
+      "similarity": 0.71,
+      "a": {
+        "title": "Samsung Galaxy Watch 8 Classic 46mm",
+        "platform": "xcessorieshub",
+        "price": 76999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/samsung-galaxy-watch-8-classic-46mm/"
+      },
+      "b": {
+        "title": "Samsung Galaxy Watch 8 Classic Black",
+        "platform": "eezepc",
+        "price": 80990,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/samsung-galaxy-watch-8-classic-price-in-pakistan/?attribute_pa_colour=black-2"
+      }
+    },
+    {
+      "id": "r066",
+      "category": "tv",
+      "stratum": "apart_low",
+      "similarity": 0.46,
+      "a": {
+        "title": "TCL 43 Inch FHD Smart LED TV (43S6500)",
+        "platform": "priceoye",
+        "price": 47249,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/tcl/tcl-43-inch-full-hd-43s6500"
+      },
+      "b": {
+        "title": "Samsung 43 Inch FHD Smart LED TV 43 T5300 - Official Warranty ON INSTALLMENTS -UE005",
+        "platform": "alfamall",
+        "price": 107999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfamall.com/samsung-43-inch-fhd-smart-led-tv-43-t5300-official-warranty-on-installments-ue005"
+      }
+    },
+    {
+      "id": "r067",
+      "category": "smartphone",
+      "stratum": "together",
+      "similarity": 1,
+      "a": {
+        "title": "Redmi Note 13 Pro 8GB-256GB",
+        "platform": "xcessorieshub",
+        "price": 59999,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/redmi-note-13-pro/?attribute_storage=8GB-256GB"
+      },
+      "b": {
+        "title": "Redmi Note 13 Pro (8GB – 256GB) 8GB – 256GB",
+        "platform": "techroid",
+        "price": 74999,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://techroid.com/product/redmi-note-13-pro/?attribute_storage=8GB%20%E2%80%93%20256GB"
+      }
+    },
+    {
+      "id": "r068",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 0.8,
+      "a": {
+        "title": "Xiaomi Redmi Note 15 Pro 12GB RAM",
+        "platform": "digimall",
+        "price": 119999,
+        "storageGb": 12,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/xiaomi-redmi-note-15-pro-12gb-ram-5"
+      },
+      "b": {
+        "title": "Xiaomi Redmi Note 15 Pro Plus",
+        "platform": "ishopping",
+        "price": 162800,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/xiaomi-redmi-note-15-pro-plus-price-in-pakistan"
+      }
+    },
+    {
+      "id": "r069",
+      "category": "smartphone",
+      "stratum": "together",
+      "similarity": 1,
+      "a": {
+        "title": "Samsung Galaxy S26 Ultra 12GB 256GB",
+        "platform": "shophive",
+        "price": 383999,
+        "storageGb": 256,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/samsung-galaxy-s26-ultra-12gb-256gb/"
+      },
+      "b": {
+        "title": "Samsung Galaxy S26 Ultra 256GB",
+        "platform": "eezepc",
+        "price": 394990,
+        "storageGb": 256,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/samsung-galaxy-s26-ultra-price-in-pakistan/?attribute_storage=256GB"
+      }
+    },
+    {
+      "id": "r070",
+      "category": "tv",
+      "stratum": "apart_low",
+      "similarity": 0.54,
+      "a": {
+        "title": "Hisense 55 Inch QLED 4K UHD VIDAA Smart LED TV (55Q6Q)",
+        "platform": "digimall",
+        "price": 161999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/hisense-55-inch-qled-4k-uhd-vidaa-smart-led-tv-55q6q"
+      },
+      "b": {
+        "title": "Samsung 55 Inch 4K UHD Smart LED TV (55RU7400)",
+        "platform": "priceoye",
+        "price": 128899,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/samsung/samsung-55-inch-4k-uhd-flat-smart-tv-55ru7400"
+      }
+    },
+    {
+      "id": "r071",
+      "category": "tv",
+      "stratum": "apart_low",
+      "similarity": 0.42,
+      "a": {
+        "title": "TCL LED 75T6D QLED 4K UHD SMART TV",
+        "platform": "jalalelectronics",
+        "price": 282500,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://jalalelectronics.com/products/tcl-led-75t6d-qled-4k-uhd-smart-tv"
+      },
+      "b": {
+        "title": "TCL 98\" 98C6K QD Mini LED 4K UHD TV (2025)",
+        "platform": "shophive",
+        "price": 922499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/tcl-98-98c6k-qd-mini-led-4k-uhd-tv-2025/"
+      }
+    },
+    {
+      "id": "r072",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.71,
+      "a": {
+        "title": "Xiaomi Redmi Note 15 Pro 256GB 8GB RAM Glacier Blue",
+        "platform": "ishopping",
+        "price": 93840,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": "Blue",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/xiaomi-redmi-note-15-pro-256gb-8gb-ram-glacier-blue-price-in-pakistan-eaw"
+      },
+      "b": {
+        "title": "Xiaomi Redmi Note 15 Pro Plus 12GB RAM",
+        "platform": "digimall",
+        "price": 176049,
+        "storageGb": 12,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/xiaomi-redmi-note-15-pro-plus-12gb-ram-9"
+      }
+    },
+    {
+      "id": "r073",
+      "category": "headphones",
+      "stratum": "together",
+      "similarity": 0.71,
+      "a": {
+        "title": "A4tech Bloody Wireless Headset (MH390)",
+        "platform": "ishopping",
+        "price": 6369,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/a4tech-bloody-wireless-headset-mh390-price-in-pakistan"
+      },
+      "b": {
+        "title": "A4Tech MH390 Bloody RGB Wireless Gaming Headset",
+        "platform": "mega",
+        "price": 7999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/headphones_products/24622/A4Tech-MH390-Bloody-RGB-Wireless-Gaming-Headset.html"
+      }
+    },
+    {
+      "id": "r074",
+      "category": "smartphone",
+      "stratum": "apart_low",
+      "similarity": 0.5,
+      "a": {
+        "title": "Samsung Galaxy S26 Ultra",
+        "platform": "eezepc",
+        "price": 394990,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/samsung-galaxy-s26-ultra-price-in-pakistan/"
+      },
+      "b": {
+        "title": "Samsung Galaxy S11",
+        "platform": "priceoye",
+        "price": 152999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/samsung/samsung-galaxy-s11"
+      }
+    },
+    {
+      "id": "r075",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 0.8,
+      "a": {
+        "title": "Xiaomi Redmi Note 15 8GB RAM 128GB Storage PTA APPROVED",
+        "platform": "mega",
+        "price": 69999,
+        "storageGb": 128,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/27061/Xiaomi-Redmi-Note-15-8GB-RAM-128GB-Storage-PTA-APPROVED.html"
+      },
+      "b": {
+        "title": "Xiaomi Redmi 15 8GB RAM",
+        "platform": "digimall",
+        "price": 59549,
+        "storageGb": 8,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/xiaomi-redmi-15-8gb-ram-6"
+      }
+    },
+    {
+      "id": "r076",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 0.8,
+      "a": {
+        "title": "Xiaomi Redmi Note 15 Pro",
+        "platform": "ishopping",
+        "price": 91799,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/xiaomi-redmi-note-15-pro-price-in-pakistan"
+      },
+      "b": {
+        "title": "Xiaomi Redmi Note 15 Pro Plus 12GB RAM",
+        "platform": "digimall",
+        "price": 178299,
+        "storageGb": 12,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/xiaomi-redmi-note-15-pro-plus-12gb-ram-10"
+      }
+    },
+    {
+      "id": "r077",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Apple iPhone 17 Pro PTA Approved 256GB",
+        "platform": "xcessorieshub",
+        "price": 469999,
+        "storageGb": 256,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/apple-iphone-17-pro-pta-approved/?attribute_storage=256GB&attribute_color=Deep%20Blue,Silver"
+      },
+      "b": {
+        "title": "Apple iPhone 17 Pro Max 1TB Storage PTA Approved",
+        "platform": "mega",
+        "price": 679999,
+        "storageGb": 1024,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26829/Apple-iPhone-17-Pro-Max-1TB-Storage-PTA--Approved.html"
+      }
+    },
+    {
+      "id": "r078",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.75,
+      "a": {
+        "title": "Xiaomi Redmi Note 14 Pro",
+        "platform": "ishopping",
+        "price": 74799,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/xiaomi-redmi-note-14-pro-price-in-pakistan"
+      },
+      "b": {
+        "title": "Redmi Note 14 8GB – 128GB",
+        "platform": "xcessorieshub",
+        "price": 55999,
+        "storageGb": 128,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/redmi-note-14/?attribute_storage=8GB%20%E2%80%93%20128GB&attribute_color=Sand%20Gold"
+      }
+    },
+    {
+      "id": "r079",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.6,
+      "a": {
+        "title": "Samsung Galaxy A17 (8GB RAM + 256GB Storage)",
+        "platform": "w11stop",
+        "price": 87500,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://w11stop.com/samsung-galaxy-a17-8gb-256gb-storage"
+      },
+      "b": {
+        "title": "Samsung Galaxy A07 6GB RAM",
+        "platform": "digimall",
+        "price": 55099,
+        "storageGb": 6,
+        "ramGb": 6,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-galaxy-a07-6gb-ram-17"
+      }
+    },
+    {
+      "id": "r080",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Apple iPhone 16 Pro PTA Approved 1TB",
+        "platform": "xcessorieshub",
+        "price": 554999,
+        "storageGb": 1024,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/apple-iphone-16-pro-pta-approved/?attribute_storage=1TB&attribute_color=Black%20Titanium"
+      },
+      "b": {
+        "title": "Apple iPhone 16 Plus 128GB Non PTA",
+        "platform": "mega",
+        "price": 241999,
+        "storageGb": 128,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "non_pta",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/27073/Apple-iPhone-16-Plus-128GB-Non-PTA.html"
+      }
+    },
+    {
+      "id": "r081",
+      "category": "laptop",
+      "stratum": "together",
+      "similarity": 0.5,
+      "a": {
+        "title": "Apple Macbook Pro M5 2025 14\" 16GB 1TB SSD Space Black MDE14",
+        "platform": "shophive",
+        "price": 599999,
+        "storageGb": 1024,
+        "ramGb": 16,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/apple-macbook-pro-m5-2025-14-16gb-1tb-ssd-space-black-mde14/"
+      },
+      "b": {
+        "title": "Apple MacBook Pro 14 MDE14 M5 Chip 10 Core CPU 10 Core GPU 16GB RAM 1TB SSD Space Black",
+        "platform": "mega",
+        "price": 609999,
+        "storageGb": 1024,
+        "ramGb": 16,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/laptop_products/26916/Apple-MacBook-Pro-14-MDE14-M5-Chip-10-Core-CPU-10-Core-GPU-16GB-RAM-1TB-SSD-Space-Black.html"
+      }
+    },
+    {
+      "id": "r082",
+      "category": "tv",
+      "stratum": "apart_mid",
+      "similarity": 0.6,
+      "a": {
+        "title": "TCL 65\" 4K Smart Google QLED TV (65P79L)",
+        "platform": "ishopping",
+        "price": 215740,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/tcl-65-4k-smart-google-qled-tv-65p79l-price-in-pakistan"
+      },
+      "b": {
+        "title": "TCL 65T6C 65 INCH SMART & 4K QLED TV",
+        "platform": "mega",
+        "price": 199999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/ledtv_products/26754/TCL-65T6C-65-INCH-SMART---4K-QLED-TV.html"
+      }
+    },
+    {
+      "id": "r083",
+      "category": "smartphone",
+      "stratum": "apart_low",
+      "similarity": 0.4,
+      "a": {
+        "title": "Samsung Galaxy A57 12GB RAM",
+        "platform": "digimall",
+        "price": 179999,
+        "storageGb": 12,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-galaxy-a57-12gb-ram-3"
+      },
+      "b": {
+        "title": "Samsung Galaxy M02s",
+        "platform": "priceoye",
+        "price": 21999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/samsung/samsung-galaxy-m02s"
+      }
+    },
+    {
+      "id": "r084",
+      "category": "smartwatch",
+      "stratum": "apart_low",
+      "similarity": 0.43,
+      "a": {
+        "title": "Samsung Galaxy Watch 8 40mm Black",
+        "platform": "xcessorieshub",
+        "price": 59999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/samsung-galaxy-watch-8-40mm/?attribute_color=Black"
+      },
+      "b": {
+        "title": "Samsung Galaxy Watch Ultra 2",
+        "platform": "alfamall",
+        "price": 175000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfamall.com/samsung-galaxy-watch-ultra-2"
+      }
+    },
+    {
+      "id": "r085",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Apple iPhone 18 Pro Max 1TB PTA Approved",
+        "platform": "eezepc",
+        "price": 849990,
+        "storageGb": 1024,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://eezepc.com/product/apple-iphone-18-pro-max-price-in-pakistan/?attribute_storage=1TB&attribute_approval%20status=PTA%20Approved&attribute_colour=Silver,Burgundy"
+      },
+      "b": {
+        "title": "Apple iPhone 18 Pro Max PTA Approved 2TB",
+        "platform": "xcessorieshub",
+        "price": 1139999,
+        "storageGb": 2048,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/apple-iphone-18-pro-max-pta-approved/?attribute_storage=2TB"
+      }
+    },
+    {
+      "id": "r086",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Apple iPhone 17 Pro Max PTA Approved 256GB",
+        "platform": "xcessorieshub",
+        "price": 499999,
+        "storageGb": 256,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/apple-iphone-17-pro-max-pta-approved/?attribute_storage=256GB"
+      },
+      "b": {
+        "title": "Apple iPhone 17 Pro 1TB Storage PTA Approved",
+        "platform": "mega",
+        "price": 649999,
+        "storageGb": 1024,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26828/Apple-iPhone-17-Pro-1TB-Storage-PTA-Approved.html"
+      }
+    },
+    {
+      "id": "r087",
+      "category": "smartwatch",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Zero Jewel Smart Watch",
+        "platform": "priceoye",
+        "price": 11299,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/smart-watches/zero/zero-jewel-smart-watch"
+      },
+      "b": {
+        "title": "Zero Jewel Pro Smart Watch",
+        "platform": "shophive",
+        "price": 17499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/zero-jewel-pro-smart-watch/"
+      }
+    },
+    {
+      "id": "r088",
+      "category": "smartphone",
+      "stratum": "together",
+      "similarity": 0.75,
+      "a": {
+        "title": "Samsung Galaxy S26 Ultra 12GB 256GB",
+        "platform": "shophive",
+        "price": 383999,
+        "storageGb": 256,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/samsung-galaxy-s26-ultra-12gb-256gb/"
+      },
+      "b": {
+        "title": "Samsung Galaxy S26 Ultra 12GB 256GB Dual - PTA Approved - Official Warranty",
+        "platform": "alfamall",
+        "price": 409000,
+        "storageGb": 256,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://alfamall.com/samsung-galaxy-s26-ultra-12gb-256gb-dual-pta-approved-official-warranty"
+      }
+    },
+    {
+      "id": "r089",
+      "category": "tv",
+      "stratum": "apart_mid",
+      "similarity": 0.67,
+      "a": {
+        "title": "Samsung 65\" 4K Smart QLED TV (65Q60D)",
+        "platform": "ishopping",
+        "price": 272480,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/samsung-65-4k-smart-qled-tv-65q60d-price-in-pakistan"
+      },
+      "b": {
+        "title": "Samsung 65 Inch 4K Smart QLED TV (65Q60)",
+        "platform": "priceoye",
+        "price": 298999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/samsung/samsung-65-inch-4k-qled-smart-tv-65q60"
+      }
+    },
+    {
+      "id": "r090",
+      "category": "tv",
+      "stratum": "apart_high",
+      "similarity": 0.8,
+      "a": {
+        "title": "Samsung 55 Inch Crystal UHD DU8000 4K Smart TV",
+        "platform": "digimall",
+        "price": 179500,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-55-inch-crystal-uhd-du8000-4k-smart-tv"
+      },
+      "b": {
+        "title": "Samsung 85 Inch 4K UHD Smart Crystal UHD TV (DU8000)",
+        "platform": "priceoye",
+        "price": 674999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/samsung/samsung-85-inch-4k-uhd-smart-crystal-uhd-tv-du8000"
+      }
+    },
+    {
+      "id": "r091",
+      "category": "tv",
+      "stratum": "together",
+      "similarity": 0.59,
+      "a": {
+        "title": "Samsung 85 Inch 4K UHD Smart Neo QLED TV (QN70F) - Best Price - With FREE SURPRISE GIFT - HomeCart",
+        "platform": "alfamall",
+        "price": 848499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfamall.com/samsung-85-inch-4k-uhd-smart-neo-qled-tv-qn70f-best-price-with-free-surprise-gift-homecart-2"
+      },
+      "b": {
+        "title": "Samsung 85 Inch 4K UHD Smart Neo QLED TV (QN70F)",
+        "platform": "digimall",
+        "price": 894699,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-85-inch-4k-uhd-smart-neo-qled-tv-qn70f"
+      }
+    },
+    {
+      "id": "r092",
+      "category": "tv",
+      "stratum": "apart_low",
+      "similarity": 0.45,
+      "a": {
+        "title": "Hisense 65 Inch Smart LED TV (65A6N)",
+        "platform": "digimall",
+        "price": 211199,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/hisense-65-inch-smart-led-tv-65a6n"
+      },
+      "b": {
+        "title": "TCL 65 Inch 4K QUHD SMART LED TV (65C2US)",
+        "platform": "priceoye",
+        "price": 158498,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/tcl/tcl-65-inch-4k-quhd-smart-led-tv-65c2us"
+      }
+    },
+    {
+      "id": "r093",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.6,
+      "a": {
+        "title": "Samsung Galaxy S26 Ultra (12GB RAM + 512GB Storage)",
+        "platform": "w11stop",
+        "price": 519999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://w11stop.com/samsung-galaxy-s26-ultra-12gb-ram-512gb-storage"
+      },
+      "b": {
+        "title": "Samsung Galaxy A17 5G 8GB RAM",
+        "platform": "digimall",
+        "price": 104499,
+        "storageGb": 8,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-galaxy-a17-5g-8gb-ram-1"
+      }
+    },
+    {
+      "id": "r094",
+      "category": "smartphone",
+      "stratum": "together",
+      "similarity": 0.8,
+      "a": {
+        "title": "Redmi Buds 8 Active Black",
+        "platform": "xcessorieshub",
+        "price": 6499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/redmi-buds-8-active/?attribute_color=Black"
+      },
+      "b": {
+        "title": "Redmi Buds 8 Active",
+        "platform": "mymart",
+        "price": 7499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mymart.pk/products/redmi-buds-8-active"
+      }
+    },
+    {
+      "id": "r095",
+      "category": "tv",
+      "stratum": "apart_low",
+      "similarity": 0.54,
+      "a": {
+        "title": "Samsung 55 Inch 4K UHD Smart Crystal UHD TV (TU8500)",
+        "platform": "priceoye",
+        "price": 136999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/samsung/samsung-55-inch-4k-uhd-smart-crystal-uhd-tv-tu8500"
+      },
+      "b": {
+        "title": "Samsung - Crystal 4k UHD Smart TV 50 inch - U8000F - 50U8000F - (SNS65)",
+        "platform": "alfamall",
+        "price": 139999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfamall.com/samsung-crystal-4k-uhd-smart-tv-50-inch-u8000f-50u8000f-sns65"
+      }
+    },
+    {
+      "id": "r096",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Samsung Galaxy S26 Plus",
+        "platform": "ishopping",
+        "price": 384999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/samsung-galaxy-s26-plus-price-in-pakistan-axi1"
+      },
+      "b": {
+        "title": "Samsung Galaxy S26 FE 8GB – 512GB",
+        "platform": "eezepc",
+        "price": 314990,
+        "storageGb": 512,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/samsung-galaxy-s26-fe-price-in-pakistan/?attribute_capacity=8GB%20%E2%80%93%20512GB"
+      }
+    },
+    {
+      "id": "r097",
+      "category": "smartwatch",
+      "stratum": "apart_low",
+      "similarity": 0.5,
+      "a": {
+        "title": "Zero Edge Smart Watch",
+        "platform": "priceoye",
+        "price": 6299,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/smart-watches/zero/zero-edge-smart-watch"
+      },
+      "b": {
+        "title": "ZERO WATCH EDGE JET BLACK",
+        "platform": "alfatah",
+        "price": 6500,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfatah.pk/products/zero-watch-edge-jet-black"
+      }
+    },
+    {
+      "id": "r098",
+      "category": "smartwatch",
+      "stratum": "apart_low",
+      "similarity": 0.43,
+      "a": {
+        "title": "Samsung Galaxy Watch Ultra 2025",
+        "platform": "xcessorieshub",
+        "price": 84999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/samsung-galaxy-watch-ultra-2025-titanium-blue/"
+      },
+      "b": {
+        "title": "Samsung | Galaxy Watch Fit 3 | R390",
+        "platform": "alfamall",
+        "price": 17499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfamall.com/samsung-%7C-galaxy-watch-fit-3-%7C-r390-4"
+      }
+    },
+    {
+      "id": "r099",
+      "category": "smartphone",
+      "stratum": "together",
+      "similarity": 0.5,
+      "a": {
+        "title": "Xiaomi 17T Pro 512GB 12GB RAM Black",
+        "platform": "ishopping",
+        "price": 269280,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/xiaomi-17t-pro-512gb-12gb-ram-black-price-in-pakistan-eaw"
+      },
+      "b": {
+        "title": "Xiaomi 17T Pro 12GB – 512GB",
+        "platform": "eezepc",
+        "price": 283990,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/xiaomi-17t-pro-price-in-pakistan/?attribute_capacity=12GB%20%E2%80%93%20512GB"
+      }
+    },
+    {
+      "id": "r100",
+      "category": "smartphone",
+      "stratum": "together",
+      "similarity": 1,
+      "a": {
+        "title": "Xiaomi Redmi A7 Pro",
+        "platform": "priceoye",
+        "price": 35495,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/xiaomi/xiaomi-redmi-a7-pro"
+      },
+      "b": {
+        "title": "Xiaomi Redmi A7 Pro 4GB 64GB",
+        "platform": "shophive",
+        "price": 37499,
+        "storageGb": 64,
+        "ramGb": 4,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/xiaomi-redmi-a7-pro-4gb-64gb/"
+      }
+    },
+    {
+      "id": "r101",
+      "category": "tv",
+      "stratum": "apart_low",
+      "similarity": 0.46,
+      "a": {
+        "title": "Samsung 50 Inch 4K UHD Smart LED TV (NU7400)",
+        "platform": "priceoye",
+        "price": 122999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/samsung/samsung-50-inch-4k-uhd-smart-tv-nu7400"
+      },
+      "b": {
+        "title": "SAMSUNG LED 55\" UA55U8000FUSMM 4K UHD SMART TV C/O",
+        "platform": "jalalelectronics",
+        "price": 154000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://jalalelectronics.com/products/samsung-led-55-ua55u8000fusmm-4k-uhd-smart-tv-c-o"
+      }
+    },
+    {
+      "id": "r102",
+      "category": "tv",
+      "stratum": "apart_low",
+      "similarity": 0.58,
+      "a": {
+        "title": "Samsung 55\" 4K Crystal UHD Smart LED TV (UA55DU7000UXMM)",
+        "platform": "ishopping",
+        "price": 144020,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/samsung-4k-crystal-uhd-smart-led-tv-ua55du7000uxmm-price-in-pakistan"
+      },
+      "b": {
+        "title": "Samsung - Crystal 4k UHD Smart TV 55 inch - U8000F - 55U8000F",
+        "platform": "digimall",
+        "price": 162999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-crystal-4k-uhd-smart-tv-55-inch-u8000f-55u8000f"
+      }
+    },
+    {
+      "id": "r103",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.6,
+      "a": {
+        "title": "Samsung Galaxy A17 6GB RAM",
+        "platform": "digimall",
+        "price": 71808,
+        "storageGb": 6,
+        "ramGb": 6,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-galaxy-a17-6gb-ram-11"
+      },
+      "b": {
+        "title": "Samsung Galaxy S26 Ultra 12GB RAM 256GB Storage NON PTA",
+        "platform": "mega",
+        "price": 269999,
+        "storageGb": 256,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "non_pta",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26997/Samsung-Galaxy-S26-Ultra-12GB-RAM-256GB-Storage-NON-PTA.html"
+      }
+    },
+    {
+      "id": "r104",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Samsung Galaxy S26 Ultra 12GB RAM",
+        "platform": "digimall",
+        "price": 414099,
+        "storageGb": 12,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-galaxy-s26-ultra-12gb-ram-12"
+      },
+      "b": {
+        "title": "Samsung Galaxy S26 Ultra 12GB RAM 256GB Storage NON PTA",
+        "platform": "mega",
+        "price": 269999,
+        "storageGb": 256,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "non_pta",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26997/Samsung-Galaxy-S26-Ultra-12GB-RAM-256GB-Storage-NON-PTA.html"
+      }
+    },
+    {
+      "id": "r105",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Apple iPhone 16 PTA Approved 128GB",
+        "platform": "xcessorieshub",
+        "price": 308999,
+        "storageGb": 128,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/apple-iphone-16-pta-approved/?attribute_storage=128GB&attribute_color=Teal"
+      },
+      "b": {
+        "title": "iPhone 16 Plus 256GB",
+        "platform": "techroid",
+        "price": 393000,
+        "storageGb": 256,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://techroid.com/product/iphone-16-plus/?attribute_storage=256GB"
+      }
+    },
+    {
+      "id": "r106",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Apple iPhone 17 Pro 1TB PTA Approved",
+        "platform": "shophive",
+        "price": 650499,
+        "storageGb": 1024,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.shophive.com/apple-iphone-17-pro-1tb-pta-approved/"
+      },
+      "b": {
+        "title": "iPhone 17 Pro 512GB",
+        "platform": "techroid",
+        "price": 529000,
+        "storageGb": 512,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://techroid.com/product/iphone-17-pro/?attribute_storage=512GB"
+      }
+    },
+    {
+      "id": "r107",
+      "category": "smartphone",
+      "stratum": "apart_low",
+      "similarity": 0.4,
+      "a": {
+        "title": "Samsung Galaxy A07 6GB RAM",
+        "platform": "digimall",
+        "price": 62500,
+        "storageGb": 6,
+        "ramGb": 6,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-galaxy-a07-6gb-ram-11"
+      },
+      "b": {
+        "title": "Samsung Galaxy M23",
+        "platform": "priceoye",
+        "price": 44999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/samsung/samsung-galaxy-m23"
+      }
+    },
+    {
+      "id": "r108",
+      "category": "smartphone",
+      "stratum": "together",
+      "similarity": 0.5,
+      "a": {
+        "title": "Xiaomi Redmi Note 14 Pro (12GB RAM - 512GB Storage) PTA Approved with Official Xiaomi Warranty",
+        "platform": "alfamall",
+        "price": 89999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://alfamall.com/xiaomi-redmi-note-14-pro-12gb-ram-512gb-storage-pta-approved-with-official-xiaomi-warranty"
+      },
+      "b": {
+        "title": "Redmi Note 14 Pro (12GB- 512GB)",
+        "platform": "mistore",
+        "price": 97999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mistore.pk/products/redmi-note-14-pro"
+      }
+    },
+    {
+      "id": "r109",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.6,
+      "a": {
+        "title": "Samsung Galaxy S26 Ultra 256GB",
+        "platform": "eezepc",
+        "price": 394990,
+        "storageGb": 256,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/samsung-galaxy-s26-ultra-price-in-pakistan/?attribute_storage=256GB"
+      },
+      "b": {
+        "title": "Samsung Galaxy S26 Black (12GB RAM + 256GB Storage)",
+        "platform": "w11stop",
+        "price": 319999,
+        "storageGb": 256,
+        "ramGb": 12,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://w11stop.com/samsung-galaxy-s26-12gb-ram-256gb-storage"
+      }
+    },
+    {
+      "id": "r110",
+      "category": "smartphone",
+      "stratum": "apart_low",
+      "similarity": 0.4,
+      "a": {
+        "title": "Samsung Galaxy A57 5G 8GB RAM",
+        "platform": "digimall",
+        "price": 168999,
+        "storageGb": 8,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-galaxy-a57-5g-8gb-ram-7"
+      },
+      "b": {
+        "title": "Samsung Galaxy S20 Plus",
+        "platform": "priceoye",
+        "price": 187999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/samsung/samsung-galaxy-s20-plus"
+      }
+    },
+    {
+      "id": "r111",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Apple iPhone 17 Pro 256GB PTA Approved",
+        "platform": "digimall",
+        "price": 491599,
+        "storageGb": 256,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/apple-iphone-17-pro-256gb-pta-approved-1"
+      },
+      "b": {
+        "title": "Apple iPhone 17 PTA Approved 256GB",
+        "platform": "xcessorieshub",
+        "price": 399999,
+        "storageGb": 256,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/apple-iphone-17-pta-approved/?attribute_storage=256GB&attribute_color=Sage"
+      }
+    },
+    {
+      "id": "r112",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 0.8,
+      "a": {
+        "title": "Xiaomi Redmi Note 14 Pro 12GB RAM 512GB Storage",
+        "platform": "mega",
+        "price": 92999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26514/Xiaomi-Redmi-Note-14-Pro-12GB-RAM-512GB-Storage.html"
+      },
+      "b": {
+        "title": "REDMI NOTE 14 PRO 12GB RAM PTA APPROVED",
+        "platform": "digimall",
+        "price": 96199,
+        "storageGb": 12,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/redmi-note-14-pro-12gb-ram-pta-approved-10"
+      }
+    },
+    {
+      "id": "r113",
+      "category": "tv",
+      "stratum": "apart_low",
+      "similarity": 0.5,
+      "a": {
+        "title": "SAMSUNG 55\" Crystal UHD U8000F 4K Smart TV",
+        "platform": "digimall",
+        "price": 156999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-55-crystal-uhd-u8000f-4k-smart-tv"
+      },
+      "b": {
+        "title": "Samsung 55Q60D 55\" QLED 4K Smart TV",
+        "platform": "shophive",
+        "price": 209999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/samsung-55q60d-55-qled-4k-smart-tv/"
+      }
+    },
+    {
+      "id": "r114",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Apple iPhone 16 Pro Max PTA Approved",
+        "platform": "xcessorieshub",
+        "price": 438999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/apple-iphone-16-pro-max-pta-approved/"
+      },
+      "b": {
+        "title": "Apple iPhone 16",
+        "platform": "mega",
+        "price": 219999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "non_pta",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/25335/Apple-iPhone-16.html"
+      }
+    },
+    {
+      "id": "r115",
+      "category": "smartphone",
+      "stratum": "apart_low",
+      "similarity": 0.4,
+      "a": {
+        "title": "Samsung Galaxy A57 12GB RAM",
+        "platform": "digimall",
+        "price": 179999,
+        "storageGb": 12,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-galaxy-a57-12gb-ram-3"
+      },
+      "b": {
+        "title": "Samsung Galaxy M62",
+        "platform": "priceoye",
+        "price": 52999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/samsung/samsung-galaxy-m62"
+      }
+    },
+    {
+      "id": "r116",
+      "category": "tv",
+      "stratum": "together",
+      "similarity": 0.9,
+      "a": {
+        "title": "Samsung 43 Inch 4K UHD Smart Crystal UHD TV (U8000F)",
+        "platform": "priceoye",
+        "price": 98416,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/samsung/samsung-43-inch-4k-uhd-smart-crystal-uhd-tv-u8000f"
+      },
+      "b": {
+        "title": "Samsung 43 Inch Crystal UHD 4K Smart LED TV - (U8000F)",
+        "platform": "digimall",
+        "price": 102649,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-43-inch-crystal-uhd-4k-smart-led-tv-u8000f-2"
+      }
+    },
+    {
+      "id": "r117",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 0.8,
+      "a": {
+        "title": "Xiaomi Smart Air Purifier 4 Pro",
+        "platform": "mistore",
+        "price": 94999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mistore.pk/products/xiaomi-smart-air-purifier-4-pro"
+      },
+      "b": {
+        "title": "Xiaomi Smart Air Purifier 4 Pro Filter",
+        "platform": "mymart",
+        "price": 14499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mymart.pk/products/xiaomi-smart-air-purifier-4-pro-filter"
+      }
+    },
+    {
+      "id": "r118",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.6,
+      "a": {
+        "title": "Xiaomi Redmi 15 8GB 128GB",
+        "platform": "shophive",
+        "price": 55999,
+        "storageGb": 128,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/xiaomi-redmi-15-8gb-128gb/"
+      },
+      "b": {
+        "title": "Xiaomi Redmi Note 15 Pro 8GB RAM",
+        "platform": "digimall",
+        "price": 101400,
+        "storageGb": 8,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/xiaomi-redmi-note-15-pro-8gb-ram-1"
+      }
+    },
+    {
+      "id": "r119",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.71,
+      "a": {
+        "title": "Xiaomi Redmi Note 14 Pro 512GB 12GB RAM Ocean Blue",
+        "platform": "ishopping",
+        "price": 92820,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": "Blue",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/xiaomi-redmi-note-14-pro-512gb-12gb-ram-ocean-blue-price-in-pakistan-eaw"
+      },
+      "b": {
+        "title": "Xiaomi Redmi Note 14 Pro 8GB RAM",
+        "platform": "digimall",
+        "price": 81382,
+        "storageGb": 8,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/xiaomi-redmi-note-14-pro-8gb-ram-3"
+      }
+    },
+    {
+      "id": "r120",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.6,
+      "a": {
+        "title": "Samsung Galaxy A57 5G (8GB RAM + 256GB Storage)",
+        "platform": "w11stop",
+        "price": 166999,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://w11stop.com/samsung-galaxy-a57-5g-8gb-ram-256gb-storage"
+      },
+      "b": {
+        "title": "Samsung Galaxy A36 5G 256GB – 8GB RAM",
+        "platform": "xcessorieshub",
+        "price": 100499,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/samsung-galaxy-a36-5g/?attribute_storage=256GB%20%E2%80%93%208GB%20RAM"
+      }
+    },
+    {
+      "id": "r121",
+      "category": "smartphone",
+      "stratum": "together",
+      "similarity": 0.67,
+      "a": {
+        "title": "Apple iPhone 17 - Mercantile Warranty",
+        "platform": "ishopping",
+        "price": 352499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/apple-iphone-17-mercantile-warranty-price-in-pakistan"
+      },
+      "b": {
+        "title": "Apple iPhone 17 PTA Approved 256GB",
+        "platform": "xcessorieshub",
+        "price": 399999,
+        "storageGb": 256,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/apple-iphone-17-pta-approved/?attribute_storage=256GB&attribute_color=Sage"
+      }
+    },
+    {
+      "id": "r122",
+      "category": "tv",
+      "stratum": "apart_low",
+      "similarity": 0.43,
+      "a": {
+        "title": "TCL 85 inch Premium QLED TV 4K UHD Smart TV (85P79L)",
+        "platform": "digimall",
+        "price": 571099,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/tcl-85-inch-premium-qled-tv-4k-uhd-smart-tv-85p79l-1"
+      },
+      "b": {
+        "title": "Samsung 85 Inch 8K UHD Smart Neo QLED TV (QN800C)",
+        "platform": "priceoye",
+        "price": 123299,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/samsung/samsung-85-inch-8k-uhd-smart-neo-qled-tv-qn800c"
+      }
+    },
+    {
+      "id": "r123",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Samsung Galaxy S26 Ultra PTA Approved 512GB – 12GB RAM",
+        "platform": "xcessorieshub",
+        "price": 449999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/samsung-galaxy-s26-ultra/?attribute_storage=512GB%20%E2%80%93%2012GB%20RAM&attribute_color=Cobalt%20Violet,Sky%20Blue,White"
+      },
+      "b": {
+        "title": "Samsung Galaxy S26 Ultra 12GB RAM",
+        "platform": "digimall",
+        "price": 424999,
+        "storageGb": 12,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-galaxy-s26-ultra-12gb-ram-8"
+      }
+    },
+    {
+      "id": "r124",
+      "category": "tv",
+      "stratum": "apart_low",
+      "similarity": 0.43,
+      "a": {
+        "title": "EcoStar 85 Inch QLED Smart 4K UHD LED TV (CX85Q965)",
+        "platform": "priceoye",
+        "price": 429000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/ecostar/ecostar-85-inch-qled-smart-4k-uhd-led-tv-cx85q965"
+      },
+      "b": {
+        "title": "HAIER MINI LED 75 INCH H75M80FUX 4K UHD SMART GOOGLE TV",
+        "platform": "jalalelectronics",
+        "price": 320000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://jalalelectronics.com/products/haier-mini-led-75-inch-h75m80fux-4k-uhd-smart-google-tv"
+      }
+    },
+    {
+      "id": "r125",
+      "category": "smartphone",
+      "stratum": "together",
+      "similarity": 0.56,
+      "a": {
+        "title": "Xiaomi Redmi Note 14 Pro 512GB 12GB RAM Aurora Purple",
+        "platform": "ishopping",
+        "price": 92820,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": "Purple",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/xiaomi-redmi-note-14-pro-512gb-12gb-ram-aurora-purple-price-in-pakistan-eaw"
+      },
+      "b": {
+        "title": "Xiaomi Redmi Note 14 Pro 512GB 12GB RAM - ISPK-0620",
+        "platform": "alfamall",
+        "price": 95930,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfamall.com/xiaomi-redmi-note-14-pro-512gb-12gb-ram-ispk-0620"
+      }
+    },
+    {
+      "id": "r126",
+      "category": "tv",
+      "stratum": "apart_low",
+      "similarity": 0.5,
+      "a": {
+        "title": "Samsung 55 Inch 4K UHD Smart Crystal UHD TV (TU8500)",
+        "platform": "priceoye",
+        "price": 136999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/samsung/samsung-55-inch-4k-uhd-smart-crystal-uhd-tv-tu8500"
+      },
+      "b": {
+        "title": "Samsung - LED TV - 55 Inch 4K UHD - 55DU7000 - Smart TV, HDR10, Tizen - Samsung - Official Warranty - (TechElite)",
+        "platform": "alfamall",
+        "price": 157999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfamall.com/samsung-led-tv-55-inch-4k-uhd-55du7000-smart-tv-hdr10-tizen-samsung-official-warranty-techelite"
+      }
+    },
+    {
+      "id": "r127",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.6,
+      "a": {
+        "title": "Redmi Watch 5 Lite Light Gold",
+        "platform": "techroid",
+        "price": 14499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Gold",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://techroid.com/product/redmi-watch-5-lite/?attribute_color=Light+Gold"
+      },
+      "b": {
+        "title": "Redmi Watch 5",
+        "platform": "mymart",
+        "price": 22499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mymart.pk/products/redmi-watch-5"
+      }
+    },
+    {
+      "id": "r128",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Apple iPhone 16 Pro Max PTA Approved",
+        "platform": "xcessorieshub",
+        "price": 438999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/apple-iphone-16-pro-max-pta-approved/"
+      },
+      "b": {
+        "title": "iPhone 16 Pro Max 512GB",
+        "platform": "techroid",
+        "price": 548000,
+        "storageGb": 512,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://techroid.com/product/iphone-16-pro-max/?attribute_storage=512GB"
+      }
+    },
+    {
+      "id": "r129",
+      "category": "smartphone",
+      "stratum": "together",
+      "similarity": 0.43,
+      "a": {
+        "title": "Samsung Galaxy A17 8GB – 256GB",
+        "platform": "eezepc",
+        "price": 76990,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/samsung-galaxy-a17-price-in-pakistan/?attribute_capacity=8GB%20%E2%80%93%20256GB"
+      },
+      "b": {
+        "title": "Samsung Galaxy A17 | 8GB RAM - 256GB Storage | PTA Approved | 1 Year Brand Warranty",
+        "platform": "digimall",
+        "price": 82999,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-galaxy-a17-%7C-8gb-ram-256gb-storage-%7C-pta-approved-%7C-1-year-brand-warranty"
+      }
+    },
+    {
+      "id": "r130",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "iPhone 16 Plus 128GB",
+        "platform": "techroid",
+        "price": 354000,
+        "storageGb": 128,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://techroid.com/product/iphone-16-plus/?attribute_storage=128GB"
+      },
+      "b": {
+        "title": "Apple iPhone 16 128GB Dual Sim NON PTA",
+        "platform": "mega",
+        "price": 231999,
+        "storageGb": 128,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "non_pta",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/25365/Apple-iPhone-16-128GB-Dual-Sim-NON-PTA.html"
+      }
+    },
+    {
+      "id": "r131",
+      "category": "smartphone",
+      "stratum": "together",
+      "similarity": 0.71,
+      "a": {
+        "title": "Xiaomi Soundbar Pro 2.1 ch",
+        "platform": "xcessorieshub",
+        "price": 51999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/xiaomi-soundbar-pro-2-1-ch/"
+      },
+      "b": {
+        "title": "Xiaomi Soundbar Pro 2.1 ch 150W Black",
+        "platform": "eezepc",
+        "price": 52990,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/xiaomi-soundbar-pro-2-1-price-in-pakistan/?attribute_pa_colour=black-2"
+      }
+    },
+    {
+      "id": "r132",
+      "category": "tv",
+      "stratum": "together",
+      "similarity": 0.8,
+      "a": {
+        "title": "Samsung 50\" Crystal UHD 4K Smart LED TV (U8000F)",
+        "platform": "ishopping",
+        "price": 135140,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/samsung-50-crystal-uhd-4k-smart-led-tv-u8000f-price-in-pakistan"
+      },
+      "b": {
+        "title": "Samsung 50 Inch 4K UHD Smart Crystal UHD TV (U8000F)",
+        "platform": "priceoye",
+        "price": 169999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/samsung/samsung-50-inch-4k-uhd-smart-crystal-uhd-tv-u8000f"
+      }
+    },
+    {
+      "id": "r133",
+      "category": "tv",
+      "stratum": "apart_mid",
+      "similarity": 0.67,
+      "a": {
+        "title": "Samsung Crystal UHD 4K Smart TV U8000F 2025-2026 Series",
+        "platform": "ledshop",
+        "price": 139999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://ledshop.pk/product/samsung-crystal-uhd-4k-smart-tv-u8000f-2025-2026-series/"
+      },
+      "b": {
+        "title": "Samsung 85\" Crystal UHD U8000F 4K Smart TV 2025 (UA85U8000FUSMM)",
+        "platform": "shophive",
+        "price": 697999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/samsung-85-crystal-uhd-u8000f-4k-smart-tv-2025-ua85u8000fusmm/"
+      }
+    },
+    {
+      "id": "r134",
+      "category": "tv",
+      "stratum": "apart_high",
+      "similarity": 0.8,
+      "a": {
+        "title": "Samsung 65DU7000 65 Inch Smart & 4k Crystal UHD TV",
+        "platform": "mega",
+        "price": 219999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/ledtv_products/26495/Samsung-65DU7000-65-Inch-Smart---4k-Crystal-UHD-TV.html"
+      },
+      "b": {
+        "title": "Samsung 65 Inch Crystal UHD 4K Smart TV (AU9000)",
+        "platform": "priceoye",
+        "price": 309000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/samsung/samsung-65-inch-crystal-uhd-4k-smart-tv-au9000"
+      }
+    },
+    {
+      "id": "r135",
+      "category": "tv",
+      "stratum": "apart_low",
+      "similarity": 0.4,
+      "a": {
+        "title": "Samsung 75 Inch Crystal UHD 4K Smart LED TV (U8000F)",
+        "platform": "digimall",
+        "price": 347749,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-75-inch-crystal-uhd-4k-smart-led-tv-u8000f-2"
+      },
+      "b": {
+        "title": "Samsung | 75 Inch | UA75DU7000 | Crystal UHD | 4K | Gaming Motion Xcelerator | Smart TV - On Installment Upto 36 Months - ElectroEase",
+        "platform": "alfamall",
+        "price": 400549,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfamall.com/samsung-%7C-75-inch-%7C-ua75du7000-%7C-crystal-uhd-%7C-4k-%7C-gaming-motion-xcelerator-%7C-smart-tv-on-installment-upto-36-months-electroease-4"
+      }
+    },
+    {
+      "id": "r136",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 0.8,
+      "a": {
+        "title": "Samsung Galaxy A17 128GB 6GB RAM Black",
+        "platform": "ishopping",
+        "price": 67830,
+        "storageGb": 128,
+        "ramGb": 6,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/mobiles/samsung-phones/samsung-galaxy-a17-128gb-6gb-ram-black-price-in-pakistan-eaw"
+      },
+      "b": {
+        "title": "Samsung Galaxy A17 8GB RAM",
+        "platform": "digimall",
+        "price": 82099,
+        "storageGb": 8,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-galaxy-a17-8gb-ram-18"
+      }
+    },
+    {
+      "id": "r137",
+      "category": "smartphone",
+      "stratum": "together",
+      "similarity": 0.67,
+      "a": {
+        "title": "Xiaomi Redmi Note 15 256GB 8GB RAM Black",
+        "platform": "ishopping",
+        "price": 74970,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/xiaomi-redmi-note-15-256gb-8gb-ram-black-price-in-pakistan-eaw"
+      },
+      "b": {
+        "title": "Xiaomi Redmi Note 15",
+        "platform": "digimall",
+        "price": 76800,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/xiaomi-redmi-note-15-2"
+      }
+    },
+    {
+      "id": "r138",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.6,
+      "a": {
+        "title": "Xiaomi Redmi A7 Pro 128GB 4GB RAM Black",
+        "platform": "ishopping",
+        "price": 43350,
+        "storageGb": 128,
+        "ramGb": 4,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/mobiles/xiaomi-phones/xiaomi-redmi-a7-pro-128gb-4gb-ram-black-price-in-pakistan-eaw"
+      },
+      "b": {
+        "title": "Redmi A7 Pro 4GB RAM",
+        "platform": "digimall",
+        "price": 37299,
+        "storageGb": 4,
+        "ramGb": 4,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/redmi-a7-pro-4gb-ram-1"
+      }
+    },
+    {
+      "id": "r139",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.6,
+      "a": {
+        "title": "Samsung Galaxy S26 12GB RAM 256GB Storage PTA Approved",
+        "platform": "mega",
+        "price": 284999,
+        "storageGb": 256,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26974/Samsung-Galaxy-S26-12GB-RAM-256GB-Storage-PTA-Approved.html"
+      },
+      "b": {
+        "title": "Samsung Galaxy A57 5G 8GB RAM",
+        "platform": "digimall",
+        "price": 168999,
+        "storageGb": 8,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-galaxy-a57-5g-8gb-ram-7"
+      }
+    },
+    {
+      "id": "r140",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Apple iPhone 17 Pro Max 1TB Storage PTA Approved",
+        "platform": "mega",
+        "price": 679999,
+        "storageGb": 1024,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26829/Apple-iPhone-17-Pro-Max-1TB-Storage-PTA--Approved.html"
+      },
+      "b": {
+        "title": "Apple iPhone 17 Pro Max 2TB",
+        "platform": "eezepc",
+        "price": 904990,
+        "storageGb": 2048,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/apple-iphone-17-pro-max-price-in-pakistan/?attribute_storage=2TB&attribute_colour=Silver"
+      }
+    },
+    {
+      "id": "r141",
+      "category": "smartphone",
+      "stratum": "apart_low",
+      "similarity": 0.4,
+      "a": {
+        "title": "Samsung Galaxy S26 Ultra PTA Approved 256GB – 12GB RAM",
+        "platform": "xcessorieshub",
+        "price": 389999,
+        "storageGb": 256,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/samsung-galaxy-s26-ultra/?attribute_storage=256GB%20%E2%80%93%2012GB%20RAM"
+      },
+      "b": {
+        "title": "Samsung Galaxy S3",
+        "platform": "priceoye",
+        "price": 34990,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/samsung/samsung-galaxy-s3"
+      }
+    },
+    {
+      "id": "r142",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "iPhone 17 Pro 512GB",
+        "platform": "techroid",
+        "price": 529000,
+        "storageGb": 512,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://techroid.com/product/iphone-17-pro/?attribute_storage=512GB"
+      },
+      "b": {
+        "title": "Apple iPhone 17 Pro Max 1TB Storage PTA Approved",
+        "platform": "mega",
+        "price": 679999,
+        "storageGb": 1024,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26829/Apple-iPhone-17-Pro-Max-1TB-Storage-PTA--Approved.html"
+      }
+    },
+    {
+      "id": "r143",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Apple iPhone 17 Pro Max 512GB Storage PTA Approved",
+        "platform": "mega",
+        "price": 574999,
+        "storageGb": 512,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26961/Apple-iPhone-17-Pro-Max-512GB-Storage-PTA-Approved.html"
+      },
+      "b": {
+        "title": "Apple iPhone 17 Pro Max 2TB",
+        "platform": "eezepc",
+        "price": 904990,
+        "storageGb": 2048,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/apple-iphone-17-pro-max-price-in-pakistan/?attribute_storage=2TB&attribute_colour=Silver"
+      }
+    },
+    {
+      "id": "r144",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Apple iPhone 16 Pro Max (Non PTA)",
+        "platform": "ishopping",
+        "price": 389999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "non_pta",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/electronics/mobile-phones-tablet-pc/apple-iphone-16-pro-max-non-pta"
+      },
+      "b": {
+        "title": "Apple iPhone 16 Pro 256GB Single Sim NON PTA",
+        "platform": "mega",
+        "price": 304999,
+        "storageGb": 256,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "non_pta",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/25344/Apple-iPhone-16-Pro-256GB-Single-Sim-NON-PTA.html"
+      }
+    },
+    {
+      "id": "r145",
+      "category": "headphones",
+      "stratum": "together",
+      "similarity": 0.63,
+      "a": {
+        "title": "A4tech Bloody G575 Pro Gaming Headset",
+        "platform": "digimall",
+        "price": 7899,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/a4tech-bloody-g575-pro-gaming-headset"
+      },
+      "b": {
+        "title": "A4tech Bloody G575 Pro Gaming Headset Grey - ISPK-0545",
+        "platform": "alfamall",
+        "price": 7949,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Grey",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfamall.com/a4tech-bloody-g575-pro-gaming-headset-grey-ispk-0545"
+      }
+    },
+    {
+      "id": "r146",
+      "category": "smartphone",
+      "stratum": "apart_low",
+      "similarity": 0.5,
+      "a": {
+        "title": "Apple iPhone Air 256GB",
+        "platform": "eezepc",
+        "price": 411990,
+        "storageGb": 256,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://eezepc.com/product/apple-iphone-air-price-in-pakistan/?attribute_storage=256GB"
+      },
+      "b": {
+        "title": "Apple iPhone 14",
+        "platform": "priceoye",
+        "price": 183999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/apple/apple-iphone-14"
+      }
+    },
+    {
+      "id": "r147",
+      "category": "smartwatch",
+      "stratum": "apart_mid",
+      "similarity": 0.67,
+      "a": {
+        "title": "Samsung Galaxy Watch 8 46MM Classic",
+        "platform": "shophive",
+        "price": 81499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/samsung-galaxy-watch-8-46mm-classic/"
+      },
+      "b": {
+        "title": "Samsung Galaxy 8 L500 46mm Classic Smart Watch (White, NEW)",
+        "platform": "paklap",
+        "price": 77500,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "White",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.paklap.pk/samsung-galaxy-8-l500-watch-pakistan.html"
+      }
+    },
+    {
+      "id": "r148",
+      "category": "smartphone",
+      "stratum": "apart_low",
+      "similarity": 0.5,
+      "a": {
+        "title": "Samsung Galaxy A17",
+        "platform": "ishopping",
+        "price": 64299,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/mobiles/samsung-phones/samsung-galaxy-a17-price-in-pakistan"
+      },
+      "b": {
+        "title": "Samsung Galaxy A04e",
+        "platform": "priceoye",
+        "price": 20499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/samsung/samsung-galaxy-a04e"
+      }
+    },
+    {
+      "id": "r149",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Redmi Note 14 Pro (12GB- 512GB)",
+        "platform": "mistore",
+        "price": 97999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mistore.pk/products/redmi-note-14-pro"
+      },
+      "b": {
+        "title": "Redmi Note 14 8GB – 256GB",
+        "platform": "xcessorieshub",
+        "price": 59999,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/redmi-note-14/?attribute_storage=8GB%20%E2%80%93%20256GB"
+      }
+    },
+    {
+      "id": "r150",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.6,
+      "a": {
+        "title": "Redmi Note 15 8GB 256GB Dual - PTA Approved - Official Warranty",
+        "platform": "alfamall",
+        "price": 77150,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://alfamall.com/redmi-note-15-8gb-256gb-dual-pta-approved-official-warranty"
+      },
+      "b": {
+        "title": "Xiaomi Redmi Note 15 Pro 12GB 512GB",
+        "platform": "shophive",
+        "price": 117999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/xiaomi-redmi-note-15-pro-12gb-512gb/"
+      }
+    },
+    {
+      "id": "r151",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.71,
+      "a": {
+        "title": "Xiaomi Redmi Note 15 256GB 8GB RAM Forest Green",
+        "platform": "ishopping",
+        "price": 74970,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": "Green",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/mobiles/xiaomi-phones/xiaomi-redmi-note-15-256gb-8gb-ram-forest-green-price-in-pakistan-eaw"
+      },
+      "b": {
+        "title": "Xiaomi Redmi Note 15 8GB RAM",
+        "platform": "digimall",
+        "price": 78849,
+        "storageGb": 8,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/xiaomi-redmi-note-15-8gb-ram-5"
+      }
+    },
+    {
+      "id": "r152",
+      "category": "tv",
+      "stratum": "apart_mid",
+      "similarity": 0.73,
+      "a": {
+        "title": "Samsung 65 Inch 4K UHD Smart Crystal UHD TV (U8000F)",
+        "platform": "priceoye",
+        "price": 295000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/samsung/samsung-65-inch-4k-uhd-smart-crystal-uhd-tv-u8000f"
+      },
+      "b": {
+        "title": "Samsung - Crystal 4k UHD Smart TV 43 inch - U8000F - 43U8000F",
+        "platform": "digimall",
+        "price": 109999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-crystal-4k-uhd-smart-tv-43-inch-u8000f-43u8000f"
+      }
+    },
+    {
+      "id": "r153",
+      "category": "tv",
+      "stratum": "apart_low",
+      "similarity": 0.4,
+      "a": {
+        "title": "TCL 55P6L 55\" 4K SMART TV",
+        "platform": "shophive",
+        "price": 122499,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/tcl-55p6l-55-4k-smart-tv/"
+      },
+      "b": {
+        "title": "EcoStar 55 Inch 4K Smart LED TV (CX55UD921P)",
+        "platform": "priceoye",
+        "price": 76900,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/ecostar/ecostar-55-inch-4k-smart-led-tv-cx55ud921p"
+      }
+    },
+    {
+      "id": "r154",
+      "category": "smartwatch",
+      "stratum": "together",
+      "similarity": 0.83,
+      "a": {
+        "title": "Samsung Galaxy Watch Ultra 47mm L705",
+        "platform": "mega",
+        "price": 109999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/watches_products/25328/Samsung-Galaxy-Watch-Ultra-47mm-L705.html"
+      },
+      "b": {
+        "title": "Samsung Galaxy Watch Ultra 47mm 2025 L705",
+        "platform": "digimall",
+        "price": 121999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-galaxy-watch-ultra-47mm-2025-l705-1"
+      }
+    },
+    {
+      "id": "r155",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "iPhone 16 Pro Max non PTA",
+        "platform": "alfatah",
+        "price": 380000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "non_pta",
+        "condition": "new",
+        "url": "https://alfatah.pk/products/iphone-16-pro-max-non-pta"
+      },
+      "b": {
+        "title": "Apple iPhone 16 Pro PTA Approved 128GB",
+        "platform": "xcessorieshub",
+        "price": 374999,
+        "storageGb": 128,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/apple-iphone-16-pro-pta-approved/?attribute_storage=128GB"
+      }
+    },
+    {
+      "id": "r156",
+      "category": "smartphone",
+      "stratum": "apart_low",
+      "similarity": 0.43,
+      "a": {
+        "title": "Samsung Galaxy A37 8GB RAM",
+        "platform": "digimall",
+        "price": 145899,
+        "storageGb": 8,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-galaxy-a37-8gb-ram-6"
+      },
+      "b": {
+        "title": "Samsung Galaxy Z Fold 8 Ultra 12GB RAM 256GB Storage Non PTA",
+        "platform": "mega",
+        "price": 459999,
+        "storageGb": 256,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "non_pta",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/27077/Samsung-Galaxy-Z-Fold-8-Ultra-12GB-RAM-256GB-Storage-Non-PTA.html"
+      }
+    },
+    {
+      "id": "r157",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.6,
+      "a": {
+        "title": "Samsung Galaxy A17 8GB RAM",
+        "platform": "digimall",
+        "price": 82200,
+        "storageGb": 8,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-galaxy-a17-8gb-ram"
+      },
+      "b": {
+        "title": "Samsung Galaxy A36 5G 256GB – 8GB RAM",
+        "platform": "xcessorieshub",
+        "price": 100499,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/samsung-galaxy-a36-5g/?attribute_storage=256GB%20%E2%80%93%208GB%20RAM"
+      }
+    },
+    {
+      "id": "r158",
+      "category": "smartphone",
+      "stratum": "together",
+      "similarity": 0.83,
+      "a": {
+        "title": "Xiaomi Soundbar Pro 2.0 ch Black",
+        "platform": "techroid",
+        "price": 29999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://techroid.com/product/xiaomi-soundbar-pro-2-0-ch/?attribute_pa_color=black"
+      },
+      "b": {
+        "title": "Xiaomi Soundbar Pro 2.0 ch",
+        "platform": "mistore",
+        "price": 31999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mistore.pk/products/xiaomi-soundbar-pro-2-0-ch"
+      }
+    },
+    {
+      "id": "r159",
+      "category": "smartphone",
+      "stratum": "apart_low",
+      "similarity": 0.4,
+      "a": {
+        "title": "Samsung Galaxy A57 5G 12GB 512GB",
+        "platform": "shophive",
+        "price": 207999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/samsung-galaxy-a57-5g-12gb-512gb/"
+      },
+      "b": {
+        "title": "Samsung Galaxy A9 Pro (2019)",
+        "platform": "priceoye",
+        "price": 61000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/samsung/samsung-galaxy-a9-pro-2019"
+      }
+    },
+    {
+      "id": "r160",
+      "category": "tv",
+      "stratum": "together",
+      "similarity": 0.44,
+      "a": {
+        "title": "TCL 43S51K 43″ FHD QLED TV",
+        "platform": "shophive",
+        "price": 78999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/tcl-43s51k-43-fhd-qled-tv/"
+      },
+      "b": {
+        "title": "TCL 43S51K 43 Inch Google TV | Smart TV",
+        "platform": "digimall",
+        "price": 83299,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/tcl-43s51k-43-inch-google-tv-%7C-smart-tv"
+      }
+    },
+    {
+      "id": "r161",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Apple iPhone 17 Pro Max 512GB PTA Approved",
+        "platform": "shophive",
+        "price": 579999,
+        "storageGb": 512,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.shophive.com/apple-iphone-17-pro-max-512gb-pta-approved/"
+      },
+      "b": {
+        "title": "iPhone 17 Pro 1TB",
+        "platform": "techroid",
+        "price": 595000,
+        "storageGb": 1024,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://techroid.com/product/iphone-17-pro/?attribute_storage=1TB"
+      }
+    },
+    {
+      "id": "r162",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 0.8,
+      "a": {
+        "title": "Samsung Galaxy A07 128GB 4GB RAM Black",
+        "platform": "ishopping",
+        "price": 44880,
+        "storageGb": 128,
+        "ramGb": 4,
+        "colour": "Black",
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.ishopping.pk/mobiles/samsung-phones/samsung-galaxy-a07-128gb-4gb-ram-black-price-in-pakistan-eaw"
+      },
+      "b": {
+        "title": "Samsung Galaxy A07 6GB RAM",
+        "platform": "digimall",
+        "price": 55649,
+        "storageGb": 6,
+        "ramGb": 6,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-galaxy-a07-6gb-ram-18"
+      }
+    },
+    {
+      "id": "r163",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.6,
+      "a": {
+        "title": "Samsung Galaxy S26 Ultra 12GB RAM 256GB Storage PTA Approved",
+        "platform": "mega",
+        "price": 407999,
+        "storageGb": 256,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26972/Samsung-Galaxy-S26-Ultra-12GB-RAM-256GB-Storage-PTA-Approved.html"
+      },
+      "b": {
+        "title": "Samsung Galaxy A57 5G 12GB RAM",
+        "platform": "digimall",
+        "price": 182919,
+        "storageGb": 12,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/samsung-galaxy-a57-5g-12gb-ram-5"
+      }
+    },
+    {
+      "id": "r164",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.6,
+      "a": {
+        "title": "Redmi Note 15 (8GB + 256GB)",
+        "platform": "mymart",
+        "price": 72999,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mymart.pk/products/redmi-note-15-8gb-256gb"
+      },
+      "b": {
+        "title": "Xiaomi Redmi Note 15 Pro Plus 12GB RAM",
+        "platform": "digimall",
+        "price": 178299,
+        "storageGb": 12,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://digimall.faysalbank.com/product/xiaomi-redmi-note-15-pro-plus-12gb-ram-10"
+      }
+    },
+    {
+      "id": "r165",
+      "category": "tv",
+      "stratum": "apart_mid",
+      "similarity": 0.64,
+      "a": {
+        "title": "TCL LED 75 INCH 75P8L 4K QD-MINI DIMMING TV",
+        "platform": "jalalelectronics",
+        "price": 355000,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://jalalelectronics.com/products/tcl-led-75-inch-75p8l-4k-qd-mini-dimming-tv"
+      },
+      "b": {
+        "title": "TCL 75C6K 75 INCH Smart & 4K QD MINI LED TV",
+        "platform": "mega",
+        "price": 414999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.mega.pk/ledtv_products/27079/TCL-75C6K-75-INCH-Smart---4K-QD-MINI-LED-TV.html"
+      }
+    },
+    {
+      "id": "r166",
+      "category": "smartphone",
+      "stratum": "apart_mid",
+      "similarity": 0.6,
+      "a": {
+        "title": "Xiaomi Redmi Note 14 Pro 12GB 512GB",
+        "platform": "shophive",
+        "price": 91999,
+        "storageGb": 512,
+        "ramGb": 12,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/xiaomi-redmi-note-14-pro-12gb-512gb/"
+      },
+      "b": {
+        "title": "Xiaomi Redmi Note 15",
+        "platform": "priceoye",
+        "price": 68999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "pta_approved",
+        "condition": "new",
+        "url": "https://priceoye.pk/mobiles/xiaomi/xiaomi-redmi-note-15"
+      }
+    },
+    {
+      "id": "r167",
+      "category": "tv",
+      "stratum": "apart_low",
+      "similarity": 0.45,
+      "a": {
+        "title": "TCL 50P7L 50\" QLED 4K Smart TV",
+        "platform": "shophive",
+        "price": 133999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/tcl-50p7l-50-qled-4k-smart-tv/"
+      },
+      "b": {
+        "title": "TCL 50 Inch 4K UHD Smart LED TV (L50P65US)",
+        "platform": "priceoye",
+        "price": 298999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://priceoye.pk/led-tv/tcl/tcl-50-inch-uhd-4k-50p65"
+      }
+    },
+    {
+      "id": "r168",
+      "category": "headphones",
+      "stratum": "together",
+      "similarity": 0.77,
+      "a": {
+        "title": "A4Tech Bloody Virtual 7.1 Surround Sound Gaming Headset (G230) - ISPK-0545",
+        "platform": "alfamall",
+        "price": 4513,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://alfamall.com/a4tech-bloody-virtual-71-surround-sound-gaming-headset-g230-ispk-0545"
+      },
+      "b": {
+        "title": "A4tech Bloody G230 Virtual 7.1 Surround Sound USB Gaming Headset",
+        "platform": "shophive",
+        "price": 4899,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://www.shophive.com/a4tech-bloody-g230-virtual-7-1-surround-sound-usb-gaming-headset/"
+      }
+    },
+    {
+      "id": "r169",
+      "category": "tablet",
+      "stratum": "together",
+      "similarity": 0.75,
+      "a": {
+        "title": "Xiaomi Pad 7 256GB – 8GB RAM",
+        "platform": "xcessorieshub",
+        "price": 104999,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://xcessorieshub.com/product/xiaomi-pad-7/?attribute_storage=256GB%20%E2%80%93%208GB%20RAM"
+      },
+      "b": {
+        "title": "Xiaomi Pad 7 (8GB-256GB)",
+        "platform": "mistore",
+        "price": 124999,
+        "storageGb": 256,
+        "ramGb": 8,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://mistore.pk/products/xiaomi-pad-7-8gb-256gb"
+      }
+    },
+    {
+      "id": "r170",
+      "category": "smartphone",
+      "stratum": "apart_high",
+      "similarity": 1,
+      "a": {
+        "title": "Apple iPhone 17 Pro 512GB",
+        "platform": "eezepc",
+        "price": 612990,
+        "storageGb": 512,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "unknown",
+        "condition": "new",
+        "url": "https://eezepc.com/product/iphone-17-pro-price-in-pakistan/?attribute_storage=512GB&attribute_colour=Cosmic%20Orange,Deep%20Blue"
+      },
+      "b": {
+        "title": "Apple iPhone 17 Pro Max",
+        "platform": "mega",
+        "price": 399999,
+        "storageGb": null,
+        "ramGb": null,
+        "colour": null,
+        "ptaStatus": "non_pta",
+        "condition": "new",
+        "url": "https://www.mega.pk/mobiles_products/26774/Apple-iPhone-17-Pro-Max.html"
+      }
+    }
+  ]
+}
