@@ -121,7 +121,9 @@ try {
       requests: records.length,
       ok: ok.length,
       limited: records.filter((r) => r.status === 429).length,
-      failed: records.filter((r) => r.status === 0 || r.status >= 500).length,
+      // 503 is the API turning a request away on purpose when its grouping queue is full (workerPool.js), not a fault
+      busy: records.filter((r) => r.status === 503).length,
+      failed: records.filter((r) => r.status === 0 || (r.status >= 500 && r.status !== 503)).length,
       p50: percentile(ms, 50), p95: percentile(ms, 95), p99: percentile(ms, 99),
     };
   };
@@ -142,7 +144,7 @@ try {
     const overall = summarise(records);
     const byKind = Object.fromEntries(MIX.map(([name]) => [name, summarise(records.filter((r) => r.name === name))]));
     results.push({ shoppers, overall: { ...overall, perSecond: overall.ok / PHASE_SECONDS }, byKind });
-    console.log(`  ${overall.ok} answered (${(overall.ok / PHASE_SECONDS).toFixed(1)}/s), median ${overall.p50?.toFixed(0)} ms, 95% ${overall.p95?.toFixed(0)} ms, failed ${overall.failed}, limited ${overall.limited}`);
+    console.log(`  ${overall.ok} answered (${(overall.ok / PHASE_SECONDS).toFixed(1)}/s), median ${overall.p50?.toFixed(0)} ms, 95% ${overall.p95?.toFixed(0)} ms, busy ${overall.busy}, failed ${overall.failed}, limited ${overall.limited}`);
     await sleep(3000);
   }
 
@@ -158,20 +160,23 @@ try {
     `Each phase ran ${PHASE_SECONDS} s; each shopper sends a request, waits for the answer and sends the next (no pause between them, so this is`,
     "far busier than real shoppers, who read a page before the next click). Requests come from 200 visitor addresses through X-Forwarded-For.",
     "",
-    "| Shoppers at once | Answered per second | Median | 95th percentile | 99th percentile | Failed | Rate-limited |",
-    "|---|---|---|---|---|---|---|",
-    ...results.map((r) => `| ${r.shoppers} | ${r.overall.perSecond.toFixed(1)} | ${ms(r.overall.p50)} | ${ms(r.overall.p95)} | ${ms(r.overall.p99)} | ${r.overall.failed} | ${r.overall.limited} |`),
+    "\"Turned away\" is the API answering 503 \"busy, try again in a moment\" on purpose when its grouping queue is full, so a flood",
+    "cannot pile up; \"failed\" is anything else that went wrong (an error or no answer).",
+    "",
+    "| Shoppers at once | Answered per second | Median | 95th percentile | 99th percentile | Turned away (busy) | Failed | Rate-limited |",
+    "|---|---|---|---|---|---|---|---|",
+    ...results.map((r) => `| ${r.shoppers} | ${r.overall.perSecond.toFixed(1)} | ${ms(r.overall.p50)} | ${ms(r.overall.p95)} | ${ms(r.overall.p99)} | ${r.overall.busy} | ${r.overall.failed} | ${r.overall.limited} |`),
     "",
     "## By kind of request",
     "",
     ...results.flatMap((r) => [
       `### ${r.shoppers} shoppers at once`,
       "",
-      "| Request | Share of the mix | Answered | Median | 95th percentile | Failed | Rate-limited |",
-      "|---|---|---|---|---|---|---|",
+      "| Request | Share of the mix | Answered | Median | 95th percentile | Turned away (busy) | Failed | Rate-limited |",
+      "|---|---|---|---|---|---|---|---|",
       ...MIX.map(([name, weight]) => {
         const s = r.byKind[name];
-        return `| ${name} | ${Math.round((weight / totalWeight) * 100)}% | ${s.ok} | ${ms(s.p50)} | ${ms(s.p95)} | ${s.failed} | ${s.limited} |`;
+        return `| ${name} | ${Math.round((weight / totalWeight) * 100)}% | ${s.ok} | ${ms(s.p50)} | ${ms(s.p95)} | ${s.busy} | ${s.failed} | ${s.limited} |`;
       }),
       "",
     ]),
