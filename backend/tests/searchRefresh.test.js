@@ -9,6 +9,7 @@ import { scrapeAllPlatforms } from "../src/scrapers/index.js";
 import Listing from "../src/models/listing.model.js";
 import PriceHistory from "../src/models/priceHistory.model.js";
 import { fetchAndRefreshListings, storedDataState } from "../src/services/scraper.service.js";
+import { resultsState } from "../src/services/searchFreshness.js";
 
 /** What the database holds for the query: "fresh", "stale" or "missing". */
 function holding(state) {
@@ -47,6 +48,26 @@ describe("storedDataState", () => {
     expect(await storedDataState("galaxy a17")).toBe("stale");
     holding("missing");
     expect(await storedDataState("galaxy a17")).toBe("missing");
+  });
+});
+
+describe("resultsState", () => {
+  const NOW = Date.parse("2026-10-26T12:00:00Z");
+  const at = (minutesAgo) => ({ lastScrapedAt: new Date(NOW - minutesAgo * 60000).toISOString() });
+  it("is fresh when any result was checked within 30 minutes, stale when all are older, missing when there are none", () => {
+    expect(resultsState([at(600), at(29)], NOW)).toBe("fresh");
+    expect(resultsState([at(31), at(600)], NOW)).toBe("stale");
+    expect(resultsState([], NOW)).toBe("missing");
+    expect(resultsState(undefined, NOW)).toBe("missing");
+  });
+});
+
+describe("fetchAndRefreshListings with the state the caller found", () => {
+  it("uses it instead of looking for itself", async () => {
+    const lookups = vi.spyOn(Listing, "countDocuments");
+    expect(await fetchAndRefreshListings("samsung tv", { background: true, state: "fresh" })).toEqual({ scraped: false, reason: "fresh_data" });
+    expect(lookups).not.toHaveBeenCalled();
+    expect(scrapeAllPlatforms).not.toHaveBeenCalled();
   });
 });
 

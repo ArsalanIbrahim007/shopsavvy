@@ -215,14 +215,30 @@ describe("GET /api/listings/search", () => {
     finish(3);
   });
 
-  it("waits for the refresh after all when the stored listings leave nothing to show", async () => {
-    let refreshed = false;
-    vi.spyOn(Listing, "find").mockImplementation(() => chain(refreshed ? threeStores : []));
-    const done = new Promise((resolve) => setTimeout(() => { refreshed = true; resolve(3); }, 30));
-    vi.mocked(fetchAndRefreshListings).mockResolvedValueOnce({ scraped: false, refreshing: true, reason: "stale_refreshing", done });
+  // Freshness is judged by the search's own results (searchFreshness.js), not by whether a title contains the phrase word for
+  // word: "samsung tv" was called missing right after 176 Samsung TVs were scraped, and every such search re-scraped every store.
+  it("decides whether to ask the stores from what the search finds: fresh, stale or missing", async () => {
+    const minutesAgo = (m) => new Date(Date.now() - m * 60000).toISOString();
+    const cases = [
+      [[row(1, "priceoye", 60000, undefined, { lastScrapedAt: minutesAgo(5) }), row(2, "mega", 61000, undefined, { lastScrapedAt: minutesAgo(600) })], "fresh"],
+      [[row(1, "priceoye", 60000, undefined, { lastScrapedAt: minutesAgo(45) })], "stale"],
+      [[], "missing"],
+    ];
+    for (const [rows, state] of cases) {
+      vi.spyOn(Listing, "find").mockImplementation(() => chain(rows));
+      await json("/api/listings/search?q=samsung%20tv");
+      expect(fetchAndRefreshListings.mock.calls.at(-1)[1]).toMatchObject({ state, background: true });
+    }
+  });
+
+  it("reads the results again after waiting for the stores (nothing was stored)", async () => {
+    let scraped = false;
+    vi.spyOn(Listing, "find").mockImplementation(() => chain(scraped ? threeStores : []));
+    vi.mocked(fetchAndRefreshListings).mockImplementationOnce(async () => { scraped = true; return { scraped: true, saved: 3, reason: "stale_or_missing" }; });
 
     const { body } = await json("/api/listings/search?q=galaxy%20a17");
-    expect(body.refresh).toEqual({ scraped: true, refreshing: false, saved: 3, reason: "stale_nothing_to_show" });
+    expect(fetchAndRefreshListings.mock.calls.at(-1)[1].state).toBe("missing");
+    expect(body.refresh).toEqual({ scraped: true, saved: 3, reason: "stale_or_missing" });
     expect(body.groupCount).toBe(1);
   });
 });

@@ -21,9 +21,8 @@ import { extractExtras } from "./scrapedExtras.service.js";
 import { retryOnDuplicateKey } from "./retryOnDuplicateKey.js";
 import { sanitizePrices } from "./priceSanity.service.js";
 import { quote } from "../config/logSafe.js";
-// How old data can be before we re-scrape (in minutes)
-// Set to 30 minutes so rapid repeated searches don't hammer sites
-const STALE_THRESHOLD_MINUTES = 30;
+// How old data can be before we re-scrape: 30 minutes (searchFreshness.js, shared with the search controller).
+import { STALE_THRESHOLD_MINUTES } from "./searchFreshness.js";
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -245,12 +244,13 @@ function startOrJoinScrape(query, { dynamic }) {
  * @param {boolean} [opts.force] - force re-scrape even if data is fresh
  * @param {boolean} [opts.dynamic] - use Google discovery layer
  * @param {boolean} [opts.background] - refresh stale data without waiting
+ * @param {"fresh"|"stale"|"missing"} [opts.state] - what the caller already knows it holds (resultsState); else storedDataState
  * @returns {Promise<{scraped: boolean, refreshing?: boolean, saved?: number, reason: string, done?: Promise<number>}>}
  */
 async function fetchAndRefreshListings(query, opts = {}) {
   const { force = false, dynamic = false, background = false } = opts;
 
-  const state = await storedDataState(query);
+  const state = opts.state ?? (await storedDataState(query));
 
   if (state === "fresh" && !force) {
     console.log("[scraperService] Fresh data found for %s, skipping scrape", quote(query));

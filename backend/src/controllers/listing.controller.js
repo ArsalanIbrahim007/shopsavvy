@@ -31,6 +31,7 @@ import {
 import {
   fetchAndRefreshListings,
 } from "../services/scraper.service.js";
+import { resultsState } from "../services/searchFreshness.js";
 import {
   escapeRegex,
   buildSpaceTolerantPattern,
@@ -321,17 +322,6 @@ export async function searchListings(req, res) {
   }
   const trimmedQuery = q.trim();
 
-  const { done: refreshDone, ...refreshResult } = await fetchAndRefreshListings(trimmedQuery, {
-    // Forcing a re-scrape bypasses the freshness window and costs a full round of
-    // requests to every store, so it needs the admin key. Anyone else's
-    // ?refresh=true is ignored: they simply get the normal cached behaviour.
-    force: req.query.refresh === "true" && hasAdminKey(req),
-    dynamic: false,
-    // Stored but stale: answer from the database now and refresh in the background (see fetchAndRefreshListings).
-    background: true,
-  });
-
-  console.log("[search]", refreshResult);
   const normalizedQuery = normalizeTitle(trimmedQuery);
 
 /*
@@ -388,14 +378,24 @@ export async function searchListings(req, res) {
 
   let listings = await findSearchListings(trimmedQuery, searchFilter);
 
-  // The background refresh was started because the freshness check found stored listings, but the category and attribute filters
-  // here can leave none of them (a "laptop" search whose stored matches are all bags). With nothing to show, wait for the refresh
-  // after all, as a search for something new always has.
-  if (listings.length === 0 && refreshDone) {
-    const saved = await refreshDone;
-    Object.assign(refreshResult, { scraped: true, refreshing: false, saved, reason: "stale_nothing_to_show" });
-    listings = await findSearchListings(trimmedQuery, searchFilter);
-  }
+  // Whether to ask the stores is decided from what this search would show: fresh when one of its results was checked within the
+  // freshness window, stale when it has results but all older (answered now, refreshed in the background), missing when it has
+  // none (it waits for the stores). Judging by whether a stored title contained the phrase word for word, as before, called
+  // "samsung tv" missing even right after 176 Samsung TVs were scraped: every such search waited ~17 s and asked all 23 stores
+  // again (found by the load test, 2026-10-26).
+  const { done: _refreshDone, ...refreshResult } = await fetchAndRefreshListings(trimmedQuery, {
+    // Forcing a re-scrape bypasses the freshness window and costs a full round of
+    // requests to every store, so it needs the admin key. Anyone else's
+    // ?refresh=true is ignored: they simply get the normal cached behaviour.
+    force: req.query.refresh === "true" && hasAdminKey(req),
+    dynamic: false,
+    background: true,
+    state: resultsState(listings),
+  });
+  console.log("[search]", refreshResult);
+
+  // The stores were asked and waited for (nothing was stored, or a forced refresh): read the results again.
+  if (refreshResult.scraped) listings = await findSearchListings(trimmedQuery, searchFilter);
 
   /*
    * Correct processing order:
