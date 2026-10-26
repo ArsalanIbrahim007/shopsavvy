@@ -1,5 +1,6 @@
 # CI: every push to main or arsalan-next, and every pull request, installs exactly what the lock files say and runs the
-# backend lint and tests, and the frontend lint, tests and build. A pull request whose checks fail should not be merged.
+# backend lint and tests, the frontend lint, tests and build, and the end-to-end tests (a real browser on the built site, the
+# API and a MongoDB of their own). A pull request whose checks fail should not be merged.
 #
 # The backend tests need no database, no browser and no network (stores and MongoDB are mocked), so the install skips
 # Playwright's Chromium download (the postinstall script); the scrapers' real browser is only needed by the nightly scrape.
@@ -36,6 +37,40 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run lint
       - run: npm test
+
+  e2e:
+    name: End-to-end (browser, site, API, database)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # A throwaway MongoDB for the run; the tests seed their own database in it (backend/e2e/seed.js).
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+      - run: npm ci --ignore-scripts
+        working-directory: backend
+      - run: npm ci
+        working-directory: frontend
+      - run: npx playwright install --with-deps chromium
+        working-directory: backend
+      - run: npm run e2e
+        working-directory: backend
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-traces
+          path: backend/e2e-results/
+          retention-days: 7
 
   frontend:
     name: Frontend lint, tests and build

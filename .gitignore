@@ -48,3 +48,8 @@ context-*.md
 
 # Test coverage reports (npm run coverage)
 coverage/
+
+# End-to-end test output (backend: npm run e2e)
+backend/e2e-report/
+backend/e2e-results/
+frontend/dist-e2e/

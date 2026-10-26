@@ -131,13 +131,20 @@ cd backend && npm test            # over 1,000 unit and API tests (Vitest); no d
 cd frontend && npm test           # over 570 unit, component and accessibility tests
 npm run lint                      # in backend/ or frontend/ (ESLint)
 npm run coverage                  # in backend/ or frontend/: how much of the code the tests run (report in coverage/)
+cd backend && npm run e2e         # end-to-end: a real browser on the built site, the API and MongoDB (see below)
 ```
+
+The end-to-end tests (`backend/e2e/`, Playwright) start the API on a database of their own (`shopsavvy_e2e` on the local
+MongoDB, or `E2E_MONGO_URI`; it is emptied and seeded with a few stores' offers first, and nothing else is touched), build and
+serve the site against it, and drive Chromium through what a shopper does: search from the home page and open a product
+(every store's price, cheapest first), browse a category, open an old product link, and follow a shared link. No store
+is contacted: the seeded prices are fresh, so no search scrapes.
 
 Test coverage (statements, 26 Oct 2026): backend 82% (services 91%, middleware 97%, controllers 86%; the scrapers 52%,
 as live store pages are only partly reproducible in tests; the one-off scripts in `src/scripts/` are not counted),
 frontend 96%.
 
-GitHub runs the backend lint and tests and the frontend lint, tests and build on every push to `main` and every pull request
+GitHub runs the backend lint and tests, the frontend lint, tests and build, and the end-to-end tests on every push to `main` and every pull request
 (`.github/workflows/ci.yml`). Changes to the matching rules are also checked against the live catalogue with the scripts
 in `backend/src/scripts/ml/` before they are kept.
 
