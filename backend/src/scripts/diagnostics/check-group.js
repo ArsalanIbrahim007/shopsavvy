@@ -6,7 +6,7 @@ config({ quiet: true });
 import mongoose from "mongoose";
 import Listing from "../../models/listing.model.js";
 import {
-  normalizeTitle, extractStorage, extractScreenInches,
+  extractStorage, extractScreenInches,
   extractPtaStatus, extractModelCodes, modelTokens,
 } from "../../services/normalizeTitle.service.js";
 import { isSimilarProduct, calculateJaccardSimilarity } from "../../services/similarity.service.js";

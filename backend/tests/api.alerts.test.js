@@ -194,7 +194,7 @@ describe("confirming an alert", () => {
   });
 
   it("rejects a missing or malformed token with a 400 before looking anything up", async () => {
-    for (const body of [{}, { token: "" }, { token: "short" }, { token: 12345678901234567890 }, { token: { $ne: "x" } }, { token: "x".repeat(300) }]) {
+    for (const body of [{}, { token: "" }, { token: "short" }, { token: 1234567890123456 }, { token: { $ne: "x" } }, { token: "x".repeat(300) }]) {
       const { res, body: answer } = await send("POST", "/api/alerts/confirm", body);
       expect(res.status, JSON.stringify(body)).toBe(400);
       expect(answer.code).toBe("VALIDATION_ERROR");

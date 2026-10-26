@@ -107,7 +107,7 @@ export async function enrichFromPages({
 
     let pta;
     let colours;
-    let rated = null;
+    let rated; // set below, or the listing is skipped by the catch
     let sheet = null;
     try {
       const html = await fetchPage(listing);

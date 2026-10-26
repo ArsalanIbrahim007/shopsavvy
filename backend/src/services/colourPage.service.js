@@ -73,7 +73,7 @@ function magentoChoices(html) {
   }
 
   const found = [];
-  const re = /"id"\s*:\s*"(\d+)"\s*,\s*"code"\s*:\s*"[^"]*"\s*,\s*"label"\s*:\s*"([^"]*)"\s*,\s*"options"\s*:\s*\[((?:[^\]\[]|\[[^\]]*\])*)\]/gi;
+  const re = /"id"\s*:\s*"(\d+)"\s*,\s*"code"\s*:\s*"[^"]*"\s*,\s*"label"\s*:\s*"([^"]*)"\s*,\s*"options"\s*:\s*\[((?:[^\][]|\[[^\]]*\])*)\]/gi;
   let m;
   while ((m = re.exec(html))) {
     if (!/^colou?rs?$/i.test(m[2].trim())) continue;

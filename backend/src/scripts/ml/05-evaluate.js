@@ -31,7 +31,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATASET_DIR = join(__dirname, "..", "..", "ml", "dataset");
 const ML_DIR = join(__dirname, "..", "..", "ml");
 
-const { train, test, evalOnly, meta } = JSON.parse(readFileSync(join(DATASET_DIR, "split.json"), "utf8"));
+const { test, evalOnly, meta } = JSON.parse(readFileSync(join(DATASET_DIR, "split.json"), "utf8"));
 // The model the live API loads, and a retrained candidate that is evaluated here but
 // only promoted after whole-database review (see EVALUATION_NOTES.md).
 const v1Model = JSON.parse(readFileSync(join(ML_DIR, "model.artifact.json"), "utf8"));

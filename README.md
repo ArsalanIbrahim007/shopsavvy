@@ -129,10 +129,15 @@ Chromium.
 ```bash
 cd backend && npm test            # over 1,000 unit and API tests (Vitest); no database or network needed
 cd frontend && npm test           # over 570 unit, component and accessibility tests
-cd frontend && npm run lint
+npm run lint                      # in backend/ or frontend/ (ESLint)
+npm run coverage                  # in backend/ or frontend/: how much of the code the tests run (report in coverage/)
 ```
 
-GitHub runs the backend tests and the frontend lint, tests and build on every push to `main` and every pull request
+Test coverage (statements, 26 Oct 2026): backend 82% (services 91%, middleware 97%, controllers 86%; the scrapers 52%,
+as live store pages are only partly reproducible in tests; the one-off scripts in `src/scripts/` are not counted),
+frontend 96%.
+
+GitHub runs the backend lint and tests and the frontend lint, tests and build on every push to `main` and every pull request
 (`.github/workflows/ci.yml`). Changes to the matching rules are also checked against the live catalogue with the scripts
 in `backend/src/scripts/ml/` before they are kept.
 

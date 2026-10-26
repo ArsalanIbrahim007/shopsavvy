@@ -65,7 +65,7 @@ function candidateStrategy(rawTitle, group, listing) {
 }
 
 const out = [];
-for (const [category, items] of byCategory) {
+for (const [, items] of byCategory) {
   const production = groupListingsByProduct(items, { matchStrategy: mlMatchStrategy });
   const productionGroupOf = new Map();
   production.forEach((g, i) => g.offers.forEach((o) => productionGroupOf.set(String(o._id), i)));

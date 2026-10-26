@@ -97,7 +97,7 @@ function makePairRecord(a, b, pool, jaccardBase) {
   };
 }
 
-for (const [category, items] of byCategory) {
+for (const [, items] of byCategory) {
   for (let i = 0; i < items.length; i++) {
     for (let j = i + 1; j < items.length; j++) {
       const a = items[i];

@@ -45,3 +45,6 @@ security.md
 error-handling.md
 context-*.md
 .git-commit-msg.txt
+
+# Test coverage reports (npm run coverage)
+coverage/

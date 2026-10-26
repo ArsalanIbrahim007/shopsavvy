@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-const names = ["priceoye", "mega", "shophive", "paklap", "w11stop", "ishopping"];
 vi.mock("../src/scrapers/priceoye.scraper.js", () => ({ scrapePriceOyeSearch: vi.fn() }));
 vi.mock("../src/scrapers/mega.scraper.js", () => ({ scrapeMegaSearch: vi.fn() }));
 vi.mock("../src/scrapers/shophive.scraper.js", () => ({ scrapeShophiveSearch: vi.fn() }));

@@ -100,7 +100,6 @@ export const notFoundHandler = (req, res) =>
   sendError(res, 404, ERROR_CODES.NOT_FOUND, `Route not found: ${req.method} ${req.originalUrl.split("?")[0]}`);
 
 // Express recognises an error handler by its four parameters.
-// eslint-disable-next-line no-unused-vars
 export const globalErrorHandler = (err, req, res, next) => {
   if (res.headersSent) return next(err);
 

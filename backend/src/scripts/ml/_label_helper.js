@@ -101,8 +101,8 @@ const results = pairs.map((pair) => {
   const oneIsAccessory = Boolean(accessoryA) !== Boolean(accessoryB);
   const conditionMismatch = Boolean(conditionA) !== Boolean(conditionB);
 
-  let suggestedLabel = null;
-  let rationale = "";
+  let suggestedLabel; // every branch below sets both
+  let rationale;
   let needsReview = false;
 
   if (oneIsAccessory) {

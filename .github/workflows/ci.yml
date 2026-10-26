@@ -1,5 +1,5 @@
 # CI: every push to main or arsalan-next, and every pull request, installs exactly what the lock files say and runs the
-# backend tests, and the frontend lint, tests and build. A pull request whose checks fail should not be merged.
+# backend lint and tests, and the frontend lint, tests and build. A pull request whose checks fail should not be merged.
 #
 # The backend tests need no database, no browser and no network (stores and MongoDB are mocked), so the install skips
 # Playwright's Chromium download (the postinstall script); the scrapers' real browser is only needed by the nightly scrape.
@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   backend:
-    name: Backend tests
+    name: Backend lint and tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
@@ -34,6 +34,7 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci --ignore-scripts
+      - run: npm run lint
       - run: npm test
 
   frontend:

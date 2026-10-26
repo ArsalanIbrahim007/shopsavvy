@@ -24,6 +24,13 @@ export default defineConfig(({ mode }) => {
       setupFiles: ["./tests/setup.js"],
       globals: false,
       css: false,
+      // `npm run coverage`: how much of the app's code (src/) the tests run.
+      coverage: {
+        provider: "v8",
+        include: ["src/**/*.{js,jsx}"],
+        exclude: ["src/main.jsx"], // start-up only: mounts <App /> into the page
+        reporter: ["text-summary", "json-summary", "html"],
+      },
     },
   };
 });

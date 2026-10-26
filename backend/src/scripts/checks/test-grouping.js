@@ -1,6 +1,6 @@
 // test-grouping.js — checks grouping decisions against known cases
 import { isSimilarProduct, calculateJaccardSimilarity } from "../../services/similarity.service.js";
-import { normalizeTitle, extractStorage, modelTokens } from "../../services/normalizeTitle.service.js";
+import { extractStorage, modelTokens } from "../../services/normalizeTitle.service.js";
 
 const CASES = [
   ["Apple iPhone 15 128GB PTA Approved", "iPhone 15 128GB PTA Approved", true, "same phone, same PTA"],

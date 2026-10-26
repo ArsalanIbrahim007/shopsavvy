@@ -115,7 +115,7 @@ async function fetchHtml(url, opts = {}) {
       const status = err.response?.status;
 
       if (err instanceof UnsafeUrlError && !err.transient) {
-        throw new Error(`fetchHtml refused ${url}: ${err.message}`);
+        throw new Error(`fetchHtml refused ${url}: ${err.message}`, { cause: err });
       }
 
       const permanentClientError =

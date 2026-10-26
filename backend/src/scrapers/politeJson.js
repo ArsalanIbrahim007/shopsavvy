@@ -39,6 +39,6 @@ export async function fetchJson(url) {
     return response.data;
   } catch (err) {
     const status = err.response?.status;
-    throw new Error(`${new URL(url).host}: ${status ? `HTTP ${status}` : err.message}`);
+    throw new Error(`${new URL(url).host}: ${status ? `HTTP ${status}` : err.message}`, { cause: err });
   }
 }
