@@ -1,20 +1,9 @@
 import express from "express";
 
-import {
-  createListing,
-  getListings,
-  getListingStats,
-  getDeals,
-  getPriceDropsFeed,
-  getProductMatch,
-  getProductComparison,
-  getCategoryCatalog,
-  suggestListings,
-  searchListings,
-  getListingDetails,
-  addListingPriceHistory,
-  getListingHistory,
-} from "../controllers/listing.controller.js";
+import { getCategoryCatalog, getDeals, getListingStats, getPriceDropsFeed } from "../controllers/feeds.controller.js";
+import { addListingPriceHistory, createListing, getListingHistory, getListings } from "../controllers/listing.controller.js";
+import { getListingDetails, getProductComparison, getProductMatch } from "../controllers/product.controller.js";
+import { searchListings, suggestListings } from "../controllers/search.controller.js";
 
 import {
   validateCreateListing,

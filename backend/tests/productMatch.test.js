@@ -12,7 +12,7 @@ vi.mock("../src/services/historyEnrichment.service.js", () => ({
 import Listing from "../src/models/listing.model.js";
 import { normalizeTitle } from "../src/services/normalizeTitle.service.js";
 import { createApp } from "../src/createApp.js";
-import { clearMatchCache } from "../src/controllers/listing.controller.js";
+import { clearMatchCache } from "../src/controllers/product.controller.js";
 import { fetchAndRefreshListings } from "../src/services/scraper.service.js";
 import {
   storeOfPage, samePagePattern, choosePageListing, showsAnotherVariant, cheapestElsewhere, siteUrl, matchResponse, VARIANT_PRICE_GAP,

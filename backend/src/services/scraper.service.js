@@ -57,7 +57,7 @@ function storedFilter(query) {
 
   // A query made only of words normalizeTitle strips (e.g. "apple" alone)
   // normalises to an empty string, and an empty regex matches every
-  // document -- see listing.controller.js for the same guard on the actual
+  // document -- see search.controller.js for the same guard on the actual
   // search filter. Skipping the clause here keeps a freshness check for
   // "apple" from being satisfied by literally any recently scraped listing.
   return {

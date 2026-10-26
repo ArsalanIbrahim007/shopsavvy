@@ -1,5 +1,5 @@
 // searchMatching.service.js — progressively looser matching strategies for
-// search queries that the exact-substring regex in listing.controller.js
+// search queries that the exact-substring regex in search.controller.js
 // misses: no space between a word and a number ("iphone17"), and outright
 // typos ("ipohne"). Each strategy is tried only when the one before it
 // found nothing, so a clean, well-formed query still takes the cheapest,
@@ -110,7 +110,7 @@ const FUZZY_MATCH_THRESHOLD = 0.6;
 /**
  * Fuzzy-matches a query against a candidate list, returning only the ids
  * of candidates that clear the threshold. Meant to run over a bounded
- * candidate set (see listing.controller.js) as a last-resort fallback, not
+ * candidate set (see search.controller.js) as a last-resort fallback, not
  * as the primary search path -- it's an in-memory scan, not an index
  * lookup.
  *

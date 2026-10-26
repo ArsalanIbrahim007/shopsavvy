@@ -7,7 +7,7 @@ vi.mock("../src/services/marketMovement.service.js", () => ({ getMarketMovement:
 
 import Listing from "../src/models/listing.model.js";
 import { createApp } from "../src/createApp.js";
-import { clearCategoryCountsCache } from "../src/controllers/listing.controller.js";
+import { clearCategoryCountsCache } from "../src/controllers/feeds.controller.js";
 import { attachPriceHistory } from "../src/services/historyEnrichment.service.js";
 import { lowestBadge, outlookForOffers, OUTLOOK } from "../src/services/priceOutlook.service.js";
 

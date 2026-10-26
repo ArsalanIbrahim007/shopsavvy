@@ -24,7 +24,7 @@ vi.mock("../src/services/priceHistory.service.js", () => ({
 
 import Listing from "../src/models/listing.model.js";
 import { createApp } from "../src/createApp.js";
-import { clearCategoryCountsCache } from "../src/controllers/listing.controller.js";
+import { clearCategoryCountsCache } from "../src/controllers/feeds.controller.js";
 import { fetchAndRefreshListings } from "../src/services/scraper.service.js";
 import { attachPriceHistory } from "../src/services/historyEnrichment.service.js";
 import { getMarketMovement } from "../src/services/marketMovement.service.js";
