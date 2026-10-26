@@ -14,6 +14,7 @@
 // Listings must be plain objects: ids are turned into strings here because a Mongo
 // ObjectId does not survive being copied to a worker, so `_id` is a string in both paths.
 
+import { createHash } from "node:crypto";
 import { availableParallelism } from "node:os";
 
 import { WorkerPool } from "../workers/workerPool.js";
@@ -63,6 +64,37 @@ export async function closeGroupingPool() {
 
 const withStringIds = (listings) => listings.map((listing) => ({ ...listing, _id: String(listing._id) }));
 
+// Same listings in, same groups out. Shoppers ask the same few searches and product pages over and over, and each one sent the
+// same job to the workers: at 50 shoppers at once the queue filled and 292 requests were turned away busy (LOAD_TEST.md,
+// 2026-10-26). A shopper's job is therefore keyed by everything grouping reads (the listings with their prices, history and when
+// they were checked, and the options), and identical jobs share one answer: those that arrive while it runs, and those within
+// RESULT_CACHE_MS after. A scrape that changes a price or a check time changes the key, so a stale answer is never served for
+// changed listings; the time limit bounds how long a ranking that depends on today's date can be reused.
+const RESULT_CACHE_MS = 5 * 60 * 1000;
+const RESULT_CACHE_SIZE = 100;
+const resultCache = new Map(); // key -> { at, result: Promise<object[]> }
+
+/** For tests: forget the shared answers. */
+export function clearGroupingCache() {
+  resultCache.clear();
+}
+
+function sharedResult(key, compute) {
+  const now = Date.now();
+  const hit = resultCache.get(key);
+  if (hit && now - hit.at < RESULT_CACHE_MS) return hit.result;
+
+  const result = compute();
+  resultCache.delete(key);
+  resultCache.set(key, { at: now, result });
+  if (resultCache.size > RESULT_CACHE_SIZE) resultCache.delete(resultCache.keys().next().value);
+  // a failed job (busy, timed out) is not remembered: the next shopper tries again
+  result.catch(() => {
+    if (resultCache.get(key)?.result === result) resultCache.delete(key);
+  });
+  return result;
+}
+
 /**
  * @param {object[]} listings  plain listing objects
  * @param {object}   [options]
@@ -80,7 +112,11 @@ export async function groupListings(listings = [], { strategy = "ml", recommend 
   if (plain.length <= threshold) {
     return groupAndRecommend(plain, { strategy, recommend });
   }
-  return getGroupingPool().run("group", { listings: plain, strategy, recommend }, { priority, timeoutMs });
+  const run = () => getGroupingPool().run("group", { listings: plain, strategy, recommend }, { priority, timeoutMs });
+  // Background jobs (scripts, the nightly run, cache warm-ups) are one-offs: only a shopper's job is shared.
+  if (priority !== "interactive") return run();
+  const key = createHash("sha1").update(JSON.stringify([strategy, recommend, plain])).digest("hex");
+  return sharedResult(key, run);
 }
 
 /** Ranks a category's top deals in a worker (see dealsRanking.service.js). */

@@ -1,6 +1,6 @@
-import { describe, it, expect, afterAll } from "vitest";
+import { describe, it, expect, afterAll, vi } from "vitest";
 
-import { groupListings, OFFLOAD_THRESHOLD, closeGroupingPool, groupingPoolStats, computeDealsOffThread, getGroupingPool } from "../src/services/grouping.service.js";
+import { groupListings, OFFLOAD_THRESHOLD, closeGroupingPool, groupingPoolStats, computeDealsOffThread, getGroupingPool, clearGroupingCache } from "../src/services/grouping.service.js";
 import { groupAndRecommend } from "../src/services/groupingJob.service.js";
 
 const NOW = Date.now();
@@ -120,9 +120,20 @@ describe("grouping lanes", () => {
     const warmups = [groupListings(unrelated(120), { threshold: 0, priority: "background" }), groupListings(unrelated(120), { threshold: 0, priority: "background" })];
     expect(groupingPoolStats()).toMatchObject({ running: 1, runningBackground: 1, queued: 1 });
 
+    clearGroupingCache(); // the same listings were grouped above; a remembered answer would not reach the pool
     const shopper = groupListings(realistic(), { threshold: 0 }); // interactive by default
     expect(groupingPoolStats()).toMatchObject({ running: 2, runningBackground: 1 });
     await Promise.all([shopper, ...warmups]);
+  }, 60000);
+
+  it("a shopper's job is not counted twice in the lanes when the same listings arrive again (see shared answers)", async () => {
+    await closeGroupingPool();
+    getGroupingPool().warm();
+    await groupListings(realistic(), { threshold: 0 }); // wait until the workers are up
+    clearGroupingCache();
+    const jobs = [groupListings(unrelated(120), { threshold: 0 }), groupListings(unrelated(120), { threshold: 0 })];
+    expect(groupingPoolStats()).toMatchObject({ running: 1, queued: 0 });
+    await Promise.all(jobs);
   }, 60000);
 
   it("treats the deals feed as background work too", async () => {
@@ -134,4 +145,71 @@ describe("grouping lanes", () => {
     expect(groupingPoolStats()).toMatchObject({ running: 1, runningBackground: 1, queued: 1 });
     await Promise.all(deals);
   }, 60000);
+});
+
+// Shoppers ask the same searches and product pages over and over; at 50 at once the same jobs filled the queue and 292 requests were
+// turned away busy (LOAD_TEST.md, 2026-10-26). Identical jobs now share one answer.
+describe("shared answers", () => {
+  const counting = () => {
+    clearGroupingCache();
+    return vi.spyOn(getGroupingPool(), "run");
+  };
+
+  it("runs a shopper's job once for the same listings, whether they arrive together or just after", async () => {
+    const runs = counting();
+    const together = await Promise.all([groupListings(realistic(), { threshold: 0 }), groupListings(realistic(), { threshold: 0 })]);
+    const after = await groupListings(realistic(), { threshold: 0 });
+
+    expect(runs).toHaveBeenCalledTimes(1);
+    expect(together[1]).toEqual(together[0]);
+    expect(after).toEqual(together[0]);
+    runs.mockRestore();
+  });
+
+  it("works it out again when a price, a check time or the options change", async () => {
+    const runs = counting();
+    await groupListings(realistic(), { threshold: 0 });
+
+    const repriced = realistic();
+    repriced[0].price -= 1000;
+    const rechecked = realistic();
+    rechecked[0].lastScrapedAt = new Date(NOW + 60000).toISOString();
+    await groupListings(repriced, { threshold: 0 });
+    await groupListings(rechecked, { threshold: 0 });
+    await groupListings(realistic(), { threshold: 0, strategy: "rule" });
+
+    expect(runs).toHaveBeenCalledTimes(4);
+    runs.mockRestore();
+  });
+
+  it("forgets an answer after five minutes", async () => {
+    const runs = counting();
+    const cachedAt = Date.now();
+    await groupListings(realistic(), { threshold: 0 });
+    const clock = vi.spyOn(Date, "now").mockReturnValue(cachedAt + 5 * 60 * 1000 + 1000);
+    await groupListings(realistic(), { threshold: 0 });
+    clock.mockRestore();
+
+    expect(runs).toHaveBeenCalledTimes(2);
+    runs.mockRestore();
+  });
+
+  it("does not remember a failed job (busy, timed out): the next shopper tries again", async () => {
+    const runs = counting();
+    runs.mockRejectedValueOnce(new Error("busy"));
+    await expect(groupListings(realistic(), { threshold: 0 })).rejects.toThrow("busy");
+    expect((await groupListings(realistic(), { threshold: 0 })).length).toBeGreaterThan(0);
+
+    expect(runs).toHaveBeenCalledTimes(2);
+    runs.mockRestore();
+  });
+
+  it("does not share background jobs: scripts and the nightly run are one-offs", async () => {
+    const runs = counting();
+    await groupListings(realistic(), { threshold: 0, priority: "background" });
+    await groupListings(realistic(), { threshold: 0, priority: "background" });
+
+    expect(runs).toHaveBeenCalledTimes(2);
+    runs.mockRestore();
+  });
 });
