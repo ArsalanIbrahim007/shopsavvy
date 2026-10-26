@@ -10,7 +10,8 @@
  * inside "TechWoven" (Apple's name for its woven-fabric case material).
  * Matched with a word-boundary regex instead of a plain substring check.
  */
-const WORD_BOUNDARY_KEYWORDS = new Set(["tv", "oven"]);
+// "rog" too: as a substring it made an "MXG PGC-01 Frog Mechanism Gaming Chair" a laptop.
+const WORD_BOUNDARY_KEYWORDS = new Set(["tv", "oven", "rog"]);
 
 /**
  * "... for iPhone 17 Pro", "... for Galaxy S25": a product made for a phone, never the phone. Like
@@ -65,6 +66,7 @@ const CATEGORIES = {
             "huawei",
             "nokia",
             "motorola",
+            "rog phone", // Asus: no other smartphone word ("Asus ROG Phone 5")
         ],
         exclude: [
             "case",
@@ -173,6 +175,22 @@ const CATEGORIES = {
             "motherboard",
             "cpu cooler",
             "argb fan",
+            // More of them that name no part above (31 listings filed as laptops, found 2026-10-26). None of these phrases is in
+            // any laptop's title in the database. A headset or monitor then goes to its own category, a ROG Phone to smartphones.
+            "rog phone",
+            "headset",
+            "headphone",
+            "monitor",
+            "gaming chair",
+            "oc edition", // graphics cards ("Asus TUF Gaming Radeon RX9060 XT 16GB GDDR6 OC Edition")
+            "graphics card",
+            "graphic card",
+            "card holder",
+            "enclosure",
+            "thermal paste",
+            "strix scope", // keyboards
+            "nvlink",
+            "casing",
             "best laptops under",
         ],
     },

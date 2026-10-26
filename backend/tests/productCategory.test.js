@@ -98,6 +98,37 @@ describe("detectCategory: laptop parts and add-ons", () => {
     expect(detectCategory("Asus TUF Gaming 120 ARGB Fan Single Pack").category).not.toBe("laptop");
   });
 
+  // 31 TUF/ROG listings were filed as laptops on those names alone (found 2026-10-26).
+  it.each([
+    ["Asus ROG Phone 5 Ultimate", "smartphone"],
+    ["Asus TUF Gaming H3 Gaming Headset", "headphones"],
+    ["Asus TUF Gaming H1 Wireless Headphone (Black)", "headphones"],
+    ["Asus TUF Gaming Series 5 VG27AQ5A 27\" 2K QHD Monitor", "monitor"],
+    ["Asus ROG Herculx Graphics Card Holder", "accessory"],
+  ])("files Asus's other TUF/ROG products where they belong: %s -> %s", (title, expected) => {
+    expect(detectCategory(title).category).toBe(expected);
+  });
+
+  it.each([
+    "Asus TUF Gaming Radeon RX9060 XT 16GB GDDR6 OC Edition",
+    "Asus ROG Strix GeForce RTX 5070Ti 16GB GDDR7 OC Edition Graphic Card",
+    "Asus ROG SL 400 Destrier Ergo Gaming Chair",
+    "Asus X901 ROG Strix Scope II 96 Wireless",
+    "ASUS ROG Strix Helios Computer Casing",
+    "Asus ESD S1C ROG Strix Arion SSD Enclosure",
+    "Asus Rog RG-07 Performance Thermal Paste Kit",
+    "Asus ROG NVLinK Bridge with Aura Sync RGB",
+  ])("keeps %s out of laptops", (title) => {
+    expect(detectCategory(title).category).not.toBe("laptop");
+  });
+
+  it("reads \"rog\" as a word, not inside Frog, Program or Neutrogena", () => {
+    expect(detectCategory("MXG PGC-01 Frog Mechanism Premium PVC Gaming Chair").category).not.toBe("laptop");
+    expect(detectCategory("Dawlance DDW-1350S 5 Program Dish Washer 13 Place Capacity Silver").category).not.toBe("laptop");
+    expect(detectCategory("NEUTROGENA CLEAR AND DEFEND RAPID GEL 15 ML").category).not.toBe("laptop");
+    expect(detectCategory("ASUS ROG Strix G16 G615LM Core Ultra 7 255HX 16GB 512GB SSD").category).toBe("laptop");
+  });
+
   it("leaves laptops themselves alone, including cheap ones whose titles praise the battery", () => {
     expect(detectCategory("Acer C740 4gb / 16gb - Chromebook Laptop - With Play Store - Long Battery Life").category).toBe("laptop");
     expect(detectCategory("Dell Latitude 14 5490 - Kaby Lake - 7th Gen Core i5 7300U 8-GB 256-GB SSD").category).toBe("laptop");
