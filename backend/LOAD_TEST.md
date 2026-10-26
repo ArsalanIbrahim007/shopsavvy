@@ -1,7 +1,7 @@
 # Load test
 
-Run 26 Oct 2026, 18:36 with `src/scripts/ops/load-test.js` on one machine: 12th Gen Intel(R) Core(TM) i3-12100F (8 threads), 32 GB RAM, Windows_NT 10.0.26200, Node v24.17.0.
-The API and MongoDB ran on that same machine, with two grouping workers and the catalogue as it stood (28,194 listings).
+Run 26 Oct 2026, 18:42 with `src/scripts/ops/load-test.js` on one machine: 12th Gen Intel(R) Core(TM) i3-12100F (8 threads), 32 GB RAM, Windows_NT 10.0.26200, Node v24.17.0.
+The API and MongoDB ran on that same machine, with two grouping workers and the catalogue as it stood (28,645 listings).
 Each phase ran 30 s; each shopper sends a request, waits for the answer and sends the next (no pause between them, so this is
 far busier than real shoppers, who read a page before the next click). Requests come from 200 visitor addresses through X-Forwarded-For.
 
@@ -10,9 +10,9 @@ cannot pile up; "failed" is anything else that went wrong (an error or no answer
 
 | Shoppers at once | Answered per second | Median | 95th percentile | 99th percentile | Turned away (busy) | Failed | Rate-limited |
 |---|---|---|---|---|---|---|---|
-| 10 | 29.4 | 304 ms | 839 ms | 1118 ms | 0 | 0 | 0 |
-| 25 | 32.5 | 804 ms | 1763 ms | 2038 ms | 4 | 0 | 0 |
-| 50 | 27.7 | 485 ms | 4670 ms | 5240 ms | 292 | 0 | 0 |
+| 10 | 26.7 | 329 ms | 929 ms | 1266 ms | 0 | 0 | 0 |
+| 25 | 34.6 | 673 ms | 1605 ms | 1943 ms | 0 | 0 | 0 |
+| 50 | 37.6 | 1236 ms | 3028 ms | 3672 ms | 0 | 0 | 0 |
 
 ## By kind of request
 
@@ -20,37 +20,37 @@ cannot pile up; "failed" is anything else that went wrong (an error or no answer
 
 | Request | Share of the mix | Answered | Median | 95th percentile | Turned away (busy) | Failed | Rate-limited |
 |---|---|---|---|---|---|---|---|
-| search | 30% | 270 | 380 ms | 748 ms | 0 | 0 | 0 |
-| product page | 25% | 214 | 605 ms | 1054 ms | 0 | 0 | 0 |
-| category page | 15% | 125 | 37 ms | 197 ms | 0 | 0 | 0 |
-| home: deals and counts | 10% | 88 | 64 ms | 228 ms | 0 | 0 | 0 |
-| search suggestions | 10% | 83 | 195 ms | 460 ms | 0 | 0 | 0 |
-| price drops | 5% | 54 | 32 ms | 171 ms | 0 | 0 | 0 |
-| extension lookup | 5% | 47 | 560 ms | 946 ms | 0 | 0 | 0 |
+| search | 30% | 239 | 361 ms | 657 ms | 0 | 0 | 0 |
+| product page | 25% | 202 | 628 ms | 1157 ms | 0 | 0 | 0 |
+| category page | 15% | 118 | 71 ms | 220 ms | 0 | 0 | 0 |
+| home: deals and counts | 10% | 93 | 96 ms | 361 ms | 0 | 0 | 0 |
+| search suggestions | 10% | 69 | 302 ms | 545 ms | 0 | 0 | 0 |
+| price drops | 5% | 38 | 57 ms | 199 ms | 0 | 0 | 0 |
+| extension lookup | 5% | 43 | 653 ms | 1359 ms | 0 | 0 | 0 |
 
 ### 25 shoppers at once
 
 | Request | Share of the mix | Answered | Median | 95th percentile | Turned away (busy) | Failed | Rate-limited |
 |---|---|---|---|---|---|---|---|
-| search | 30% | 279 | 1204 ms | 1638 ms | 3 | 0 | 0 |
-| product page | 25% | 262 | 1452 ms | 1950 ms | 1 | 0 | 0 |
-| category page | 15% | 154 | 52 ms | 185 ms | 0 | 0 | 0 |
-| home: deals and counts | 10% | 87 | 85 ms | 231 ms | 0 | 0 | 0 |
-| search suggestions | 10% | 97 | 249 ms | 565 ms | 0 | 0 | 0 |
-| price drops | 5% | 45 | 53 ms | 165 ms | 0 | 0 | 0 |
-| extension lookup | 5% | 50 | 218 ms | 1792 ms | 0 | 0 | 0 |
+| search | 30% | 314 | 798 ms | 1411 ms | 0 | 0 | 0 |
+| product page | 25% | 234 | 1287 ms | 1908 ms | 0 | 0 | 0 |
+| category page | 15% | 179 | 172 ms | 364 ms | 0 | 0 | 0 |
+| home: deals and counts | 10% | 99 | 273 ms | 816 ms | 0 | 0 | 0 |
+| search suggestions | 10% | 105 | 583 ms | 847 ms | 0 | 0 | 0 |
+| price drops | 5% | 57 | 192 ms | 438 ms | 0 | 0 | 0 |
+| extension lookup | 5% | 51 | 1125 ms | 1802 ms | 0 | 0 | 0 |
 
 ### 50 shoppers at once
 
 | Request | Share of the mix | Answered | Median | 95th percentile | Turned away (busy) | Failed | Rate-limited |
 |---|---|---|---|---|---|---|---|
-| search | 30% | 172 | 3462 ms | 4683 ms | 144 | 0 | 0 |
-| product page | 25% | 123 | 4289 ms | 5352 ms | 140 | 0 | 0 |
-| category page | 15% | 196 | 185 ms | 435 ms | 0 | 0 | 0 |
-| home: deals and counts | 10% | 107 | 298 ms | 630 ms | 0 | 0 | 0 |
-| search suggestions | 10% | 111 | 703 ms | 1074 ms | 0 | 0 | 0 |
-| price drops | 5% | 74 | 181 ms | 429 ms | 0 | 0 | 0 |
-| extension lookup | 5% | 49 | 195 ms | 5200 ms | 8 | 0 | 0 |
+| search | 30% | 342 | 1541 ms | 2599 ms | 0 | 0 | 0 |
+| product page | 25% | 267 | 2583 ms | 3550 ms | 0 | 0 | 0 |
+| category page | 15% | 184 | 377 ms | 685 ms | 0 | 0 | 0 |
+| home: deals and counts | 10% | 109 | 516 ms | 1002 ms | 0 | 0 | 0 |
+| search suggestions | 10% | 122 | 1177 ms | 1650 ms | 0 | 0 | 0 |
+| price drops | 5% | 50 | 364 ms | 675 ms | 0 | 0 | 0 |
+| extension lookup | 5% | 53 | 508 ms | 3327 ms | 0 | 0 | 0 |
 
 ## What this does and does not show
 
