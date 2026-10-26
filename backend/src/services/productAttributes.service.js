@@ -1,3 +1,4 @@
+import { memoize } from "./memoize.js";
 import { detectCategory } from "../scrapers/productCategory.js";
 
 /**
@@ -30,7 +31,7 @@ export function extractStorageGb(title = "") {
   return found.length ? Math.max(...found) : null;
 }
 
-export function extractRamGb(title = "") {
+function extractRamGbUncached(title = "") {
   const text = String(title).toLowerCase();
 
   const labelled = text.match(/\b(\d+)\s*gb\s*(ram|memory)\b/);
@@ -86,7 +87,7 @@ export function extractPtaStatus(title = "") {
  * different products (Galaxy A17 4G and A17 5G sell for PKR 65,000 and PKR 99,000), but silence proves
  * nothing: many stores omit "5G" from phones that have it.
  */
-export function extractNetworkGeneration(title = "") {
+function extractNetworkGenerationUncached(title = "") {
   const text = String(title).toLowerCase();
   const five = /\b5\s?g\b/.test(text);
   const four = /\b4\s?g\b|\blte\b/.test(text);
@@ -100,7 +101,7 @@ export function extractNetworkGeneration(title = "") {
 // with PTA status, a matching rule then applies only when both titles state the attribute.
 
 /** An air conditioner's cooling capacity in tons: "1.5 Ton", "1-ton", "2 Tons". */
-export function extractTonnage(title = "") {
+function extractTonnageUncached(title = "") {
   const match = String(title).toLowerCase().match(/(\d+(?:\.\d+)?)\s*-?\s*tons?\b/);
   if (!match) return null;
   const tons = Number(match[1]);
@@ -111,7 +112,7 @@ export function extractTonnage(title = "") {
  * The weights a washing machine states, in kg, as a sorted list: "11.5KG" -> [11.5]; a washer-dryer "11.5KG+8KG" -> [8, 11.5].
  * Null when none, or when a value is not a plausible drum (3 to 30 kg).
  */
-export function extractCapacityKg(title = "") {
+function extractCapacityKgUncached(title = "") {
   const values = [...String(title).toLowerCase().matchAll(/(\d+(?:\.\d+)?)\s*kgs?\b/g)].map((m) => Number(m[1]));
   if (values.length === 0 || values.some((v) => v < 3 || v > 30)) return null;
   return [...new Set(values)].sort((a, b) => a - b);
@@ -120,7 +121,7 @@ export function extractCapacityKg(title = "") {
 const LITRES_PER_CUBIC_FOOT = 28.3168;
 
 /** A refrigerator's volume in litres: "350 Ltr", "350L", "15 cu ft" / "15 CFT" (converted). Null when unstated or implausible. */
-export function extractVolumeLitres(title = "") {
+function extractVolumeLitresUncached(title = "") {
   const text = String(title).toLowerCase();
   const litres = text.match(/(\d{2,4})\s*(?:l|lt|ltr|ltrs|litres?|liters?)\b/);
   if (litres) {
@@ -164,17 +165,17 @@ const seriesIn = (list, title) => {
 };
 
 /** The air-conditioner series a title names (see AC_SERIES), as a set; empty when it names none. */
-export function extractAcSeries(title = "") {
+function extractAcSeriesUncached(title = "") {
   return seriesIn(AC_SERIES, title);
 }
 
 /** The refrigerator series a title names (see FRIDGE_SERIES), as a set; empty when it names none. */
-export function extractFridgeSeries(title = "") {
+function extractFridgeSeriesUncached(title = "") {
   return seriesIn(FRIDGE_SERIES, title);
 }
 
 /** True when a title names a refrigerator or freezer. */
-export function isFridgeTitle(title = "") {
+function isFridgeTitleUncached(title = "") {
   return /\b(?:refrigerator|fridge|freezer)\b/.test(String(title).toLowerCase());
 }
 
@@ -193,7 +194,7 @@ const NOT_MODEL_NUMBERS = [
  * "Dawlance DWT 9560" -> {9560}, "(DWT-1165PL)" -> {1165}, "HWM 100-826S6" -> {100, 826}. Stores write the code with a hyphen, a
  * space or neither, so the digits are what two titles of one model share.
  */
-export function extractModelNumbers(title = "") {
+function extractModelNumbersUncached(title = "") {
   let text = String(title).toLowerCase();
   for (const pattern of NOT_MODEL_NUMBERS) text = text.replace(pattern, " ");
   return new Set(text.match(/(?<!\d)\d{3,6}(?!\d)/g) ?? []);
@@ -202,13 +203,13 @@ export function extractModelNumbers(title = "") {
 const APPLIANCE_NAME = /\b(?:refrigerator|fridge|freezer|washing\s*machine|washer|dryer|air\s*conditioner|split\s*ac)\b/;
 
 /** True when a title names an appliance: by what it is ("refrigerator"), its capacity (tonnage, drum weight, volume) or its kind. */
-export function isApplianceTitle(title = "") {
+function isApplianceTitleUncached(title = "") {
   return APPLIANCE_NAME.test(String(title).toLowerCase()) || extractTonnage(title) !== null || extractCapacityKg(title) !== null
     || extractVolumeLitres(title) !== null || extractApplianceType(title) !== null;
 }
 
 /** "inverter" or "non_inverter" as the title says ("DC Inverter", "Non-Inverter"), else null. */
-export function extractInverter(title = "") {
+function extractInverterUncached(title = "") {
   const text = String(title).toLowerCase();
   if (/\bnon[\s-]?inverter\b/.test(text)) return "non_inverter";
   if (/\binverter\b/.test(text)) return "inverter";
@@ -221,7 +222,7 @@ export function extractInverter(title = "") {
  * "side_by_side", "double_door", "single_door" or "freezer" (a deep, chest or upright freezer). Null when it names none, or more
  * than one of the same family (a listing of several kinds).
  */
-export function extractApplianceType(title = "") {
+function extractApplianceTypeUncached(title = "") {
   const text = String(title).toLowerCase();
   const families = [
     [["split", /\bsplit\b/], ["window", /\bwindow\s*(?:ac|air)/], ["portable", /\bportable\b/], ["floor", /\bfloor\s*stand/]],
@@ -244,7 +245,7 @@ export function networkFamilyKey(title = "") {
     .trim();
 }
 
-export function extractCondition(title = "") {
+function extractConditionUncached(title = "") {
   const text = String(title).toLowerCase();
 
   if (/\brefurb(ished)?\b/.test(text)) return "refurbished";
@@ -298,3 +299,18 @@ export function extractAttributes(title = "") {
     resolution: extractResolution(title),
   };
 }
+
+// The pure title readers above keep their answers, so grouping does not re-read the same titles millions of times (memoize.js).
+export const extractRamGb = memoize(extractRamGbUncached);
+export const extractNetworkGeneration = memoize(extractNetworkGenerationUncached);
+export const extractTonnage = memoize(extractTonnageUncached);
+export const extractCapacityKg = memoize(extractCapacityKgUncached);
+export const extractVolumeLitres = memoize(extractVolumeLitresUncached);
+export const extractAcSeries = memoize(extractAcSeriesUncached);
+export const extractFridgeSeries = memoize(extractFridgeSeriesUncached);
+export const isFridgeTitle = memoize(isFridgeTitleUncached);
+export const extractModelNumbers = memoize(extractModelNumbersUncached);
+export const isApplianceTitle = memoize(isApplianceTitleUncached);
+export const extractInverter = memoize(extractInverterUncached);
+export const extractApplianceType = memoize(extractApplianceTypeUncached);
+export const extractCondition = memoize(extractConditionUncached);

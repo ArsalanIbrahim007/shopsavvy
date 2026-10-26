@@ -1,3 +1,4 @@
+import { MEMO_LIMIT, memoize } from "./memoize.js";
 import {
   extractStorage,
   modelTokens,
@@ -20,8 +21,21 @@ export const VARIANT_TOKENS = new Set([
   "pro", "max", "plus", "ultra", "mini", "air", "fe", "lite", "se",
 ]);
 
+// Grouping tokenises the same few thousand titles millions of times (17% of its time once normalizeTitle was cached, 2026-10-26),
+// so each answer is kept; frozen, because callers share it, and a caller that tried to change it would fail loudly rather than
+// corrupt another's. Emptied at MEMO_LIMIT entries, so memory stays bounded (memoize.js).
+const TOKENIZE_LIMIT = MEMO_LIMIT;
+const tokenized = new Map();
+
 export function tokenize(text = "") {
-  return String(text).toLowerCase().split(" ").map((t) => t.trim()).filter(Boolean);
+  const key = String(text);
+  let tokens = tokenized.get(key);
+  if (tokens === undefined) {
+    if (tokenized.size >= TOKENIZE_LIMIT) tokenized.clear();
+    tokens = Object.freeze(key.toLowerCase().split(" ").map((t) => t.trim()).filter(Boolean));
+    tokenized.set(key, tokens);
+  }
+  return tokens;
 }
 
 export function calculateJaccardSimilarity(textA = "", textB = "") {
@@ -47,7 +61,7 @@ export function getSimilarityPercentage(textA = "", textB = "") {
  */
 const PLUS_AFTER_MODEL = new RegExp("\\b(pro|max|ultra|mini|air|lite|fe|se|edge|[sa]\\d{2,3}|note\\s?\\d{1,2})\\s?\\+(?![\\w])", "gi");
 
-export function extractVariants(text = "") {
+function extractVariantsUncached(text = "") {
   const written = String(text).replace(PLUS_AFTER_MODEL, "$1 plus");
   return new Set(tokenize(modelTokens(written)).filter((t) => VARIANT_TOKENS.has(t)));
 }
@@ -77,7 +91,7 @@ const NON_MODEL_NUMBER_PRECEDERS = new Set([
  * carry units ("256GB", "40mm") and are not pure numbers, so they are not
  * counted here.
  */
-export function seriesNumbers(text = "") {
+function seriesNumbersUncached(text = "") {
   const tokens = tokenize(modelTokens(text));
   const found = new Set();
   tokens.forEach((token, i) => {
@@ -96,7 +110,7 @@ const COUNTED_WORDS = new Set([
  * ["max", "585"], "Gus-03" ["gus", "03"], and a decimal its two halves ("2.1 ch" gives ["2", "1"]). A number after a word naming an
  * operating system or CPU family, or one counting something ("1 Year Warranty"), is left out.
  */
-function slotNumbers(text = "") {
+function slotNumbersUncached(text = "") {
   const tokens = tokenize(modelTokens(text));
   const found = [];
   tokens.forEach((token, i) => {
@@ -115,7 +129,7 @@ function slotNumbers(text = "") {
  * models: "ThinkBook 14" / "ThinkBook 16", "Max 585" / "Max 580", "Gus-03" / "Gus-01". seriesNumbers alone missed these whenever
  * the titles shared some other number ("Core Ultra 7" in both ThinkBooks, "Ultra 3" in both watches).
  */
-export function numberSlots(text = "") {
+function numberSlotsUncached(text = "") {
   const slots = new Map();
   for (const [word, number] of slotNumbers(text)) {
     if (!slots.has(word)) slots.set(word, new Set());
@@ -150,7 +164,7 @@ const LINE_WORDS = new Set(["note", "sport", "classic", "fold", "flip", "edge", 
  * Wi-Fi and cellular versions are different products at different prices ("Redmi Pad 2 4G" against "Redmi Pad 2 8GB 256GB - Wifi",
  * "Tab S11 Ultra 5G" against "Wifi"). A cellular unit usually also lists Wi-Fi, so cellular words win.
  */
-export function connectivity(text = "") {
+function connectivityUncached(text = "") {
   const lower = String(text).toLowerCase();
   if (/\b(cellular|lte|[345]g)\b/.test(lower)) return "cellular";
   if (/\bwi-?fi\b/.test(lower)) return "wifi";
@@ -199,7 +213,7 @@ export function applianceConflict(textA, textB) {
   return false;
 }
 
-export function lineWords(text = "") {
+function lineWordsUncached(text = "") {
   return new Set(tokenize(modelTokens(text)).filter((t) => LINE_WORDS.has(t)));
 }
 
@@ -214,7 +228,7 @@ const UNIT_SUFFIX_LETTERS = new Set(["g", "k", "w", "l", "m", "h", "v", "p"]);
  * form, the digits for the second, so "g8" and "g9" (same letter, different
  * digits) can be recognised as competing values of the same slot.
  */
-export function shortModelIds(text = "") {
+function shortModelIdsUncached(text = "") {
   const slots = new Map();
   const add = (slot, value) => {
     if (!slots.has(slot)) slots.set(slot, new Set());
@@ -243,7 +257,7 @@ const CAPACITY_PART = /^\d+(?:\.\d+)?(gb|tb|kg|kgs|ltr|ltrs|ton|tons|cft|inch|ma
  * model number ("REF-9149" / "REF-9140", "DW-10095" / "DW-6550C") were grouped (found by the appliance evaluation, 2026-10-22). A
  * code needs two digits; a prefix that is a tier or generation word, or a capacity after the hyphen ("S24-256GB"), is not one.
  */
-export function hyphenModelCodes(text = "") {
+function hyphenModelCodesUncached(text = "") {
   const codes = new Set();
   for (const [code, prefix, rest] of String(text).toLowerCase().matchAll(HYPHEN_CODE)) {
     if (NOT_A_CODE_PREFIX.has(prefix) || CAPACITY_PART.test(rest)) continue;
@@ -441,3 +455,13 @@ export function isSimilarProduct(textA = "", textB = "", threshold = 0.7, opts =
 
   return calculateJaccardSimilarity(baseA, baseB) >= threshold;
 }
+
+// The pure title readers above keep their answers, so grouping does not re-read the same titles millions of times (memoize.js).
+export const extractVariants = memoize(extractVariantsUncached);
+export const seriesNumbers = memoize(seriesNumbersUncached);
+export const numberSlots = memoize(numberSlotsUncached);
+export const connectivity = memoize(connectivityUncached);
+export const lineWords = memoize(lineWordsUncached);
+export const shortModelIds = memoize(shortModelIdsUncached);
+export const hyphenModelCodes = memoize(hyphenModelCodesUncached);
+const slotNumbers = memoize(slotNumbersUncached);

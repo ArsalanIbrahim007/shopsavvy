@@ -97,7 +97,9 @@ describe("main-thread responsiveness", () => {
   // A wall-clock measurement: on a busy machine (a scrape running, a CI runner) one sample can be slow for reasons that have nothing
   // to do with the code, so it gets two more tries. A real freeze fails all three.
   it("a worker keeps the main thread free while the same work in-thread blocks it", { retry: 2, timeout: 60000 }, async () => {
-    const listings = unrelated(300);
+    // Enough work to block the thread for well over 300 ms in-thread: 300 listings did until title readings were cached
+    // (memoize.js, 2026-10-26) and grouping became about ten times faster.
+    const listings = unrelated(1500);
 
     await groupListings(unrelated(3), { threshold: 0 }); // start the worker first so its start-up is not counted
 

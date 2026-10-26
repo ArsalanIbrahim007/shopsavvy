@@ -1,3 +1,8 @@
+import { memoize } from "./memoize.js";
+
+// Grouping re-reads the same titles millions of times: a third of the 85 s it took for the 2,502 "samsung" listings was inside
+// normalizeTitle alone (CPU profile, 2026-10-26). The pure title readers here keep their answers (see memoize.js).
+
 /**
  * Reduces platform-specific product titles to a comparable form.
  *
@@ -6,7 +11,13 @@
  * across stores.
  */
 export function normalizeTitle(title = "") {
-  return String(title)
+  return normalizeCached(String(title));
+}
+
+const normalizeCached = memoize((title) => normalizeUncached(title));
+
+function normalizeUncached(title) {
+  return title
     .toLowerCase()
 
     // Strip any HTML that leaked through the scraper
@@ -57,7 +68,7 @@ export function normalizeTitle(title = "") {
  * apart from every 512GB listing of the same phone (found by the recall
  * sample, 2026-10-26). Such a title now states no storage.
  */
-export function extractStorage(title = "") {
+function extractStorageUncached(title = "") {
   const normalized = normalizeTitle(title);
   const capacities = [];
 
@@ -75,17 +86,19 @@ export function extractStorage(title = "") {
  * Title tokens with capacity removed, used for model-level comparison.
  */
 export function modelTokens(title = "") {
-  return normalizeTitle(title)
-    .replace(/\b\d+(gb|tb)\b/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  return modelTokensCached(String(title));
 }
+
+const modelTokensCached = memoize((title) => normalizeTitle(title)
+  .replace(/\b\d+(gb|tb)\b/g, " ")
+  .replace(/\s+/g, " ")
+  .trim());
 /**
  * Screen size in inches. Decisive for televisions, monitors and laptops in the
  * same way storage capacity is decisive for phones: a 65 inch and an 85 inch
  * television are different products however similar their titles read.
  */
-export function extractScreenInches(title = "") {
+function extractScreenInchesUncached(title = "") {
   const match = String(title).toLowerCase()
     .match(/\b(\d{2}(?:\.\d)?)\s*(?:inch|inches|"|\u201d|\u2033)/);
 
@@ -102,7 +115,7 @@ export function extractScreenInches(title = "") {
  * two on price alone is misleading, because the non approved offer wins on a
  * difference the buyer has not accounted for.
  */
-export function extractPtaStatus(title = "") {
+function extractPtaStatusUncached(title = "") {
   const text = String(title).toLowerCase();
 
   if (/\bnon[\s-]?pta\b/.test(text)) return "non_pta";
@@ -199,7 +212,16 @@ function classifyTitleTokens(title, { minCodeLength = 3 } = {}) {
  * trained on -- see ml/features.js.
  */
 export function extractModelCodes(title = "", opts) {
-  return classifyTitleTokens(title, opts).codes;
+  return classifiedTokens(title, opts?.minCodeLength ?? 3).codes;
+}
+
+// Kept per title and code length (see memoize above). The sets returned are shared between callers, which only read them.
+const classifiedCaches = new Map();
+function classifiedTokens(title, minCodeLength) {
+  if (!classifiedCaches.has(minCodeLength)) {
+    classifiedCaches.set(minCodeLength, memoize((text) => classifyTitleTokens(text, { minCodeLength })));
+  }
+  return classifiedCaches.get(minCodeLength)(String(title));
 }
 
 /**
@@ -210,5 +232,10 @@ export function extractModelCodes(title = "", opts) {
  * @returns {Map<string, Set<number|string>>}
  */
 export function extractSpecs(title = "") {
-  return classifyTitleTokens(title).specs;
+  return classifiedTokens(title, 3).specs;
 }
+
+// The pure title readers above keep their answers, so grouping does not re-read the same titles millions of times (memoize.js).
+export const extractStorage = memoize(extractStorageUncached);
+export const extractScreenInches = memoize(extractScreenInchesUncached);
+export const extractPtaStatus = memoize(extractPtaStatusUncached);
