@@ -7,6 +7,7 @@ import { categoryName } from "../lib/categories.js";
 import { formatDropPercent, formatDay } from "../lib/drops.js";
 import { formatPrice } from "../lib/format.js";
 import { platformName } from "../lib/platforms.js";
+import { productPath } from "../lib/productPath.js";
 import { StoreMark } from "./StoreLogo.jsx";
 import ProductImage from "./ProductImage.jsx";
 import VerdictBadge from "./VerdictBadge.jsx";
@@ -16,7 +17,7 @@ export default function DropCard({ item }) {
   const { drop } = item;
   return (
     <article className="product-card card">
-      <Link to={`/product/${item._id}`} className="product-card__link">
+      <Link to={productPath(item._id, item.title)} className="product-card__link">
         <ProductImage src={item.imageUrl} alt="" />
         <p className="product-card__kicker small muted">{categoryName(item.productCategory)}</p>
         <h3 className="product-card__name">{item.title}</h3>

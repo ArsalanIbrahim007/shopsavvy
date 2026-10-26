@@ -12,6 +12,7 @@ import { currentOffers, isOutOfDate } from "./offerFreshness.service.js";
 import { isSuspectPrice } from "./pricePlausibility.service.js";
 import { extractPtaStatus } from "./productAttributes.service.js";
 import { siteUrl } from "./productMatch.service.js";
+import { productPath } from "./productPath.js";
 import { buildProductView } from "./productView.service.js";
 import { loadSpecsEngine, mergeSpecSheets, rankSpecScore, scoreSpecSheet } from "./specsEngine.service.js";
 
@@ -118,7 +119,7 @@ export async function describeProduct(listing, { strategy = "ml", now = Date.now
     specsFrom: from,
     specScore,
     rank,
-    productUrl: `${site}/product/${id}`,
+    productUrl: `${site}${productPath(id, listing.title)}`,
   };
 }
 

@@ -149,7 +149,7 @@ describe("matchResponse", () => {
     expect(r.discountVerdict).toEqual({ discount: null, market: { status: "consistent", reason: "ok" }, price: null });
     expect(r.advice).toEqual({ action: "WAIT", reason: "r" });
     expect(r.pta).toEqual({ product: "pta_approved", thisPage: "not_stated" });
-    expect(r.productUrl).toBe(`${site}/product/${ID(1)}`);
+    expect(r.productUrl).toBe(`${site}/product/galaxy-a17-8gb-256gb-${ID(1)}`); // the readable address (productPath.js)
     expect(r.searchUrl).toBe(`${site}/results?q=Galaxy%20A17`);
   });
 
@@ -176,7 +176,7 @@ describe("matchResponse", () => {
       { matchedBy: "similar", pageId: ID(1), pagePrice: 70000, title: "Galaxy A17 PTA Approved", site, now: NOW });
     expect(r).toMatchObject({ found: true, matchedBy: "similar", listing: null, discountVerdict: null, advice: null });
     expect(r.pta.thisPage).toBe("pta_approved");
-    expect(r.productUrl).toBe(`${site}/product/${ID(2)}`); // the product's best deal, not merely its cheapest offer
+    expect(r.productUrl).toBe(`${site}/product/galaxy-a17-8gb-256gb-${ID(2)}`); // the product's best deal, not merely its cheapest offer
     const alone = matchResponse({ ...view, offers: [self] }, { matchedBy: "similar", pageId: ID(1), title: "x", site, now: NOW });
     expect(alone).toMatchObject({ found: false, reason: "no_match", offers: [], productUrl: null });
   });
@@ -235,7 +235,7 @@ describe("GET /api/listings/match", () => {
     expect(body.offers.map((o) => o.platform).sort()).toEqual(["mega", "shophive"]);
     expect(body.offers.every((o) => !o.title.includes("512GB"))).toBe(true);
     expect(body.cheapest).toMatchObject({ platform: "mega", price: 390000, saving: 10000, cheaperThanThisPage: true });
-    expect(body.productUrl).toBe(`http://localhost:5173/product/${ID(1)}`);
+    expect(body.productUrl).toMatch(new RegExp(`^http://localhost:5173/product/apple-iphone-17[a-z0-9-]*-${ID(1)}$`));
   });
 
   it("takes a page that shows another variant than our record of its address to that variant's product", async () => {

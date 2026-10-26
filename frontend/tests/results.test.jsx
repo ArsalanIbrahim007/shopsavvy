@@ -190,14 +190,14 @@ describe("Results: the product cards", () => {
     expect(card).toHaveTextContent("Good deal");
     expect(card).toHaveTextContent("4 offers from 4 stores");
     expect(within(card).queryByRole("table")).toBeNull(); // the comparison table is on the product page
-    expect(within(card).getByRole("link", { name: "Samsung Galaxy A17 256GB" })).toHaveAttribute("href", "/product/a1");
+    expect(within(card).getByRole("link", { name: "Samsung Galaxy A17 256GB" })).toHaveAttribute("href", "/product/phone-a1"); // the offer's own title, then its id (lib/productPath.js)
   });
 
   it("opens the product page from a card, remembering this exact list so Back can return to it", async () => {
     renderResults("/results?q=samsung&sort=lowestPrice&platforms=mega,priceoye");
     await screen.findAllByRole("article");
     fireEvent.click(screen.getAllByRole("link", { name: "Samsung Galaxy A17 256GB" })[0]);
-    expect(where()).toBe("/product/a1"); // the card opens its cheapest offer
+    expect(where()).toBe("/product/phone-a1"); // the card opens its cheapest offer
     expect(screen.getByTestId("state")).toHaveTextContent("/results?q=samsung&sort=lowestPrice&platforms=mega,priceoye"); // the address as it was, filters included
   });
 

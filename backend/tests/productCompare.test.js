@@ -108,7 +108,8 @@ describe("GET /api/listings/compare", () => {
     expect(res.status).toBe(200);
     expect(body.products.map((p) => p.id)).toEqual([ID(4), ID(1)]);
     const a17 = body.products[1];
-    expect(a17).toMatchObject({ category: "smartphone", ptaStatus: "pta_approved", image: "https://img.example/a17.webp", productUrl: `http://localhost:5173/product/${ID(1)}` });
+    expect(a17).toMatchObject({ category: "smartphone", ptaStatus: "pta_approved", image: "https://img.example/a17.webp" });
+    expect(a17.productUrl).toMatch(new RegExp(`^http://localhost:5173/product/[a-z0-9-]*galaxy-a17[a-z0-9-]*-${ID(1)}$`));
     expect(a17.name).toMatch(/Galaxy A17/);
     expect(a17.offerCount).toBe(3);
     expect(a17.stores).toBe(3);

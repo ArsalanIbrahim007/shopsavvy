@@ -71,7 +71,7 @@ describe("Price drops page", () => {
     expect(card.textContent).toContain("Was PKR 204,999 on 11 Oct");
     expect(card.textContent).toContain("this price since 14 Oct");
     expect(within(card).getByText("PriceOye")).toBeInTheDocument();
-    expect(within(card).getByRole("link", { name: /Apple Watch Series 12/ })).toHaveAttribute("href", "/product/a");
+    expect(within(card).getByRole("link", { name: /Apple Watch Series 12/ })).toHaveAttribute("href", "/product/apple-watch-series-12-42mm-a");
     expect(screen.getByText(/2 offers, biggest drop first/)).toBeInTheDocument();
     expect(screen.getByText(/at least 5% and PKR 500/)).toBeInTheDocument();
   });

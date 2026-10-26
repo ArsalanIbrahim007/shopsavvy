@@ -110,6 +110,7 @@ export function rankDealGroups(groups, { now = Date.now(), maxAgeHours = DEFAULT
       storeCount: stores.size,
       lowest: {
         _id: String(lowest._id),
+        title: lowest.title ?? "", // the card's link carries it (the readable address, productPath.js)
         platform: lowest.platform,
         price: lowest.price,
         ptaStatus: lowest.ptaStatus ?? "unknown",

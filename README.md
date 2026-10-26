@@ -114,12 +114,14 @@ Windows, `src/scripts/ops/Run ShopSavvy Scrape.cmd` can be scheduled with Task S
 | `GROQ_API_KEY`, `SERPAPI_KEY` | Optional: an experimental product-discovery layer, off by default |
 
 The frontend is built with `VITE_API_URL` (the API's full address, default `http://localhost:5000/api`); its
-`robots.txt` names the sitemap from it, or from `SITEMAP_URL`.
+`robots.txt` names the sitemap from it, or from `SITEMAP_URL`. `SITE_URL` (the website's own address) gives link
+previews of the site their picture; a product's Share button hands out the API's `/share/product/...` page, whose
+preview shows that product.
 
 ### Deploying
 
 Set `CORS_ORIGINS`, `TRUST_PROXY`, `PUBLIC_SITE_URL`, `PUBLIC_BASE_URL` and the SMTP settings on the API's host, and
-build the frontend with `VITE_API_URL` pointing at the API. The nightly scrape needs a machine that stays on and can run
+build the frontend with `VITE_API_URL` pointing at the API and `SITE_URL` at the website. The nightly scrape needs a machine that stays on and can run
 Chromium.
 
 ## Tests

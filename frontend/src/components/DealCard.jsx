@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { formatPrice, timeAgo } from "../lib/format.js";
 import { categoryName } from "../lib/categories.js";
 import { platformName } from "../lib/platforms.js";
+import { productPath } from "../lib/productPath.js";
 import { StoreMark } from "./StoreLogo.jsx";
 import ProductImage from "./ProductImage.jsx";
 import VerdictBadge from "./VerdictBadge.jsx";
@@ -17,7 +18,7 @@ export default function DealCard({ deal }) {
 
   return (
     <article className="product-card card">
-      <Link to={`/product/${lowest._id}`} className="product-card__link">
+      <Link to={productPath(lowest._id, lowest.title)} className="product-card__link">
         <ProductImage src={deal.imageUrl} alt="" />
         <p className="product-card__kicker small muted">{categoryName(deal.category)}</p>
         <h3 className="product-card__name">{deal.productName}</h3>

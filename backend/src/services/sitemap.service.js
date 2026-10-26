@@ -15,6 +15,7 @@
 import { CATALOG_CATEGORIES, peekCatalogGroups } from "./catalogFeed.service.js";
 import { currentOffers } from "./offerFreshness.service.js";
 import { siteUrl } from "./productMatch.service.js";
+import { productPath } from "./productPath.js";
 
 const CACHE_TTL_MS = 60 * 60 * 1000;
 const PARTIAL_TTL_MS = 5 * 60 * 1000;
@@ -79,7 +80,7 @@ export function sitemapEntries(groupsByCategory, { site, now = Date.now() }) {
       if (!offer || seen.has(String(offer._id))) continue;
       seen.add(String(offer._id));
       const checked = lastChecked(group);
-      entries.push({ loc: `${site}/product/${encodeURIComponent(String(offer._id))}`, ...(checked ? { lastmod: day(checked) } : {}), changefreq: "daily", priority: "0.6" });
+      entries.push({ loc: `${site}${productPath(offer._id, offer.title)}`, ...(checked ? { lastmod: day(checked) } : {}), changefreq: "daily", priority: "0.6" });
     }
   }
   return entries.slice(0, MAX_URLS);

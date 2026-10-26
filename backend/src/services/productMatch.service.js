@@ -22,6 +22,7 @@ import { isOutOfDate } from "./offerFreshness.service.js";
 import { lowestBadge } from "./priceOutlook.service.js";
 import { isSuspectPrice } from "./pricePlausibility.service.js";
 import { extractCondition, extractPtaStatus } from "./productAttributes.service.js";
+import { productPath } from "./productPath.js";
 import { buildProductView } from "./productView.service.js";
 import { escapeRegex } from "./searchMatching.service.js";
 import { attributeConflict } from "./similarity.service.js";
@@ -227,7 +228,7 @@ export function matchResponse(view, { matchedBy, pageId, pagePrice, title, site,
     discountVerdict: stored ? discountVerdictOf(self) : null,
     advice: stored && self.recommendation ? { action: self.recommendation.action, reason: self.recommendation.reason ?? "" } : null,
     pta: { product: productPta, thisPage: stored ? self.ptaAssessment ?? ptaOf(self) : extractPtaStatus(title || "") },
-    productUrl: `${site}/product/${productId}`,
+    productUrl: `${site}${productPath(productId, view.offers.find((o) => idOf(o) === productId)?.title)}`,
     searchUrl: `${site}/results?q=${encodeURIComponent(title || self.title || "")}`,
   };
 }

@@ -114,8 +114,9 @@ describe("Product page: what it tells search engines", () => {
     const script = container.querySelector('script[type="application/ld+json"]');
     expect(JSON.parse(script.textContent)).toMatchObject({ "@type": "Product", offers: { lowPrice: 64000, highPrice: 67000, offerCount: 3 } });
 
-    await waitFor(() => expect(document.querySelector('link[rel="canonical"]')?.getAttribute("href")).toBe(`${window.location.origin}/product/p1`));
-    expect(JSON.parse(script.textContent).url).toBe(`${window.location.origin}/product/p1`);
+    const canonical = `${window.location.origin}/product/samsung-galaxy-a17-256gb-p1`; // readable: the offer's title, then its id
+    await waitFor(() => expect(document.querySelector('link[rel="canonical"]')?.getAttribute("href")).toBe(canonical));
+    expect(JSON.parse(script.textContent).url).toBe(canonical);
     expect(document.querySelector('meta[name="description"]').getAttribute("content")).toMatch(/^Samsung Galaxy A17 256GB: lowest price PKR 64,000 at PriceOye/);
 
     unmount(); // leaving the page takes its canonical address with it

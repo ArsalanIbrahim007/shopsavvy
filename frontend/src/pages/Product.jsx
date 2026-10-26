@@ -3,13 +3,15 @@
 // Below it, about the listing the shopper opened: the three checks behind its verdict (with the server's
 // reasons), every store's price history, the price alert form, the specifications, and the cross-store summary.
 
-import { Link, useLocation, useParams, useSearchParams } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { getListing } from "../api/endpoints.js";
 import { useAsync } from "../hooks/useAsync.js";
 import { useCanonical, usePageDescription, usePageTitle } from "../hooks/usePageTitle.js";
 import { formatPrice } from "../lib/format.js";
 import { platformName } from "../lib/platforms.js";
+import { listingIdFromParam, productPath } from "../lib/productPath.js";
 import { jsonLdText, productDescription, productJsonLd } from "../lib/structuredData.js";
 import { summarizeOffers } from "../lib/summary.js";
 import ErrorState from "../components/ErrorState.jsx";
@@ -18,6 +20,7 @@ import CrossStoreSummary from "../components/product/CrossStoreSummary.jsx";
 import DealVerdict from "../components/product/DealVerdict.jsx";
 import PriceOutlook from "../components/product/PriceOutlook.jsx";
 import PriceHistoryChart from "../components/product/PriceHistoryChart.jsx";
+import ShareButton from "../components/product/ShareButton.jsx";
 import Specifications from "../components/product/Specifications.jsx";
 import ResultGroup from "../components/results/ResultGroup.jsx";
 import { Skeleton } from "../components/Skeleton.jsx";
@@ -60,7 +63,7 @@ function productName({ listing, productGroup }, state) {
  */
 function canonicalAddress(offers) {
   const lowest = summarizeOffers(offers).lowest;
-  return lowest?._id ? `${window.location.origin}/product/${encodeURIComponent(lowest._id)}` : null;
+  return lowest?._id ? `${window.location.origin}${productPath(lowest._id, lowest.title)}` : null;
 }
 
 /** The tab title: the product and its lowest price ("Apple iPhone 17 Pro 256GB from PKR 439,999"). */
@@ -70,9 +73,20 @@ function productTitle(data, state) {
 }
 
 export default function Product() {
-  const { id } = useParams();
-  const { state } = useLocation();
+  // The address is /product/<words of the title>-<id> (lib/productPath.js); only the id is read, so an old /product/<id> works too.
+  const { id: param } = useParams();
+  const id = listingIdFromParam(param);
+  const { state, search } = useLocation();
+  const navigate = useNavigate();
   const product = useAsync((signal) => getListing(id, { signal }), [id]);
+
+  // An old or cut address is replaced by the readable one in the address bar (same page, no reload), so what a shopper copies
+  // names the product. Only when the readable address leads back to this same id: otherwise the page would load again elsewhere.
+  const readable = product.status === "success" ? productPath(product.data.listing._id, product.data.listing.title) : null;
+  const leadsBack = readable && listingIdFromParam(decodeURIComponent(readable.slice("/product/".length))) === id;
+  useEffect(() => {
+    if (leadsBack && `/product/${param}` !== readable) navigate({ pathname: readable, search }, { replace: true, state });
+  }, [leadsBack, readable, param, search, state, navigate]);
   usePageTitle(product.status === "success" ? productTitle(product.data, state) : product.status === "error" ? "Product" : null);
   const loaded = product.status === "success" ? { name: productName(product.data, state), offers: offersOf(product.data) } : null;
   usePageDescription(loaded ? productDescription(loaded) : null);
@@ -120,10 +134,12 @@ export default function Product() {
   const { listing, outlook } = product.data;
   const allOffers = offersOf(product.data);
   const group = { productName: productName(product.data, state), offers: allOffers };
+  const shared = summarizeOffers(allOffers).lowest ?? listing; // the share page opens the product at its canonical offer
 
   return (
     <div className="container product">
       {back}
+      <ShareButton id={shared._id} title={shared.title} name={group.productName} />
       <StructuredData data={productJsonLd({ name: group.productName, offers: allOffers, url: canonical })} />
       <ResultGroup group={group} currentId={listing._id} colour={colour} onColour={chooseColour} />
 

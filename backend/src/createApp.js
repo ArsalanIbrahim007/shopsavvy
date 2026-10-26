@@ -22,6 +22,7 @@ import integrityRoutes from "./routes/integrity.routes.js";
 import priceAlertRoutes from "./routes/priceAlert.routes.js";
 import alertPageRoutes from "./routes/alertPages.routes.js";
 import sitemapRoutes from "./routes/sitemap.routes.js";
+import shareRoutes from "./routes/share.routes.js";
 
 export function createApp(env = process.env) {
   const app = express();
@@ -61,6 +62,8 @@ export function createApp(env = process.env) {
   app.use("/alerts", alertPageRoutes);
   // For search engines; the frontend's robots.txt points here.
   app.use("/sitemap.xml", sitemapRoutes);
+  // A shared product link's preview card, then the product's page on the site.
+  app.use("/share", shareRoutes);
 
   // Must stay last: anything nothing above answered, and every error thrown above.
   app.use(notFoundHandler);
