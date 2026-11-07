@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>ShopSavvy</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header>
+    <img src="icons/icon48.png" alt="" width="24" height="24" />
+    <span class="logo-text">ShopSavvy</span>
+    <span class="tagline">Prices across Pakistan's stores</span>
+  </header>
+
+  <main id="app" aria-live="polite">
+    <!-- Filled by popup.js: one of "not a store page", "checking", "not found", "found", "cannot reach ShopSavvy". -->
+  </main>
+
+  <details id="settings">
+    <summary>Settings</summary>
+    <form id="settings-form">
+      <label for="api">ShopSavvy address</label>
+      <input id="api" type="url" placeholder="http://localhost:5000" required />
+      <label class="check"><input id="panel" type="checkbox" /> Show the panel on store pages</label>
+      <button type="submit">Save</button>
+      <p id="settings-status" class="muted" role="status"></p>
+    </form>
+  </details>
+
+  <script src="stores.js"></script>
+  <script src="format.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

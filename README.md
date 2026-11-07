@@ -23,8 +23,9 @@ Karachi.
   to buy now or wait, and marks the lowest price recorded. A price-drops page lists recent falls.
 - **Price alerts** by email (no account: double opt-in, a cancel link in every email).
 - **Paste a link** from Amazon, AliExpress or Temu to see what the product costs in Pakistan.
-- **For the browser extension** (in progress): an endpoint that tells which product a store's page is, and where it is
-  cheaper (`GET /api/listings/match`).
+- **Browser extension** (`extension/`, Chrome and Edge): on a product page at any of 24 stores, a panel and the toolbar badge
+  say where the same product is cheaper and whether the store's discount is real (`GET /api/listings/match`; see
+  `extension/README.md`).
 - **Found by search engines:** a sitemap, schema.org product data and canonical addresses on product pages.
 
 ## How accurate it is

@@ -1,0 +1,49 @@
+{
+  "manifest_version": 3,
+  "name": "ShopSavvy: compare prices in Pakistan",
+  "short_name": "ShopSavvy",
+  "version": "1.0.0",
+  "description": "On a store's product page, see the same product's price at other Pakistani stores, and whether its discount is real.",
+  "permissions": ["storage", "activeTab"],
+  "host_permissions": ["http://localhost:5000/*", "http://127.0.0.1:5000/*"],
+  "optional_host_permissions": ["https://*/*", "http://*/*"],
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.priceoye.pk/*",
+        "https://*.mega.pk/*",
+        "https://*.shophive.com/*",
+        "https://*.ishopping.pk/*",
+        "https://*.paklap.pk/*",
+        "https://*.eezepc.com/*",
+        "https://*.w11stop.com/*",
+        "https://*.xcessorieshub.com/*",
+        "https://*.mistore.pk/*",
+        "https://*.mymart.pk/*",
+        "https://*.alfatah.pk/*",
+        "https://*.ledshop.pk/*",
+        "https://*.techroid.com/*",
+        "https://*.subhanelectronics.pk/*",
+        "https://*.jalalelectronics.com/*",
+        "https://*.japanelectronics.com.pk/*",
+        "https://*.zerolifestyle.co/*",
+        "https://*.audionic.co/*",
+        "https://*.ronin.pk/*",
+        "https://*.baseus.pk/*",
+        "https://*.infinix.pk/*",
+        "https://*.alfamall.com/*",
+        "https://digimall.faysalbank.com/*",
+        "https://*.daraz.pk/*"
+      ],
+      "js": ["stores.js", "format.js", "reader.js", "content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "ShopSavvy",
+    "default_icon": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
+  },
+  "icons": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
+}

@@ -1,0 +1,31 @@
+/* popup.css — the toolbar popup. Colours as the site's (frontend/src/styles/tokens.css): navy brand, amber action. */
+:root { --brand: #1a3c6e; --accent: #feae2c; --ink: #10233f; --muted: #5b6b80; --line: #d5dce6; --save: #b45309; --best: #047857; }
+* { box-sizing: border-box; }
+body { width: 340px; margin: 0; font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: #fff; }
+header { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--brand); color: #fff; }
+.logo-text { font-weight: 700; }
+.tagline { margin-left: auto; font-size: 11px; opacity: .8; }
+main { padding: 14px; display: grid; gap: 10px; min-height: 90px; }
+h2 { margin: 0; font-size: 15px; }
+.muted { color: var(--muted); font-size: 12px; margin: 0; }
+.headline { font-weight: 700; }
+.save .headline { color: var(--save); }
+.best .headline { color: var(--best); }
+.this { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; }
+.this .title { font-weight: 600; }
+ul.notes { margin: 0; padding-left: 18px; color: var(--muted); font-size: 12px; }
+ol.offers { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+ol.offers li { display: flex; justify-content: space-between; gap: 8px; padding: 6px 8px; border-radius: 6px; background: #f4f6f9; }
+ol.offers li.cheapest { background: #fff4e0; font-weight: 600; }
+ol.offers a { color: var(--brand); text-decoration: none; }
+ol.offers .flag { color: var(--muted); font-size: 11px; font-weight: 400; }
+.button { display: block; text-align: center; padding: 8px 10px; border-radius: 8px; background: var(--accent); color: var(--ink); font-weight: 700; text-decoration: none; }
+.button.ghost { background: none; border: 1px solid var(--line); color: var(--brand); }
+details { border-top: 1px solid var(--line); padding: 8px 14px 12px; }
+summary { cursor: pointer; color: var(--muted); font-size: 12px; }
+form { display: grid; gap: 6px; margin-top: 8px; }
+label { font-size: 12px; }
+label.check { display: flex; gap: 6px; align-items: center; }
+input[type="url"] { padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; font: inherit; }
+form button { justify-self: start; padding: 6px 12px; border: 0; border-radius: 6px; background: var(--brand); color: #fff; font: inherit; cursor: pointer; }
+a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
