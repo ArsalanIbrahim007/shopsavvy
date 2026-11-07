@@ -18,6 +18,7 @@ import ErrorState from "../components/ErrorState.jsx";
 import AlertForm from "../components/product/AlertForm.jsx";
 import CrossStoreSummary from "../components/product/CrossStoreSummary.jsx";
 import DealVerdict from "../components/product/DealVerdict.jsx";
+import DropChance from "../components/product/DropChance.jsx";
 import PriceOutlook from "../components/product/PriceOutlook.jsx";
 import PriceHistoryChart from "../components/product/PriceHistoryChart.jsx";
 import ShareButton from "../components/product/ShareButton.jsx";
@@ -131,7 +132,7 @@ export default function Product() {
     );
   }
 
-  const { listing, outlook } = product.data;
+  const { listing, outlook, dropChances } = product.data;
   const allOffers = offersOf(product.data);
   const group = { productName: productName(product.data, state), offers: allOffers };
   const shared = summarizeOffers(allOffers).lowest ?? listing; // the share page opens the product at its canonical offer
@@ -144,6 +145,7 @@ export default function Product() {
       <ResultGroup group={group} currentId={listing._id} colour={colour} onColour={chooseColour} />
 
       <PriceOutlook outlook={outlook} />
+      <DropChance chances={dropChances} />
 
       <section className="product-section" aria-labelledby="verdict-heading">
         <h2 id="verdict-heading">Deal verdict for {platformName(listing.platform)}</h2>

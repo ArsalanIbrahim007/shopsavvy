@@ -7,6 +7,7 @@ vi.mock("../src/api/endpoints.js", () => ({
   getHealth: vi.fn(async () => ({ status: "ok", lastScrapeAt: new Date().toISOString() })),
   getStats: vi.fn(async () => ({ products: 10, platforms: 7, categories: [] })),
   getDeals: vi.fn(async () => ({ deals: [], generatedAt: null, maxAgeHours: 72 })),
+  getCaught: vi.fn(async () => ({ counts: { fakeDiscount: 0, aboveMarket: 0, unusualPrice: 0 }, examples: [], generatedAt: null })),
   getCatalog: vi.fn(async () => ({ groups: [], total: 0, offset: 0, generatedAt: null })),
   createAlert: vi.fn(),
   getListing: vi.fn(),

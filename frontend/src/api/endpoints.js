@@ -45,6 +45,8 @@ export async function getListing(id, { signal } = {}) {
     summary: body.summary ?? null,
     productGroup: body.productGroup ?? null,
     outlook: body.outlook ?? null,
+    // The trained drop forecast: the stores whose price is among those it ranks most likely to fall this week (often none).
+    dropChances: body.dropChances ?? [],
   };
 }
 
@@ -70,6 +72,19 @@ export async function getDeals({ category, limit, signal } = {}) {
  * @param {number} [options.limit]     1-50, default 24
  * @returns {Promise<{drops: object[], generatedAt: string|null, rules: object|null}>}
  */
+/**
+ * "Deals we didn't show you": how many fake discounts, above-market "was" prices and unusual prices the checks caught, and up to
+ * four examples with their evidence (backend/src/services/caughtFeed.service.js).
+ */
+export async function getCaught({ signal } = {}) {
+  const body = await request("/listings/caught", { signal });
+  return {
+    counts: body.counts ?? { fakeDiscount: 0, aboveMarket: 0, unusualPrice: 0 },
+    examples: body.examples ?? [],
+    generatedAt: body.generatedAt ?? null,
+  };
+}
+
 export async function getPriceDrops({ category, limit, signal } = {}) {
   const body = await request("/listings/drops", { params: { category, limit }, signal });
   return { drops: body.data ?? [], generatedAt: body.generatedAt ?? null, rules: body.rules ?? null };

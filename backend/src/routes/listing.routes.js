@@ -1,6 +1,6 @@
 import express from "express";
 
-import { getCategoryCatalog, getDeals, getListingStats, getPriceDropsFeed } from "../controllers/feeds.controller.js";
+import { getCategoryCatalog, getCaughtFeed, getDeals, getListingStats, getPriceDropsFeed } from "../controllers/feeds.controller.js";
 import { addListingPriceHistory, createListing, getListingHistory, getListings } from "../controllers/listing.controller.js";
 import { getListingDetails, getProductComparison, getProductMatch } from "../controllers/product.controller.js";
 import { searchListings, suggestListings } from "../controllers/search.controller.js";
@@ -244,6 +244,25 @@ router.get("/deals", dealsLimiter, getDeals);
  *         description: Unknown category.
  */
 router.get("/drops", dealsLimiter, getPriceDropsFeed);
+
+/**
+ * @swagger
+ * /api/listings/caught:
+ *   get:
+ *     summary: Deals we did not show you
+ *     description: >
+ *       What ShopSavvy's checks caught across the category catalogues: fake discounts (a "was" price above anything the
+ *       listing's price history shows), "was" prices above every other store (the trained anomaly model), and unusual prices
+ *       (probable listing errors, never counted as the lowest price). Counts, and up to four examples with their evidence, the
+ *       strongest first (both checks agreeing, then the biggest claimed discount). Built from the cached catalogues only; cached
+ *       ten minutes.
+ *     tags:
+ *       - Listings
+ *     responses:
+ *       200:
+ *         description: "`counts` (fakeDiscount, aboveMarket, unusualPrice), `examples`, `generatedAt`, `missing` (categories not computed yet)."
+ */
+router.get("/caught", dealsLimiter, getCaughtFeed);
 
 /**
  * @swagger

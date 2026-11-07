@@ -1,6 +1,6 @@
 # Will the price drop within 7 days? (R2)
 
-Generated 2026-11-07T00:59:00.319Z by `src/scripts/ml/forecast/02-train-evaluate.js` from `dataset.json` (built 2026-11-07 by 01-build-dataset.js; samples from 2026-10-04).
+Generated 2026-11-07T02:02:19.202Z by `src/scripts/ml/forecast/02-train-evaluate.js` from `dataset.json` (built 2026-11-07 by 01-build-dataset.js; samples from 2026-10-04).
 
 A sample is one recorded day of one listing. It is a drop when a record within the next 7 days is 3% or more below that day's price.
 A day whose next week was not seen (no record at least 5 days on), or with fewer than 7 days of records behind it, is not a sample.
@@ -81,6 +81,14 @@ L2 0.1. Weights on standardized features (positive raises the predicted chance o
 | is_smartwatch | +0.010 |
 | is_tablet | -0.008 |
 | claimedDiscount | +0.004 |
+
+## On the product page
+
+A store's price whose score is in the top 5.0% of all samples (score 0.0172 or more) gets the note "Higher chance
+of a price drop this week" (src/services/dropChance.service.js). It quotes the strict test's own top 5.0%: those dropped
+7.7 times as often as the rest (38.6% of the drops), yet only 5.5% of them did, so it never says a price will drop.
+5.0% rather than 10%: at 10% the note showed on 23 of the 48 most compared products' pages. The store-wide feature
+(storeFell7) is set to its training average there, as it needs every listing's history.
 
 ## Limits
 

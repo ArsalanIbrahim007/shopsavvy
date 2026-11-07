@@ -6,6 +6,7 @@ vi.mock("../src/api/endpoints.js", () => ({
   getSuggestions: vi.fn(async () => []),
   getStats: vi.fn(),
   getDeals: vi.fn(),
+  getCaught: vi.fn(async () => ({ counts: { fakeDiscount: 0, aboveMarket: 0, unusualPrice: 0 }, examples: [], generatedAt: null })),
   getCatalog: vi.fn(),
   getHealth: vi.fn(),
   searchListings: vi.fn(),

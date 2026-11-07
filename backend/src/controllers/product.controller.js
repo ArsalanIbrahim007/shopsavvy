@@ -12,6 +12,7 @@ import { outlookForOffers } from "../services/priceOutlook.service.js";
 import { isSuspectPrice } from "../services/pricePlausibility.service.js";
 import { compareProducts, parseCompareIds } from "../services/productCompare.service.js";
 import { LIMITS as MATCH_LIMITS, matchPage } from "../services/productMatch.service.js";
+import { dropChance } from "../services/dropChance.service.js";
 import { buildProductView } from "../services/productView.service.js";
 import { textParam } from "../services/queryParams.service.js";
 import { priceStats } from "./priceStats.js";
@@ -135,6 +136,17 @@ export async function getListingDetails(req, res) {
     console.error("[outlook] could not be worked out:", error.message);
   }
 
+  // The trained drop forecast, per store's price (dropChance.service.js): only the offers in its riskiest 10%, with what the strict
+  // test showed for them. Context only, like the outlook.
+  let dropChances = [];
+  try {
+    dropChances = offers
+      .map((offer) => ({ id: String(offer._id), platform: offer.platform, price: offer.price, chance: dropChance(offer) }))
+      .filter((entry) => entry.chance);
+  } catch (error) {
+    console.error("[dropChance] could not be worked out:", error.message);
+  }
+
   res.json({
     success: true,
     listing: selectedListing,
@@ -157,6 +169,7 @@ export async function getListingDetails(req, res) {
         null,
     },
     outlook,
+    dropChances,
     offers,
   });
 }

@@ -484,3 +484,13 @@ describe("responses in general", () => {
     expect(JSON.stringify(body)).not.toMatch(/secret|hunter2|mongodb:\/\//);
   });
 });
+
+describe("GET /api/listings/caught", () => {
+  // Registered before /:id, which would otherwise answer 400 "Invalid listing ID" for "caught".
+  it("answers the feed of caught discounts, from the catalogues computed so far", async () => {
+    const { res, body } = await json("/api/listings/caught");
+    expect(res.status).toBe(200);
+    expect(body).toMatchObject({ success: true, counts: { fakeDiscount: expect.any(Number), aboveMarket: expect.any(Number), unusualPrice: expect.any(Number) } });
+    expect(Array.isArray(body.examples)).toBe(true);
+  });
+});

@@ -118,7 +118,7 @@ export default function OfferTable({ offers, name, currentId, colour = null }) {
                 <td><VerdictCell offer={offer} lowestPrice={lowest?.price ?? null} /></td>
                 <td className="small">
                   {offer.inStock === false ? <span className="muted">Out of stock</span> : "In stock"}
-                  {offer.lastScrapedAt && <span className="offer-table__age muted">{timeAgo(offer.lastScrapedAt)}</span>}
+                  {offer.lastScrapedAt && <span className="offer-table__age muted">Price checked {timeAgo(offer.lastScrapedAt)}</span>}
                 </td>
                 <td>
                   {href ? (

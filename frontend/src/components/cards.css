@@ -23,3 +23,8 @@
 /* card grids: one column on phones, more as the screen allows */
 .card-grid { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
 @media (max-width: 480px) { .card-grid { grid-template-columns: 1fr; } }
+
+/* "Deals we didn't show you" (CaughtCard.jsx): the claim struck through, and the evidence against it */
+.caught-card__claim { font-size: 0.95rem; font-weight: 600; }
+.caught-card__claim s { color: var(--ink-mute); font-weight: 400; }
+.caught-card__evidence { margin: 0; padding-left: 1.1em; color: var(--ink-soft, var(--ink-mute)); display: grid; gap: 2px; }

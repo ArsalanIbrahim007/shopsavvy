@@ -30,6 +30,9 @@ const PROVISIONAL = { testShare: 0.3, seed: 20261022 };
 const L2_GRID = [0.001, 0.01, 0.1, 1];
 const TRAIN = { epochs: 1500, lr: 0.2 };
 const SHUFFLES = 20;
+// The share of prices the product page flags as more likely to drop. 5%, not the report's 10%: at 10% the note showed on 23 of the
+// 48 most compared products' pages (popular phones' prices move often), where it would stop meaning anything (2026-11-07).
+const FLAG_SHARE = 0.05;
 
 const data = JSON.parse(readFileSync(join(DIR, "dataset.json"), "utf8"));
 const rows = data.rows.map(([listing, platform, category, day, label, ...features]) => ({ listing, platform, category, day, label, features }));
@@ -86,6 +89,7 @@ function evaluate(train, test) {
       brierSkill: probability ? brierSkill(scores, labels, baseRate) : null,
       brierSkillInterval: probability && !constant ? clusterBootstrap(groups, (ix) => brierSkill(...pick(ix), baseRate)) : null,
       top: atTop(scores, labels, 0.1),
+      flagTop: atTop(scores, labels, FLAG_SHARE),
     };
   });
   const model0 = results[0];
@@ -174,6 +178,14 @@ const provisional = evaluate(provisionalTrain, provisionalTest);
 
 // ---- the model kept for use: every sample ----
 const final = fitModel(rows);
+// What the product page may claim (services/dropChance.service.js): a price is flagged when its score is in the top FLAG_SHARE of all
+// samples, and the page quotes what the strict test showed for its own top FLAG_SHARE (how much more often those dropped, and how
+// often at all). With no strict test there is nothing honest to quote, and nothing is flagged.
+const finalScores = rows.map((r) => predictProba(r.features, final.model)).sort((a, b) => b - a);
+const strictTop = strict?.results[0].flagTop ?? null;
+const flag = strictTop
+  ? { share: FLAG_SHARE, threshold: finalScores[Math.floor(finalScores.length * FLAG_SHARE)], lift: strictTop.lift, precision: strictTop.precision, recall: strictTop.recall, auc: strict.results[0].auc }
+  : null;
 writeFileSync(join(DIR, "model.artifact.json"), JSON.stringify({
   trainedAt: new Date().toISOString(),
   rules: FORECAST,
@@ -184,6 +196,7 @@ writeFileSync(join(DIR, "model.artifact.json"), JSON.stringify({
   samples: rows.length,
   sampleDays: [dayDate(days[0]), dayDate(days.at(-1))],
   evaluation: strict ? "strict" : "provisional",
+  flag,
 }, null, 2));
 
 const weights = FEATURE_NAMES.map((n, i) => [n, final.model.weights[i]]).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
@@ -225,6 +238,18 @@ const report = [
   "| Feature | Weight |",
   "|---|---|",
   ...weights.map(([n, w]) => `| ${n} | ${w >= 0 ? "+" : ""}${w.toFixed(3)} |`),
+  "",
+  "## On the product page",
+  "",
+  ...(flag
+    ? [
+      `A store's price whose score is in the top ${pct(flag.share)} of all samples (score ${flag.threshold.toFixed(4)} or more) gets the note "Higher chance`,
+      `of a price drop this week" (src/services/dropChance.service.js). It quotes the strict test's own top ${pct(flag.share)}: those dropped`,
+      `${flag.lift.toFixed(1)} times as often as the rest (${pct(flag.recall)} of the drops), yet only ${pct(flag.precision)} of them did, so it never says a price will drop.`,
+      `${pct(flag.share)} rather than 10%: at 10% the note showed on 23 of the 48 most compared products' pages. The store-wide feature`,
+      "(storeFell7) is set to its training average there, as it needs every listing's history.",
+    ]
+    : ["Nothing is shown: there is no strict test to quote yet."]),
   "",
   "## Limits",
   "",

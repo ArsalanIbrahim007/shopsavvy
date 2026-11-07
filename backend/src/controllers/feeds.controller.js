@@ -5,6 +5,7 @@ import { AppError } from "../errors/AppError.js";
 import { VISIBLE_PLATFORMS_FILTER } from "../config/platforms.js";
 import Listing from "../models/listing.model.js";
 import { getCatalog, isCatalogCategory, CATALOG_CATEGORIES } from "../services/catalogFeed.service.js";
+import { getCaught } from "../services/caughtFeed.service.js";
 import { getTopDeals, isDealCategory, DEAL_CATEGORIES } from "../services/dealsFeed.service.js";
 import { DEFAULT_MAX_AGE_HOURS } from "../services/dealsRanking.service.js";
 import { DROPS, getPriceDrops } from "../services/priceDrops.service.js";
@@ -99,4 +100,14 @@ export async function getCategoryCatalog(req, res) {
 
   res.set("Cache-Control", "public, max-age=60");
   res.json({ success: true, category, count: groups.length, total, offset, limit, generatedAt, data: groups });
+}
+
+/**
+ * "Deals we didn't show you": what the fake-discount, market and plausibility checks caught, with the evidence (see
+ * caughtFeed.service.js). From the cached catalogues only.
+ */
+export function getCaughtFeed(req, res) {
+  const feed = getCaught();
+  res.set("Cache-Control", `public, max-age=${feed.missing.length ? 30 : 60}`);
+  res.json({ success: true, ...feed });
 }

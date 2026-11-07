@@ -6,7 +6,7 @@ import { Link, useLocation } from "react-router-dom";
 
 import { conditionFlag } from "../lib/condition.js";
 import { outOfDateFlag } from "../lib/freshness.js";
-import { formatPrice } from "../lib/format.js";
+import { formatPrice, timeAgo } from "../lib/format.js";
 import { lowestFlag } from "../lib/outlook.js";
 import { platformName } from "../lib/platforms.js";
 import { productPath } from "../lib/productPath.js";
@@ -68,6 +68,8 @@ export default function ProductCard({ group }) {
       <p className="small muted">
         {summary.count} {summary.count === 1 ? "offer" : "offers"} from {summary.platformCount} {summary.platformCount === 1 ? "store" : "stores"}
       </p>
+      {/* When the price shown was last read from the store, as on the product page's offers table. */}
+      {best.lastScrapedAt && <p className="small muted">Price checked {timeAgo(best.lastScrapedAt)}</p>}
     </article>
   );
 }

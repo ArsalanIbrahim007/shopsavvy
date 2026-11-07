@@ -8,12 +8,13 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
-import { getCatalog, getDeals, getStats } from "../api/endpoints.js";
+import { getCatalog, getCaught, getDeals, getStats } from "../api/endpoints.js";
 import { useAsync } from "../hooks/useAsync.js";
 import { usePageTitle } from "../hooks/usePageTitle.js";
 import { featuredCategories } from "../lib/categories.js";
 import { formatNumber, timeAgo } from "../lib/format.js";
 import { clearRecentSearches, getRecentSearches } from "../lib/recentSearches.js";
+import CaughtCard from "../components/CaughtCard.jsx";
 import DealCard from "../components/DealCard.jsx";
 import ErrorState from "../components/ErrorState.jsx";
 import ProductCard from "../components/ProductCard.jsx";
@@ -151,6 +152,31 @@ function Deals() {
   );
 }
 
+// "Deals we didn't show you": the discounts our checks caught, with the evidence. Other comparison sites show such claims as their
+// hottest deals ("89% off" a Rs 10,000 inverter sold for Rs 94,000 elsewhere); this shows what checking them is worth.
+function Caught() {
+  const caught = useAsync((signal) => getCaught({ signal }), []);
+  if (caught.status !== "success" || caught.data.examples.length === 0) return null; // a bonus: nothing while loading or on error
+
+  const { counts, examples } = caught.data;
+  return (
+    <section className="home-section container" aria-labelledby="caught-heading">
+      <div className="home-section__head">
+        <h2 id="caught-heading">Deals we didn't show you</h2>
+        <Link to="/honest-prices">How we check</Link>
+      </div>
+      <p className="muted" style={{ marginTop: "calc(-1 * var(--space-2))" }}>
+        Our checks caught {formatNumber(counts.fakeDiscount)} discounts that the price history does not support,{" "}
+        {formatNumber(counts.aboveMarket)} "was" prices above what every other store charges, and {formatNumber(counts.unusualPrice)}{" "}
+        prices that look like listing errors. None of them is shown as a deal. The worst:
+      </p>
+      <div className="card-grid">
+        {examples.map((item) => <CaughtCard key={item.id} item={item} />)}
+      </div>
+    </section>
+  );
+}
+
 // The products of one category that the most stores sell, straight from the server's cached catalog.
 function MostCompared({ category, title, allLabel }) {
   const products = useAsync((signal) => getCatalog({ category, limit: 8, signal }), [category]);
@@ -206,6 +232,7 @@ export default function Home() {
       <TrustRow stats={stats} />
       <Categories stats={stats} />
       <Deals />
+      <Caught />
       <MostCompared category="smartphone" title="Most compared phones" allLabel="See all phones" />
       <MostCompared category="laptop" title="Most compared laptops" allLabel="See all laptops" />
       <MostCompared category="tv" title="Most compared TVs" allLabel="See all TVs" />

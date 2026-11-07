@@ -165,3 +165,7 @@
 .outlook-split__part--steady { background: var(--ink-faint); opacity: 0.45; }
 .outlook-split__part--rose { background: var(--caution); }
 .outlook .small a { text-decoration: underline; } /* a link inside a sentence must not rely on colour alone */
+
+/* The trained drop forecast's note (DropChance.jsx): framed like the outlook, in the "wait" colour */
+.drop-chance { padding: var(--space-5); border-left: 6px solid var(--caution); }
+.drop-chance h2 { font-size: 1.125rem; }
