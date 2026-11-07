@@ -59,11 +59,19 @@
     const notes = el("ul", { class: "notes" });
     for (const line of lines) notes.append(el("li", {}, line));
 
+    // One row per store, at its lowest price: a marketplace's several sellers (AlfaMall listed four times, two at one price) are one
+    // store to the shopper. The offers come cheapest first, so a store's first is its lowest.
+    const byStore = new Map();
+    for (const offer of result.offers) {
+      if (byStore.has(offer.platform)) byStore.get(offer.platform).more += 1;
+      else byStore.set(offer.platform, { offer, more: 0 });
+    }
+    const stores = [...byStore.values()];
     const offers = el("ol", { class: "offers", "aria-label": "Other stores, cheapest first" });
-    for (const offer of result.offers.slice(0, 6)) {
+    for (const { offer, more } of stores.slice(0, 6)) {
       const li = el("li", { class: offer === result.offers.find((o) => o.id === result.cheapest?.id) ? "cheapest" : "" });
       const name = link(offer.url, "", storeName(offer.platform)) ?? el("span", {}, storeName(offer.platform));
-      const flags = [offer.outOfDate && "old price", offer.unusualPrice && "unusual", offer.condition !== "new" && offer.condition, !offer.inStock && "out of stock"].filter(Boolean);
+      const flags = [offer.outOfDate && "old price", offer.unusualPrice && "unusual", offer.condition !== "new" && offer.condition, !offer.inStock && "out of stock", more && `+${more} more`].filter(Boolean);
       const left = el("span");
       left.append(name);
       if (flags.length) left.append(el("span", { class: "flag" }, ` · ${flags.join(", ")}`));
@@ -76,7 +84,7 @@
       head,
       lines.length ? notes : null,
       offers,
-      result.offers.length > 6 ? el("p", { class: "muted" }, `and ${result.offers.length - 6} more`) : null,
+      stores.length > 6 ? el("p", { class: "muted" }, `and ${stores.length - 6} more stores`) : null,
       link(result.productUrl, "button", "See the full comparison"),
     );
   }
