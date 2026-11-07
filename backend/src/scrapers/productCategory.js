@@ -27,6 +27,11 @@ const FOR_A_PHONE = [
 ];
 // The same for tablets: "Apple Magic Keyboard for iPad Pro", "Targus Triad for Samsung Galaxy Tab 3" were filed as tablets.
 const FOR_A_TABLET = ["for ipad", "for tablet", "for galaxy tab"];
+// And for TVs: "Speedx Air Mouse MX3 for Android and Smart TV" (PKR 1,499) was the "lowest price" of a search for TVs, and a
+// soundbar "for TV" was a TV (found 2026-11-07). Phrases, not the word "for": 76 TV titles say "only for Karachi".
+const FOR_A_TV = ["for smart tv", "for android tv", "for android and smart tv", "for tv", "for led tv", "for television"];
+// Boxes and sticks that make a TV smart: neither TVs nor phones ("Xiaomi TV Box S" would score as a phone on "xiaomi").
+const TV_DEVICES = ["tv box", "mi box", "tv stick", "streaming media player"];
 // A product that names a laptop but is kept out of laptops by an exclusion below ("G-Mart Laptop Back Skin Protector", "Easy
 // Shop Foldable Wooden Laptop Table") is an accessory too, rather than "other".
 const NAMES_A_LAPTOP = ["laptop", "macbook", "notebook", "chromebook"];
@@ -78,6 +83,7 @@ const CATEGORIES = {
             "screen protector",
             "back cover",
             ...FOR_A_PHONE,
+            ...TV_DEVICES,
         ],
     },
 
@@ -221,6 +227,17 @@ const CATEGORIES = {
             "remote",
             "remote control",
             "screen protector",
+            "air mouse", // "MX3 Smart TV Voice Air Mouse": a pointer for a TV
+            ...FOR_A_TV,
+            // Things that plug into a TV, filed as TVs and among the cheapest "TVs" (2026-11-07): "itel TV Plus Mini Soundbar",
+            // "Xiaomi Mi Box S", "Amazon Fire TV Stick 4K Max", "Logitech K400 Plus Wireless Touch TV Keyboard", "Nintendo
+            // Switch HDMI Tv Dock", "Y3 Lite Game Stick ... Connect TV", "Mini LED Bluetooth Speaker".
+            "soundbar",
+            "speaker",
+            ...TV_DEVICES,
+            "tv keyboard",
+            "tv dock",
+            "game stick",
         ],
     },
 
@@ -580,7 +597,7 @@ function detectCategory(title) {
 
     // A product made for a phone or tablet that names nothing else we know ("Torras Ostand Q3 VegSkin for iPhone 17 Pro Max",
     // "Smart Folio for iPad Pro") is an accessory. Only as a fallback: one that names its kind ("Headset for iPhone") keeps it.
-    if (bestScore === 0 && [...FOR_A_PHONE, ...FOR_A_TABLET, ...NAMES_A_LAPTOP].some((phrase) => text.includes(phrase))) {
+    if (bestScore === 0 && [...FOR_A_PHONE, ...FOR_A_TABLET, ...FOR_A_TV, ...NAMES_A_LAPTOP].some((phrase) => text.includes(phrase))) {
         return { category: "accessory", confidence: 1 / 3 };
     }
 

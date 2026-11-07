@@ -74,6 +74,43 @@ describe("detectCategory: products made for a phone or tablet", () => {
 
 // Parts and add-ons that name a laptop (2026-10-26): a PKR 990 "Dell Latitude ... Battery Connection Cable" was the "dell
 // latitude" search's lowest price, and 86 of 1,092 "laptops" cost under PKR 15,000. Live titles.
+// 2026-11-07: an air mouse "for Android and Smart TV" (PKR 1,499) was the lowest price of a search for TVs.
+describe("detectCategory: products made for a TV", () => {
+  it.each([
+    "Speedx Air Mouse MX3 for Android and Smart TV",
+    "M.Mart Air Mouse For Smart TV - Black (C120)",
+    "MX3 Smart TV Voice Air Mouse 2.4G Wireless Keyboard with Mouse Function for",
+    "Kisonli LED-805 Wireless Speaker With High Quality Sound Soundbar for TV, Sound",
+  ])("%s -> accessory", (title) => {
+    expect(detectCategory(title).category).toBe("accessory");
+  });
+
+  it.each([
+    "itel TV Plus Mini Soundbar (ITL-SB310)",
+    "LG S75TR 5.1.1 channel 600W TV Soundbar with Dolby Atmos",
+    "F&D T200X Wireless TV Speaker (Black)",
+    "Amazon Fire TV Stick 4K Max",
+    "Dany AX-100 Amaze 4GB 32GB Android TV Box",
+    "Logitech K400 Plus Wireless Touch TV Keyboard",
+    "Nintendo Switch HDMI Tv Dock Set With Charger",
+  ])("keeps %s (it plugs into a TV) out of TVs", (title) => {
+    expect(detectCategory(title).category).not.toBe("tv");
+  });
+
+  it("files a Xiaomi TV box neither as a TV nor as a phone (\"xiaomi\" is a phone word)", () => {
+    for (const title of ["Xiaomi TV Box S (3rd Gen)", "Xiaomi TV Stick 4K (2nd Gen)", "Xiaomi Mi Box S 4K Ultra HD Streaming Media Player Android TV Box"]) {
+      expect(["tv", "smartphone"]).not.toContain(detectCategory(title).category);
+    }
+    expect(detectCategory("Xiaomi Redmi Note 14 Pro 8GB 256GB").category).toBe("smartphone");
+  });
+
+  it("leaves TVs sold \"only for Karachi\" (76 of them) as TVs", () => {
+    expect(detectCategory("SAMSUNG 55\" Crystal UHD U8000F 4K Smart TV-FOR KARACHI ONLY").category).toBe("tv");
+    expect(detectCategory("TCL 85\" QD-Mini LED TV (C6K) Only for Karachi").category).toBe("tv");
+    expect(detectCategory("Samsung 43 Inch Full Hd Display UA43T5300AUSMZ Led Tv perfect for bedrooms and living rooms").category).toBe("tv");
+  });
+});
+
 describe("detectCategory: laptop parts and add-ons", () => {
   it.each([
     ["Dell Latitude DJ1J0 For Battery Connection Cable", "accessory"],
