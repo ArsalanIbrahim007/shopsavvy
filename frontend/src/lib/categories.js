@@ -17,6 +17,7 @@ export const CATEGORY_NAMES = {
   accessory: "Accessories",
   appliance: "Appliances",
   camera: "Cameras",
+  printer: "Printers",
   other: "Other",
 };
 

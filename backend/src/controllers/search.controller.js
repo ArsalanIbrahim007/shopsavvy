@@ -70,12 +70,17 @@ export async function suggestListings(req, res) {
   res.json({ success: true, count: data.length, data });
 }
 
-/** The stored listings for a search: the exact match, else looser ones (see below), cheapest first. */
+/**
+ * The stored listings for a search, cheapest first, and how they were found: "exact" (the phrase), "words" (every word, in any
+ * order), or "spelling" (every word nearly right: a typo), each tried only when the one before found nothing.
+ * @returns {Promise<{listings: object[], matchedBy: "exact"|"words"|"spelling"|null}>}
+ */
 async function findSearchListings(trimmedQuery, searchFilter) {
   let listings = await Listing.find(searchFilter).sort({
     price: 1,
     createdAt: -1,
   });
+  let matchedBy = listings.length ? "exact" : null;
 
   /*
    * The exact match found nothing -- try progressively looser strategies
@@ -118,6 +123,7 @@ async function findSearchListings(trimmedQuery, searchFilter) {
       delete tokenFilter.$or;
 
       listings = await Listing.find(tokenFilter).sort({ price: 1, createdAt: -1 });
+      if (listings.length) matchedBy = "words";
     }
   }
 
@@ -130,10 +136,11 @@ async function findSearchListings(trimmedQuery, searchFilter) {
 
     if (fuzzyIds.length > 0) {
       listings = await Listing.find({ _id: { $in: fuzzyIds } }).sort({ price: 1, createdAt: -1 });
+      if (listings.length) matchedBy = "spelling";
     }
   }
 
-  return listings;
+  return { listings, matchedBy };
 }
 
 export async function searchListings(req, res) {
@@ -208,7 +215,7 @@ export async function searchListings(req, res) {
   if (condition) searchFilter.condition = condition;
   if (pta) searchFilter.ptaStatus = pta;
 
-  let listings = await findSearchListings(trimmedQuery, searchFilter);
+  let found = await findSearchListings(trimmedQuery, searchFilter);
 
   // Whether to ask the stores is decided from what this search would show: fresh when one of its results was checked within the
   // freshness window, stale when it has results but all older (answered now, refreshed in the background), missing when it has
@@ -222,12 +229,15 @@ export async function searchListings(req, res) {
     force: req.query.refresh === "true" && hasAdminKey(req),
     dynamic: false,
     background: true,
-    state: resultsState(listings),
+    // Only close spellings found ("walls" -> printers sold for a wall): the search names something we do not hold, so it waits for
+    // the stores like one that found nothing. Judged fresh on those, it showed printers and only asked the stores afterwards.
+    state: found.matchedBy === "spelling" ? "missing" : resultsState(found.listings),
   });
   console.log("[search]", refreshResult);
 
   // The stores were asked and waited for (nothing was stored, or a forced refresh): read the results again.
-  if (refreshResult.scraped) listings = await findSearchListings(trimmedQuery, searchFilter);
+  if (refreshResult.scraped) found = await findSearchListings(trimmedQuery, searchFilter);
+  let { listings } = found;
 
   // At most MAX_SEARCH_LISTINGS, the most relevant, are grouped: a broad search ("tv": 5,117 listings) took 34 s, and now answers
   // in about a second. `matched` tells the shopper how many there were, so they can narrow it (searchRanking.service.js).
@@ -306,6 +316,8 @@ export async function searchListings(req, res) {
     count: recommendedListings.length,
     // How many stored listings matched; more than `count` when only the most relevant were grouped.
     matched: selected.matched,
+    // How they were found: "exact", "words" (every word, any order) or "spelling" (close spellings: the page says so); null for none.
+    matchedBy: found.matchedBy,
     groupCount: groups.length,
     summary: {
       platforms: platforms.length,

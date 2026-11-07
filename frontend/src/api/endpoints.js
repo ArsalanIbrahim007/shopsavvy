@@ -26,6 +26,8 @@ export async function searchListings({ q, category, signal }) {
     groupCount: body.groupCount ?? (body.groups ?? []).length,
     // How many stored listings matched, and how many of them (the most relevant) were grouped: a broad search shows only some.
     matched: body.matched ?? (body.data ?? []).length,
+    // "exact", "words" or "spelling" (only close spellings of the search were found), null for nothing
+    matchedBy: body.matchedBy ?? null,
     grouped: body.count ?? (body.data ?? []).length,
     summary: body.summary ?? null,
     // The server answered from stored prices and is fetching new ones from the stores; asking again shortly returns them.

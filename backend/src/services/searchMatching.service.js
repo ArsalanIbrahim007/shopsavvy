@@ -63,11 +63,30 @@ export function levenshteinDistance(a, b) {
   return previousRow[b.length];
 }
 
-// Short words ("hp", "tv") tolerate at most 1 typo'd character; longer
-// words scale allowance with length so "smartphone" can absorb more than
-// one slip without becoming meaninglessly permissive.
+/**
+ * Edit distance in which swapping two neighbouring letters is one typo ("iphnoe" -> "iphone"), not two (optimal string
+ * alignment). Typos are what this fallback is for, and a swap is the commonest.
+ */
+export function typoDistance(a, b) {
+  if (a === b) return 0;
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+    }
+  }
+  return d[a.length][b.length];
+}
+
+// How many typos a word may carry and still be the word: none up to 3 letters ("gun", "tv", "hp"), 1 up to 6 ("walls" ->
+// "wall"), 2 from 7 ("geasyer" -> "geyser"). It allowed up to 30% of the word (3 typos in "mosquito") and needed only 60% of a
+// search's words to match, so "mosquito" found AirPods and "electric geasyer" found phones, TVs and air conditioners (2026-11-07).
 function maxAllowedDistance(word) {
-  return word.length <= 4 ? 1 : Math.ceil(word.length * 0.3);
+  if (word.length <= 3) return 0;
+  return word.length <= 6 ? 1 : 2;
 }
 
 /**
@@ -97,7 +116,7 @@ export function fuzzyTokenScore(query, title) {
       : titleTokens.some((titleToken) => {
           const allowed = maxAllowedDistance(queryToken);
           return Math.abs(titleToken.length - queryToken.length) <= allowed
-            && levenshteinDistance(queryToken, titleToken) <= allowed;
+            && typoDistance(queryToken, titleToken) <= allowed;
         });
     if (hasCloseMatch) matched++;
   }
@@ -105,7 +124,9 @@ export function fuzzyTokenScore(query, title) {
   return matched / queryTokens.length;
 }
 
-const FUZZY_MATCH_THRESHOLD = 0.6;
+// Every word of the search has to be in the title, spelt nearly right: "pressure washer gun" matched a water dispenser on two words
+// of three. A title that misses a word the shopper typed is not what they asked for.
+const FUZZY_MATCH_THRESHOLD = 1;
 
 /**
  * Fuzzy-matches a query against a candidate list, returning only the ids

@@ -115,7 +115,7 @@ describe("endpoints", () => {
 
   it("search tolerates missing fields", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(respond(200, { success: true })));
-    expect(await searchListings({ q: "x" })).toEqual({ offers: [], groups: [], groupCount: 0, matched: 0, grouped: 0, summary: null, refreshing: false });
+    expect(await searchListings({ q: "x" })).toEqual({ offers: [], groups: [], groupCount: 0, matched: 0, matchedBy: null, grouped: 0, summary: null, refreshing: false });
   });
 
   it("search says when the server is refreshing the prices it answered with", async () => {

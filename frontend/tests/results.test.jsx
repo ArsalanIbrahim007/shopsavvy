@@ -74,6 +74,12 @@ describe("Results: summary", () => {
     expect(await screen.findByText("The 500 best matches of 5,117 listings. Add a brand, model or size to narrow it.")).toBeInTheDocument();
   });
 
+  it("says so when only close spellings of the search were found", async () => {
+    vi.mocked(api.searchListings).mockReset().mockResolvedValue({ offers: [], groups: [A17], groupCount: 1, summary: null, matched: 1, grouped: 1, matchedBy: "spelling" });
+    renderResults("/results?q=samsnug");
+    expect(await screen.findByText(/^No exact matches for "samsnug"\. Showing products whose names are spelt nearly the same/)).toBeInTheDocument();
+  });
+
   it("says nothing of the kind when every match is shown", async () => {
     vi.mocked(api.searchListings).mockReset().mockResolvedValue({ offers: [], groups: [A17], groupCount: 1, summary: null, matched: 3, grouped: 3 });
     renderResults("/results?q=galaxy");

@@ -44,6 +44,8 @@ const searchResult = (result) => ({
   groups: result.groups, total: result.groupCount, refreshing: result.refreshing,
   // A broad search ("tv") groups only its most relevant listings; the page says so, and how to narrow it.
   narrowed: result.matched > result.grouped ? { matched: result.matched, grouped: result.grouped } : null,
+  // Nothing matched the search as typed, only close spellings of its words: the page says so rather than pass them off as matches.
+  spelling: result.matchedBy === "spelling",
 });
 
 function useResults(query, browseCategory) {
@@ -114,7 +116,7 @@ function GroupList({ groups }) {
   );
 }
 
-function ResultsView({ groups, total, refreshing = false, narrowed = null, query, browseCategory, filters, searchParams, setSearchParams }) {
+function ResultsView({ groups, total, refreshing = false, narrowed = null, spelling = false, query, browseCategory, filters, searchParams, setSearchParams }) {
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const allOffers = groups.flatMap((group) => group.offers ?? []);
@@ -177,6 +179,11 @@ function ResultsView({ groups, total, refreshing = false, narrowed = null, query
               : `${formatNumber(allOffers.length)} ${allOffers.length === 1 ? "offer" : "offers"} across ${platformCount} ${platformCount === 1 ? "store" : "stores"}, grouped into ${formatNumber(groups.length)} ${groups.length === 1 ? "product" : "products"}`}
             {!query && total > groups.length ? `. Showing the ${groups.length} most compared of ${formatNumber(total)}; filters apply to these` : ""}
           </p>
+          {query && spelling && (
+            <p className="small">
+              No exact matches for "{query}". Showing products whose names are spelt nearly the same: check they are what you meant.
+            </p>
+          )}
           {query && narrowed && (
             <p className="small muted">
               The {formatNumber(narrowed.grouped)} best matches of {formatNumber(narrowed.matched)} listings. Add a brand, model or size to narrow it.
@@ -314,6 +321,7 @@ export default function Results() {
       total={results.data.total}
       refreshing={results.data.refreshing}
       narrowed={results.data.narrowed}
+      spelling={results.data.spelling}
       query={query}
       browseCategory={browseCategory}
       filters={filters}
