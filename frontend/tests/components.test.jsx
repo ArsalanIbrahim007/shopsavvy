@@ -77,6 +77,16 @@ describe("SearchBox", () => {
     expect(box).toHaveAttribute("aria-expanded", "true");
   });
 
+  it("does not search for a single letter or a symbol, and says why", async () => {
+    vi.mocked(api.getSuggestions).mockResolvedValue([]);
+    renderAt("/", <SearchBox />);
+    for (const value of ["a", "?", "1"]) {
+      type(screen.getByRole("combobox"), value);
+      fireEvent.click(screen.getByRole("button", { name: "Search" }));
+      expect(screen.getByRole("alert")).toHaveTextContent("Type at least two letters or digits to search.");
+    }
+  });
+
   it("waits for a pause before asking the server (not on every keystroke)", async () => {
     vi.mocked(api.getSuggestions).mockResolvedValue(suggestions);
     renderAt("/", <SearchBox />);
@@ -134,9 +144,9 @@ describe("SearchBox", () => {
   it("encodes special characters in the URL", () => {
     renderAt("/", <SearchBox />);
     const box = screen.getByRole("combobox");
-    type(box, "a&b=c #1");
+    type(box, "a&b=c #12");
     fireEvent.submit(box.closest("form"));
-    expect(screen.getByTestId("where")).toHaveTextContent("/results?q=a%26b%3Dc+%231");
+    expect(screen.getByTestId("where")).toHaveTextContent("/results?q=a%26b%3Dc+%2312");
   });
 
   it("closes on Escape and on a click outside, and searches a suggestion when it is pressed", async () => {

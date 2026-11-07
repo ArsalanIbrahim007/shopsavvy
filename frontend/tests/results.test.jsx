@@ -67,6 +67,20 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe("Results: summary", () => {
+  // 2026-11-07: a broad search groups only its 500 most relevant listings (it took 34 s for "tv"); the page says so.
+  it("says when a broad search shows only its best matches, and how to narrow it", async () => {
+    vi.mocked(api.searchListings).mockReset().mockResolvedValue({ offers: [], groups: [A17, A57, TV], groupCount: 3, summary: null, matched: 5117, grouped: 500 });
+    renderResults("/results?q=tv");
+    expect(await screen.findByText("The 500 best matches of 5,117 listings. Add a brand, model or size to narrow it.")).toBeInTheDocument();
+  });
+
+  it("says nothing of the kind when every match is shown", async () => {
+    vi.mocked(api.searchListings).mockReset().mockResolvedValue({ offers: [], groups: [A17], groupCount: 1, summary: null, matched: 3, grouped: 3 });
+    renderResults("/results?q=galaxy");
+    await screen.findAllByRole("article");
+    expect(screen.queryByText(/best matches of/)).toBeNull();
+  });
+
   it("shows the headline numbers for what is on screen, and when the data is from", async () => {
     renderResults("/results?q=samsung");
     await screen.findAllByRole("article"); // the loading state has a heading too; wait for the real page

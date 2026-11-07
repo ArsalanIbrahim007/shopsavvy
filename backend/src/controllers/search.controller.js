@@ -18,6 +18,7 @@ import { attachRecommendation } from "../services/recommendation/recommendation.
 import { fetchAndRefreshListings } from "../services/scraper.service.js";
 import { resultsState } from "../services/searchFreshness.js";
 import { escapeRegex, buildSpaceTolerantPattern, fuzzyMatchIds } from "../services/searchMatching.service.js";
+import { isSearchable, selectSearchListings } from "../services/searchRanking.service.js";
 import { getSuggestions } from "../services/suggestions.service.js";
 import { priceStats } from "./priceStats.js";
 import { resolveMatchStrategy } from "./matchStrategy.js";
@@ -147,6 +148,12 @@ export async function searchListings(req, res) {
   }
   const trimmedQuery = q.trim();
 
+  // "a", "1" or "?+" names nothing: it matched most of the catalogue (16,600 listings for "a") and ran into the worker's time
+  // limit, and one that matched nothing would have sent every store a search for it.
+  if (!isSearchable(trimmedQuery)) {
+    throw AppError.badRequest("Type at least two letters or digits to search.");
+  }
+
   const normalizedQuery = normalizeTitle(trimmedQuery);
 
 /*
@@ -222,6 +229,11 @@ export async function searchListings(req, res) {
   // The stores were asked and waited for (nothing was stored, or a forced refresh): read the results again.
   if (refreshResult.scraped) listings = await findSearchListings(trimmedQuery, searchFilter);
 
+  // At most MAX_SEARCH_LISTINGS, the most relevant, are grouped: a broad search ("tv": 5,117 listings) took 34 s, and now answers
+  // in about a second. `matched` tells the shopper how many there were, so they can narrow it (searchRanking.service.js).
+  const selected = selectSearchListings(listings, { query: trimmedQuery, category: queryCategory });
+  listings = selected.listings;
+
   /*
    * Correct processing order:
    *
@@ -292,6 +304,8 @@ export async function searchListings(req, res) {
     refresh: refreshResult,
     query: q,
     count: recommendedListings.length,
+    // How many stored listings matched; more than `count` when only the most relevant were grouped.
+    matched: selected.matched,
     groupCount: groups.length,
     summary: {
       platforms: platforms.length,

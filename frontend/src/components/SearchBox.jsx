@@ -71,6 +71,11 @@ export default function SearchBox({ initialQuery = "", autoFocus = false, size =
       if (link.capacities.length > 0) params.cap = link.capacities.join(",");
     }
     query = query.slice(0, MAX_QUERY_LENGTH);
+    // The server refuses a search with no run of two letters or digits ("a", "?"): it names nothing to look for.
+    if (!/[a-z0-9]{2}/i.test(query)) {
+      setNotice("Type at least two letters or digits to search.");
+      return;
+    }
     addRecentSearch(query);
     navigate(`/results?${new URLSearchParams({ q: query, ...params }).toString()}`);
   }

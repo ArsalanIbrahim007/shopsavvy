@@ -40,7 +40,11 @@ const PAGE = 20;
 export const REFRESH_DELAY_MS = 20000;
 const REFRESH_ATTEMPTS = 3;
 
-const searchResult = (result) => ({ groups: result.groups, total: result.groupCount, refreshing: result.refreshing });
+const searchResult = (result) => ({
+  groups: result.groups, total: result.groupCount, refreshing: result.refreshing,
+  // A broad search ("tv") groups only its most relevant listings; the page says so, and how to narrow it.
+  narrowed: result.matched > result.grouped ? { matched: result.matched, grouped: result.grouped } : null,
+});
 
 function useResults(query, browseCategory) {
   const first = useAsync(
@@ -110,7 +114,7 @@ function GroupList({ groups }) {
   );
 }
 
-function ResultsView({ groups, total, refreshing = false, query, browseCategory, filters, searchParams, setSearchParams }) {
+function ResultsView({ groups, total, refreshing = false, narrowed = null, query, browseCategory, filters, searchParams, setSearchParams }) {
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const allOffers = groups.flatMap((group) => group.offers ?? []);
@@ -173,6 +177,11 @@ function ResultsView({ groups, total, refreshing = false, query, browseCategory,
               : `${formatNumber(allOffers.length)} ${allOffers.length === 1 ? "offer" : "offers"} across ${platformCount} ${platformCount === 1 ? "store" : "stores"}, grouped into ${formatNumber(groups.length)} ${groups.length === 1 ? "product" : "products"}`}
             {!query && total > groups.length ? `. Showing the ${groups.length} most compared of ${formatNumber(total)}; filters apply to these` : ""}
           </p>
+          {query && narrowed && (
+            <p className="small muted">
+              The {formatNumber(narrowed.grouped)} best matches of {formatNumber(narrowed.matched)} listings. Add a brand, model or size to narrow it.
+            </p>
+          )}
         </div>
         <div className="small muted" style={{ textAlign: "end" }}>
           {updated && <p>Last updated {timeAgo(updated)}</p>}
@@ -304,6 +313,7 @@ export default function Results() {
       groups={results.data.groups}
       total={results.data.total}
       refreshing={results.data.refreshing}
+      narrowed={results.data.narrowed}
       query={query}
       browseCategory={browseCategory}
       filters={filters}

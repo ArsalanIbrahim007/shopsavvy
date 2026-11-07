@@ -231,6 +231,29 @@ describe("GET /api/listings/search", () => {
     }
   });
 
+  // 2026-11-07: "a" matched 16,600 listings and timed the grouping worker out after 95 s; a search for "?+" that matched nothing
+  // would have sent every store a search for it.
+  it("refuses a search with nothing to look for, before reading the database or asking a store", async () => {
+    const find = vi.spyOn(Listing, "find");
+    const asked = vi.mocked(fetchAndRefreshListings).mock.calls.length;
+    for (const q of ["a", "1", "x y", "(a+)+$", "?!"]) {
+      const { res, body } = await json(`/api/listings/search?q=${encodeURIComponent(q)}`);
+      expect(res.status, q).toBe(400);
+      expect(body.message).toBe("Type at least two letters or digits to search.");
+    }
+    expect(find).not.toHaveBeenCalled();
+    expect(vi.mocked(fetchAndRefreshListings).mock.calls.length).toBe(asked);
+  });
+
+  it("groups at most the 500 most relevant listings of a broad search, and says how many matched", async () => {
+    const many = Array.from({ length: 620 }, (_, i) => row(i + 1, ["priceoye", "mega", "shophive"][i % 3], 30000 + i, `Samsung Smart TV Model ${i}`, { productCategory: "tv" }));
+    vi.spyOn(Listing, "find").mockImplementation(() => chain(many));
+    const { res, body } = await json("/api/listings/search?q=samsung%20tv");
+    expect(res.status).toBe(200);
+    expect(body.matched).toBe(620);
+    expect(body.count).toBe(500);
+  });
+
   it("reads the results again after waiting for the stores (nothing was stored)", async () => {
     let scraped = false;
     vi.spyOn(Listing, "find").mockImplementation(() => chain(scraped ? threeStores : []));

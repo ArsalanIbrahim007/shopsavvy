@@ -24,6 +24,9 @@ export async function searchListings({ q, category, signal }) {
     offers: body.data ?? [],
     groups: body.groups ?? [],
     groupCount: body.groupCount ?? (body.groups ?? []).length,
+    // How many stored listings matched, and how many of them (the most relevant) were grouped: a broad search shows only some.
+    matched: body.matched ?? (body.data ?? []).length,
+    grouped: body.count ?? (body.data ?? []).length,
     summary: body.summary ?? null,
     // The server answered from stored prices and is fetching new ones from the stores; asking again shortly returns them.
     refreshing: body.refresh?.refreshing === true,
