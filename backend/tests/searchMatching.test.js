@@ -2,7 +2,7 @@
 // conditioners. Every word must now be in the title, with at most 0, 1 or 2 typos by its length.
 import { describe, it, expect } from "vitest";
 
-import { fuzzyMatchIds, fuzzyTokenScore, typoDistance } from "../src/services/searchMatching.service.js";
+import { buildWholeWordPattern, fuzzyMatchIds, fuzzyTokenScore, typoDistance } from "../src/services/searchMatching.service.js";
 
 const titles = [
   "Apple AirPods Pro 2nd Generation",
@@ -37,9 +37,21 @@ describe("the close-spelling fallback", () => {
     expect(found("dell lattitude")).toEqual(["Dell Latitude 5440 i7 16GB 512GB"]);
   });
 
-  it("allows no typo in a short word, and an exact number only", () => {
+  it("allows no typo in a short word, and none in a number or a model code", () => {
     expect(fuzzyTokenScore("gun", "Water gum")).toBe(0);
     expect(fuzzyTokenScore("iphone 16", "Apple iPhone 17 Pro")).toBe(0.5);
     expect(found("iphone 16")).toEqual([]);
+    expect(fuzzyTokenScore("65u8k", "Tcl 65P8K Smart 4K Qled Tv")).toBe(0); // a Hisense model is not a TCL one
+  });
+});
+
+describe("buildWholeWordPattern", () => {
+  const matches = (query, title) => new RegExp(buildWholeWordPattern(query), "i").test(title);
+  it("matches the search as whole words, never inside another word or number", () => {
+    expect(matches("s23", "Samsung Galaxy S23 Ultra 256GB")).toBe(true);
+    expect(matches("s23", "Dawlance DWGS 2316 Garment Steamer")).toBe(false);
+    expect(matches("iphone17", "Apple iPhone 17 Pro")).toBe(true); // the missing space is still tolerated
+    expect(matches("iphone 1", "Apple iPhone 15")).toBe(false);
+    expect(matches("15+", "iPhone 15+ 128GB")).toBe(true);
   });
 });

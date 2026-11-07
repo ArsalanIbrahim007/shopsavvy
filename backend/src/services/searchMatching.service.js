@@ -25,6 +25,15 @@ export function buildSpaceTolerantPattern(query) {
   return escaped.replace(/([a-zA-Z])(\d)/g, "$1\\s*$2").replace(/(\d)([a-zA-Z])/g, "$1\\s*$2");
 }
 
+/**
+ * buildSpaceTolerantPattern, as whole words: no letter or digit right before or after it. "s23" found a Dawlance "DWGS 2316"
+ * garment steamer ("S 23" inside "DWGS 2316") among the Galaxy S23s (2026-11-07). For search; suggestions keep matching word
+ * beginnings ("galax").
+ */
+export function buildWholeWordPattern(query) {
+  return `(?<![A-Za-z0-9])${buildSpaceTolerantPattern(query)}(?![A-Za-z0-9])`;
+}
+
 function tokenize(text) {
   return String(text)
     .toLowerCase()
@@ -110,7 +119,8 @@ export function fuzzyTokenScore(query, title) {
     // and those aren't typos of each other, they're different model
     // generations or capacities. A purely numeric token has to match
     // exactly, or it isn't allowed to drag in every nearby number.
-    const isNumeric = /^\d+$/.test(queryToken);
+    // A model code with digits is the same: "65u8k" is a Hisense model, "65p8k" a TCL one (2026-11-07).
+    const isNumeric = /\d/.test(queryToken);
     const hasCloseMatch = isNumeric
       ? titleTokens.includes(queryToken)
       : titleTokens.some((titleToken) => {

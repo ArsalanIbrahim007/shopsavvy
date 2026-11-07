@@ -17,7 +17,7 @@ import { textParam, numberParam } from "../services/queryParams.service.js";
 import { attachRecommendation } from "../services/recommendation/recommendation.service.js";
 import { fetchAndRefreshListings } from "../services/scraper.service.js";
 import { resultsState } from "../services/searchFreshness.js";
-import { escapeRegex, buildSpaceTolerantPattern, fuzzyMatchIds } from "../services/searchMatching.service.js";
+import { escapeRegex, buildWholeWordPattern, fuzzyMatchIds } from "../services/searchMatching.service.js";
 import { isSearchable, selectSearchListings } from "../services/searchRanking.service.js";
 import { getSuggestions } from "../services/suggestions.service.js";
 import { priceStats } from "./priceStats.js";
@@ -71,8 +71,8 @@ export async function suggestListings(req, res) {
 }
 
 /**
- * The stored listings for a search, cheapest first, and how they were found: "exact" (the phrase), "words" (every word, in any
- * order), or "spelling" (every word nearly right: a typo), each tried only when the one before found nothing.
+ * The stored listings for a search, cheapest first, and how they were found: "exact" (the phrase, as whole words) and "words"
+ * (every word, in any order), together; else "spelling" (every word nearly right: a typo), only when those found nothing.
  * @returns {Promise<{listings: object[], matchedBy: "exact"|"words"|"spelling"|null}>}
  */
 async function findSearchListings(trimmedQuery, searchFilter) {
@@ -105,25 +105,32 @@ async function findSearchListings(trimmedQuery, searchFilter) {
    * misspelled main-product search is far more likely to mean the
    * product than an accessory for it or something uncategorized.
    */
+  // Accessories only: "other" was left out too, and so were 111 stored JBL speakers and every product without a category of its
+  // own, which no search but the exact phrase could then find ("jbl speaker" found nothing, 2026-11-07). Now that every word of a
+  // search must match, uncategorised products are no longer the junk they were.
   const fallbackCategoryFloor = searchFilter.productCategory
     ? {}
-    : { productCategory: { $nin: ["accessory", "other"] } };
+    : { productCategory: { $ne: "accessory" } };
 
-  if (listings.length === 0) {
-    const queryTokens = trimmedQuery.split(/[^a-zA-Z0-9]+/).filter((t) => t.length >= 2);
+  // Every word, in any order, is asked even when the phrase found something: "samsung s25 ultra" found only cases and screen
+  // protectors that say it word for word, while the phones say "Samsung Galaxy S25 Ultra" (2026-11-07). Both are kept.
+  const queryTokens = trimmedQuery.split(/[^a-zA-Z0-9]+/).filter((t) => t.length >= 2);
+  if (queryTokens.length > 0) {
+    const tokenFilter = {
+      ...searchFilter,
+      ...fallbackCategoryFloor,
+      $and: queryTokens.map((token) => ({
+        title: { $regex: escapeRegex(token), $options: "i" },
+      })),
+    };
+    delete tokenFilter.$or;
 
-    if (queryTokens.length > 0) {
-      const tokenFilter = {
-        ...searchFilter,
-        ...fallbackCategoryFloor,
-        $and: queryTokens.map((token) => ({
-          title: { $regex: escapeRegex(token), $options: "i" },
-        })),
-      };
-      delete tokenFilter.$or;
-
-      listings = await Listing.find(tokenFilter).sort({ price: 1, createdAt: -1 });
-      if (listings.length) matchedBy = "words";
+    const byWords = await Listing.find(tokenFilter).sort({ price: 1, createdAt: -1 });
+    const seen = new Set(listings.map((listing) => String(listing._id)));
+    const added = byWords.filter((listing) => !seen.has(String(listing._id)));
+    if (added.length) {
+      listings = [...listings, ...added].sort((a, b) => a.price - b.price);
+      matchedBy ??= "words";
     }
   }
 
@@ -194,9 +201,9 @@ export async function searchListings(req, res) {
   const searchFilter = {
     ...VISIBLE_PLATFORMS_FILTER,
     $or: [
-      { title: { $regex: buildSpaceTolerantPattern(trimmedQuery), $options: "i" } },
+      { title: { $regex: buildWholeWordPattern(trimmedQuery), $options: "i" } },
       ...(normalizedQuery
-        ? [{ normalizedTitle: { $regex: buildSpaceTolerantPattern(normalizedQuery), $options: "i" } }]
+        ? [{ normalizedTitle: { $regex: buildWholeWordPattern(normalizedQuery), $options: "i" } }]
         : []),
     ],
   };

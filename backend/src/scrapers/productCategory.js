@@ -72,6 +72,21 @@ const CATEGORIES = {
             "nokia",
             "motorola",
             "rog phone", // Asus: no other smartphone word ("Asus ROG Phone 5")
+            // Phone lines whose titles have no phone word: "Infinix Hot 50" was filed as "other" (2026-11-07). The lines, not the
+            // brands: Infinix and itel also sell speakers, trimmers, air fryers and power stations, and "tecno" is in "TECNOGAS".
+            "infinix hot",
+            "infinix note",
+            "infinix zero",
+            "infinix gt",
+            "tecno spark",
+            "tecno camon",
+            "tecno pova",
+            "tecno phantom",
+            "honor magic",
+            "honor x",
+            // "Samsung S23 Ultra 12GB RAM" (no "Galaxy") was "other". Not "samsung s2": Samsung's monitors are S24C310, S27D...
+            ...[21, 22, 23, 24, 25, 26].flatMap((n) => [`s${n} ultra`, `s${n} plus`, `s${n} fe`, `s${n}+`]),
+            "s25 edge",
         ],
         exclude: [
             "case",
@@ -82,6 +97,7 @@ const CATEGORIES = {
             "tempered glass",
             "screen protector",
             "back cover",
+            "battery (bl", // "Infinix Note 12 Battery (BL-44FX)": a replacement battery, not the phone
             ...FOR_A_PHONE,
             ...TV_DEVICES,
         ],
@@ -109,6 +125,7 @@ const CATEGORIES = {
             "tuf gaming",
             "aspire",
             "nitro",
+            "inbook", // Infinix's laptops
         ],
         exclude: [
             "bag",
@@ -482,6 +499,9 @@ const CATEGORIES = {
             "oven",
             "dishwasher",
             "vacuum cleaner",
+            // "Xiaomi Multifunctional Rice Cooker 4L" scored as a phone on "xiaomi" (2026-11-07).
+            "rice cooker",
+            "pressure cooker",
         ],
         exclude: [
             "filter",

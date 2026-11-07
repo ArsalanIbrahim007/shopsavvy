@@ -74,6 +74,30 @@ describe("detectCategory: products made for a phone or tablet", () => {
 
 // Parts and add-ons that name a laptop (2026-10-26): a PKR 990 "Dell Latitude ... Battery Connection Cable" was the "dell
 // latitude" search's lowest price, and 86 of 1,092 "laptops" cost under PKR 15,000. Live titles.
+// 2026-11-07, from searching: Infinix phones were "other", Xiaomi rice cookers were phones.
+describe("detectCategory: phone lines without a phone word, and cookers", () => {
+  it.each([
+    ["Infinix Hot 50 Pro", "smartphone"],
+    ["Infinix Note Edge 8/256 | PTA Approved", "smartphone"],
+    ["Tecno Spark 40 Pro 8GB 256GB", "smartphone"],
+    ["Honor X8d", "smartphone"],
+    ["Samsung S23 Ultra 12GB RAM", "smartphone"], // no "Galaxy" in the title
+    ["Samsung S26 Ultra 12/256 | PTA Approved | On Easy Monthly Installments", "smartphone"],
+    ["Samsung 24 Inch S24C310 FHD IPS Monitor", "monitor"], // Samsung's monitor codes start S24, S27: no phone
+    ["Infinix InBook Air XL442 Core i3 8GB 256GB SSD", "laptop"],
+    ["Xiaomi Multifunctional Rice Cooker 4L", "appliance"],
+    ["Anex Digital Electric Pressure Cooker AG-2188", "appliance"],
+  ])("%s -> %s", (title, expected) => {
+    expect(detectCategory(title).category).toBe(expected);
+  });
+
+  it("does not make phones of the same brands' other products, or of a replacement battery", () => {
+    for (const title of ["Itel IBS-51 Bluetooth Speaker", "Itel 7 Liters AirFryer IAF-003", "TECNOGAS COOKING RANGE PTV762XS", "Infinix XS01 Pocket Beat Wireless Bluetooth Speaker", "New Ghosia Collection Infinix Note 12 Battery (BL-44FX)"]) {
+      expect(detectCategory(title).category, title).not.toBe("smartphone");
+    }
+  });
+});
+
 // 2026-11-07: an air mouse "for Android and Smart TV" (PKR 1,499) was the lowest price of a search for TVs.
 describe("detectCategory: products made for a TV", () => {
   it.each([

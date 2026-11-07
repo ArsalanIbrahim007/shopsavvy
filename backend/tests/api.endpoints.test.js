@@ -245,6 +245,20 @@ describe("GET /api/listings/search", () => {
     expect(vi.mocked(fetchAndRefreshListings).mock.calls.length).toBe(asked);
   });
 
+  // 2026-11-07: "samsung s25 ultra" showed only cases that say it word for word; the phones say "Samsung Galaxy S25 Ultra".
+  // (A search of no known category; "samsung s25 ultra" itself now reads as a phone search.)
+  it("asks for every word as well as the whole phrase, and keeps both", async () => {
+    const accessory = row(1, "priceoye", 2000, "ESR Lenovo Legion Go Case", { productCategory: "accessory" });
+    const device = row(2, "mega", 300000, "Lenovo Legion Go S Handheld", { productCategory: "other" });
+    const find = vi.spyOn(Listing, "find").mockImplementation((filter) => chain(filter.$and ? [device] : [accessory]));
+    const { body } = await json("/api/listings/search?q=lenovo%20legion%20go");
+    expect(body.data.map((o) => o.title).sort()).toEqual([accessory.title, device.title].sort());
+    expect(body.matchedBy).toBe("exact");
+    const words = find.mock.calls.map(([f]) => f).find((f) => f.$and);
+    expect(words.$and.map((c) => c.title.$regex)).toEqual(["lenovo", "legion", "go"]);
+    expect(words.productCategory).toEqual({ $ne: "accessory" }); // products without a category of their own are found too
+  });
+
   it("groups at most the 500 most relevant listings of a broad search, and says how many matched", async () => {
     const many = Array.from({ length: 620 }, (_, i) => row(i + 1, ["priceoye", "mega", "shophive"][i % 3], 30000 + i, `Samsung Smart TV Model ${i}`, { productCategory: "tv" }));
     vi.spyOn(Listing, "find").mockImplementation(() => chain(many));

@@ -438,7 +438,8 @@ describe("the store list", () => {
     expect(asked("dell laptop")).toEqual(general("infinix"));
     expect(asked("iphone 17")).toEqual(expect.arrayContaining(["alfamall", "digimall", "mistore", "techroid"]));
     expect(asked("iphone 17")).not.toContain("audionic");
-    expect(asked("infinix hot 60")).toEqual(STORES.map((s) => s.platform)); // reads as "other": nobody is left out
+    expect(asked("infinix hot 60")).toEqual(general("infinix")); // a phone line since 2026-11-07 (it read as "other" before)
+    expect(asked("anex sandwich maker")).toEqual(STORES.map((s) => s.platform)); // reads as "other": nobody is left out
     expect(asked("xiaomi")).toEqual(STORES.map((s) => s.platform));
   });
 
