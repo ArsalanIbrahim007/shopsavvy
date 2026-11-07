@@ -119,8 +119,9 @@ async function findSearchListings(trimmedQuery, searchFilter) {
     const tokenFilter = {
       ...searchFilter,
       ...fallbackCategoryFloor,
+      // Whole words, a plural allowed: "tea" matched inside "steamer", "steam iron" and "teal" (464 of the 500 shown, 2026-11-07).
       $and: queryTokens.map((token) => ({
-        title: { $regex: escapeRegex(token), $options: "i" },
+        title: { $regex: `(?<![A-Za-z0-9])${escapeRegex(token)}(?:e?s)?(?![A-Za-z0-9])`, $options: "i" },
       })),
     };
     delete tokenFilter.$or;

@@ -255,8 +255,18 @@ describe("GET /api/listings/search", () => {
     expect(body.data.map((o) => o.title).sort()).toEqual([accessory.title, device.title].sort());
     expect(body.matchedBy).toBe("exact");
     const words = find.mock.calls.map(([f]) => f).find((f) => f.$and);
-    expect(words.$and.map((c) => c.title.$regex)).toEqual(["lenovo", "legion", "go"]);
+    expect(words.$and).toHaveLength(3);
     expect(words.productCategory).toEqual({ $ne: "accessory" }); // products without a category of their own are found too
+  });
+
+  // 2026-11-07: "tea" matched inside "steamer", "steam iron" and "teal": 464 of the 500 products shown.
+  it("asks for every word as a whole word, a plural allowed", async () => {
+    const find = vi.spyOn(Listing, "find").mockImplementation(() => chain([]));
+    await json("/api/listings/search?q=tea");
+    const words = find.mock.calls.map(([f]) => f).find((f) => f.$and);
+    const tea = new RegExp(words.$and[0].title.$regex, "i");
+    expect(["Lipton Yellow Label Tea 950g", "Green Teas Pack", "Tea Maker"].every((t) => tea.test(t))).toBe(true);
+    expect(["Westpoint Deluxe Facial Steamer", "Kenwood Steam Iron", "Compton Teal Bed Sheet"].some((t) => tea.test(t))).toBe(false);
   });
 
   it("groups at most the 500 most relevant listings of a broad search, and says how many matched", async () => {
