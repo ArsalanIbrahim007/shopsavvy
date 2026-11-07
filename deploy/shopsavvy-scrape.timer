@@ -1,0 +1,11 @@
+# shopsavvy-scrape.timer — starts the nightly price refresh at 03:00 Pakistan time (22:00 UTC), when few shoppers are on the site.
+# A night the server was off is caught up at the next start (Persistent).
+[Unit]
+Description=ShopSavvy nightly price refresh at 03:00 PKT
+
+[Timer]
+OnCalendar=*-*-* 22:00:00 UTC
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,14 @@
+# shopsavvy-scrape.service — the nightly price refresh, run once by shopsavvy-scrape.timer (installed by setup-server.sh).
+# The same script as the Windows task: about 2.5 hours, then the page check. Its log is in journalctl -u shopsavvy-scrape.
+[Unit]
+Description=ShopSavvy nightly price refresh
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=shopsavvy
+WorkingDirectory=/home/shopsavvy/shopsavvy/backend
+EnvironmentFile=/home/shopsavvy/shopsavvy/backend/.env
+ExecStart=/usr/bin/node src/scripts/run-scheduled-scrape.js
+TimeoutStartSec=4h
+Nice=10

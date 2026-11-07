@@ -1,0 +1,8 @@
+# Caddyfile — the API's public HTTPS address in front of the API on port 5000. setup-server.sh installs it as
+# /etc/caddy/Caddyfile with {$API_DOMAIN} replaced by the real name (e.g. shopsavvy-api.duckdns.org). Caddy gets and renews the
+# certificate itself (Let's Encrypt); ports 80 and 443 must be open.
+
+{$API_DOMAIN} {
+	encode gzip
+	reverse_proxy 127.0.0.1:5000
+}

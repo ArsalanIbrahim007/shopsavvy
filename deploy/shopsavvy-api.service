@@ -1,0 +1,18 @@
+# shopsavvy-api.service — the API, started at boot and restarted if it stops (installed by setup-server.sh).
+[Unit]
+Description=ShopSavvy API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=shopsavvy
+WorkingDirectory=/home/shopsavvy/shopsavvy/backend
+EnvironmentFile=/home/shopsavvy/shopsavvy/backend/.env
+ExecStart=/usr/bin/node src/app.js
+Restart=always
+RestartSec=5
+# The API holds the grouped catalogues in memory (about 1.2 GB with 65,000 listings); past this it is restarted, not the server.
+MemoryMax=1600M
+
+[Install]
+WantedBy=multi-user.target
