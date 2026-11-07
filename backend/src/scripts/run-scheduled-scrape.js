@@ -82,7 +82,7 @@ try {
   console.log(`It stops starting new queries after ${RUN_BUDGET_MS / 60000} minutes; the rest wait for tomorrow.\n`);
 
   const summary = await runScheduledScrape({
-    queries,
+    queries: plan, // each with the stores to ask (smart routing: scheduledScraping.service.js refreshStores)
     queryLog,
     onProgress: ({ index, total, query, saved, error, budgetReached, skipped }) => {
       if (budgetReached) console.warn(`[${stamp()}] time budget reached after ${index} of ${total} queries: ${skipped} not run (the ones run most recently; they go first tomorrow).`);

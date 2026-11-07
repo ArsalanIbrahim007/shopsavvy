@@ -27,6 +27,13 @@ beforeEach(() => {
   vi.mocked(runScrapersAndSave).mockReset().mockImplementation(async () => { clock += 60_000; return 10; }); // each query takes one minute
 });
 
+describe("runScheduledScrape smart routing", () => {
+  it("asks only the planned stores for a plan entry, and every store for a plain query", async () => {
+    await runScheduledScrape({ queries: [{ query: "haier hrf 346", platforms: ["mega", "shophive"] }, "plain query"], delayMs: 0, now });
+    expect(vi.mocked(runScrapersAndSave).mock.calls).toEqual([["haier hrf 346", { platforms: ["mega", "shophive"] }], ["plain query"]]);
+  });
+});
+
 describe("runScheduledScrape time budget", () => {
   it("allows a bit under 3 hours, because Task Scheduler stops the task at 3 and the page check follows", () => {
     expect(RUN_BUDGET_MS).toBe(150 * 60 * 1000);

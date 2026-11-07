@@ -31,6 +31,20 @@ beforeEach(() => {
 });
 afterEach(() => { vi.restoreAllMocks(); storeBreaker.reset(); });
 
+// The nightly refresh asks only the stores that sell the product (scheduledScraping.service.js refreshStores, 2026-11-07).
+describe("scrapeAllPlatforms with a list of stores", () => {
+  it("asks only those stores, and every store without a list", async () => {
+    const { scrapeAllPlatforms } = await import("../src/scrapers/index.js");
+    await scrapeAllPlatforms("haier fridge", { platforms: ["priceoye", "mega"] });
+    expect(scrapePriceOyeSearch).toHaveBeenCalledTimes(1);
+    expect(scrapeMegaSearch).toHaveBeenCalledTimes(1);
+    for (const fn of [scrapeShophiveSearch, scrapePaklapSearch, scrapeW11StopSearch, scrapeIShoppingSearch]) expect(fn).not.toHaveBeenCalled();
+
+    await scrapeAllPlatforms("haier fridge");
+    for (const fn of [scrapePaklapSearch, scrapeW11StopSearch, scrapeIShoppingSearch]) expect(fn).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("scrapeFixedPlatforms with a store that does not answer", () => {
   it("keeps returning the other stores' listings while a store keeps failing", async () => {
     vi.mocked(scrapeW11StopSearch).mockRejectedValue(new Error("HTTP 429"));

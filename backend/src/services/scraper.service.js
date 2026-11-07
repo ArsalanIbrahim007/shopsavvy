@@ -132,6 +132,7 @@ function toListingDoc(scraped) {
  * @param {string} query - search term e.g. "iphone 15"
  * @param {object} [opts]
  * @param {boolean} [opts.dynamic] - also use Google discovery layer
+ * @param {string[]} [opts.platforms] - ask only these stores (the nightly refresh's smart routing); every store when omitted
  * @returns {Promise<number>} - number of listings saved
  */
 async function runScrapersAndSave(query, opts = {}) {
@@ -141,7 +142,7 @@ async function runScrapersAndSave(query, opts = {}) {
 
   let scraped;
   try {
-    scraped = await scrapeAllPlatforms(query, { dynamic });
+    scraped = await scrapeAllPlatforms(query, { dynamic, platforms: opts.platforms });
   } catch (err) {
     console.error("[scraperService] Scraping failed for %s: %s", quote(query), err.message);
     return 0;

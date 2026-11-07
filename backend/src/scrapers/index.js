@@ -89,7 +89,7 @@ function filterByRelevance(listings, query) {
 /**
  * Runs all fixed scrapers in parallel and returns filtered results.
  */
-async function scrapeFixedPlatforms(query) {
+async function scrapeFixedPlatforms(query, { only } = {}) {
   const encoded = encodeURIComponent(query);
 
   const tasks = [
@@ -149,7 +149,8 @@ async function scrapeFixedPlatforms(query) {
 
   // A store that has failed several times in a row is paused and tried again now and then (storeBreaker.js), so a store that is down
   // is not asked hundreds of times a night.
-  const live = tasks.filter((t) => storeBreaker.allow(t.platform));
+  const wanted = only?.length ? new Set(only) : null;
+  const live = tasks.filter((t) => (!wanted || wanted.has(t.platform)) && storeBreaker.allow(t.platform));
   const settled = await Promise.allSettled(live.map((t) => t.fn()));
   const results = [];
 
@@ -171,9 +172,10 @@ async function scrapeFixedPlatforms(query) {
   return results;
 }
 
+// opts.platforms: ask only these stores (the nightly refresh asks the stores known to sell the product, see scheduledScraping.service.js).
 async function scrapeAllPlatforms(query, opts = {}) {
   console.log(`\nSearching for: "${query}"\n`);
-  return scrapeFixedPlatforms(query);
+  return scrapeFixedPlatforms(query, { only: opts.platforms });
 }
 
 export { scrapeAllPlatforms, scrapeFixedPlatforms };

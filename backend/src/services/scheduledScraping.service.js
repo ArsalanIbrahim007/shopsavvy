@@ -68,6 +68,23 @@ export const BACKGROUND_GROUP_TIMEOUT_MS = 15 * 60 * 1000;
 // out is what was refreshed most recently.
 export const RUN_BUDGET_MS = 150 * 60 * 1000;
 
+/**
+ * Which stores a refresh query asks (smart routing, 2026-11-07). Every query used to ask all 22 stores at once, so it waited for the
+ * slowest of them: Paklap (a headless browser, 9.9 s), W11Stop (7.0 s), Shophive (6.4 s) and iShopping (4.4 s), against 0.2 to 2.6 s
+ * for the rest, timed on one search. Most of them do not sell the product being refreshed (a fridge at Paklap, a laptop store), so
+ * the run managed only about 460 of 6,400 queries a night: each product's price was refreshed about every two weeks.
+ *
+ * A refresh asks the stores its product is already sold by, plus GENERAL_STORES: broad catalogues that answer fast, so a store that
+ * starts selling a product is still found. A slow specialist store that starts selling it is found by the next shopper's search,
+ * which still asks every store.
+ */
+export const GENERAL_STORES = Object.freeze(["priceoye", "mega", "alfamall", "digimall"]);
+
+/** The stores to ask for a product sold by `stores`: those and GENERAL_STORES, in a stable order. */
+export function refreshStores(stores = []) {
+  return [...new Set([...stores, ...GENERAL_STORES])].filter(Boolean).sort();
+}
+
 // When each query was last run, in a small per-machine file (gitignored, like .scheduled-scrape-state.json). With a budget a night
 // cannot run every query, and "oldest listing first" alone would put the same products at the front every night: a listing the store
 // no longer shows is never refreshed by any search, so its product stays "stalest" for ever and its query would eat the budget daily
@@ -172,8 +189,9 @@ export async function buildScheduledQueryPlan({
   }
 
   const cutoff = now - staleAfterDays * DAY_MS;
-  const compared = new Map(); // query -> entry; the oldest date wins when two groups give the same query
+  const compared = new Map(); // query -> entry; the oldest date wins when two groups give the same query, their stores add up
   const stale = [];
+  const storesOf = (group) => (group.offers || []).map((offer) => offer.platform).filter(Boolean);
   for (const [category, items] of byCategory) {
     // Rule strategy, no recommendations: this only needs the product clusters. Runs in a
     // worker thread for large categories so the API stays responsive.
@@ -188,19 +206,21 @@ export async function buildScheduledQueryPlan({
 
       if ((group.offerCount || 0) >= minOffers) {
         const known = compared.get(query);
-        if (!known || lastScrapedAt < known.lastScrapedAt) compared.set(query, { query, category, lastScrapedAt, kind: "compared" });
+        const stores = new Set([...(known?.stores ?? []), ...storesOf(group)]);
+        if (!known || lastScrapedAt < known.lastScrapedAt) compared.set(query, { query, category, lastScrapedAt, kind: "compared", stores });
+        else known.stores = stores;
       } else if (lastScrapedAt < cutoff) {
         stale.push({ query, category, platform: group.offers?.[0]?.platform ?? "", lastScrapedAt });
       }
     }
   }
 
-  const plan = [...compared.values()];
+  const plan = [...compared.values()].map(({ stores, ...entry }) => ({ ...entry, platforms: refreshStores(stores) }));
   if (staleSingles > 0) {
     const byQuery = new Map(stale.map((candidate) => [candidate.query, candidate]));
     for (const query of pickStaleSingles(stale, staleSingles, new Set(compared.keys()))) {
-      const { category, lastScrapedAt } = byQuery.get(query);
-      plan.push({ query, category, lastScrapedAt, kind: "stale-single" });
+      const { category, lastScrapedAt, platform } = byQuery.get(query);
+      plan.push({ query, category, lastScrapedAt, kind: "stale-single", platforms: refreshStores([platform]) });
     }
   }
   const lastRun = (entry) => lastQueried.get(entry.query) ?? 0; // never run: first
@@ -228,12 +248,16 @@ function sleep(ms) {
  * QUERY_LOG_SAVE_EVERY queries and at the end, so a run that is killed keeps nearly all of it. Without `queries`, the list is built
  * here with the default log.
  *
- * @param {{queries?: string[], delayMs?: number, budgetMs?: number, now?: () => number, queryLog?: ReturnType<typeof createQueryLog>, onProgress?: (info) => void}} [opts]
+ * `queries` are plain queries (every store is asked) or plan entries {query, platforms} (only those stores: refreshStores).
+ *
+ * @param {{queries?: Array<string|{query: string, platforms?: string[]}>, delayMs?: number, budgetMs?: number, now?: () => number, queryLog?: ReturnType<typeof createQueryLog>, onProgress?: (info) => void}} [opts]
  */
 export async function runScheduledScrape(opts = {}) {
   const { delayMs = 3000, budgetMs = RUN_BUDGET_MS, now = Date.now, onProgress } = opts;
   const queryLog = opts.queryLog ?? (opts.queries ? null : createQueryLog());
-  const queries = opts.queries || (await buildScheduledQueryList({ lastQueried: queryLog.lastQueried }));
+  const entries = (opts.queries || (await buildScheduledQueryPlan({ lastQueried: queryLog.lastQueried })))
+    .map((item) => (typeof item === "string" ? { query: item } : item));
+  const queries = entries.map((entry) => entry.query);
 
   const summary = { totalQueries: queries.length, totalSaved: 0, failures: [], skipped: 0 };
   const startedAt = now();
@@ -245,8 +269,9 @@ export async function runScheduledScrape(opts = {}) {
       break;
     }
     const query = queries[i];
+    const { platforms } = entries[i];
     try {
-      const saved = await runScrapersAndSave(query);
+      const saved = platforms ? await runScrapersAndSave(query, { platforms }) : await runScrapersAndSave(query);
       summary.totalSaved += saved;
       onProgress?.({ index: i + 1, total: queries.length, query, saved });
     } catch (err) {

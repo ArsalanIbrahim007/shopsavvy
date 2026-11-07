@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterAll, afterEach } from "vitest";
 
 import Listing from "../src/models/listing.model.js";
 import { closeGroupingPool } from "../src/services/grouping.service.js";
-import { buildScheduledQueryList, buildScheduledQueryPlan, deriveQuery, pickStaleSingles, STALE_SINGLE_AFTER_DAYS, STALE_SINGLE_PER_RUN } from "../src/services/scheduledScraping.service.js";
+import { buildScheduledQueryList, buildScheduledQueryPlan, deriveQuery, GENERAL_STORES, pickStaleSingles, refreshStores, STALE_SINGLE_AFTER_DAYS, STALE_SINGLE_PER_RUN } from "../src/services/scheduledScraping.service.js";
 
 afterEach(() => vi.restoreAllMocks());
 afterAll(() => closeGroupingPool());
@@ -173,10 +173,23 @@ describe("buildScheduledQueryList also re-queries products only one store sells,
       listing("paklap", dell, daysAgo(1)), listing("mega", dell, daysAgo(2)), listing("paklap", "Acer Aspire Go 15 AG15 Laptop", daysAgo(9), { productCategory: "tablet" }),
     ] });
     const plan = await buildScheduledQueryPlan({ now: NOW });
+    // Each asks its own stores plus the general ones (smart routing, refreshStores).
     expect(plan).toEqual([
-      { query: deriveQuery("Acer Aspire Go 15 AG15 Laptop"), category: "tablet", lastScrapedAt: NOW - 9 * 86400000, kind: "stale-single" },
-      { query: deriveQuery(dell), category: "laptop", lastScrapedAt: NOW - 2 * 86400000, kind: "compared" },
+      { query: deriveQuery("Acer Aspire Go 15 AG15 Laptop"), category: "tablet", lastScrapedAt: NOW - 9 * 86400000, kind: "stale-single", platforms: ["alfamall", "digimall", "mega", "paklap", "priceoye"] },
+      { query: deriveQuery(dell), category: "laptop", lastScrapedAt: NOW - 2 * 86400000, kind: "compared", platforms: ["alfamall", "digimall", "mega", "paklap", "priceoye"] },
     ]);
+  });
+
+  // 2026-11-07: every refresh asked all 22 stores and waited for the slowest (Paklap 9.9 s) even for a fridge; ~460 of 6,400 a night.
+  it("routes each refresh to the stores selling the product and the fast general ones, not to every store", async () => {
+    const fridge = "Haier HRF-346 EPB Refrigerator";
+    vi.spyOn(Listing, "find").mockReturnValue({ lean: async () => [
+      listing("shophive", fridge, daysAgo(3), { productCategory: "refrigerator" }), listing("japanelectronics", fridge, daysAgo(4), { productCategory: "refrigerator" }),
+    ] });
+    const [entry] = await buildScheduledQueryPlan({ now: NOW });
+    expect(entry.platforms).toEqual(["alfamall", "digimall", "japanelectronics", "mega", "priceoye", "shophive"]);
+    expect(entry.platforms).not.toContain("paklap");
+    expect(refreshStores(["mega", "w11stop"])).toEqual([...GENERAL_STORES, "w11stop"].sort());
   });
 
   it("lists one query once when two products give it (the same phone in two capacities), dated by the older of them", async () => {
