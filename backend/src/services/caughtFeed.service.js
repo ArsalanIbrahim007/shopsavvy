@@ -114,8 +114,14 @@ export function clearCaughtCache() {
 
 /** Reads the feed saved before a restart, to answer with while the catalogues are grouped again. Called at start-up. */
 export async function loadCaughtSnapshot() {
-  saved = await readSnapshot("caught");
+  const value = await readSnapshot("caught");
+  saved = isEmptyFeed(value) ? null : value;
 }
+
+// A feed that caught nothing at all is not kept on disk or served from it: the catalogues hold hundreds of caught discounts, so an
+// empty one was computed from catalogues being rebuilt (one was saved during a recategorisation on 2026-11-08, and the home page showed
+// "—" for its count until every category was grouped again).
+const isEmptyFeed = (value) => !value || (value.examples?.length ?? 0) === 0;
 
 /** The feed, from the cache while it is young enough; `missing` lists categories whose catalogue is not computed yet. */
 export function getCaught({ now = Date.now() } = {}) {
@@ -130,7 +136,7 @@ export function getCaught({ now = Date.now() } = {}) {
   // Some catalogues are not computed yet (start-up): the complete feed saved before the restart is better than a partial one.
   if (missing.length && saved) return saved;
   const value = { ...caughtFromGroups(groupsByCategory), generatedAt: new Date(now).toISOString(), missing };
-  if (missing.length === 0) writeSnapshot("caught", value, { now });
+  if (missing.length === 0 && !isEmptyFeed(value)) writeSnapshot("caught", value, { now });
   // A feed missing a category is kept only a minute, so the complete one follows soon after start-up.
   cached = { expires: now + (missing.length ? 60 * 1000 : CACHE_TTL_MS), value };
   return value;

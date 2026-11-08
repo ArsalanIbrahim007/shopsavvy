@@ -72,3 +72,24 @@ describe("getCaught", () => {
     expect(feed.generatedAt).toBe("2026-11-07T12:00:00.000Z");
   });
 });
+
+// 2026-11-08: an empty feed was saved while the catalogues were being rebuilt, and the home page showed "—" until they all were.
+describe("the caught feed on disk", () => {
+  it("never saves a feed that caught nothing", async () => {
+    const snapshot = await import("../src/services/snapshot.service.js");
+    const write = vi.spyOn(snapshot, "writeSnapshot");
+    clearCaughtCache();
+    // every catalogue computed, and not one offer caught
+    vi.mocked(peekCatalogGroups).mockReturnValue({ groups: [group("Plain phone", [offer("mega", 50000), offer("priceoye", 51000)])] });
+    const feed = getCaught({ now: Date.parse("2026-11-08T12:00:00Z") });
+    expect(feed.missing).toEqual([]);
+    expect(feed.examples).toEqual([]);
+    expect(write).not.toHaveBeenCalled();
+    // one caught offer: saved
+    clearCaughtCache();
+    vi.mocked(peekCatalogGroups).mockReturnValue({ groups: [group("Phone", [fake("mega", 50000, 90000), offer("priceoye", 51000)])] });
+    getCaught({ now: Date.parse("2026-11-08T12:00:00Z") });
+    expect(write).toHaveBeenCalledWith("caught", expect.objectContaining({ counts: expect.objectContaining({ fakeDiscount: 2 }) }), expect.anything());
+    write.mockRestore();
+  });
+});
