@@ -21,8 +21,8 @@ export const BATCH_SIZE = 500;
 // of the WHOLE catalogue without an error (a Shopify or WooCommerce store read whole; a marketplace is read by brand and can miss things), and
 // only when at least MIN_FOUND_SHARE of our listings were found: a read that went wrong must never mark a store's products gone.
 export const MIN_FOUND_SHARE = 0.5;
-// The nightly scrape skips the searches at a store whose catalogue was read, but only when the read found at least COVERED_SHARE of
-// our listings there: Al-Fatah's three collections find about half, and the other half are still refreshed by searching.
+// A whole-catalogue read that found fewer than COVERED_SHARE of our listings at its store is reported by the nightly scrape (the rest
+// were not refreshed that night). A store read only in part, by collections (Al-Fatah: about half), is searched as well.
 export const COVERED_SHARE = 0.9;
 export const coversHeldListings = (stats) => stats.known === 0 || stats.matched / stats.known >= COVERED_SHARE;
 // A storefront marketplace is read one brand at a time: the brands are the first words of the titles we hold for it, those with at

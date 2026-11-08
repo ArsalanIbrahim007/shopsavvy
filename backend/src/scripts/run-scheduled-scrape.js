@@ -11,12 +11,12 @@
 //   node src/scripts/run-scheduled-scrape.js --plan           (show what the run would query, in order, and exit; scrapes nothing)
 //   node src/scripts/run-scheduled-scrape.js --force          (run even if today's scrape already happened)
 //   node src/scripts/run-scheduled-scrape.js --no-pages         (skip the page check (PTA status, colours) that follows the scrape)
-//   node src/scripts/run-scheduled-scrape.js --no-catalogue     (skip the catalogue refresh that comes first)
+//   node src/scripts/run-scheduled-scrape.js --no-catalogue     (skip the catalogue refresh that runs beside the searches)
 //   node src/scripts/run-scheduled-scrape.js --stores=priceoye,shophive   (search only these stores: to catch one up; with --force)
 //
-// First the catalogue refresh (services/catalogueRefresh.service.js): the Shopify, WooCommerce and AlfaMall/DigiMall stores' whole
-// catalogues are read and every listing we hold there is updated, in minutes. Then the searches, which no longer ask a store whose
-// catalogue was just read (2026-11-08: searching refreshed AlfaMall, 42% of our listings, only 30% within a day).
+// The catalogue refresh (services/catalogueRefresh.service.js): the Shopify, WooCommerce and AlfaMall/DigiMall stores' whole
+// catalogues are read and every listing we hold there is updated. Beside it, the searches, which do not ask a store whose
+// catalogue is read whole (2026-11-08: searching refreshed AlfaMall, 42% of our listings, only 30% within a day).
 //
 // Shares today's "already done / running" record with the backend's own daily job
 // (src/jobs/scrapeState.js), so a day is scraped once however it was started:
@@ -80,28 +80,33 @@ for (const signal of ["SIGINT", "SIGTERM", "SIGHUP", "SIGBREAK"]) {
 }
 
 let exitCode = 0;
+let catalogues = Promise.resolve(); // the catalogue reads, awaited before the database is closed even when the searches fail
 try {
   await mongoose.connect(process.env.MONGO_URI);
 
-  // 1. The catalogues: every listing we hold at these stores, refreshed in a few hundred requests.
-  const refreshed = new Set();
-  if (!process.argv.includes("--no-catalogue")) {
-    for (const store of CATALOGUE_STORES) {
+  // 1. The catalogues and 2. the searches run side by side (2026-11-09). One after the other they took about five hours (AlfaMall's
+  // catalogue alone 98 minutes, DigiMall's 28, the rest 17, then 150 of searches), past the three hours Task Scheduler allows. They ask
+  // different stores: the searches leave out every store whose whole catalogue is read, and each catalogue is read at once, each from
+  // its own store, so the run takes as long as its longest part. A store read only in part (Al-Fatah, by collections) is searched too.
+  const catalogueStores = process.argv.includes("--no-catalogue") ? [] : CATALOGUE_STORES;
+  const readWhole = new Set(catalogueStores.filter((store) => !store.collections?.length).map((store) => store.platform));
+  catalogues = Promise.all(
+    catalogueStores.map(async (store) => {
       try {
         const s = await refreshCatalogue(store);
-        if (coversHeldListings(s)) refreshed.add(store.platform);
         console.log(`[${stamp()}] catalogue ${s.platform}: ${s.updated} of our ${s.known} listings updated${s.gone ? `, ${s.gone} no longer sold` : ""} (${s.items} in its catalogue, ${s.pages} pages, ${Math.round(s.durationMs / 1000)} s)`);
+        if (readWhole.has(store.platform) && !coversHeldListings(s)) {
+          console.warn(`[${stamp()}] catalogue ${s.platform} found only ${Math.round((100 * s.matched) / s.known)}% of our listings there; the rest were not refreshed tonight.`);
+        }
       } catch (err) {
-        console.warn(`[${stamp()}] catalogue ${store.platform} failed: ${err.message} (its searches still run)`);
+        console.warn(`[${stamp()}] catalogue ${store.platform} failed: ${err.message} (its prices were not refreshed tonight)`);
       }
-    }
-  }
+    }),
+  );
 
-  // 2. The searches, for the stores without a catalogue (and for new products): a store whose catalogue read found nearly all our
-  // listings there is not asked again (coversHeldListings).
   const queryLog = createQueryLog();
   const fullPlan = await buildScheduledQueryPlan({ minOffers, staleSingles, lastQueried: queryLog.lastQueried });
-  const plan = stores ? onlyStores(withoutRefreshedStores(fullPlan, refreshed), stores) : withoutRefreshedStores(fullPlan, refreshed);
+  const plan = stores ? onlyStores(withoutRefreshedStores(fullPlan, readWhole), stores) : withoutRefreshedStores(fullPlan, readWhole);
   const queries = plan.map((entry) => entry.query);
   const byKind = (kind) => plan.filter((entry) => entry.kind === kind).length;
   console.log(`[${stamp()}] ${queries.length} queries to re-scrape, longest since last run first (min ${minOffers} offer(s) per product; ${byKind("compared")} compared products + ${byKind("stale-single")} stale single-store ones).`);
@@ -116,6 +121,7 @@ try {
       else console.log(`(${index}/${total}) "${query}" -> ${saved} saved`);
     },
   });
+  await catalogues;
 
   if (claimed || !isDoneToday()) markDone();
   console.log(`\nDone. ${summary.totalQueries - summary.skipped} of ${summary.totalQueries} queries, ${summary.totalSaved} listings saved, ${summary.failures.length} failed, ${(summary.durationMs / 1000).toFixed(0)}s.`);
@@ -138,6 +144,7 @@ try {
   console.error("Scheduled scrape failed:", err.message);
   exitCode = 1;
 } finally {
+  await catalogues;
   await mongoose.disconnect().catch(() => {});
 }
 console.log(`[${stamp()}] scheduled scrape finished with exit code ${exitCode}`);

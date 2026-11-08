@@ -180,6 +180,16 @@ describe("buildScheduledQueryList also re-queries products only one store sells,
     ]);
   });
 
+  it("leaves goods outside electronics (the 'other' category) out of the plan", async () => {
+    const seat = "Muzamil Store Car Seat Cushion Cover";
+    vi.spyOn(Listing, "find").mockReturnValue({ lean: async () => [
+      listing("alfamall", seat, daysAgo(30), { productCategory: "other" }), listing("ishopping", seat, daysAgo(30), { productCategory: "other" }),
+      listing("paklap", "Acer Aspire Go 15 AG15 Laptop", daysAgo(9)),
+    ] });
+    const plan = await buildScheduledQueryPlan({ now: NOW });
+    expect(plan.map((entry) => entry.category)).toEqual(["laptop"]);
+  });
+
   // 2026-11-07: every refresh asked all 22 stores and waited for the slowest (Paklap 9.9 s) even for a fridge; ~460 of 6,400 a night.
   it("routes each refresh to the stores selling the product and the fast general ones, not to every store", async () => {
     const fridge = "Haier HRF-346 EPB Refrigerator";

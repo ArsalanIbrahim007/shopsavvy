@@ -92,3 +92,12 @@ export const adminLimiter = createAdminLimiter();
 export const suggestLimiter = createReadLimiter({ limit: 900 });
 // The browser extension asks once per product page a shopper opens; answers are cached for ten minutes.
 export const matchLimiter = createReadLimiter({ limit: 300 });
+
+// The user acceptance test (/api/uat/responses): a person answers once; a few more allow a shared address (a lab, a family).
+export const uatSubmitLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: tooMany("Thank you, we already have answers from this address. Please try again in an hour."),
+});

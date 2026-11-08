@@ -214,7 +214,7 @@ describe("storefrontTerms", () => {
 });
 
 describe("coversHeldListings", () => {
-  it("lets the nightly scrape skip a store's searches only when its catalogue read found nearly all our listings there", () => {
+  it("tells the nightly scrape when a catalogue read found too few of our listings there", () => {
     expect(coversHeldListings({ known: 200, matched: 195 })).toBe(true);
     expect(coversHeldListings({ known: 2444, matched: 1259 })).toBe(false); // Al-Fatah's three collections
     expect(coversHeldListings({ known: 0, matched: 0 })).toBe(true);

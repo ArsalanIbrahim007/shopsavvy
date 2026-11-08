@@ -6,13 +6,14 @@
 //     (the words of a search that starts a refresh from the stores)
 //   - abuse limits: middleware/rateLimit.middleware.js (counts per address, in memory, 15-minute windows)
 //   - this browser: lib/theme.js and lib/recentSearches.js (localStorage, never sent)
+//   - the usability test: backend/src/models/uatResponse.model.js (no name, email or address), pages/TryShopSavvy.jsx
 
 import { Link } from "react-router-dom";
 
 import { usePageDescription, usePageTitle } from "../hooks/usePageTitle.js";
 import "./HowItWorks.css";
 
-export const PRIVACY_UPDATED = "26 October 2026";
+export const PRIVACY_UPDATED = "9 November 2026";
 const ISSUES_URL = "https://github.com/ArsalanIbrahim007/shopsavvy/issues";
 
 const KEPT = [
@@ -21,6 +22,7 @@ const KEPT = [
   ["An alert that has ended (price reached, or cancelled)", "Deleted 30 days after it ended"],
   ["Your address, for the abuse limits", "In the server's memory only, for up to 15 minutes"],
   ["Server logs", "As long as the hosting service keeps its logs; they hold no name, email or address"],
+  ["Answers to the usability test", "With the project's results; they hold no name, email or address"],
   ["Theme and recent searches", "In your browser, until you clear its site data"],
 ];
 
@@ -52,6 +54,10 @@ export default function Privacy() {
           <li>
             <strong>Your internet (IP) address</strong> is counted in the server's memory for up to 15 minutes, so that one
             visitor or script cannot overload the site. It is never written to disk.
+          </li>
+          <li>
+            <strong>The usability test</strong>, only if you take it (<Link to="/try">Help us test ShopSavvy</Link>): your answers
+            to its tasks and statements, and the optional facts and comment you choose to give. It never asks your name or email.
           </li>
           <li>
             <strong>In your browser only:</strong> your light or dark theme choice and your last few searches, so the site can

@@ -1,0 +1,55 @@
+/* TryShopSavvy.css — the user acceptance test page. Reuses .prose (HowItWorks.css) for the reading column. */
+
+.uat-form { display: grid; gap: var(--space-6); }
+.uat-form section { display: grid; gap: var(--space-3); }
+.uat-form h2 { font-size: 1.375rem; }
+
+.prose .uat-tasks, .prose .uat-sus { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-3); }
+.uat-task { padding: var(--space-5); display: grid; gap: var(--space-3); scroll-margin-top: 96px; }
+.uat-task h3 { display: flex; align-items: center; gap: var(--space-2); font-size: 1.0625rem; }
+.uat-task p { margin: 0; }
+.uat-task__n {
+  display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: var(--radius-pill);
+  background: var(--brand-soft); color: var(--brand); font-family: var(--font-mono); font-size: 0.875rem;
+}
+
+.uat-choice { border: 0; margin: 0; padding: 0; display: grid; gap: var(--space-2); min-width: 0; }
+.uat-choice legend { font-weight: 600; font-size: 0.9375rem; padding: 0; margin-bottom: var(--space-1); }
+.uat-choice__hint { margin: 0; }
+.uat-choice__options { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.uat-choice__option {
+  display: inline-flex; align-items: center; gap: var(--space-2); min-height: 40px; padding: 0 var(--space-3);
+  border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--paper); cursor: pointer;
+  font-size: 0.9375rem;
+}
+.uat-choice__option:hover { border-color: var(--brand); }
+.uat-choice__option:has(input:checked) { border-color: var(--brand); background: var(--brand-soft); }
+.uat-choice__option:has(input:focus-visible) { outline: 2px solid var(--brand); outline-offset: 2px; }
+.uat-choice__option input { accent-color: var(--brand); margin: 0; }
+
+/* A 1-7 or agree scale: equal-width buttons in one row where they fit */
+.uat-choice--scale .uat-choice__options { display: grid; grid-template-columns: repeat(auto-fit, minmax(44px, 1fr)); }
+.uat-sus .uat-choice--scale .uat-choice__options { grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); }
+.uat-choice--scale .uat-choice__option { justify-content: center; }
+
+.uat-sus > li { padding: var(--space-4); border: 1px solid var(--line-soft); border-radius: var(--radius-card); background: var(--raised); scroll-margin-top: 96px; }
+.uat-sus legend { font-weight: 500; }
+
+.uat-comment__label { font-weight: 600; font-size: 0.9375rem; margin-top: var(--space-2); }
+.uat-comment {
+  width: 100%; padding: var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-control);
+  background: var(--paper); color: var(--ink); font: inherit; resize: vertical;
+}
+
+.uat-missing { padding: var(--space-4); border: 1px solid var(--caution-line); border-radius: var(--radius-control); background: var(--caution-soft); }
+.uat-missing p { margin: 0 0 var(--space-2); }
+.uat-error { color: var(--bad); }
+
+.uat-thanks { padding: var(--space-6); display: grid; gap: var(--space-3); background: var(--good-soft); border-color: var(--good-line); }
+.uat-thanks__score { margin: 0; font-family: var(--font-mono); font-size: 1.25rem; color: var(--ink-soft); }
+.uat-thanks__value { font-size: clamp(2.5rem, 8vw, 3.5rem); font-weight: 500; color: var(--ink); letter-spacing: -0.04em; }
+
+@media (max-width: 600px) {
+  .uat-task { padding: var(--space-4); }
+  .uat-sus .uat-choice--scale .uat-choice__options { grid-template-columns: 1fr; }
+}

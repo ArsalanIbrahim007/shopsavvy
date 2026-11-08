@@ -15,6 +15,8 @@ const HowItWorks = lazy(() => import("./pages/HowItWorks.jsx"));
 const HonestPrices = lazy(() => import("./pages/HonestPrices.jsx"));
 const PriceDrops = lazy(() => import("./pages/PriceDrops.jsx"));
 const Privacy = lazy(() => import("./pages/Privacy.jsx"));
+const Help = lazy(() => import("./pages/Help.jsx"));
+const TryShopSavvy = lazy(() => import("./pages/TryShopSavvy.jsx"));
 
 function Loading() {
   return (
@@ -40,6 +42,8 @@ export default function App() {
             <Route path="honest-prices" element={<Suspense fallback={<Loading />}><HonestPrices /></Suspense>} />
             <Route path="drops" element={<Suspense fallback={<Loading />}><PriceDrops /></Suspense>} />
             <Route path="privacy" element={<Suspense fallback={<Loading />}><Privacy /></Suspense>} />
+            <Route path="help" element={<Suspense fallback={<Loading />}><Help /></Suspense>} />
+            <Route path="try" element={<Suspense fallback={<Loading />}><TryShopSavvy /></Suspense>} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

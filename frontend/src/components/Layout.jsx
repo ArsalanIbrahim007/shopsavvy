@@ -86,6 +86,8 @@ function Footer() {
             <Link to="/how-it-works">How we check prices</Link>
             <Link to="/honest-prices">How accurate we are</Link>
             <Link to="/drops">Price drops</Link>
+            <Link to="/help">How to use it</Link>
+            <Link to="/try">Help us test it</Link>
             <Link to="/privacy">Privacy</Link>
           </nav>
         </div>

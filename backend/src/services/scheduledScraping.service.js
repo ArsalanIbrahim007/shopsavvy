@@ -176,6 +176,9 @@ export function pickStaleSingles(candidates, count, skip = new Set()) {
  * @param {{minOffers?: number, staleSingles?: number, staleAfterDays?: number, now?: number, lastQueried?: Map<string, number>}} [opts]
  * @returns {Promise<Array<{query: string, category: string, lastScrapedAt: number, kind: "compared"|"stale-single"}>>}
  */
+/** The category the nightly plan leaves out: goods outside electronics. */
+export const UNPLANNED_CATEGORY = "other";
+
 export async function buildScheduledQueryPlan({
   minOffers = 2, staleSingles = STALE_SINGLE_PER_RUN, staleAfterDays = STALE_SINGLE_AFTER_DAYS, now = Date.now(), lastQueried = new Map(),
 } = {}) {
@@ -193,6 +196,10 @@ export async function buildScheduledQueryPlan({
   const stale = [];
   const storesOf = (group) => (group.offers || []).map((offer) => offer.platform).filter(Boolean);
   for (const [category, items] of byCategory) {
+    // Not "other" (2026-11-09: 23,437 listings, mostly AlfaMall marketplace goods such as car seats and furniture covers): a night
+    // fits about 1,200 of the plan's searches, and these were taking them from electronics. Grouping them also took most of the
+    // plan's ten minutes.
+    if (category === UNPLANNED_CATEGORY) continue;
     // Rule strategy, no recommendations: this only needs the product clusters. Runs in a
     // worker thread for large categories so the API stays responsive.
     const groups = await groupListings(items, { strategy: "rule", recommend: false, priority: "background", timeoutMs: BACKGROUND_GROUP_TIMEOUT_MS });

@@ -22,6 +22,7 @@ import priceAlertRoutes from "./routes/priceAlert.routes.js";
 import alertPageRoutes from "./routes/alertPages.routes.js";
 import sitemapRoutes from "./routes/sitemap.routes.js";
 import shareRoutes from "./routes/share.routes.js";
+import uatRoutes from "./routes/uat.routes.js";
 import compression from "compression";
 
 export function createApp(env = process.env) {
@@ -61,6 +62,7 @@ export function createApp(env = process.env) {
   app.use("/api/analytics", analyticsRoutes);
   app.use("/api/integrity", integrityRoutes);
   app.use("/api/alerts", priceAlertRoutes);
+  app.use("/api/uat", uatRoutes);
   // The pages the links in alert emails open (confirm / cancel).
   app.use("/alerts", alertPageRoutes);
   // For search engines; the frontend's robots.txt points here.

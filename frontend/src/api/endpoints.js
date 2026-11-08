@@ -194,3 +194,12 @@ export async function cancelAlert(token, { signal } = {}) {
 export async function getHealth({ signal } = {}) {
   return request("/health", { signal, timeoutMs: 5000 });
 }
+
+/**
+ * Sends one person's answers to the user acceptance test (/try page, lib/uat.js toUatResponse). Anonymous.
+ * @returns {Promise<{susScore: number}>}
+ */
+export async function submitUatResponse(response, { signal } = {}) {
+  const body = await request("/uat/responses", { method: "POST", body: response, signal });
+  return { susScore: body.susScore };
+}
