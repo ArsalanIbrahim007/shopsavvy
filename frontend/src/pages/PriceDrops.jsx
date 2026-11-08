@@ -5,6 +5,7 @@
 import { Link, useSearchParams } from "react-router-dom";
 
 import { getPriceDrops } from "../api/endpoints.js";
+import CategoryIcon from "../components/CategoryIcon.jsx";
 import DropCard from "../components/DropCard.jsx";
 import ErrorState from "../components/ErrorState.jsx";
 import { CardSkeleton } from "../components/Skeleton.jsx";
@@ -22,21 +23,31 @@ export default function PriceDrops() {
   const category = FEATURED_CATEGORIES.includes(asked) ? asked : ""; // anything else shows all, rather than an error page
   const drops = useAsync((signal) => getPriceDrops({ category: category || undefined, limit: 48, signal }), [category]);
   usePageTitle(category ? `${categoryName(category)} price drops` : "Price drops");
+  const biggest = drops.status === "success" ? Math.max(0, ...drops.data.drops.map((item) => Number(item.drop?.percent) || 0)) : 0;
 
   return (
     <div className="container drops-page">
       <header className="drops-page__head">
-        <h1>Price drops</h1>
-        <p className="muted">
-          Prices that came down since the store's previous check. The "was" price is the one we recorded ourselves, not the
-          store's own crossed-out price.
-        </p>
+        <div className="drops-page__title">
+          <h1>Price drops</h1>
+          <p className="muted">
+            Prices that came down since the store's previous check. The "was" price is the one we recorded ourselves, not the
+            store's own crossed-out price.
+          </p>
+        </div>
+        {biggest > 0 && (
+          <p className="drops-page__stat">
+            <span className="drops-page__stat-value price">↓ {Number.isInteger(biggest) ? biggest : biggest.toFixed(1)}%</span>
+            <span className="small muted">the biggest drop {category ? `in ${categoryName(category).toLowerCase()}` : "right now"}</span>
+          </p>
+        )}
       </header>
 
       <nav className="drops-page__filter" aria-label="Category">
         <Link className="chip" to="/drops" aria-current={category === "" ? "page" : undefined}>All</Link>
         {FEATURED_CATEGORIES.map((id) => (
           <Link key={id} className="chip" to={`/drops?category=${id}`} aria-current={category === id ? "page" : undefined}>
+            <CategoryIcon category={id} size={16} />
             {categoryName(id)}
           </Link>
         ))}

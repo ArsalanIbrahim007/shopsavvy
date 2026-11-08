@@ -1,7 +1,14 @@
-.drops-page { padding-block: var(--space-6) var(--space-7); display: grid; gap: var(--space-4); }
-.drops-page__head { display: grid; gap: var(--space-2); max-width: 70ch; }
+.drops-page { padding-block: var(--space-6) var(--space-7); display: grid; gap: var(--space-5); }
+.drops-page__head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: var(--space-4) var(--space-6); }
+.drops-page__title { display: grid; gap: var(--space-2); max-width: 62ch; }
+.drops-page__title h1 { font-size: clamp(2rem, 5vw, 3rem); letter-spacing: -0.04em; line-height: 1.05; }
+.drops-page__stat { display: grid; gap: var(--space-1); justify-items: end; text-align: right; animation: rise var(--dur-slow) var(--ease) 120ms both; }
+.drops-page__stat-value { font-size: clamp(2rem, 5vw, 2.75rem); font-weight: 500; letter-spacing: -0.05em; line-height: 1; color: var(--good); }
 .drops-page__filter { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-.drops-page__filter .chip[aria-current="page"] { border-color: var(--brand); color: var(--brand); font-weight: 600; }
+.drops-page__filter .chip .category-icon { color: var(--ink-faint); }
+.drops-page__filter .chip .category-icon .ci-accent { stroke: var(--accent); }
+.drops-page__filter .chip[aria-current="page"] { border-color: var(--ink); background: var(--ink); color: var(--paper); font-weight: 500; }
+.drops-page__filter .chip[aria-current="page"] .category-icon { color: var(--paper); }
 .drops-page__count { margin-bottom: var(--space-3); }
 .drops-page__empty { padding: var(--space-5); border: 1px dashed var(--line); border-radius: var(--radius-card); color: var(--ink-soft); max-width: 70ch; }
 .drops-page__rules { max-width: 80ch; }

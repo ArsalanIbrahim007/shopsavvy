@@ -1,34 +1,68 @@
 /* HonestPrices.css — layout for the "how we keep prices honest" page. Reuses .prose (HowItWorks.css) for the reading column. */
 
-.honest { max-width: 980px; }
+.honest { max-width: 1040px; }
 .honest > section > p,
-.honest > section > ul,
-.honest > .lead { max-width: 760px; }
+.honest > section > ul:not(.honest-limits),
+.honest .lead { max-width: 760px; }
+.honest > section > h2 { font-size: 1.5rem; }
 
-.honest-grid { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); align-items: start; }
-.honest-card { display: grid; gap: var(--space-3); padding: var(--space-5); }
-.honest-card h3 { font-size: 1.0625rem; }
+.honest-grid { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); align-items: start; }
+.honest-card { display: grid; gap: var(--space-4); padding: var(--space-5); align-content: start; }
+.honest-card h3 { font-size: 0.9375rem; font-weight: 500; color: var(--ink-soft); letter-spacing: 0; }
 
-.honest-figure { display: grid; gap: 0; }
-.honest-figure__value { font-family: var(--font-display); font-size: 2rem; font-weight: 700; line-height: 1.1; color: var(--ink); margin: 0; font-variant-numeric: tabular-nums; }
+.honest-figure { display: grid; gap: var(--space-1); }
+.honest-figure__value { font-family: var(--font-mono); font-size: clamp(2.25rem, 5vw, 3rem); font-weight: 500; letter-spacing: -0.05em; line-height: 1; color: var(--ink); margin: 0; font-variant-numeric: tabular-nums; }
 .honest-figure__label { margin: 0; color: var(--ink-soft); font-size: 0.875rem; }
 
+/* one bar split by share; the table under it is its legend (the same colours, in the same order) */
+.split-bar { display: flex; gap: 2px; height: 12px; border-radius: var(--radius-pill); overflow: hidden; background: var(--line-soft); }
+.split-bar__part { min-width: 3px; transform-origin: left; animation: grow 700ms var(--ease) both; }
+@keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.split-key { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: var(--space-2); vertical-align: 0; }
+.split-good { background: var(--good); }
+.split-good-soft { background: var(--good-line); }
+.split-brand { background: var(--brand); }
+.split-caution { background: var(--caution); }
+.split-bad { background: var(--bad); }
+.split-neutral { background: var(--neutral-fill); }
+
+/* freshness: today's share, then the rest of three days, on one track */
+.fresh-meter { display: flex; height: 12px; border-radius: var(--radius-pill); overflow: hidden; background: var(--line-soft); }
+.fresh-meter span { transform-origin: left; animation: grow 900ms var(--ease) both; }
+.fresh-meter__day { background: var(--good); }
+.fresh-meter__three { background: var(--good-line); animation-delay: 200ms !important; }
+
+/* a percentage drawn as a thin bar under its figure in a table cell */
+.data-bar { display: block; height: 4px; margin-top: 6px; margin-left: auto; width: 100%; min-width: 64px; border-radius: 2px; background: var(--line-soft); overflow: hidden; }
+.data-bar > span { display: block; height: 100%; border-radius: 2px; background: var(--brand); transform-origin: left; animation: grow 900ms var(--ease) both; }
+.data-bar--good > span { background: var(--good); }
+.data-bar--caution > span { background: var(--caution); }
+
+/* the explanation under a figure, one click away */
+.honest-why > summary { cursor: pointer; color: var(--ink-faint); width: fit-content; }
+.honest-why > summary:hover { color: var(--ink); }
+.honest-why[open] > .honest-why__body { display: grid; gap: var(--space-2); margin-top: var(--space-2); animation: rise var(--dur-base) var(--ease) both; }
+
 .prose .honest-examples { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-2); }
-.honest-examples li { border-left: 3px solid var(--caution-line); background: var(--caution-soft); padding: var(--space-2) var(--space-3); border-radius: 0 var(--radius-control) var(--radius-control) 0; }
+.honest-examples li { box-shadow: inset 3px 0 0 var(--caution); background: var(--raised); padding: var(--space-2) var(--space-3); border-radius: 0 var(--radius-control) var(--radius-control) 0; font-size: 0.9375rem; }
 
 .honest-table { width: 100%; border-collapse: collapse; font-size: 0.9375rem; }
 .honest-table th, .honest-table td { text-align: left; padding: var(--space-2) var(--space-2); border-bottom: 1px solid var(--line-soft); vertical-align: top; }
-.honest-table thead th { font-size: 0.8125rem; color: var(--ink-soft); font-weight: 600; border-bottom-color: var(--line); }
-.honest-table tbody th { font-weight: 600; }
-.honest-table tfoot th, .honest-table tfoot td { border-bottom: 0; border-top: 1px solid var(--line); font-weight: 600; }
-.honest-table .num { text-align: right; white-space: nowrap; }
+.honest-table thead th { font-size: 0.8125rem; color: var(--ink-faint); font-weight: 500; border-bottom-color: var(--line); }
+.honest-table tbody th { font-weight: 500; }
+.honest-table tfoot th, .honest-table tfoot td { border-bottom: 0; border-top: 1px solid var(--line); font-weight: 500; }
+.honest-table .num { text-align: right; white-space: nowrap; font-family: var(--font-mono); letter-spacing: -0.02em; }
 .honest-table__hint { display: block; font-weight: 400; }
-.honest-table tr.is-in-use { background: var(--brand-soft); }
+.honest-table tr.is-in-use { background: var(--raised); box-shadow: inset 3px 0 0 var(--accent); }
 
 .honest-table--wide { min-width: 560px; }
 .honest-scroll { overflow-x: auto; }
 
 .honest-loading { display: grid; gap: var(--space-3); }
+
+/* what we cannot tell you: short cards in a grid, not a long list */
+.prose .honest-limits { list-style: none; padding: 0; display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.honest-limits li { padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-card); background: var(--paper); color: var(--ink-soft); font-size: 0.9375rem; }
 
 @media (max-width: 600px) {
   .honest-card { padding: var(--space-4); }

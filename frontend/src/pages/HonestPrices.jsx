@@ -9,6 +9,7 @@ import { getIntegrity } from "../api/endpoints.js";
 import ErrorState from "../components/ErrorState.jsx";
 import { Skeleton } from "../components/Skeleton.jsx";
 import { useAsync } from "../hooks/useAsync.js";
+import { useCountUp, useInView } from "../hooks/useCountUp.js";
 import { usePageTitle } from "../hooks/usePageTitle.js";
 import { formatDate, formatNumber, formatPrice, timeAgo } from "../lib/format.js";
 import { discountRows, formatScore, formatShare, markupRows, matcherRows, outlookJudgeable, outlookRows, perHundred, ptaRows, share } from "../lib/integrity.js";
@@ -16,13 +17,55 @@ import { platformName } from "../lib/platforms.js";
 import "./HowItWorks.css"; // the shared reading column (.prose)
 import "./HonestPrices.css";
 
-function Figure({ value, label, children }) {
+// A whole-number figure counts up when it comes into view; a share or other text is shown as it is.
+function CountedValue({ count }) {
+  const [ref, inView] = useInView();
+  const shown = useCountUp(count, { duration: 1400, start: inView });
+  return <span ref={ref}>{formatNumber(shown)}</span>;
+}
+
+function Figure({ value, count, label, children }) {
   return (
     <div className="honest-figure">
-      <p className="honest-figure__value">{value}</p>
+      <p className="honest-figure__value">{Number.isInteger(count) ? <CountedValue count={count} /> : value}</p>
       <p className="honest-figure__label">{label}</p>
       {children}
     </div>
+  );
+}
+
+/** A percentage drawn as a bar inside a table cell, beside its figure (decorative: the figure is the text). */
+function DataBar({ value, tone = "brand" }) {
+  if (!Number.isFinite(value)) return null;
+  return (
+    <span className={`data-bar data-bar--${tone}`} aria-hidden="true">
+      <span style={{ width: `${Math.max(0, Math.min(100, value))}%` }} />
+    </span>
+  );
+}
+
+// Each row's colour carries its meaning (supported green, unknown grey, doubtful orange, contradicted red), the same in the bar and the table.
+const ROW_COLOURS = { genuine: "good", likelyGenuine: "good-soft", unverified: "neutral", suspicious: "caution", likelyFake: "bad", approved: "good", nonPta: "brand", notStated: "neutral", movedOut: "caution" };
+const colourOf = (row) => ROW_COLOURS[row.id] ?? "neutral";
+
+/** The rows of a count table as one bar split by share (the table under it is the legend). */
+function SplitBar({ rows }) {
+  const parts = rows.filter((row) => row.count > 0);
+  if (parts.length === 0) return null;
+  return (
+    <div className="split-bar" aria-hidden="true">
+      {parts.map((row, i) => <span key={row.id} className={`split-bar__part split-${colourOf(row)}`} style={{ flexGrow: row.count, animationDelay: `${i * 80}ms` }} />)}
+    </div>
+  );
+}
+
+/** The explanation under a figure, one click away instead of a wall of text. */
+function Why({ children, label = "Why" }) {
+  return (
+    <details className="honest-why">
+      <summary className="small">{label}</summary>
+      <div className="honest-why__body">{children}</div>
+    </details>
   );
 }
 
@@ -37,6 +80,7 @@ function CountTable({ caption, rows, total }) {
         {rows.map((row) => (
           <tr key={row.id}>
             <th scope="row">
+              <span className={`split-key split-${colourOf(row)}`} aria-hidden="true" />
               {row.label}
               <span className="honest-table__hint small muted">{row.hint}</span>
             </th>
@@ -65,11 +109,13 @@ function LiveNumbers({ live, generatedAt }) {
       <div className="honest-grid">
         <section className="card honest-card" aria-labelledby="unusual-heading">
           <h3 id="unusual-heading">Prices that look like mistakes</h3>
-          <Figure value={formatNumber(unusualPrices.count)} label={unusualPrices.count === 1 ? "offer set aside right now" : "offers set aside right now"} />
-          <p className="muted">
-            A price far out of line with what other stores charge for the same product is probably a listing error (a missing digit, a
-            different variant). It stays visible and labelled, and it is never counted as the lowest price, the best deal or a saving.
-          </p>
+          <Figure count={unusualPrices.count} label={unusualPrices.count === 1 ? "offer set aside right now" : "offers set aside right now"} />
+          <Why>
+            <p className="muted">
+              A price far out of line with what other stores charge for the same product is probably a listing error (a missing digit, a
+              different variant). It stays visible and labelled, and it is never counted as the lowest price, the best deal or a saving.
+            </p>
+          </Why>
           {unusualPrices.examples.length > 0 && (
             <ul className="honest-examples">
               {unusualPrices.examples.map((example) => (
@@ -85,8 +131,10 @@ function LiveNumbers({ live, generatedAt }) {
 
         <section className="card honest-card" aria-labelledby="discount-heading">
           <h3 id="discount-heading">Discount claims, checked</h3>
-          <Figure value={formatNumber(discounts.claims)} label="offers claim a discount (a crossed-out 'was' price)" />
+          <Figure count={discounts.claims} label="offers claim a discount (a crossed-out 'was' price)" />
+          <SplitBar rows={discountRows(discounts)} />
           <CountTable caption="Discount claims by result" rows={discountRows(discounts)} total={discounts.claims} />
+          <Why>
           <p className="muted">
             {formatShare(share(discounts.verdicts.unverified, discounts.claims))} of claims are unverified, and that is deliberate: a claim can only be checked against a product's own price history, and ours
             has records from {formatNumber(history.days)} different {history.days === 1 ? "day" : "days"}{history.since ? ` since ${formatDate(history.since)}` : ""} ({formatNumber(history.points)} price points).
@@ -95,22 +143,30 @@ function LiveNumbers({ live, generatedAt }) {
           <p className="muted">
             {formatNumber(discounts.aboveMarket)} claims put the "was" price above anything other stores charge for the product, and are marked "above market".
           </p>
+          </Why>
         </section>
 
         <section className="card honest-card" aria-labelledby="pta-heading">
           <h3 id="pta-heading">PTA-approved or not</h3>
-          <Figure value={formatNumber(pta.offers)} label="phone and tablet offers" />
+          <Figure count={pta.offers} label="phone and tablet offers" />
+          <SplitBar rows={ptaRows(pta)} />
           <CountTable caption="PTA status of phone and tablet offers" rows={ptaRows(pta)} total={pta.offers} />
+          <Why>
           <p className="muted">
             A phone without PTA approval cannot use local networks without a tax payment, and sells far cheaper, so it must never be
             compared with approved ones. {formatNumber(pta.productsKeptApart)} products are kept apart for this reason. For{" "}
             {formatNumber(pta.readFromProductPage)} offers whose title said nothing, we read the store's own product page for the answer.
           </p>
+          </Why>
         </section>
 
         <section className="card honest-card" aria-labelledby="fresh-heading">
           <h3 id="fresh-heading">How fresh the prices are</h3>
           <Figure value={formatShare(share(freshness.within24h, live.offers))} label="of offers were checked in the last 24 hours" />
+          <div className="fresh-meter" aria-hidden="true">
+            <span className="fresh-meter__day" style={{ width: `${share(freshness.within24h, live.offers) ?? 0}%` }} />
+            <span className="fresh-meter__three" style={{ width: `${Math.max(0, (share(freshness.within72h, live.offers) ?? 0) - (share(freshness.within24h, live.offers) ?? 0))}%` }} />
+          </div>
           <p className="muted">
             {formatShare(share(freshness.within72h, live.offers))} in the last 3 days.
             {freshness.newestAt ? ` The newest check was ${timeAgo(freshness.newestAt)}.` : ""} Every offer shows when it was last updated.
@@ -166,10 +222,10 @@ function MatcherSection({ report }) {
           {rows.map((row) => (
             <tr key={row.id} className={row.inUse ? "is-in-use" : undefined}>
               <th scope="row">{row.label}</th>
-              <td className="num">{formatScore(row.accuracy)}</td>
-              <td className="num">{formatScore(row.precision)}</td>
-              <td className="num">{formatScore(row.recall)}</td>
-              <td className="num">{formatScore(row.f1)}</td>
+              <td className="num">{formatScore(row.accuracy)}<DataBar value={row.accuracy} /></td>
+              <td className="num">{formatScore(row.precision)}<DataBar value={row.precision} /></td>
+              <td className="num">{formatScore(row.recall)}<DataBar value={row.recall} /></td>
+              <td className="num">{formatScore(row.f1)}<DataBar value={row.f1} /></td>
             </tr>
           ))}
         </tbody>
@@ -184,12 +240,14 @@ function MatcherSection({ report }) {
         shows one product twice, a wrong match compares two different products. The hard rules (storage, RAM, screen, PTA status, 4G and 5G,
         Pro and Pro+, model codes) run first and cannot be overruled by the model.
       </p>
+      <Why label="More about these numbers">
       <p className="muted">
         The model was trained on {matcher.trainingPairs} labelled pairs. A newer one trained on more finds more matches but also makes more wrong
         ones, so we have not switched to it: we check what its merges do to the real catalogue by hand first. These pairs include many that are
         deliberately hard (near-identical titles that name different models), so they are not what a shopper sees on an ordinary search, but they are few: one pair
         moves a score by about a point. We show this as it is.
       </p>
+      </Why>
     </>
   );
 }
@@ -216,17 +274,19 @@ function DiscountModelSection({ report }) {
           {markupRows(discount.caughtInvented).map((row) => (
             <tr key={row.label}>
               <th scope="row">{row.label} the real price</th>
-              <td className="num">{formatScore(row.caught)}</td>
+              <td className="num">{formatScore(row.caught)}<DataBar value={row.caught} tone="good" /></td>
             </tr>
           ))}
         </tbody>
       </table>
+      <Why label="Read it plainly">
       <p className="muted">
         Read it plainly: blatant mark-ups (twice the real price) are caught almost every time, moderate ones mostly are not. A moderate
         mark-up is common across stores, so it cannot be told from ordinary pricing, and we do not pretend to. What we do instead is call such claims
         "unverified" and never count them as savings. Averaged over {discount.splits} different train and test splits of {formatNumber(discount.judgeableClaims)} claims; the
         test uses made-up mark-ups because there are no confirmed real fakes to test against. Measured {formatDate(discount.generatedAt)}.
       </p>
+      </Why>
     </>
   );
 }
@@ -239,12 +299,15 @@ function OutlookSection({ report }) {
   const rows = outlookRows(outlook);
   return (
     <>
-      <p>
-        The "Wait or buy?" panel on a product page is not a price forecast. It says where today's price sits among the prices we have
-        recorded: the lowest so far, well above its usual level, or about usual. To test it, we replay it on past records: for each one with a
-        later record about a week on, we work out what the panel would have said then, using only the history before that day, and check
-        whether the price then fell or rose by 3% or more.
-      </p>
+      <p>We replayed the panel on past records and checked what each price did about a week later.</p>
+      <Why label="How the test works">
+        <p className="muted">
+          The "Wait or buy?" panel on a product page is not a price forecast. It says where today's price sits among the prices we have
+          recorded: the lowest so far, well above its usual level, or about usual. To test it, we replay it on past records: for each one with a
+          later record about a week on, we work out what the panel would have said then, using only the history before that day, and check
+          whether the price then fell or rose by 3% or more.
+        </p>
+      </Why>
       <div className="honest-scroll" role="region" aria-label="Wait or buy test table" tabIndex={0}>
         <table className="honest-table honest-table--wide">
           <caption className="visually-hidden">What the wait-or-buy panel would have said, and what the price did a week later</caption>
@@ -264,8 +327,8 @@ function OutlookSection({ report }) {
                   {!row.judgeable && row.comparisons > 0 && <span className="honest-table__hint small muted">too few to judge</span>}
                 </th>
                 <td className="num">{formatNumber(row.comparisons)}</td>
-                <td className="num">{formatScore(row.fellShare)}</td>
-                <td className="num">{formatScore(row.roseShare)}</td>
+                <td className="num">{formatScore(row.fellShare)}<DataBar value={row.fellShare} tone="good" /></td>
+                <td className="num">{formatScore(row.roseShare)}<DataBar value={row.roseShare} tone="caution" /></td>
               </tr>
             ))}
           </tbody>
@@ -297,11 +360,10 @@ export default function HonestPrices() {
   usePageTitle("How accurate we are");
   return (
     <div className="container prose honest">
-      <h1>How we keep prices honest</h1>
-      <p className="lead muted">
-        A price comparison is only worth using if the prices and the savings are right. This page shows what ShopSavvy checks, how well each
-        check works, and where it is still weak, with numbers counted from the data we hold right now.
-      </p>
+      <header>
+        <h1>How we keep prices honest</h1>
+        <p className="lead muted">What our checks found in today's data, how accurate they are, and where they are still weak.</p>
+      </header>
 
       <section aria-labelledby="live-heading">
         <h2 id="live-heading">What the checks found today</h2>
@@ -329,7 +391,7 @@ export default function HonestPrices() {
 
       <section aria-labelledby="limits-heading">
         <h2 id="limits-heading">What we cannot tell you</h2>
-        <ul>
+        <ul className="honest-limits">
           <li>Prices are as of the last time we looked, and stores change them. Every offer shows its age.</li>
           <li>We compare the price on the store's page. Delivery, warranty terms and in-store prices are not included.</li>
           <li>Some stores do not state PTA approval or a colour; we say "not stated" rather than guess, and we show where the answer came from.</li>

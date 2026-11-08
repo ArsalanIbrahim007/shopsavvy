@@ -1,30 +1,34 @@
 // HowWeCheck.jsx — the home page's "How we check prices", shown rather than told: three small pictures, each of one check doing its job,
 // drawn when they come into view. Matched: two listings with the same specs pair up and a 128 GB one is turned away. Checked: a
-// store's "was" price floats far above every price we recorded, and is struck. Flagged: one store's price sits far from the rest
-// and is ringed. Each has a title and one short line; the pictures are decorative.
+// store's "was" price floats far above every price we recorded, and is marked "never seen". Flagged: one store's price sits far from
+// the rest and is ringed. Nothing is struck through (a line across text makes it hard to read): a rejected value is marked in red
+// beside it. Each has a title and one short line; the pictures are decorative. They are exported for How it works, too.
 
 import { Link } from "react-router-dom";
 
 import { useInView } from "../hooks/useCountUp.js";
 import "./HowWeCheck.css";
 
-function Matched() {
+export function Matched() {
   return (
     <div className="check-pic check-pic--matched" aria-hidden="true">
       <div className="spec-row"><span>256 GB</span><span>8 GB</span><span>PTA</span></div>
       <div className="spec-join">=</div>
       <div className="spec-row"><span>256 GB</span><span>8 GB</span><span>PTA</span></div>
-      <div className="spec-row spec-row--out"><span className="spec-bad">128 GB</span><span>8 GB</span><span>PTA</span><b>✕</b></div>
+      <div className="spec-row spec-row--out"><span className="spec-bad">128 GB</span><span>8 GB</span><span>PTA</span><b>✕ not the same</b></div>
     </div>
   );
 }
 
-function Checked() {
+export function Checked() {
   return (
     <svg className="check-pic check-pic--checked" viewBox="0 0 240 120" aria-hidden="true">
       <text className="pic-label" x="8" y="22">"was" 89,999</text>
+      <g className="pic-verdict">
+        <rect x="118" y="8" width="96" height="20" rx="10" />
+        <text x="166" y="22" textAnchor="middle">✕ never seen</text>
+      </g>
       <line className="pic-was" x1="8" x2="232" y1="34" y2="34" />
-      <line className="pic-strike" x1="8" x2="112" y1="18" y2="18" />
       <path className="pic-gap" d="M200 40v40" />
       <polyline className="pic-history" points="8,96 40,92 72,94 104,88 136,90 168,86 200,88 232,84" pathLength="1" />
       <text className="pic-label pic-label--soft" x="8" y="114">every price we recorded</text>
@@ -32,7 +36,7 @@ function Checked() {
   );
 }
 
-function Flagged() {
+export function Flagged() {
   const dots = [138, 158, 172, 190, 212];
   return (
     <svg className="check-pic check-pic--flagged" viewBox="0 0 240 120" aria-hidden="true">

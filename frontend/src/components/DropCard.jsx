@@ -1,5 +1,6 @@
 // DropCard.jsx — one offer whose price just came down: the new price, the price it was on the previous check, and by how much.
-// The "was" price here is what WE recorded on an earlier day, never the store's own crossed-out price.
+// The "was" price here is what WE recorded on an earlier day, never the store's own crossed-out price. The drop is drawn as two
+// bars, then and now, so its size reads at a glance; no line is drawn through a figure (it makes the figure hard to read).
 
 import { Link } from "react-router-dom";
 
@@ -15,6 +16,7 @@ import "./cards.css";
 
 export default function DropCard({ item }) {
   const { drop } = item;
+  const nowShare = drop.before > 0 ? Math.max(4, Math.min(100, (drop.price / drop.before) * 100)) : 100;
   return (
     <article className="product-card card">
       <Link to={productPath(item._id, item.title)} className="product-card__link">
@@ -30,6 +32,11 @@ export default function DropCard({ item }) {
         </span>
       </div>
 
+      <div className="drop-bars" aria-hidden="true">
+        <span className="drop-bars__row"><span className="drop-bars__label">Then</span><span className="drop-bars__bar drop-bars__bar--then" /></span>
+        <span className="drop-bars__row"><span className="drop-bars__label">Now</span><span className="drop-bars__bar drop-bars__bar--now" style={{ width: `${nowShare}%` }} /></span>
+      </div>
+
       <div className="product-card__badges">
         <VerdictBadge
           tone="good"
@@ -39,7 +46,7 @@ export default function DropCard({ item }) {
       </div>
 
       <p className="small muted">
-        Was <s>{formatPrice(drop.before)}</s> on {formatDay(drop.beforeDay)} · this price since {formatDay(drop.day)}
+        Was <span className="price">{formatPrice(drop.before)}</span> on {formatDay(drop.beforeDay)} · this price since {formatDay(drop.day)}
       </p>
     </article>
   );

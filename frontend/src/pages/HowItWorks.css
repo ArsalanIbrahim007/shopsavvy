@@ -1,7 +1,7 @@
 .prose { max-width: 760px; padding-block: var(--space-7); display: grid; gap: var(--space-6); }
 .prose section { display: grid; gap: var(--space-3); }
-.prose h1 { font-size: clamp(1.75rem, 5vw, 2.5rem); }
-.prose .lead { font-size: 1.0625rem; margin-top: var(--space-3); }
+.prose h1 { font-size: clamp(2rem, 5vw, 3rem); letter-spacing: -0.04em; line-height: 1.05; }
+.prose .lead { font-size: 1.125rem; margin-top: var(--space-3); max-width: 56ch; }
 .prose ul { margin: 0; padding-left: var(--space-5); display: grid; gap: var(--space-2); }
 .prose .btn { justify-self: start; }
 
@@ -14,3 +14,23 @@
 .technical[open] summary { margin-bottom: var(--space-3); }
 .technical h3 { margin-top: var(--space-4); margin-bottom: var(--space-2); }
 .technical p + p { margin-top: var(--space-3); }
+
+/* How it works: three steps, each a picture beside its few sentences, joined by a line down the left */
+.how { max-width: 980px; }
+.how__steps { display: grid; gap: var(--space-5); }
+.how-step {
+  display: grid; gap: var(--space-5); align-items: center;
+  padding: var(--space-5); border: 1px solid var(--line); border-radius: var(--radius-card); background: var(--paper);
+}
+@media (min-width: 760px) { .how-step { grid-template-columns: 300px minmax(0, 1fr); } }
+.how-step__pic .check-pic { height: 150px; }
+.how-step__text { display: grid; gap: var(--space-2); }
+.how-step__text h2 { font-size: 1.375rem; }
+.how-step__num { color: var(--accent-ink); font-size: 0.875rem; }
+.how-step__rule { display: inline-flex; gap: var(--space-2); align-items: center; color: var(--ink); font-weight: 500; margin-top: var(--space-1); }
+.how-step__rule::before { content: ""; width: 14px; height: 2px; border-radius: 2px; background: var(--accent); }
+
+.prose .how-limits { list-style: none; padding: 0; display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.how-limits li { padding: var(--space-4); display: grid; gap: var(--space-1); align-content: start; }
+
+.how__next { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3) var(--space-5); }

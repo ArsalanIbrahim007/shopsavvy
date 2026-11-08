@@ -14,14 +14,15 @@ svg.check-pic { padding: 6px; }
 .spec-row { display: flex; gap: 6px; align-items: center; font-family: var(--font-mono); font-size: 12px; }
 .spec-row span { padding: 2px 8px; border-radius: var(--radius-pill); border: 1px solid var(--line); color: var(--ink-soft); background: var(--paper); }
 .spec-join { font-family: var(--font-mono); color: var(--good); font-size: 13px; line-height: 1; padding-left: 26px; }
-.spec-row--out { opacity: 0.55; }
-.spec-row--out b { color: var(--bad); font-weight: 600; margin-left: 2px; }
-.spec-bad { text-decoration: line-through; text-decoration-color: var(--bad); }
+.spec-row--out b { color: var(--bad); font-weight: 500; margin-left: 2px; font-size: 11px; white-space: nowrap; }
+.spec-row span.spec-bad { color: var(--bad); border-color: var(--bad); background: var(--bad-soft); }
 
 /* Checked: the history draws, then the "was" line appears far above it and is struck */
 .pic-history { fill: none; stroke: var(--brand); stroke-width: 2.5; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
 .pic-was { stroke: var(--ink-faint); stroke-width: 1.5; stroke-dasharray: 5 5; opacity: 0; }
-.pic-strike { stroke: var(--bad); stroke-width: 2; transform: scaleX(0); transform-origin: 8px 0; }
+.pic-verdict { opacity: 0; }
+.pic-verdict rect { fill: var(--bad-soft); stroke: var(--bad); stroke-width: 1; }
+.pic-verdict text { font-family: var(--font-mono); font-size: 11px; fill: var(--bad); }
 .pic-gap { stroke: var(--ink-mute); stroke-width: 1.5; stroke-dasharray: 2 4; opacity: 0; }
 
 /* Flagged: the stores' prices land together, one lands far away and is ringed */
@@ -34,18 +35,16 @@ svg.check-pic { padding: 6px; }
 .is-visible .check-pic--matched > * { animation: rise var(--dur-slow) var(--ease) both; }
 .is-visible .check-pic--matched > :nth-child(2) { animation-delay: 200ms; }
 .is-visible .check-pic--matched > :nth-child(3) { animation-delay: 350ms; }
-.is-visible .check-pic--matched > :nth-child(4) { animation: rise-faded var(--dur-slow) var(--ease) 650ms both; }
+.is-visible .check-pic--matched > :nth-child(4) { animation: rise var(--dur-slow) var(--ease) 650ms both; }
 
 .is-visible .pic-history { animation: draw 1s var(--ease) 150ms both; }
 .is-visible .pic-was, .is-visible .pic-gap { animation: fade var(--dur-slow) var(--ease) 800ms both; }
 .is-visible .pic-label { animation: fade var(--dur-slow) var(--ease) 800ms both; }
-.is-visible .pic-strike { animation: strike 500ms var(--ease) 1300ms both; }
+.is-visible .pic-verdict { animation: fade var(--dur-base) var(--ease) 1300ms both; }
 
 .is-visible .pic-dot { animation: fade var(--dur-base) var(--ease) both; }
 .is-visible .pic-odd { animation: fade var(--dur-base) var(--ease) 700ms both; }
 .is-visible .pic-ring { animation: ring 600ms var(--ease) 1000ms both; }
 
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
-@keyframes strike { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 @keyframes ring { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
-@keyframes rise-faded { from { opacity: 0; transform: translateY(8px); } to { opacity: 0.55; transform: none; } }

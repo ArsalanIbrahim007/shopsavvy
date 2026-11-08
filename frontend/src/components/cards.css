@@ -36,6 +36,15 @@
 .card-grid > :nth-child(n + 8) { animation-delay: 280ms; }
 @media (max-width: 480px) { .card-grid { grid-template-columns: 1fr; } }
 
+/* a price drop drawn as two bars, then and now (DropCard.jsx) */
+.drop-bars { display: grid; gap: 4px; }
+.drop-bars__row { display: grid; grid-template-columns: 36px 1fr; align-items: center; gap: var(--space-2); }
+.drop-bars__label { font-size: 0.75rem; color: var(--ink-faint); }
+.drop-bars__bar { display: block; height: 6px; border-radius: 3px; transform-origin: left; animation: grow-bar 800ms var(--ease) 200ms both; }
+.drop-bars__bar--then { width: 100%; background: var(--line); }
+.drop-bars__bar--now { background: var(--good); animation-delay: 450ms; }
+@keyframes grow-bar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
 /* "Deals we didn't show you" (CaughtCard.jsx): the claim struck through, and the evidence against it */
 .caught-card__claim { font-size: 0.95rem; font-weight: 600; }
 .caught-card__claim s { color: var(--ink-mute); font-weight: 400; }

@@ -1,56 +1,77 @@
 // HowItWorks.jsx — how ShopSavvy decides what is the same product and whether a price is real.
-// Plain words first; the methods and their measured results are in a collapsed section for the
-// technically curious (and for the evaluation panel). Every number below is copied from the
-// project's evaluation reports (backend/src/ml/EVALUATION_REPORT.md and
-// backend/src/ml/discount/EVALUATION_REPORT.md, both generated 2026-09-29): update them here
-// whenever those reports are regenerated, and never round them up.
+// Three steps, each with the small picture the home page uses (components/HowWeCheck.jsx) and two or three sentences; then what we
+// cannot do; the methods and their measured results are in a collapsed section for the technically curious (and for the evaluation
+// panel). Every number below is copied from the project's evaluation reports (backend/src/ml/EVALUATION_REPORT.md and
+// backend/src/ml/discount/EVALUATION_REPORT.md, both generated 2026-09-29): update them here whenever those reports are regenerated,
+// and never round them up.
 
 import { Link } from "react-router-dom";
+
+import { Checked, Flagged, Matched } from "../components/HowWeCheck.jsx";
+import { useInView } from "../hooks/useCountUp.js";
 import { usePageTitle } from "../hooks/usePageTitle.js";
+import "../components/HowWeCheck.css";
 import "./HowItWorks.css";
+
+const STEPS = [
+  {
+    id: "same", title: "Is it the same product?", Picture: Matched, rule: "When unsure, we keep them apart.",
+    text: "Stores name one phone many ways. We compare storage, RAM, screen size, PTA status, model codes and condition; if any clearly differ, the listings stay apart. A model trained on hand-labelled pairs decides the rest.",
+  },
+  {
+    id: "discount", title: "Is the discount real?", Picture: Checked, rule: "A claimed discount is never counted as a saving.",
+    text: "A \"was\" price is only a claim. We check it against the price history we recorded and what other stores charge today: verified when the evidence supports it, unverified when we cannot tell.",
+  },
+  {
+    id: "odd", title: "Does the price look wrong?", Picture: Flagged, rule: "Never the lowest price, never a saving.",
+    text: "A missing digit, a different variant, a bundle: a price far out of line with the same product elsewhere is marked unusual.",
+  },
+];
+
+const LIMITS = [
+  { title: "Only the stores we collect from", text: "Prices can change after we look. Every offer shows when it was updated." },
+  { title: "New products have no history", text: "So their \"was\" price stays unverified until they do." },
+  { title: "Matching is not perfect", text: "If two listings look wrong together, the store's own page is one click away." },
+];
+
+function Step({ step, index }) {
+  const [ref, inView] = useInView();
+  const { Picture } = step;
+  return (
+    <section ref={ref} className={inView ? "how-step is-visible" : "how-step"} aria-labelledby={`${step.id}-heading`}>
+      <div className="how-step__pic"><Picture /></div>
+      <div className="how-step__text">
+        <p className="how-step__num price" aria-hidden="true">0{index + 1}</p>
+        <h2 id={`${step.id}-heading`}>{step.title}</h2>
+        <p className="muted">{step.text}</p>
+        <p className="how-step__rule small">{step.rule}</p>
+      </div>
+    </section>
+  );
+}
 
 export default function HowItWorks() {
   usePageTitle("How we check prices");
   return (
-    <div className="container prose">
-      <h1>How ShopSavvy checks prices</h1>
-      <p className="lead muted">
-        Comparing prices is easy. Knowing whether a price is real is the hard part. Here is what we do, and where we can still be wrong.
-      </p>
+    <div className="container prose how">
+      <header className="how__head">
+        <h1>How ShopSavvy checks prices</h1>
+        <p className="lead muted">Comparing prices is easy. Knowing whether a price is real is the hard part.</p>
+      </header>
 
-      <section aria-labelledby="same-heading">
-        <h2 id="same-heading">1. Is it the same product?</h2>
-        <p>
-          Stores name the same phone in different ways, and a 128 GB and a 256 GB model of the same phone are not comparable.
-          We compare storage, RAM, screen size, PTA status, model codes and condition. If any of these clearly differ, the two
-          listings are kept apart. For everything else, a model trained on hand-labelled pairs of listings decides.
-        </p>
-        <p className="muted">We would rather show one product as two than mix up two different products.</p>
-      </section>
-
-      <section aria-labelledby="discount-heading">
-        <h2 id="discount-heading">2. Is the discount real?</h2>
-        <p>
-          A store's "was" price is only a claim. We look at the price history we have recorded for the listing, and at what the
-          other stores charge for the same product today. A discount is marked <em>verified</em> only when the evidence supports it,
-          and <em>unverified</em> when we cannot tell. We never count a claimed discount as a saving.
-        </p>
-      </section>
-
-      <section aria-labelledby="odd-heading">
-        <h2 id="odd-heading">3. Does the price look wrong?</h2>
-        <p>
-          Sometimes a listing has a mistake: a missing digit, a price for a different variant, a bundle. A price far out of line
-          with the same product elsewhere is marked <em>unusual</em>, is never shown as the lowest price, and is never counted as a saving.
-        </p>
-      </section>
+      <div className="how__steps">
+        {STEPS.map((step, i) => <Step key={step.id} step={step} index={i} />)}
+      </div>
 
       <section aria-labelledby="limits-heading">
         <h2 id="limits-heading">What we can't do</h2>
-        <ul>
-          <li>We only compare the stores we collect from, and prices can change after we last looked. Every offer shows when it was updated.</li>
-          <li>A new product has no price history yet, so its "was" price stays unverified.</li>
-          <li>Matching is not perfect. If two listings look wrong together, the store link is always one click away.</li>
+        <ul className="how-limits">
+          {LIMITS.map((limit) => (
+            <li key={limit.title} className="card">
+              <strong>{limit.title}</strong>
+              <span className="muted small">{limit.text}</span>
+            </li>
+          ))}
         </ul>
       </section>
 
@@ -85,12 +106,10 @@ export default function HowItWorks() {
         </p>
       </details>
 
-      <p>
-        Want the numbers instead of the explanation? <Link to="/honest-prices">How we keep prices honest</Link> shows what the checks found in
-        today's data and how accurate they are, including where they fall short.
-      </p>
-
-      <p><Link to="/" className="btn btn-primary">Start comparing</Link></p>
+      <div className="how__next">
+        <Link to="/" className="btn btn-accent">Start comparing</Link>
+        <Link to="/honest-prices">See how accurate the checks are →</Link>
+      </div>
     </div>
   );
 }
