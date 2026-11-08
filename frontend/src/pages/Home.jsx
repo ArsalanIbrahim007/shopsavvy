@@ -11,12 +11,14 @@ import { Link, useLocation } from "react-router-dom";
 
 import { getCatalog, getCaught, getDeals, getStats } from "../api/endpoints.js";
 import { useAsync } from "../hooks/useAsync.js";
-import { useCountUp } from "../hooks/useCountUp.js";
+import { useCountUp, useInView } from "../hooks/useCountUp.js";
 import { usePageTitle } from "../hooks/usePageTitle.js";
 import { featuredCategories } from "../lib/categories.js";
 import { formatNumber, timeAgo } from "../lib/format.js";
 import { clearRecentSearches, getRecentSearches } from "../lib/recentSearches.js";
 import CaughtCard from "../components/CaughtCard.jsx";
+import CategoryIcon from "../components/CategoryIcon.jsx";
+import HowWeCheck from "../components/HowWeCheck.jsx";
 import DealCard from "../components/DealCard.jsx";
 import ErrorState from "../components/ErrorState.jsx";
 import ProductCard from "../components/ProductCard.jsx";
@@ -27,12 +29,6 @@ import "./Home.css";
 
 // Searches that are known to return good comparisons on the data we hold.
 const POPULAR_SEARCHES = ["iPhone 17 Pro Max", "Samsung Galaxy A17", "Redmi Note 15", "MacBook Air", "Samsung TV"];
-
-const HOW_WE_CHECK = [
-  { title: "Matched", text: "Same storage, RAM, screen and PTA status. Never 128 GB against 256 GB." },
-  { title: "Checked", text: "A \"was\" price counts only if its history and other stores back it." },
-  { title: "Flagged", text: "A price far out of line is marked unusual, never shown as a saving." },
-];
 
 function Hero({ caught }) {
   // This browser's own last searches (never sent anywhere); read once when the page opens.
@@ -70,15 +66,31 @@ function Hero({ caught }) {
   );
 }
 
-function Stat({ value, label }) {
-  const shown = useCountUp(value ?? 0);
+// A ring that fills as its figure counts up, from 0 each time the page opens. The ring is decoration: the figure is the text.
+const RING = 2 * Math.PI * 26;
+function Stat({ value, label, icon }) {
+  const [ref, inView] = useInView();
+  const shown = useCountUp(value ?? 0, { duration: 1600, start: inView && value != null });
+  const share = value > 0 ? shown / value : 0;
   return (
-    <div className="trust__item">
-      <span className="trust__value">{value == null ? "—" : formatNumber(shown)}</span>
-      <span className="trust__label">{label}</span>
+    <div className="trust__item" ref={ref}>
+      <svg className="trust__ring" viewBox="0 0 60 60" aria-hidden="true" focusable="false">
+        <circle className="trust__track" cx="30" cy="30" r="26" />
+        <circle className="trust__fill" cx="30" cy="30" r="26" strokeDasharray={RING} strokeDashoffset={RING * (1 - share)} />
+        <g className="trust__icon" transform="translate(18 18)">{icon}</g>
+      </svg>
+      <span className="trust__text">
+        <span className="trust__value">{value == null ? "—" : formatNumber(shown)}</span>
+        <span className="trust__label">{label}</span>
+      </span>
     </div>
   );
 }
+
+const ICON = { fill: "none", stroke: "currentColor", strokeWidth: 1.6, strokeLinecap: "round", strokeLinejoin: "round" };
+const STORE_ICON = <g {...ICON}><path d="M3 9.5 4.5 4h15L21 9.5M3 9.5v10h18v-10M3 9.5h18" transform="scale(1)" /><path d="M9 19.5v-5h6v5" /></g>;
+const LIST_ICON = <g {...ICON}><path d="M8 6h12M8 12h12M8 18h12" /><circle cx="4" cy="6" r="1" /><circle cx="4" cy="12" r="1" /><circle cx="4" cy="18" r="1" /></g>;
+const CAUGHT_ICON = <g {...ICON}><path d="M3 5.2C3 4 4 3 5.2 3h6.1c.6 0 1.1.2 1.5.6l7.6 7.6c.8.8.8 2.1 0 2.9l-6.1 6.1c-.8.8-2.1.8-2.9 0L3.6 12.6c-.4-.4-.6-.9-.6-1.5z" /><path d="M8.5 11.5l5-5" /></g>;
 
 // Three figures, each one we can back with data: the stores and listings from the API, the caught discounts from our own checks.
 function TrustRow({ stats, caught }) {
@@ -86,9 +98,9 @@ function TrustRow({ stats, caught }) {
   const fake = caught.status === "success" ? caught.data.counts.fakeDiscount : 0;
   return (
     <section className="trust container" aria-label="What ShopSavvy checks">
-      <Stat value={data?.platforms} label="stores compared on every search" />
-      <Stat value={data?.products} label="listings tracked, each with its update time" />
-      <Stat value={fake > 0 ? fake : null} label="fake discounts caught and kept off our deal lists" />
+      <Stat value={data?.platforms} label="stores compared on every search" icon={STORE_ICON} />
+      <Stat value={data?.products} label="listings tracked, each with its update time" icon={LIST_ICON} />
+      <Stat value={fake > 0 ? fake : null} label="fake discounts caught and kept off our deal lists" icon={CAUGHT_ICON} />
     </section>
   );
 }
@@ -105,6 +117,7 @@ function Categories({ stats }) {
         <div className="tiles stagger">
           {featuredCategories(stats.data.categories).map((tile) => (
             <Link key={tile.category} className="tile card" to={`/results?category=${tile.category}`}>
+              <span className="tile__icon"><CategoryIcon category={tile.category} /></span>
               <span className="tile__name">{tile.name}</span>
               <span className="tile__count small">{formatNumber(tile.count)} listings</span>
             </Link>
@@ -190,29 +203,6 @@ function MostCompared({ category, title, allLabel }) {
           ? Array.from({ length: 4 }, (_, i) => <CardSkeleton key={i} />)
           : products.data.groups.map((group) => <ProductCard key={group.offers[0]._id} group={group} />)}
       </div>
-    </section>
-  );
-}
-
-function HowWeCheck() {
-  return (
-    <section className="home-section container" aria-labelledby="how-heading">
-      <div className="home-section__head">
-        <h2 id="how-heading">How we check prices</h2>
-        <span className="home-section__links">
-          <Link to="/how-it-works">Read the details</Link>
-          <Link to="/honest-prices">See the numbers</Link>
-        </span>
-      </div>
-      <ol className="how-steps">
-        {HOW_WE_CHECK.map((item, i) => (
-          <li key={item.title} className="how-step">
-            <span className="how-step__num price" aria-hidden="true">0{i + 1}</span>
-            <h3>{item.title}</h3>
-            <p className="muted">{item.text}</p>
-          </li>
-        ))}
-      </ol>
     </section>
   );
 }

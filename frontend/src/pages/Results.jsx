@@ -172,7 +172,7 @@ function ResultsView({ groups, total, refreshing = false, narrowed = null, spell
     <div className="container page-tall" style={{ paddingBlock: "var(--space-6)", display: "grid", gap: "var(--space-5)" }}>
       <header style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "end", gap: "var(--space-3)" }}>
         <div>
-          <h1 style={{ fontSize: "1.75rem" }}>{heading}</h1>
+          <h1 className="results-title">{heading}</h1>
           <p className="muted" role="status">
             {allOffers.length === 0
               ? "No products found."

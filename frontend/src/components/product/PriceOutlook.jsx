@@ -22,19 +22,24 @@ function Gauge({ gauge, tone }) {
   return (
     <figure className="outlook-gauge">
       <figcaption className="outlook-visual-title">Where today's price sits</figcaption>
-      <div className="outlook-gauge__bar" role="img" aria-label={spoken}>
-        <span className="outlook-gauge__usual" style={{ left: `${gauge.usualPct}%` }} />
-        <span className={`outlook-gauge__now outlook-gauge__now--${tone}`} style={{ left: `${gauge.currentPct}%` }} />
+      {/* the figures sit on the drawing itself: today above its marker, the usual price below its tick, the range at the ends */}
+      <div className="outlook-gauge__track">
+        <span className="outlook-gauge__tag outlook-gauge__tag--now price" style={{ left: `clamp(72px, ${gauge.currentPct}%, calc(100% - 72px))` }} aria-hidden="true">
+          Today {formatPrice(gauge.current)}
+        </span>
+        <div className="outlook-gauge__bar" role="img" aria-label={spoken}>
+          <span className="outlook-gauge__fill" style={{ width: `${gauge.currentPct}%` }} />
+          <span className="outlook-gauge__usual" style={{ left: `${gauge.usualPct}%` }} />
+          <span className={`outlook-gauge__now outlook-gauge__now--${tone}`} style={{ left: `${gauge.currentPct}%` }} />
+        </div>
+        <span className="outlook-gauge__tag outlook-gauge__tag--usual price" style={{ left: `clamp(72px, ${gauge.usualPct}%, calc(100% - 72px))` }} aria-hidden="true">
+          Usual {formatPrice(gauge.usual)}
+        </span>
       </div>
-      <div className="outlook-gauge__scale" aria-hidden="true">
-        <span><span className="outlook-gauge__end">Lowest</span> {formatPrice(gauge.low)}</span>
-        <span><span className="outlook-gauge__end">Highest</span> {formatPrice(gauge.high)}</span>
+      <div className="outlook-gauge__scale price" aria-hidden="true">
+        <span>{formatPrice(gauge.low)}</span>
+        <span>{formatPrice(gauge.high)}</span>
       </div>
-      <ul className="outlook-legend">
-        <li><span className={`outlook-key outlook-key--now outlook-key--${tone}`} aria-hidden="true" /> Today <strong>{formatPrice(gauge.current)}</strong></li>
-        <li><span className="outlook-key outlook-key--usual" aria-hidden="true" /> Usual <strong>{formatPrice(gauge.usual)}</strong></li>
-      </ul>
-      <p className="small muted">{gauge.caption}</p>
     </figure>
   );
 }
@@ -46,7 +51,14 @@ function Chart({ outlook }) {
 
   return (
     <figure className="outlook-chart" ref={holder}>
-      <figcaption className="outlook-visual-title">The best price, day by day</figcaption>
+      <figcaption className="outlook-chart__head">
+        <span className="outlook-visual-title">The best price, day by day</span>
+        <ul className="outlook-legend outlook-legend--chart" aria-hidden="true">
+          <li><span className="outlook-key outlook-key--line" /> Best</li>
+          <li><span className="outlook-key outlook-key--ref-usual" /> Usual</li>
+          <li><span className="outlook-key outlook-key--ref-low" /> Low / high</li>
+        </ul>
+      </figcaption>
       {model ? (
         <svg viewBox={`0 0 ${model.width} ${model.height}`} width={model.width} height={model.height} role="img" aria-label={model.description} className="outlook-chart__svg">
           {model.yTicks.map((tick) => (
@@ -69,12 +81,6 @@ function Chart({ outlook }) {
       ) : (
         <p className="muted">Not enough days of records to draw this.</p>
       )}
-      <ul className="outlook-legend outlook-legend--chart">
-        <li><span className="outlook-key outlook-key--line" aria-hidden="true" /> Best price</li>
-        <li><span className="outlook-key outlook-key--ref-usual" aria-hidden="true" /> Usual</li>
-        <li><span className="outlook-key outlook-key--ref-low" aria-hidden="true" /> Lowest and highest</li>
-        <li><span className="outlook-key outlook-key--today" aria-hidden="true" /> Today</li>
-      </ul>
     </figure>
   );
 }
@@ -83,14 +89,13 @@ function Tiles({ tiles }) {
   return (
     <ul className="outlook-tiles" aria-label="The numbers">
       {tiles.map((tile) => (
-        <li key={tile.id} className={`outlook-tile outlook-tile--${tile.tone}`}>
+        <li key={tile.id} className={`outlook-tile outlook-tile--${tile.tone}`} title={tile.hint || undefined}>
           <span className="outlook-tile__label">{tile.label}</span>
           <span className="outlook-tile__value">
             {tile.trend && <span className="outlook-tile__arrow" aria-hidden="true">{ARROWS[tile.trend]}</span>}
             {tile.value}
             {tile.trend && <span className="visually-hidden"> ({TREND_WORDS[tile.trend]})</span>}
           </span>
-          <span className="outlook-tile__hint small muted">{tile.hint}</span>
         </li>
       ))}
     </ul>
@@ -172,15 +177,19 @@ export default function PriceOutlook({ outlook }) {
 
           {view.tiles.length > 0 && <Tiles tiles={view.tiles} />}
 
+          {/* what it rests on, for whoever wants it: closed, unless that is all there is to show */}
           {(view.evidence || view.movement) && (
-            <div className="outlook__foot">
-              {view.evidence && <Evidence evidence={view.evidence} />}
-              {view.movement && <Movement movement={view.movement} />}
-            </div>
+            <details className="outlook__more" open={!view.gauge && !drawsChart ? true : undefined}>
+              <summary className="small">What this rests on</summary>
+              <div className="outlook__foot">
+                {view.evidence && <Evidence evidence={view.evidence} />}
+                {view.movement && <Movement movement={view.movement} />}
+              </div>
+            </details>
           )}
 
           <p className="small muted">
-            This is not a forecast. It shows where today's price sits among the prices we recorded. <Link to="/honest-prices">How much to trust it</Link>
+            This is not a forecast. <Link to="/honest-prices">How much to trust it</Link>
           </p>
         </div>
       </details>

@@ -49,7 +49,7 @@ export default function SummaryCards({ summary, main = summary, mainCategory = n
       </div>
       <div className="card summary-card">
         <p className="eyebrow">Best deal</p>
-        <p className="summary-card__value">{bestDeal ? platformName(bestDeal.platform) : "—"}</p>
+        <p className="summary-card__value summary-card__value--text">{bestDeal ? platformName(bestDeal.platform) : "—"}</p>
         <p className="small muted">{score !== null ? `${scope}${ptaWord(bestDeal, nonPta)}deal score ${score} out of 100` : "Not scored"}</p>
       </div>
     </div>

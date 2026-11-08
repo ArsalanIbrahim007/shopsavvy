@@ -1,17 +1,24 @@
-/* summary cards */
-.summary-cards { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
-.summary-card { padding: var(--space-4); display: grid; gap: 2px; }
+.results-title { font-size: clamp(1.75rem, 3.5vw, 2.5rem); letter-spacing: -0.04em; line-height: 1.1; margin-bottom: var(--space-2); }
+
+/* summary: one panel of four figures divided by hairlines, not four boxes */
+.summary-cards {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-card); overflow: hidden;
+}
+.summary-card { padding: var(--space-4) var(--space-5); display: grid; gap: 2px; align-content: start; border: 0; border-radius: 0; background: none; box-shadow: inset 1px 0 0 var(--line), inset 0 1px 0 var(--line); margin: -1px 0 0 -1px; }
+.summary-card__value--text { font-family: var(--font-display); letter-spacing: -0.03em; }
 .summary-card__value { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.04em; color: var(--ink); line-height: 1.2; }
 .summary-card__note { color: var(--caution); font-weight: 600; } /* the non-PTA price beside the headline (SummaryCards) */
 
 /* integrity strip */
-.integrity { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-4); background: var(--caution-soft); border-color: var(--caution-line); }
+/* integrity note: one line with a mark and an orange edge, not an orange block */
+.integrity { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-3) var(--space-4); box-shadow: inset 3px 0 0 var(--caution); }
 .integrity__icon {
-  flex: none; width: 24px; height: 24px; border-radius: 50%;
+  flex: none; width: 20px; height: 20px; margin-top: 1px; border-radius: 50%;
   display: grid; place-items: center;
-  background: var(--caution); color: var(--on-caution); font-weight: 800; font-size: 0.875rem;
+  background: var(--caution-soft); color: var(--caution); border: 1px solid var(--caution-line); font-weight: 700; font-size: 0.75rem;
 }
-.integrity__title { font-weight: 600; color: var(--ink); }
+.integrity__title { font-weight: 500; color: var(--ink); }
 
 /* page layout: filters beside the list on wide screens, above it on phones */
 .results-layout { display: grid; gap: var(--space-5); align-items: start; }
@@ -26,7 +33,8 @@
 @media (min-width: 900px) { .results-toolbar .filters-toggle { display: none; } }
 
 /* filters */
-.filters { padding: var(--space-4); display: none; gap: var(--space-4); }
+.filters { padding: var(--space-4); display: none; gap: var(--space-5); }
+.filter-group legend { font-weight: 500; }
 .filters.is-open { display: grid; }
 @media (min-width: 900px) { .filters { display: grid; position: sticky; top: 96px; max-height: calc(100vh - 116px); overflow-y: auto; } }
 .filter-group { border: 0; margin: 0; padding: 0; display: grid; gap: var(--space-2); }

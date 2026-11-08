@@ -1,8 +1,11 @@
 .product-card {
   padding: var(--space-4);
   display: grid; align-content: start; gap: var(--space-3);
+  transition: border-color var(--dur-fast) var(--ease), transform var(--dur-base) var(--ease), box-shadow var(--dur-base) var(--ease);
 }
-.product-card:hover { border-color: var(--ink-mute); }
+.product-card:hover { border-color: var(--ink-mute); transform: translateY(-3px); box-shadow: var(--shadow-pop); }
+.product-card img { transition: transform var(--dur-slow) var(--ease); }
+.product-card:hover img { transform: scale(1.04); }
 
 .product-card__link { display: grid; gap: var(--space-2); color: inherit; }
 .product-card__link:hover { text-decoration: none; }
@@ -22,6 +25,15 @@
 
 /* card grids: one column on phones, more as the screen allows */
 .card-grid { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+/* cards rise in one after another (the first eight; the rest arrive with the eighth) */
+.card-grid > * { animation: rise var(--dur-slow) var(--ease) both; }
+.card-grid > :nth-child(2) { animation-delay: 40ms; }
+.card-grid > :nth-child(3) { animation-delay: 80ms; }
+.card-grid > :nth-child(4) { animation-delay: 120ms; }
+.card-grid > :nth-child(5) { animation-delay: 160ms; }
+.card-grid > :nth-child(6) { animation-delay: 200ms; }
+.card-grid > :nth-child(7) { animation-delay: 240ms; }
+.card-grid > :nth-child(n + 8) { animation-delay: 280ms; }
 @media (max-width: 480px) { .card-grid { grid-template-columns: 1fr; } }
 
 /* "Deals we didn't show you" (CaughtCard.jsx): the claim struck through, and the evidence against it */

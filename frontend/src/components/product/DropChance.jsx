@@ -9,10 +9,18 @@ export default function DropChance({ chances }) {
   const text = dropChanceText(chances, platformName);
   if (!text) return null;
   return (
-    <section className="product-section card drop-chance" aria-labelledby="drop-heading">
-      <h2 id="drop-heading">Higher chance of a price drop this week</h2>
-      <p>{text.lead}</p>
-      <p className="small muted">{text.caveat}</p>
+    <section className="card drop-chance" aria-labelledby="drop-heading">
+      <details>
+        <summary className="drop-chance__summary">
+          <span className="drop-chance__mark" aria-hidden="true">↓</span>
+          <h2 id="drop-heading">Higher chance of a price drop this week</h2>
+          <span className="verdict-card__why small" aria-hidden="true">Why</span>
+        </summary>
+        <div className="drop-chance__body">
+          <p>{text.lead}</p>
+          <p className="small muted">{text.caveat}</p>
+        </div>
+      </details>
     </section>
   );
 }
