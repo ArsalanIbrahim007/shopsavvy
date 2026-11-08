@@ -134,6 +134,7 @@ function toListingDoc(scraped) {
  * @param {object} [opts]
  * @param {boolean} [opts.dynamic] - also use Google discovery layer
  * @param {string[]} [opts.platforms] - ask only these stores (the nightly refresh's smart routing); every store when omitted
+ * @param {Function} [opts.onReport] - called with the per-store report of the search (one row per store asked)
  * @returns {Promise<number>} - number of listings saved
  */
 async function runScrapersAndSave(query, opts = {}) {
@@ -143,7 +144,14 @@ async function runScrapersAndSave(query, opts = {}) {
 
   let scraped;
   try {
-    scraped = await scrapeAllPlatforms(query, { dynamic, platforms: opts.platforms });
+    // opts.onReport: the per-store report (Muzammil's M5) for this query, which the nightly totals to notice a store gone silent
+    if (opts.onReport) {
+      const { listings, report } = await scrapeAllPlatforms(query, { dynamic, platforms: opts.platforms, withReport: true });
+      opts.onReport(report);
+      scraped = listings;
+    } else {
+      scraped = await scrapeAllPlatforms(query, { dynamic, platforms: opts.platforms });
+    }
   } catch (err) {
     console.error("[scraperService] Scraping failed for %s: %s", quote(query), err.message);
     return 0;

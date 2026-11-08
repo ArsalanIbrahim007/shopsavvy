@@ -116,12 +116,18 @@ describe("judgeWithMoreEvidence", async () => {
     expect(result.reason).toMatch(/at every store we track \(5 recorded prices\)/);
   });
 
-  it("then the fair price: a 'was' price above its range is suspicious, one in line with it likely genuine, between stays unverified", () => {
+  it("then the fair price: a 'was' price above its range is suspicious; one in line with it stays unverified (NEW_EVIDENCE_CHECK.md)", () => {
     const fairPrice = { price: 100000, low: 80000, high: 130000, medianError: 0.1 };
     expect(judgeWithMoreEvidence(unverified, { price: 95000, originalPrice: 150000 }, { fairPrice })).toMatchObject({ classification: "suspicious", basis: "fair_price" });
-    expect(judgeWithMoreEvidence(unverified, { price: 95000, originalPrice: 105000 }, { fairPrice })).toMatchObject({ classification: "possibly_genuine", basis: "fair_price" });
+    expect(judgeWithMoreEvidence(unverified, { price: 95000, originalPrice: 105000 }, { fairPrice })).toMatchObject({ classification: "unverified_discount", basis: "listing_history" });
     expect(judgeWithMoreEvidence(unverified, { price: 95000, originalPrice: 120000 }, { fairPrice })).toMatchObject({ classification: "unverified_discount", basis: "listing_history" });
     expect(judgeWithMoreEvidence(unverified, { price: 95000, originalPrice: 150000 }, { fairPrice }).reason).toMatch(/PKR 150,000.*PKR 100,000.*PKR 130,000/);
+  });
+
+  it("never clears a claim on other stores' history: another store having charged the 'was' price does not show this one did", () => {
+    const pooledHistory = [1, 2, 3, 4, 5].map((d) => ({ price: 120000, recordedAt: day(d) }));
+    const result = judgeWithMoreEvidence(unverified, { price: 100000, originalPrice: 120000 }, { pooledHistory });
+    expect(result).toMatchObject({ classification: "unverified_discount", basis: "listing_history" });
   });
 
   it("leaves a verdict the listing's own history reached as it is", () => {

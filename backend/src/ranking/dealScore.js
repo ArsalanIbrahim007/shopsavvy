@@ -36,12 +36,20 @@ function getOfferPriceHistory(offer = {}) {
  *  2. the fair price for its specs (services/fairPrice.service.js): a "was" price above the range the model saw for such products is
  *     suspicious, one at or below the fair price plus its usual error is likely genuine; in between it stays unverified.
  * The verdict says which evidence it rests on (discountAnalysis.basis), and its reason says so in words.
+ *
+ * This evidence may only find a claim inflated, never clear it. Checked against the claims a listing's own history can judge
+ * (scripts/ml/discount/04-check-new-evidence.js, NEW_EVIDENCE_CHECK.md), with that history hidden: when it called a "was" price
+ * inflated, the listing's own history agreed 98.4% of the time; when it called one genuine, only 4.8% (the fair price alone, 2.9%).
+ * A "was" price in line with the market, or one another store once charged, does not show that THIS store ever charged it: stores
+ * set their "was" prices at the market's price. So those claims stay unverified.
  */
+const INFLATED = new Set(["suspicious", "likely_fake"]);
+
 export function judgeWithMoreEvidence(analysis, offer, { pooledHistory = [], fairPrice = null } = {}) {
   if (analysis?.classification !== "unverified_discount") return { ...analysis, basis: analysis?.classification === "no_claimed_discount" ? null : "listing_history" };
 
   const pooled = calculateFakeDiscountScore({ currentPrice: offer.price, originalPrice: offer.originalPrice, priceHistory: pooledHistory });
-  if (pooled.classification !== "unverified_discount" && pooled.classification !== "insufficient_data") {
+  if (INFLATED.has(pooled.classification)) {
     return {
       ...pooled,
       basis: "product_history",
@@ -58,14 +66,6 @@ export function judgeWithMoreEvidence(analysis, offer, { pooledHistory = [], fai
         classification: "suspicious",
         basis: "fair_price",
         reason: `The "was" price, ${formatted(was)}, is above what products with these specs usually cost: our price model puts them at ${formatted(fairPrice.price)}, and 9 in 10 at or under ${formatted(fairPrice.high)}. There is not enough price history to check the claim directly.`,
-      };
-    }
-    if (was <= fairPrice.price * (1 + fairPrice.medianError)) {
-      return {
-        ...analysis,
-        classification: "possibly_genuine",
-        basis: "fair_price",
-        reason: `The "was" price, ${formatted(was)}, is in line with what products with these specs usually cost (our price model puts them at ${formatted(fairPrice.price)}). There is not enough price history to verify the claim directly.`,
       };
     }
   }

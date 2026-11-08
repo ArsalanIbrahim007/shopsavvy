@@ -12,6 +12,7 @@
 //   node src/scripts/run-scheduled-scrape.js --force          (run even if today's scrape already happened)
 //   node src/scripts/run-scheduled-scrape.js --no-pages         (skip the page check (PTA status, colours) that follows the scrape)
 //   node src/scripts/run-scheduled-scrape.js --no-catalogue     (skip the catalogue refresh that comes first)
+//   node src/scripts/run-scheduled-scrape.js --stores=priceoye,shophive   (search only these stores: to catch one up; with --force)
 //
 // First the catalogue refresh (services/catalogueRefresh.service.js): the Shopify, WooCommerce and AlfaMall/DigiMall stores' whole
 // catalogues are read and every listing we hold there is updated, in minutes. Then the searches, which no longer ask a store whose
@@ -29,13 +30,15 @@ import mongoose from "mongoose";
 import { isDoneToday, markDone, markFailed, tryStart } from "../jobs/scrapeState.js";
 import { CATALOGUE_STORES, coversHeldListings, refreshCatalogue } from "../services/catalogueRefresh.service.js";
 import { enrichFromPages } from "../services/pageEnrichment.service.js";
-import { buildScheduledQueryPlan, createQueryLog, RUN_BUDGET_MS, runScheduledScrape, withoutRefreshedStores } from "../services/scheduledScraping.service.js";
+import { buildScheduledQueryPlan, createQueryLog, onlyStores, RUN_BUDGET_MS, runScheduledScrape, withoutRefreshedStores } from "../services/scheduledScraping.service.js";
 
 const minOffersArg = process.argv.find((a) => a.startsWith("--min-offers="));
 const minOffers = minOffersArg ? Number(minOffersArg.split("=")[1]) : 2;
 const staleArg = process.argv.find((a) => a.startsWith("--stale-singles="));
 const staleSingles = staleArg ? Number(staleArg.split("=")[1]) : undefined; // undefined: the default (STALE_SINGLE_PER_RUN)
 const force = process.argv.includes("--force");
+const storesArg = process.argv.find((a) => a.startsWith("--stores="));
+const stores = storesArg ? new Set(storesArg.slice("--stores=".length).split(",").filter(Boolean)) : null;
 
 // --plan: show what tonight's run would query, in order, and exit. Scrapes nothing and claims nothing (so it cannot make a real run
 // think the day is taken).
@@ -98,7 +101,7 @@ try {
   // listings there is not asked again (coversHeldListings).
   const queryLog = createQueryLog();
   const fullPlan = await buildScheduledQueryPlan({ minOffers, staleSingles, lastQueried: queryLog.lastQueried });
-  const plan = withoutRefreshedStores(fullPlan, refreshed);
+  const plan = stores ? onlyStores(withoutRefreshedStores(fullPlan, refreshed), stores) : withoutRefreshedStores(fullPlan, refreshed);
   const queries = plan.map((entry) => entry.query);
   const byKind = (kind) => plan.filter((entry) => entry.kind === kind).length;
   console.log(`[${stamp()}] ${queries.length} queries to re-scrape, longest since last run first (min ${minOffers} offer(s) per product; ${byKind("compared")} compared products + ${byKind("stale-single")} stale single-store ones).`);
@@ -116,6 +119,9 @@ try {
 
   if (claimed || !isDoneToday()) markDone();
   console.log(`\nDone. ${summary.totalQueries - summary.skipped} of ${summary.totalQueries} queries, ${summary.totalSaved} listings saved, ${summary.failures.length} failed, ${(summary.durationMs / 1000).toFixed(0)}s.`);
+  for (const { platform, searches } of summary.silentStores) {
+    console.warn(`[${stamp()}] WARNING ${platform}: 0 listings from all ${searches} searches. Its pages have probably changed; check its scraper (node src/scrapers/index.js "<a product>").`);
+  }
 
   // Then read a few store pages for PTA status and colours. The scrape is already recorded as done, so a failure here only
   // shows in the log.

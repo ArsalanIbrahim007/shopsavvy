@@ -259,8 +259,16 @@ export async function runScheduledScrape(opts = {}) {
     .map((item) => (typeof item === "string" ? { query: item } : item));
   const queries = entries.map((entry) => entry.query);
 
-  const summary = { totalQueries: queries.length, totalSaved: 0, failures: [], skipped: 0 };
+  const summary = { totalQueries: queries.length, totalSaved: 0, failures: [], skipped: 0, stores: {}, silentStores: [] };
   const startedAt = now();
+  // Each store's searches this run, from the per-store report: how many it was asked, and how many listings it gave back.
+  const onReport = (report) => {
+    for (const row of report ?? []) {
+      const store = (summary.stores[row.platform] ??= { searches: 0, fetched: 0 });
+      store.searches += 1;
+      store.fetched += row.fetched ?? 0;
+    }
+  };
 
   for (let i = 0; i < queries.length; i++) {
     if (now() - startedAt >= budgetMs) {
@@ -271,7 +279,7 @@ export async function runScheduledScrape(opts = {}) {
     const query = queries[i];
     const { platforms } = entries[i];
     try {
-      const saved = platforms ? await runScrapersAndSave(query, { platforms }) : await runScrapersAndSave(query);
+      const saved = await runScrapersAndSave(query, platforms ? { platforms, onReport } : { onReport });
       summary.totalSaved += saved;
       onProgress?.({ index: i + 1, total: queries.length, query, saved });
     } catch (err) {
@@ -286,13 +294,33 @@ export async function runScheduledScrape(opts = {}) {
 
   queryLog?.save();
   summary.durationMs = now() - startedAt;
+  // A store that answered no search at all has most likely changed its pages (PriceOye, 2026-11-03 to 11-08: 0 listings from
+  // every search for six nights, noticed only from its prices going stale).
+  summary.silentStores = Object.entries(summary.stores)
+    .filter(([, s]) => s.searches >= SILENT_STORE_MIN_SEARCHES && s.fetched === 0)
+    .map(([platform, s]) => ({ platform, searches: s.searches }));
   return summary;
 }
+
+/** How many searches a store must have been asked, all returning nothing, before the nightly calls it silent. */
+export const SILENT_STORE_MIN_SEARCHES = 20;
 
 /**
  * The plan without the stores whose catalogue was just read: an entry that names its stores loses those, and is dropped when none
  * is left; an entry for every store (a new product's discovery) stays as it is.
  */
+/**
+ * The plan for only these stores (run-scheduled-scrape.js --stores=a,b): to catch up stores whose searches failed for a while
+ * (PriceOye returned nothing from 2026-11-03 to 11-08, until its new layout was read) without spending the run on the others. An
+ * entry for every store asks just these.
+ */
+export function onlyStores(plan, stores) {
+  return plan.flatMap((entry) => {
+    const platforms = (entry.platforms ?? [...stores]).filter((p) => stores.has(p));
+    return platforms.length ? [{ ...entry, platforms }] : [];
+  });
+}
+
 export function withoutRefreshedStores(plan, refreshed) {
   if (refreshed.size === 0) return plan;
   return plan.flatMap((entry) => {

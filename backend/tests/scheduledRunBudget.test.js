@@ -15,7 +15,7 @@ vi.mock("../src/services/scraper.service.js", () => ({ runScrapersAndSave: vi.fn
 import { runScrapersAndSave } from "../src/services/scraper.service.js";
 import { groupListings, getGroupingPool, closeGroupingPool } from "../src/services/grouping.service.js";
 import Listing from "../src/models/listing.model.js";
-import { createQueryLog, deriveQuery, RUN_BUDGET_MS, runScheduledScrape } from "../src/services/scheduledScraping.service.js";
+import { createQueryLog, deriveQuery, RUN_BUDGET_MS, runScheduledScrape, SILENT_STORE_MIN_SEARCHES } from "../src/services/scheduledScraping.service.js";
 
 // A fake clock the stubbed scraper moves forward, so no test waits for real time.
 let clock;
@@ -30,7 +30,23 @@ beforeEach(() => {
 describe("runScheduledScrape smart routing", () => {
   it("asks only the planned stores for a plan entry, and every store for a plain query", async () => {
     await runScheduledScrape({ queries: [{ query: "haier hrf 346", platforms: ["mega", "shophive"] }, "plain query"], delayMs: 0, now });
-    expect(vi.mocked(runScrapersAndSave).mock.calls).toEqual([["haier hrf 346", { platforms: ["mega", "shophive"] }], ["plain query"]]);
+    const calls = vi.mocked(runScrapersAndSave).mock.calls;
+    expect(calls.map(([query, opts]) => [query, opts.platforms])).toEqual([["haier hrf 346", ["mega", "shophive"]], ["plain query", undefined]]);
+  });
+
+  it("names a store that gave nothing back to every search (PriceOye, 2026-11-03 to 11-08), and not one that gave something", async () => {
+    vi.mocked(runScrapersAndSave).mockImplementation(async (query, { onReport }) => {
+      onReport([{ platform: "priceoye", fetched: 0 }, { platform: "mega", fetched: query === "q0" ? 0 : 5 }]);
+      return 5;
+    });
+    const many = Array.from({ length: SILENT_STORE_MIN_SEARCHES }, (_, i) => `q${i}`);
+    const summary = await runScheduledScrape({ queries: many, delayMs: 0, now });
+    expect(summary.silentStores).toEqual([{ platform: "priceoye", searches: SILENT_STORE_MIN_SEARCHES }]);
+    expect(summary.stores.mega).toEqual({ searches: SILENT_STORE_MIN_SEARCHES, fetched: 5 * (SILENT_STORE_MIN_SEARCHES - 1) });
+
+    // too few searches to tell
+    const few = await runScheduledScrape({ queries: ["a", "b"], delayMs: 0, now });
+    expect(few.silentStores).toEqual([]);
   });
 });
 

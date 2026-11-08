@@ -4,7 +4,7 @@ import { describe, it, expect, vi } from "vitest";
 
 import { shopifyCatalogue, shopifyListing, storefrontCatalogue, wooCatalogue, STOREFRONT_PER_PAGE } from "../src/scrapers/catalogue.js";
 import { coversHeldListings, refreshCatalogue, storefrontTerms } from "../src/services/catalogueRefresh.service.js";
-import { withoutRefreshedStores } from "../src/services/scheduledScraping.service.js";
+import { onlyStores, withoutRefreshedStores } from "../src/services/scheduledScraping.service.js";
 
 const collect = async (pages) => {
   const out = [];
@@ -233,5 +233,19 @@ describe("withoutRefreshedStores", () => {
       { query: "new phone" },
     ]);
     expect(withoutRefreshedStores(plan, new Set())).toBe(plan);
+  });
+});
+
+describe("onlyStores", () => {
+  it("keeps only the named stores in each entry, asks just them for an every-store entry, and drops an entry left with none", () => {
+    const plan = [
+      { query: "redmi note 15", platforms: ["priceoye", "alfamall"] },
+      { query: "galaxy a17", platforms: ["alfamall"] },
+      { query: "new phone" },
+    ];
+    expect(onlyStores(plan, new Set(["priceoye", "shophive"]))).toEqual([
+      { query: "redmi note 15", platforms: ["priceoye"] },
+      { query: "new phone", platforms: ["priceoye", "shophive"] },
+    ]);
   });
 });
