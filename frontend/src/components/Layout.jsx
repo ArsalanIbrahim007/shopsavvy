@@ -8,6 +8,7 @@ import { getHealth } from "../api/endpoints.js";
 import { useAsync } from "../hooks/useAsync.js";
 import { timeAgo } from "../lib/format.js";
 import { platformName } from "../lib/platforms.js";
+import CategoryMenu from "./CategoryMenu.jsx";
 import ErrorBoundary from "./ErrorBoundary.jsx";
 import Logo from "./Logo.jsx";
 import SearchBox from "./SearchBox.jsx";
@@ -22,21 +23,19 @@ const STORES = [
 ];
 
 // The header's shortcuts: the categories people browse most, and the verified deals on the home page.
+// Every category is in the Categories menu (CategoryMenu.jsx), so the header no longer repeats three of them as links.
 const NAV = [
-  { label: "Phones", to: "/results?category=smartphone", category: "smartphone" },
-  { label: "Laptops", to: "/results?category=laptop", category: "laptop" },
-  { label: "TVs", to: "/results?category=tv", category: "tv" },
   { label: "Deals", to: "/#deals", hash: "#deals" },
   { label: "Price drops", to: "/drops", path: "/drops" },
+  { label: "How it works", to: "/how-it-works", path: "/how-it-works" },
 ];
 
 function MainNav({ pathname, category, hash }) {
   return (
     <nav className="site-nav" aria-label="Main">
+      <CategoryMenu current={category} />
       {NAV.map((item) => {
-        const current = item.category
-          ? pathname === "/results" && category === item.category
-          : item.path ? pathname === item.path : pathname === "/" && hash === item.hash;
+        const current = item.path ? pathname === item.path : pathname === "/" && hash === item.hash;
         return (
           <Link key={item.label} to={item.to} aria-current={current ? "page" : undefined}>
             {item.label}

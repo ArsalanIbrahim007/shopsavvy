@@ -1,9 +1,10 @@
 // The home page's pictures (2026-11-08): category icons, "How we check prices" shown as three small drawings.
 import { describe, it, expect } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
 import CategoryIcon from "../src/components/CategoryIcon.jsx";
+import CategoryMenu from "../src/components/CategoryMenu.jsx";
 import HowWeCheck from "../src/components/HowWeCheck.jsx";
 import { FEATURED_CATEGORIES } from "../src/lib/categories.js";
 
@@ -21,6 +22,40 @@ describe("CategoryIcon", () => {
 
   it("draws nothing for a category it does not know", () => {
     expect(render(<CategoryIcon category="toaster" />).container).toBeEmptyDOMElement();
+  });
+});
+
+// The header's Categories menu (2026-11-08) replaced the Phones, Laptops and TVs links: every category, one panel.
+describe("CategoryMenu", () => {
+  const menu = (current = "", at = "/") => render(<MemoryRouter initialEntries={[at]}><CategoryMenu current={current} /></MemoryRouter>);
+
+  it("opens a panel with every category, each linking to its results, and closes on Escape", () => {
+    menu();
+    const button = screen.getByRole("button", { name: "Categories" });
+    expect(button).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(button);
+    expect(button).toHaveAttribute("aria-expanded", "true");
+    const links = screen.getAllByRole("link");
+    expect(links.map((a) => a.getAttribute("href"))).toEqual(FEATURED_CATEGORIES.map((c) => `/results?category=${c}`));
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(button).toHaveAttribute("aria-expanded", "false");
+    expect(button).toHaveFocus();
+  });
+
+  it("names the category being browsed on the button and marks it in the panel", () => {
+    menu("tv", "/results?category=tv");
+    const button = screen.getByRole("button", { name: "TVs" });
+    expect(button).toHaveAttribute("aria-current", "page");
+    fireEvent.click(button);
+    expect(screen.getByRole("link", { name: "TVs" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Laptops" })).not.toHaveAttribute("aria-current");
+  });
+
+  it("closes when a click lands outside it", () => {
+    menu();
+    fireEvent.click(screen.getByRole("button", { name: "Categories" }));
+    fireEvent.mouseDown(document.body);
+    expect(screen.getByRole("button", { name: "Categories" })).toHaveAttribute("aria-expanded", "false");
   });
 });
 

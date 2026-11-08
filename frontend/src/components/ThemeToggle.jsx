@@ -24,10 +24,11 @@ function Icon({ theme }) {
       </svg>
     );
   }
+  // "Follow my device": a circle half light, half dark (a monitor here read as "TVs" beside the menu)
   return (
     <svg {...common}>
-      <rect x="3" y="4" width="18" height="12" rx="2" />
-      <path d="M8 20h8M12 16v4" />
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" stroke="none" />
     </svg>
   );
 }

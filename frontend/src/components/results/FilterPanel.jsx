@@ -4,12 +4,15 @@
 //  - at least one store always stays selected (unchecking the last one does nothing);
 //  - price bounds apply when the field is left or Enter is pressed, not on every keystroke;
 //  - facets and their counts come from the results themselves and are hidden when there is no real choice.
+// Laid out (2026-11-08) as the controls they are: the sort first, as one row of pills (still radio buttons); the stores with their
+// logos; the price with its currency in the field; the facets as chips that toggle (still checkboxes).
 
 import { useState } from "react";
 
 import { SORTS } from "../../lib/filters.js";
 import { categoryName } from "../../lib/categories.js";
 import { formatNumber } from "../../lib/format.js";
+import { StoreMark } from "../StoreLogo.jsx";
 import "./results.css";
 
 function PriceInput({ label, value, placeholder, onCommit }) {
@@ -26,6 +29,7 @@ function PriceInput({ label, value, placeholder, onCommit }) {
   return (
     <label className="filter-price">
       <span className="small muted">{label}</span>
+      <span className="filter-price__field">
       <input
         type="number"
         inputMode="numeric"
@@ -36,6 +40,7 @@ function PriceInput({ label, value, placeholder, onCommit }) {
         onBlur={commit}
         onKeyDown={(event) => event.key === "Enter" && commit()}
       />
+      </span>
     </label>
   );
 }
@@ -58,10 +63,24 @@ export default function FilterPanel({ filters, stores, categories, facets, bound
   return (
     <aside className={open ? "filters card is-open" : "filters card"} aria-label="Filters">
       <fieldset className="filter-group">
+        <legend className="eyebrow">Sort by</legend>
+        <div className="sort-pills">
+          {SORTS.map((sort) => (
+            <label key={sort.id} className="sort-pill">
+              <input type="radio" name="sort" checked={filters.sort === sort.id} onChange={() => onChange({ sort: sort.id })} />
+              <span>{sort.label}</span>
+              {sort.hint && <span className="filter-pick small">{sort.hint}</span>}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <fieldset className="filter-group">
         <legend className="eyebrow">Stores <span className="muted">{stores.length}</span></legend>
         {stores.map((store) => (
-          <label key={store.id} className="filter-check">
+          <label key={store.id} className="filter-check filter-check--store">
             <input type="checkbox" checked={selectedStores.includes(store.id)} onChange={() => toggleStore(store.id)} />
+            <StoreMark platform={store.id} size={22} />
             <span>{store.name}</span>
             <span className="filter-check__count small muted">{formatNumber(store.count)}</span>
           </label>
@@ -74,17 +93,6 @@ export default function FilterPanel({ filters, stores, categories, facets, bound
           <PriceInput key={`min-${filters.minPrice}`} label="Min" value={filters.minPrice} placeholder={formatNumber(bounds.min)} onCommit={(minPrice) => onChange({ minPrice })} />
           <PriceInput key={`max-${filters.maxPrice}`} label="Max" value={filters.maxPrice} placeholder={formatNumber(bounds.max)} onCommit={(maxPrice) => onChange({ maxPrice })} />
         </div>
-      </fieldset>
-
-      <fieldset className="filter-group">
-        <legend className="eyebrow">Sort by</legend>
-        {SORTS.map((sort) => (
-          <label key={sort.id} className="filter-check">
-            <input type="radio" name="sort" checked={filters.sort === sort.id} onChange={() => onChange({ sort: sort.id })} />
-            <span>{sort.label}</span>
-            {sort.hint && <span className="filter-pick small">{sort.hint}</span>}
-          </label>
-        ))}
       </fieldset>
 
       {canPickCategory && categories.length > 1 && (
@@ -106,13 +114,15 @@ export default function FilterPanel({ filters, stores, categories, facets, bound
       {facets.map((facet) => (
         <fieldset key={facet.key} className="filter-group">
           <legend className="eyebrow">{facet.title}</legend>
-          {facet.options.map((option) => (
-            <label key={String(option.value)} className="filter-check">
-              <input type="checkbox" checked={filters[facet.key].includes(option.value)} onChange={() => toggleFacet(facet.key, option.value)} />
-              <span>{option.label}</span>
-              <span className="filter-check__count small muted">{formatNumber(option.count)}</span>
-            </label>
-          ))}
+          <div className="facet-chips">
+            {facet.options.map((option) => (
+              <label key={String(option.value)} className="facet-chip">
+                <input type="checkbox" checked={filters[facet.key].includes(option.value)} onChange={() => toggleFacet(facet.key, option.value)} />
+                <span>{option.label}</span>
+                <span className="facet-chip__count">{formatNumber(option.count)}</span>
+              </label>
+            ))}
+          </div>
         </fieldset>
       ))}
 

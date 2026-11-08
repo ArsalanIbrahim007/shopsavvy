@@ -200,7 +200,7 @@ function ResultsView({ groups, total, refreshing = false, narrowed = null, spell
       {linkHost && query && <LinkNotice store={linkStore} query={query} capacity={linkCapacity} />}
 
       {allOffers.length > 0 && (
-        <SummaryCards summary={summary} main={main} mainCategory={mixed ? categoryName(category) : null} saving={saving} />
+        <SummaryCards summary={summary} main={main} mainCategory={mixed ? categoryName(category) : null} saving={saving} platforms={[...new Set(keptOffers.map((offer) => offer.platform))]} />
       )}
       <IntegrityStrip offers={keptOffers} />
 

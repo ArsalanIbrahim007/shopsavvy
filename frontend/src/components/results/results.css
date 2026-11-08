@@ -7,6 +7,23 @@
 }
 .summary-card { padding: var(--space-4) var(--space-5); display: grid; gap: 2px; align-content: start; border: 0; border-radius: 0; background: none; box-shadow: inset 1px 0 0 var(--line), inset 0 1px 0 var(--line); margin: -1px 0 0 -1px; }
 .summary-card__value--text { font-family: var(--font-display); letter-spacing: -0.03em; }
+.summary-card { position: relative; }
+.summary-card__corner { position: absolute; top: var(--space-4); right: var(--space-4); display: inline-flex; }
+.summary-card__stack { display: flex; align-items: center; margin-top: var(--space-2); }
+.summary-card__stack > * { margin-left: -6px; border-radius: 8px; box-shadow: 0 0 0 2px var(--paper); animation: rise var(--dur-base) var(--ease) both; }
+.summary-card__stack > :first-child { margin-left: 0; }
+.summary-card__stack > :nth-child(2) { animation-delay: 50ms; }
+.summary-card__stack > :nth-child(3) { animation-delay: 100ms; }
+.summary-card__stack > :nth-child(4) { animation-delay: 150ms; }
+.summary-card__stack > :nth-child(n + 5) { animation-delay: 200ms; }
+.summary-card__more { margin-left: var(--space-2) !important; box-shadow: none !important; font-size: 0.75rem; color: var(--ink-faint); font-family: var(--font-mono); }
+/* the saving: the cheapest price (green) laid over the dearest (the track) */
+.summary-card__bar { position: relative; display: block; height: 8px; margin-top: var(--space-2); border-radius: 4px; overflow: hidden; }
+.summary-card__bar-high { position: absolute; inset: 0; background: var(--caution-soft); border: 1px solid var(--caution-line); border-radius: 4px; }
+.summary-card__bar-low { position: absolute; inset: 0 auto 0 0; background: var(--good); border-radius: 4px; transform-origin: left; animation: grow-bar 900ms var(--ease) 150ms both; }
+.summary-card__ring { width: 36px; height: 36px; }
+.summary-card__ring-track { fill: none; stroke: var(--line); stroke-width: 3; }
+.summary-card__ring-fill { fill: none; stroke: var(--good); stroke-width: 3; stroke-linecap: round; transform: rotate(-90deg); transform-origin: 18px 18px; transition: stroke-dashoffset 900ms var(--ease); }
 .summary-card__value { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.04em; color: var(--ink); line-height: 1.2; }
 .summary-card__note { color: var(--caution); font-weight: 600; } /* the non-PTA price beside the headline (SummaryCards) */
 
@@ -22,7 +39,7 @@
 
 /* page layout: filters beside the list on wide screens, above it on phones */
 .results-layout { display: grid; gap: var(--space-5); align-items: start; }
-@media (min-width: 900px) { .results-layout { grid-template-columns: 260px minmax(0, 1fr); } }
+@media (min-width: 900px) { .results-layout { grid-template-columns: 284px minmax(0, 1fr); } }
 .preowned { display: grid; gap: var(--space-3); margin-top: var(--space-5); padding-top: var(--space-5); border-top: 1px solid var(--line); }
 .preowned:focus { outline: none; }
 .preowned-note a { text-decoration: underline; } /* a link inside a sentence must not rely on colour alone */
@@ -39,15 +56,62 @@
 @media (min-width: 900px) { .filters { display: grid; position: sticky; top: 96px; max-height: calc(100vh - 116px); overflow-y: auto; } }
 .filter-group { border: 0; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
 .filter-group legend { padding: 0; margin-bottom: var(--space-2); display: flex; justify-content: space-between; width: 100%; }
-.filter-check { display: flex; align-items: center; gap: var(--space-2); min-height: 32px; cursor: pointer; font-size: 0.9375rem; }
-.filter-check input { width: 18px; height: 18px; accent-color: var(--brand); }
+.filter-check { display: flex; align-items: center; gap: var(--space-2); min-height: 34px; padding: 0 var(--space-2); margin: 0 calc(-1 * var(--space-2)); border-radius: var(--radius-control); cursor: pointer; font-size: 0.9375rem; transition: background-color var(--dur-fast) var(--ease); }
+.filter-check:hover { background: var(--raised); }
+/* our own checkbox: an outlined square that fills amber with a dark tick */
+.filters input[type="checkbox"] {
+  appearance: none; flex: none; width: 18px; height: 18px; margin: 0; display: grid; place-items: center;
+  border: 1.5px solid var(--ink-mute); border-radius: 5px; background: var(--paper); cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+.filters input[type="checkbox"]::after {
+  content: ""; width: 5px; height: 9px; margin-top: -2px; border: solid var(--on-accent); border-width: 0 2px 2px 0;
+  transform: rotate(45deg) scale(0); transition: transform var(--dur-fast) var(--ease);
+}
+.filters input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent); }
+.filters input[type="checkbox"]:checked::after { transform: rotate(45deg) scale(1); }
+.filter-check--store:has(input:not(:checked)) > :not(input) { opacity: 0.5; }
+
+/* sort: one row of pills, each a radio button */
+.sort-pills { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.sort-pill {
+  position: relative; display: inline-flex; align-items: center; gap: var(--space-2); min-height: 34px; padding: 0 var(--space-3);
+  border: 1px solid var(--line); border-radius: var(--radius-pill); background: var(--paper); color: var(--ink-soft);
+  font-size: 0.875rem; cursor: pointer; transition: border-color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.sort-pill:hover { border-color: var(--ink-mute); color: var(--ink); }
+.sort-pill input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; pointer-events: none; }
+.sort-pill:has(input:checked) { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.sort-pill:has(input:focus-visible), .facet-chip:has(input:focus-visible) { outline: 2px solid var(--brand); outline-offset: 2px; }
+.sort-pill .filter-pick { margin-left: 0; padding: 0 6px; font-size: 0.6875rem; }
+
+/* facets: chips that toggle, each a checkbox, with its count */
+.facet-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.facet-chip {
+  position: relative; display: inline-flex; align-items: center; gap: var(--space-2); min-height: 32px; padding: 0 var(--space-3);
+  border: 1px solid var(--line); border-radius: var(--radius-pill); background: var(--paper); color: var(--ink-soft);
+  font-size: 0.875rem; cursor: pointer; transition: border-color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.facet-chip:hover { border-color: var(--ink-mute); color: var(--ink); }
+.facet-chip input[type="checkbox"] { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; pointer-events: none; }
+.facet-chip:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); color: var(--ink); }
+.facet-chip__count { font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-faint); }
 .filter-check__count { margin-left: auto; }
-.filter-pick { margin-left: auto; padding: 1px 8px; border-radius: var(--radius-pill); background: var(--accent); color: var(--on-accent); font-weight: 700; }
+.filter-pick { margin-left: auto; padding: 1px 8px; border-radius: var(--radius-pill); background: var(--accent); color: var(--on-accent); font-weight: 600; }
 .filter-price-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); }
 .filter-price { display: grid; gap: 2px; }
+.filter-price__field {
+  display: flex; align-items: center; height: 40px; padding-left: var(--space-3);
+  border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--canvas);
+  transition: border-color var(--dur-fast) var(--ease);
+}
+.filter-price__field:focus-within { border-color: var(--ink-mute); }
+.filter-price input::-webkit-inner-spin-button, .filter-price input::-webkit-outer-spin-button { appearance: none; margin: 0; }
+/* the currency is drawn, not written, so the field is still named just "Min" or "Max" */
+.filter-price__field::before { content: "PKR"; font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-faint); }
 .filter-price input {
-  width: 100%; height: 40px; padding: 0 var(--space-3);
-  border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--canvas); font: inherit; color: var(--ink);
+  width: 100%; min-width: 0; height: 100%; padding: 0 var(--space-1) 0 6px; border: 0; background: none;
+  font-family: var(--font-mono); font-size: 0.8125rem; letter-spacing: -0.02em; color: var(--ink); outline: none; appearance: textfield; -moz-appearance: textfield;
 }
 .filter-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .filter-chips .chip[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: var(--on-brand); }
