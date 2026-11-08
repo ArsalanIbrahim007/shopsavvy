@@ -8,10 +8,12 @@ Started by Abuzar (`abuzar/Z4-extension`: the first manifest, popup layout and i
 
 ## Install (for a demonstration)
 
-1. Start the API (`cd backend && npm run dev`, on `http://localhost:5000`).
-2. Open `chrome://extensions` (or `edge://extensions`), switch on **Developer mode**, press **Load unpacked** and choose this
+1. Open `chrome://extensions` (or `edge://extensions`), switch on **Developer mode**, press **Load unpacked** and choose this
    `extension/` folder.
-3. Open a product page, for example `https://www.ishopping.pk/tcl-55-qled-tv-p79k-price-in-pakistan`.
+2. Open a product page, for example `https://www.ishopping.pk/tcl-55-qled-tv-p79k-price-in-pakistan`.
+
+It asks the deployed API (`https://shopsavvy-api.duckdns.org`). For development against your own copy, start it
+(`cd backend && npm run dev`) and set `http://localhost:5000` in the popup's *Settings*.
 
 After changing a file: press the extension's reload button on `chrome://extensions`, then reload the store's tab.
 

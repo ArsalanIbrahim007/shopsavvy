@@ -102,7 +102,7 @@
   const panelInput = document.getElementById("panel");
   const status = document.getElementById("settings-status");
   const saved = await chrome.storage.sync.get(["apiBase", "showPanel"]);
-  apiInput.value = saved.apiBase || "http://localhost:5000";
+  apiInput.value = saved.apiBase || "https://shopsavvy-api.duckdns.org"; // background.js DEFAULT_API
   panelInput.checked = saved.showPanel !== false;
 
   form.addEventListener("submit", async (event) => {

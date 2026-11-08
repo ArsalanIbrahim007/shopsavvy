@@ -8,7 +8,8 @@
 
 importScripts("format.js"); // ShopSavvyFormat.badgeSaving
 
-const DEFAULT_API = "http://localhost:5000";
+// The deployed API (deploy/README.md); the popup's settings can point it at a local one (http://localhost:5000) for development.
+const DEFAULT_API = "https://shopsavvy-api.duckdns.org";
 const BADGE = { save: "#d97706", best: "#059669" };
 
 async function apiBase() {

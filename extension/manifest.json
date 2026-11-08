@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "description": "On a store's product page, see the same product's price at other Pakistani stores, and whether its discount is real.",
   "permissions": ["storage", "activeTab"],
-  "host_permissions": ["http://localhost:5000/*", "http://127.0.0.1:5000/*"],
+  "host_permissions": ["https://shopsavvy-api.duckdns.org/*", "http://localhost:5000/*", "http://127.0.0.1:5000/*"],
   "optional_host_permissions": ["https://*/*", "http://*/*"],
   "background": { "service_worker": "background.js" },
   "content_scripts": [
