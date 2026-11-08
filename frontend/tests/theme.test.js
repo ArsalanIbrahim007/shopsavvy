@@ -188,7 +188,9 @@ describe("theme choice", () => {
 
   it("every token a stylesheet uses is defined in tokens.css", () => {
     // tokens.css, plus the few a component sets inline for itself (a store's colour: style={{ "--store": colour }})
-    const inline = files("src", ".jsx").flatMap((p) => [...read(p).matchAll(/"(--[\w-]+)":/g)].map((m) => m[1]));
+    const inline = files("src", ".jsx").flatMap((p) => [...read(p).matchAll(/"(--[\w-]+)":/g)].map((m) => m[1]))
+      // and a stylesheet's own local ones (Charts.css sets --tone per colour class)
+      .concat(files("src", ".css").filter((p) => !p.endsWith("tokens.css")).flatMap((p) => [...read(p).matchAll(/(--[\w-]+)\s*:/g)].map((m) => m[1])));
     const defined = new Set([...tokensCss.matchAll(/(--[\w-]+)\s*:/g)].map((m) => m[1]).concat(inline));
     const used = files("src", ".css").flatMap((p) => [...read(p).matchAll(/var\((--[\w-]+)/g)].map((m) => `${p}: ${m[1]}`));
     expect(used.filter((u) => !defined.has(u.split(": ")[1]))).toEqual([]);

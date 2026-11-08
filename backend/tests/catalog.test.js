@@ -6,7 +6,7 @@ vi.mock("../src/services/historyEnrichment.service.js", () => ({
 
 import Listing from "../src/models/listing.model.js";
 import { createApp } from "../src/createApp.js";
-import { getCatalog, clearCatalogCache, isCatalogCategory, CATALOG_CATEGORIES, peekCatalogGroups } from "../src/services/catalogFeed.service.js";
+import { getCatalog, clearCatalogCache, isCatalogCategory, CATALOG_CATEGORIES, CATALOG_JOB_TIMEOUT_MS, peekCatalogGroups } from "../src/services/catalogFeed.service.js";
 import { closeGroupingPool, groupingPoolStats, getGroupingPool } from "../src/services/grouping.service.js";
 
 const NOW = Date.now();
@@ -54,7 +54,8 @@ describe("getCatalog", () => {
   it("groups in the background lane, so a shopper's search is never stuck behind a cache warm-up", async () => {
     const run = vi.spyOn(getGroupingPool(), "run");
     await getCatalog({ category: "smartphone" });
-    expect(run).toHaveBeenCalledWith("group", expect.anything(), { priority: "background" });
+    expect(run).toHaveBeenCalledWith("group", expect.anything(), { priority: "background", timeoutMs: CATALOG_JOB_TIMEOUT_MS });
+    expect(CATALOG_JOB_TIMEOUT_MS).toBeGreaterThan(90 * 1000); // a large category outgrew the pool's 90 s (air conditioners, 2026-11-08)
   });
 
   it("lets the sitemap peek at what was computed without ever computing (peekCatalogGroups)", async () => {

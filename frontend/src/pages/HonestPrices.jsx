@@ -2,10 +2,15 @@
 // trained models scored on pairs they never saw, and what is still weak. The numbers come from GET /api/integrity (counted by the
 // server from its cached catalog, and read from the evaluation reports the team's scripts write), never typed in here. If the
 // numbers cannot be loaded the page says so and the explanations still read, instead of showing figures that might be stale.
+//
+// Drawn rather than written (2026-11-08): each set of numbers is a chart (components/Charts.jsx) with its table one click away
+// ("Show the numbers"). A folded table stays in the page for screen readers; the charts are pictures of the tables.
 
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { getIntegrity } from "../api/endpoints.js";
+import { BarGroups, Columns, Donut, RingGauge, SplitRows } from "../components/Charts.jsx";
 import ErrorState from "../components/ErrorState.jsx";
 import { Skeleton } from "../components/Skeleton.jsx";
 import { useAsync } from "../hooks/useAsync.js";
@@ -48,13 +53,51 @@ function DataBar({ value, tone = "brand" }) {
 const ROW_COLOURS = { genuine: "good", likelyGenuine: "good-soft", unverified: "neutral", suspicious: "caution", likelyFake: "bad", approved: "good", nonPta: "brand", notStated: "neutral", movedOut: "caution" };
 const colourOf = (row) => ROW_COLOURS[row.id] ?? "neutral";
 
-/** The rows of a count table as one bar split by share (the table under it is the legend). */
-function SplitBar({ rows }) {
-  const parts = rows.filter((row) => row.count > 0);
-  if (parts.length === 0) return null;
+/** A table behind its chart: folded away (still read by screen readers) until "Show the numbers". */
+function Numbers({ children }) {
+  const [open, setOpen] = useState(false);
   return (
-    <div className="split-bar" aria-hidden="true">
-      {parts.map((row, i) => <span key={row.id} className={`split-bar__part split-${colourOf(row)}`} style={{ flexGrow: row.count, animationDelay: `${i * 80}ms` }} />)}
+    <div className="honest-numbers">
+      <button type="button" className="honest-numbers__toggle small" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
+        {open ? "Hide the numbers" : "Show the numbers"}
+      </button>
+      <div className={open ? "honest-numbers__body" : "visually-hidden"}>{children}</div>
+    </div>
+  );
+}
+
+/** The chart's key: each row's colour, name, count and share (the share in brackets, so it never reads as a headline figure). */
+function Legend({ rows }) {
+  return (
+    <ul className="honest-legend" aria-hidden="true">
+      {rows.map((row) => (
+        <li key={row.id} className={row.count === 0 ? "is-empty" : undefined}>
+          <span className={`split-key split-${colourOf(row)}`} />
+          <span className="honest-legend__label">{row.label}</span>
+          <span className="honest-legend__count">{formatNumber(row.count)}</span>
+          <span className="honest-legend__share">({formatShare(row.share)})</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** The page's headline figures, counted up: what all of the checks below ran over. */
+function KpiBand({ live }) {
+  const items = [
+    { count: live.offers, label: "offers checked" },
+    { count: live.products, label: "products compared" },
+    { count: live.stores, label: "stores" },
+    { count: live.discounts.claims, label: "discount claims tested" },
+  ];
+  return (
+    <div className="honest-kpis" aria-hidden="true">
+      {items.map((item) => (
+        <div key={item.label} className="honest-kpi">
+          <span className="honest-kpi__value"><CountedValue count={item.count} /></span>
+          <span className="honest-kpi__label">{item.label}</span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -131,9 +174,13 @@ function LiveNumbers({ live, generatedAt }) {
 
         <section className="card honest-card" aria-labelledby="discount-heading">
           <h3 id="discount-heading">Discount claims, checked</h3>
-          <Figure count={discounts.claims} label="offers claim a discount (a crossed-out 'was' price)" />
-          <SplitBar rows={discountRows(discounts)} />
-          <CountTable caption="Discount claims by result" rows={discountRows(discounts)} total={discounts.claims} />
+          <div className="honest-chart-row">
+            <Donut parts={discountRows(discounts).map((row) => ({ id: row.id, value: row.count, tone: colourOf(row) }))}>
+              <Figure count={discounts.claims} label="claims" />
+            </Donut>
+            <Legend rows={discountRows(discounts)} />
+          </div>
+          <Numbers><CountTable caption="Discount claims by result" rows={discountRows(discounts)} total={discounts.claims} /></Numbers>
           <Why>
           <p className="muted">
             {formatShare(share(discounts.verdicts.unverified, discounts.claims))} of claims are unverified, and that is deliberate: a claim can only be checked against a product's own price history, and ours
@@ -148,9 +195,13 @@ function LiveNumbers({ live, generatedAt }) {
 
         <section className="card honest-card" aria-labelledby="pta-heading">
           <h3 id="pta-heading">PTA-approved or not</h3>
-          <Figure count={pta.offers} label="phone and tablet offers" />
-          <SplitBar rows={ptaRows(pta)} />
-          <CountTable caption="PTA status of phone and tablet offers" rows={ptaRows(pta)} total={pta.offers} />
+          <div className="honest-chart-row">
+            <Donut parts={ptaRows(pta).map((row) => ({ id: row.id, value: row.count, tone: colourOf(row) }))}>
+              <Figure count={pta.offers} label="phones and tablets" />
+            </Donut>
+            <Legend rows={ptaRows(pta)} />
+          </div>
+          <Numbers><CountTable caption="PTA status of phone and tablet offers" rows={ptaRows(pta)} total={pta.offers} /></Numbers>
           <Why>
           <p className="muted">
             A phone without PTA approval cannot use local networks without a tax payment, and sells far cheaper, so it must never be
@@ -162,10 +213,14 @@ function LiveNumbers({ live, generatedAt }) {
 
         <section className="card honest-card" aria-labelledby="fresh-heading">
           <h3 id="fresh-heading">How fresh the prices are</h3>
-          <Figure value={formatShare(share(freshness.within24h, live.offers))} label="of offers were checked in the last 24 hours" />
-          <div className="fresh-meter" aria-hidden="true">
-            <span className="fresh-meter__day" style={{ width: `${share(freshness.within24h, live.offers) ?? 0}%` }} />
-            <span className="fresh-meter__three" style={{ width: `${Math.max(0, (share(freshness.within72h, live.offers) ?? 0) - (share(freshness.within24h, live.offers) ?? 0))}%` }} />
+          <div className="honest-chart-row">
+            <RingGauge outer={share(freshness.within24h, live.offers)} inner={share(freshness.within72h, live.offers)}>
+              <Figure value={formatShare(share(freshness.within24h, live.offers))} label="in 24 hours" />
+            </RingGauge>
+            <ul className="honest-legend" aria-hidden="true">
+              <li><span className="split-key split-good" /><span className="honest-legend__label">Checked in the last 24 hours</span></li>
+              <li><span className="split-key split-good-soft" /><span className="honest-legend__label">Checked in the last 3 days</span></li>
+            </ul>
           </div>
           <p className="muted">
             {formatShare(share(freshness.within72h, live.offers))} in the last 3 days.
@@ -206,6 +261,18 @@ function MatcherSection({ report }) {
   const production = matcher.models.production;
   return (
     <>
+      <BarGroups
+        groups={rows.map((row) => ({
+          label: row.label,
+          highlight: row.inUse,
+          bars: [
+            { label: "Right when it says \"same\"", value: row.precision, text: formatScore(row.precision), tone: "brand" },
+            { label: "Finds the real matches", value: row.recall, text: formatScore(row.recall), tone: "accent" },
+            { label: "F1 (the balance)", value: row.f1, text: formatScore(row.f1), tone: "good" },
+          ],
+        }))}
+      />
+      <Numbers>
       <div className="honest-scroll" role="region" aria-label="Matching accuracy table" tabIndex={0}>
       <table className="honest-table honest-table--wide">
         <caption className="visually-hidden">How each way of matching did on {matcher.heldOutPairs} labelled pairs it had never seen</caption>
@@ -231,6 +298,7 @@ function MatcherSection({ report }) {
         </tbody>
       </table>
       </div>
+      </Numbers>
       <p className="small muted">
         {matcher.heldOutPairs} pairs of listings, labelled by hand against a written rubric, and never used for training. Report generated {formatDate(matcher.generatedAt)}.
       </p>
@@ -265,6 +333,14 @@ function DiscountModelSection({ report }) {
         measured. So a second check, a trained model, compares each claim with what the other stores charge today, and flags the ones that are
         out of line. It flagged {formatScore(discount.flaggedRealClaims)} of real claims.
       </p>
+      <div className="honest-coverage" aria-hidden="true">
+        <span className="honest-coverage__label">The history rule could judge</span>
+        <span className="honest-coverage__track"><span style={{ width: `${Math.max(1.5, Number(discount.historyRuleShare) || 0)}%` }} /></span>
+        <span className="honest-coverage__text">{formatNumber(discount.historyRuleJudged)} / {formatNumber(discount.judgeableClaims)}</span>
+      </div>
+      <p className="honest-chart-title">Invented "was" prices the detector caught, by how far they were marked up</p>
+      <Columns columns={markupRows(discount.caughtInvented).map((row) => ({ label: row.label, value: row.caught, text: formatScore(row.caught) }))} />
+      <Numbers>
       <table className="honest-table">
         <caption className="visually-hidden">Share of invented mark-ups the detector caught, by size of mark-up</caption>
         <thead>
@@ -279,6 +355,7 @@ function DiscountModelSection({ report }) {
           ))}
         </tbody>
       </table>
+      </Numbers>
       <Why label="Read it plainly">
       <p className="muted">
         Read it plainly: blatant mark-ups (twice the real price) are caught almost every time, moderate ones mostly are not. A moderate
@@ -308,6 +385,18 @@ function OutlookSection({ report }) {
           whether the price then fell or rose by 3% or more.
         </p>
       </Why>
+      <SplitRows
+        leftLabel="Fell 3% or more within a week"
+        rightLabel="Rose 3% or more"
+        rows={rows.map((row) => ({
+          label: row.label,
+          note: row.comparisons > 0 ? `${formatNumber(row.comparisons)} compared${!row.judgeable ? ", too few" : ""}` : "none yet",
+          left: row.fellShare, right: row.roseShare,
+          leftText: formatScore(row.fellShare), rightText: formatScore(row.roseShare),
+          faded: !row.judgeable,
+        }))}
+      />
+      <Numbers>
       <div className="honest-scroll" role="region" aria-label="Wait or buy test table" tabIndex={0}>
         <table className="honest-table honest-table--wide">
           <caption className="visually-hidden">What the wait-or-buy panel would have said, and what the price did a week later</caption>
@@ -334,6 +423,7 @@ function OutlookSection({ report }) {
           </tbody>
         </table>
       </div>
+      </Numbers>
       <p className="small muted">
         {formatNumber(outlook.comparisons)} comparisons{outlook.from && outlook.to ? `, from ${formatDate(outlook.from)} to ${formatDate(outlook.to)}` : ""}. Comparisons
         of one product on neighbouring days overlap, so they are fewer independent facts than the count suggests. Report generated {formatDate(outlook.generatedAt)}.
@@ -364,6 +454,8 @@ export default function HonestPrices() {
         <h1>How we keep prices honest</h1>
         <p className="lead muted">What our checks found in today's data, how accurate they are, and where they are still weak.</p>
       </header>
+
+      {report.status === "success" && report.data.live && <KpiBand live={report.data.live} />}
 
       <section aria-labelledby="live-heading">
         <h2 id="live-heading">What the checks found today</h2>

@@ -22,6 +22,10 @@ export const CATALOG_CATEGORIES = DEAL_CATEGORIES;
 export const isCatalogCategory = (value) => CATALOG_CATEGORIES.includes(value);
 
 const CACHE_TTL_MS = 10 * 60 * 1000;
+// A whole category is grouped in the background, and the largest has outgrown the pool's 90 s for one job: air conditioners (7,546
+// listings) timed out on 2026-11-08, so their catalog, their category page and the honest-prices counts failed. Nobody waits on this
+// job (an old catalog is served meanwhile), so it gets five minutes.
+export const CATALOG_JOB_TIMEOUT_MS = 5 * 60 * 1000;
 
 const cache = new Map(); // category -> { expires, generatedAt, groups }
 const inFlight = new Map(); // category -> Promise
@@ -50,7 +54,7 @@ async function computeCategory(category) {
   const enriched = await attachPriceHistory(listings);
   // threshold 0: always in the worker pool, however few listings there are, so this never blocks the API.
   // Background: the catalog is cached and warmed at start-up, so it yields the last worker to interactive requests.
-  const groups = await groupListings(enriched, { strategy: "ml", recommend: true, threshold: 0, priority: "background" });
+  const groups = await groupListings(enriched, { strategy: "ml", recommend: true, threshold: 0, priority: "background", timeoutMs: CATALOG_JOB_TIMEOUT_MS });
   return groups.sort(mostCompared).map(withoutHistory);
 }
 

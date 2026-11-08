@@ -26,6 +26,35 @@
 .split-bad { background: var(--bad); }
 .split-neutral { background: var(--neutral-fill); }
 
+/* the headline figures, counted up */
+.honest-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); border: 1px solid var(--line); border-radius: var(--radius-card); background: var(--paper); overflow: hidden; }
+.honest-kpi { display: grid; gap: 2px; padding: var(--space-4) var(--space-5); box-shadow: inset 1px 0 0 var(--line), inset 0 1px 0 var(--line); margin: -1px 0 0 -1px; }
+.honest-kpi__value { font-family: var(--font-mono); font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 500; letter-spacing: -0.05em; line-height: 1.05; }
+.honest-kpi__label { font-size: 0.875rem; color: var(--ink-soft); }
+
+/* a chart beside its key */
+.honest-chart-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-5); }
+.honest-legend { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); flex: 1 1 200px; }
+.honest-legend li { display: grid; grid-template-columns: 12px 1fr auto auto; align-items: center; gap: var(--space-2); font-size: 0.875rem; }
+.honest-legend li.is-empty { opacity: 0.5; }
+.honest-legend .split-key { margin: 0; }
+.honest-legend__count { font-family: var(--font-mono); color: var(--ink); }
+.honest-legend__share { font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-faint); min-width: 5ch; text-align: right; }
+.honest-chart-title { font-size: 0.875rem; color: var(--ink-soft); margin-top: var(--space-2); }
+
+/* "Show the numbers": the table behind a chart */
+.honest-numbers { display: grid; gap: var(--space-2); }
+.honest-numbers__toggle { justify-self: start; background: none; border: 0; padding: 0; color: var(--ink-faint); cursor: pointer; font: inherit; font-size: 0.8125rem; text-decoration: underline; text-underline-offset: 3px; }
+.honest-numbers__toggle:hover { color: var(--ink); }
+.honest-numbers__body { animation: rise var(--dur-base) var(--ease) both; }
+
+/* how much the history rule could judge: a nearly empty bar says it better than the sentence */
+.honest-coverage { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: var(--space-3); font-size: 0.875rem; padding: var(--space-3) var(--space-4); border: 1px solid var(--line-soft); border-radius: var(--radius-control); background: var(--raised); }
+.honest-coverage__label { color: var(--ink-soft); }
+.honest-coverage__track { height: 10px; border-radius: 5px; background: var(--line-soft); overflow: hidden; }
+.honest-coverage__track span { display: block; height: 100%; border-radius: 5px; background: var(--caution); transform-origin: left; animation: grow 900ms var(--ease) both; }
+.honest-coverage__text { font-family: var(--font-mono); }
+
 /* freshness: today's share, then the rest of three days, on one track */
 .fresh-meter { display: flex; height: 12px; border-radius: var(--radius-pill); overflow: hidden; background: var(--line-soft); }
 .fresh-meter span { transform-origin: left; animation: grow 900ms var(--ease) both; }
