@@ -55,6 +55,9 @@ export const STORE_HOSTS = Object.freeze({
   "digimall.faysalbank.com": "digimall",
   // Not scraped (switched off, see config/platforms.js), so its pages can only be found as "similar".
   "daraz.pk": "daraz",
+  // A price-comparison site, not a store: never collected from, so its product page is placed by its name and price (as Daraz's is),
+  // and the extension shows our stores' prices beside the one Qeemat states.
+  "qeemat.com.pk": "qeemat",
 });
 
 export const LIMITS = Object.freeze({ url: 2048, title: 300, minPrice: 1, maxPrice: 50_000_000 });

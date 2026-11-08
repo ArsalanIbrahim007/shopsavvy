@@ -4,10 +4,22 @@
   "short_name": "ShopSavvy",
   "version": "1.0.0",
   "description": "On a store's product page, see the same product's price at other Pakistani stores, and whether its discount is real.",
-  "permissions": ["storage", "activeTab"],
-  "host_permissions": ["https://shopsavvy-api.duckdns.org/*", "http://localhost:5000/*", "http://127.0.0.1:5000/*"],
-  "optional_host_permissions": ["https://*/*", "http://*/*"],
-  "background": { "service_worker": "background.js" },
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://shopsavvy-api.duckdns.org/*",
+    "http://localhost:5000/*",
+    "http://127.0.0.1:5000/*"
+  ],
+  "optional_host_permissions": [
+    "https://*/*",
+    "http://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "matches": [
@@ -34,16 +46,49 @@
         "https://*.infinix.pk/*",
         "https://*.alfamall.com/*",
         "https://digimall.faysalbank.com/*",
-        "https://*.daraz.pk/*"
+        "https://*.daraz.pk/*",
+        "https://*.qeemat.com.pk/*"
       ],
-      "js": ["stores.js", "format.js", "reader.js", "content.js"],
+      "js": [
+        "stores.js",
+        "format.js",
+        "reader.js",
+        "content.js"
+      ],
       "run_at": "document_idle"
+    },
+    {
+      "js": [
+        "stores.js",
+        "format.js",
+        "reader.js",
+        "content.js"
+      ],
+      "run_at": "document_idle",
+      "matches": [
+        "https://*.amazon.com/*",
+        "https://*.amazon.co.uk/*",
+        "https://*.amazon.ae/*",
+        "https://*.amazon.sa/*",
+        "https://*.amazon.in/*",
+        "https://*.amazon.de/*",
+        "https://*.amazon.ca/*",
+        "https://*.amazon.com.au/*"
+      ]
     }
   ],
   "action": {
     "default_popup": "popup.html",
     "default_title": "ShopSavvy",
-    "default_icon": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
-  "icons": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
 }

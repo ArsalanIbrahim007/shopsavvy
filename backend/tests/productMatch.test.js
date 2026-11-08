@@ -32,6 +32,8 @@ describe("storeOfPage", () => {
     expect(storeOfPage("https://www.mega.pk/mobiles_products/1/x.html")?.platform).toBe("mega");
     expect(storeOfPage("https://m.daraz.pk/products/x.html")?.platform).toBe("daraz");
     expect(storeOfPage("http://WWW.SHOPHIVE.COM/x/")?.platform).toBe("shophive");
+    // Qeemat compares prices and is never collected from: its page is placed by its name and price, like Daraz's (2026-11-08).
+    expect(storeOfPage("https://qeemat.com.pk/dp/119066/redmi-note-15-pro-256gb-black-8gb-ram-price-in-pakistan")?.platform).toBe("qeemat");
   });
 
   it("refuses anything that is not an http(s) page of a known store", () => {

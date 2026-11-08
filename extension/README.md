@@ -1,6 +1,6 @@
 # ShopSavvy browser extension
 
-On a product page at one of 24 Pakistani stores, the extension shows the same product's price at the other stores, whether a
+On a product page at one of 24 Pakistani stores (or on Qeemat), the extension shows the same product's price at the other stores, whether a
 cheaper one exists (and how much it saves), and what ShopSavvy's checks say about the store's discount. It works in Chrome and
 Edge (Manifest V3).
 
@@ -57,3 +57,13 @@ one) is asked for when it is saved in the settings.
 
 Set the deployed API's address in the popup's settings (the extension asks for permission to reach it), or change
 `DEFAULT_API` in `background.js` and add the address to `host_permissions` in `manifest.json` before packing it.
+
+## On Qeemat and Amazon (2026-11-08)
+
+- **Qeemat** compares prices too. Its product page states a name and a price in rupees, so the API places it among our products, as
+  it does a Daraz page, and the panel shows our stores' prices beside Qeemat's.
+- **Amazon** (`.com`, `.co.uk`, `.ae`, `.sa`, `.in`, `.de`, `.ca`, `.com.au`) prices are in another currency, so nothing is compared.
+  The product's name (`#productTitle`, cut to the model and its storage) is searched for, and the panel says "In Pakistan from
+  PKR ... at ...", with a reminder to check it is the same model.
+- **AlfaMall and DigiMall** pages are drawn by JavaScript with no data for search engines: the reader takes their `h1.product-title`
+  and `.main-price`, and the content script looks again for a few seconds while the page draws.

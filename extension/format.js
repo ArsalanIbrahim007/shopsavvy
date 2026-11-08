@@ -62,5 +62,27 @@
     return { tone, headline, lines };
   }
 
-  globalThis.ShopSavvyFormat = { rupees, badgeSaving, safeLink, summary };
+  /**
+   * The words to search for, from a shop's long product name: "Apple iPhone 17 Pro Max 256GB: 6.9-inch Display, A19 Pro..." ->
+   * "Apple iPhone 17 Pro Max 256GB". The name before its first ":", ",", "|", "(" or " - ", at most eight words.
+   */
+  function lookupQuery(title) {
+    const text = String(title ?? "");
+    const head = text.split(/\s[-–|]\s|[:,|([]/)[0];
+    const words = head.replace(/[^\p{L}\p{N}+.\s-]/gu, " ").split(/\s+/).filter(Boolean).slice(0, 8);
+    // The storage often comes after the first comma ("Apple iPhone 16, 128GB, Black"), and without it the search finds every
+    // capacity: the largest size named (the storage, not the RAM; 32 GB or more) is kept. Only one: every word must match.
+    const sizes = [...text.matchAll(/\b(\d{2,4})\s?(GB|TB)\b/gi)].map((m) => ({ word: `${m[1]}${m[2].toUpperCase()}`, gb: Number(m[1]) * (/tb/i.test(m[2]) ? 1024 : 1) }));
+    const storage = sizes.filter((s) => s.gb >= 32).sort((a, b) => b.gb - a.gb)[0];
+    if (storage && !words.some((w) => w.toUpperCase().replace(/\s/g, "") === storage.word)) words.splice(7, words.length, storage.word);
+    return words.join(" ");
+  }
+
+  /** The lookup answer's words (background.js lookup): the lowest price in Pakistan for the closest product, and a caution. */
+  function lookupSummary(result, storeName) {
+    const lines = ["Found by its name: check it is the same model", "Prices in Pakistan, not converted from this shop's currency"];
+    return { tone: "info", headline: `In Pakistan from ${rupees(result.cheapest.price)} at ${storeName(result.cheapest.platform)}`, lines };
+  }
+
+  globalThis.ShopSavvyFormat = { rupees, badgeSaving, safeLink, summary, lookupQuery, lookupSummary };
 })();

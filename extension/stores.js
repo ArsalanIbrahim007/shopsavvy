@@ -32,6 +32,22 @@
     // Not scraped (its robots.txt disallows the catalogue search), but a shopper on Daraz can still see the other stores' prices:
     // the API places the page among our products by its title and price.
     "daraz.pk": { platform: "daraz", name: "Daraz" },
+    // A price-comparison site, not a store: never collected from. Its product page states a name and a price in rupees, so the API
+    // places it among our products the same way, and the shopper sees our stores' prices beside the one Qeemat shows.
+    "qeemat.com.pk": { platform: "qeemat", name: "Qeemat" },
+  };
+
+  // Shops abroad: their prices are in another currency, so nothing is compared with them. The product's name is looked up in
+  // ShopSavvy's search instead: "in Pakistan from PKR ...".
+  const LOOKUP_SITES = {
+    "amazon.com": "Amazon",
+    "amazon.co.uk": "Amazon",
+    "amazon.ae": "Amazon",
+    "amazon.sa": "Amazon",
+    "amazon.in": "Amazon",
+    "amazon.de": "Amazon",
+    "amazon.ca": "Amazon",
+    "amazon.com.au": "Amazon",
   };
 
   const byPlatform = Object.fromEntries(Object.values(STORES).map((s) => [s.platform, s.name]));
@@ -42,8 +58,14 @@
     return STORES[host] ?? null;
   }
 
+  /** The shop abroad a host belongs to ("www.amazon.co.uk" -> "Amazon"), or null. */
+  function lookupSiteOf(hostname) {
+    const host = String(hostname ?? "").toLowerCase().replace(/^(www|m|smile)\./, "");
+    return LOOKUP_SITES[host] ?? null;
+  }
+
   /** A platform's name for the screen ("mega" -> "Mega.pk"). */
   const storeName = (platform) => byPlatform[platform] ?? String(platform ?? "Store");
 
-  globalThis.ShopSavvyStores = { STORES, storeOfHost, storeName };
+  globalThis.ShopSavvyStores = { STORES, LOOKUP_SITES, storeOfHost, lookupSiteOf, storeName };
 })();

@@ -6,8 +6,8 @@
 (async function () {
   "use strict";
 
-  const { storeOfHost, storeName, STORES } = globalThis.ShopSavvyStores;
-  const { rupees, safeLink, summary } = globalThis.ShopSavvyFormat;
+  const { lookupSiteOf, storeOfHost, storeName, STORES } = globalThis.ShopSavvyStores;
+  const { lookupSummary, rupees, safeLink, summary } = globalThis.ShopSavvyFormat;
   const app = document.getElementById("app");
 
   function el(tag, attrs = {}, text) {
@@ -29,10 +29,11 @@
     } catch {
       // not a web page (a new tab, chrome://)
     }
-    if (!host || !storeOfHost(host)) {
+    const abroad = host ? lookupSiteOf(host) : null;
+    if (!host || (!storeOfHost(host) && !abroad)) {
       return show(
         el("h2", {}, "Open a product page"),
-        el("p", { class: "muted" }, `ShopSavvy compares prices on ${Object.keys(STORES).length} Pakistani stores, such as PriceOye, Mega.pk, Shophive, iShopping, Paklap and Daraz.`),
+        el("p", { class: "muted" }, `ShopSavvy compares prices on ${Object.keys(STORES).length - 1} Pakistani stores, such as PriceOye, Mega.pk, Shophive, iShopping, Paklap and Daraz, and on Qeemat. On Amazon it finds the product in Pakistan.`),
       );
     }
     if (!entry) return show(el("h2", {}, "Not a product page"), el("p", { class: "muted" }, "Open a product's own page on this store to compare its price."));
@@ -46,14 +47,15 @@
 
     const thisPage = el("div", { class: "this" });
     thisPage.append(el("div", { class: "title" }, product.title || "This page"));
-    if (product.price) thisPage.append(el("div", {}, `${rupees(product.price)} at ${storeOfHost(host).name}`));
+    if (product.price && !abroad) thisPage.append(el("div", {}, `${rupees(product.price)} at ${storeOfHost(host).name}`));
+    if (abroad) thisPage.append(el("div", { class: "muted" }, `On ${abroad}`));
 
     if (!result.found) {
       const why = result.reason === "no_match" ? "No other store sells this product, as far as we know." : "We do not know this product yet.";
       return show(thisPage, el("p", {}, why), link(result.searchUrl, "button ghost", "Search for it on ShopSavvy"));
     }
 
-    const { tone, headline, lines } = summary(result, storeName);
+    const { tone, headline, lines } = result.lookup ? lookupSummary(result, storeName) : summary(result, storeName);
     const head = el("div", { class: tone });
     head.append(el("div", { class: "headline" }, headline));
     const notes = el("ul", { class: "notes" });
@@ -86,6 +88,7 @@
       offers,
       stores.length > 6 ? el("p", { class: "muted" }, `and ${stores.length - 6} more stores`) : null,
       link(result.productUrl, "button", "See the full comparison"),
+      result.lookup ? link(result.searchUrl, "button ghost", "Search ShopSavvy for it") : null,
     );
   }
 

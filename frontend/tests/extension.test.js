@@ -8,15 +8,15 @@ import { join } from "node:path";
 // Tests run from frontend/ (npm test there and in CI).
 const read = (file) => readFileSync(join(process.cwd(), "..", "extension", file), "utf8");
 
-let readProduct, STORES, storeOfHost, storeName, badgeSaving, safeLink, summary;
+let readProduct, readLookup, STORES, LOOKUP_SITES, storeOfHost, lookupSiteOf, storeName, badgeSaving, safeLink, summary, lookupQuery, lookupSummary;
 beforeAll(async () => {
   // Plain scripts (no exports): each puts its functions on globalThis, as in the browser.
   await import("../../extension/stores.js");
   await import("../../extension/format.js");
   await import("../../extension/reader.js");
-  ({ readProduct } = globalThis.ShopSavvyReader);
-  ({ STORES, storeOfHost, storeName } = globalThis.ShopSavvyStores);
-  ({ badgeSaving, safeLink, summary } = globalThis.ShopSavvyFormat);
+  ({ readProduct, readLookup } = globalThis.ShopSavvyReader);
+  ({ STORES, LOOKUP_SITES, storeOfHost, lookupSiteOf, storeName } = globalThis.ShopSavvyStores);
+  ({ badgeSaving, safeLink, summary, lookupQuery, lookupSummary } = globalThis.ShopSavvyFormat);
 });
 
 /** A document with `head` and `body` HTML and the given body class. */
@@ -88,6 +88,56 @@ describe("readProduct", () => {
   it("says nothing for a page that is not a product (a category, the home page)", () => {
     expect(readProduct(page({ head: '<meta property="og:type" content="website">', body: "<h1>Mobiles</h1>" }), URL_)).toBeNull();
     expect(readProduct(page({ head: ld({ "@type": "ItemList", name: "Mobiles" }) }), URL_)).toBeNull();
+  });
+});
+
+// 2026-11-08: AlfaMall's pages showed "Not a product page" (no data for search engines, drawn by JavaScript); Qeemat and Amazon
+// were not covered at all. Shapes checked live that day.
+describe("AlfaMall, Qeemat and Amazon", () => {
+  it("reads an AlfaMall or DigiMall page by its title and main price", () => {
+    const doc = page({ body: '<h1 class="product-title">Xiaomi Redmi Note 15 Pro 256GB 8GB RAM - ISPK-0624</h1><span class="ant-typography price main-price">PKR 95,930</span>' });
+    expect(readProduct(doc, URL_)).toEqual({ url: URL_, title: "Xiaomi Redmi Note 15 Pro 256GB 8GB RAM - ISPK-0624", price: 95930 });
+  });
+
+  it("reads Qeemat's Product (beside its ProductGroup) with its rupee price", () => {
+    const doc = page({ head: ld([
+      { "@type": "ProductGroup", name: "Redmi Note 15 Pro" },
+      { "@type": "Product", name: "Redmi Note 15 Pro 256GB Black 8GB RAM", offers: { "@type": "AggregateOffer", lowPrice: "90999.00", priceCurrency: "PKR" } },
+    ]) });
+    expect(readProduct(doc, URL_)).toMatchObject({ title: "Redmi Note 15 Pro 256GB Black 8GB RAM", price: 90999 });
+  });
+
+  it("reads only the name on Amazon, and nothing on a page that is not a product", () => {
+    const doc = page({ body: '<span id="productTitle">  Apple iPhone 17 Pro Max 256GB: 6.9-inch Display, A19 Pro chip  </span><span class="a-price"><span class="a-offscreen">$1,199.00</span></span>' });
+    expect(readLookup(doc, "https://www.amazon.com/dp/B0X")).toEqual({ url: "https://www.amazon.com/dp/B0X", title: "Apple iPhone 17 Pro Max 256GB: 6.9-inch Display, A19 Pro chip" });
+    expect(readLookup(page({ body: "<h1>Today's deals</h1>" }), "https://www.amazon.com/deals")).toBeNull();
+  });
+
+  it("searches for the product's name, not the shop's whole sales title", () => {
+    expect(lookupQuery("Apple iPhone 17 Pro Max 256GB: 6.9-inch Display, A19 Pro chip")).toBe("Apple iPhone 17 Pro Max 256GB");
+    expect(lookupQuery("Samsung Galaxy S25 Ultra (12GB, 256GB) - Titanium Black")).toBe("Samsung Galaxy S25 Ultra 256GB"); // the storage, not the RAM
+    expect(lookupQuery("Apple iPhone 16, 128GB, Black - Unlocked (Renewed)")).toBe("Apple iPhone 16 128GB"); // seen on Amazon, 2026-11-08
+    expect(lookupQuery("Sony WH-1000XM6 Wireless Noise Canceling Headphones | Black")).toBe("Sony WH-1000XM6 Wireless Noise Canceling Headphones");
+    expect(lookupQuery("one two three four five six seven eight nine ten")).toBe("one two three four five six seven eight");
+    expect(lookupQuery("")).toBe("");
+  });
+
+  it("knows Amazon's shops abroad, and says it found the product by name in rupees, never as a saving", () => {
+    expect(lookupSiteOf("www.amazon.co.uk")).toBe("Amazon");
+    expect(lookupSiteOf("smile.amazon.com")).toBe("Amazon");
+    expect(lookupSiteOf("www.mega.pk")).toBeNull();
+    const result = { found: true, lookup: true, offers: [{ platform: "mega", price: 484999 }], cheapest: { platform: "mega", price: 484999, cheaperThanThisPage: false } };
+    expect(lookupSummary(result, storeName)).toEqual({
+      tone: "info",
+      headline: "In Pakistan from PKR 484,999 at Mega.pk",
+      lines: ["Found by its name: check it is the same model", "Prices in Pakistan, not converted from this shop's currency"],
+    });
+  });
+
+  it("runs on the shops abroad in a second entry of the manifest, with the same files", () => {
+    const [stores, abroad] = JSON.parse(read("manifest.json")).content_scripts;
+    expect(abroad.matches.map((m) => m.replace(/^https:\/\/\*\./, "").replace(/\/\*$/, "")).sort()).toEqual(Object.keys(LOOKUP_SITES).sort());
+    expect(abroad.js).toEqual(stores.js);
   });
 });
 

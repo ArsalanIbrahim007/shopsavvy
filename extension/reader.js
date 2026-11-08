@@ -6,7 +6,9 @@
 //      an array): PriceOye, Mega, Paklap, W11Stop and most Shopify and WooCommerce stores;
 //   2. Open Graph product tags (og:type "product", product:price:amount): Shophive. A price of 0 is ignored (Mega's says 0);
 //   3. a Magento product page (body.catalog-product-view, the final price's data-price-amount): iShopping;
-//   4. a WooCommerce product page (body.single-product).
+//   4. a WooCommerce product page (body.single-product);
+//   5. an AlfaMall or DigiMall page (both run on the same storefront, drawn by JavaScript with no data for search engines): its
+//      h1.product-title and the first .main-price.
 // Anything else is not a product page (a category, a search, the home page), and nothing is sent.
 // The address is always sent: for a page we have stored, the address alone finds it.
 
@@ -85,13 +87,19 @@
     return title ? { title, price: toNumber(priceEl?.textContent) } : null;
   }
 
+  function fromStorefront(doc) {
+    const title = clean(doc.querySelector("h1.product-title")?.textContent);
+    if (!title) return null;
+    return { title, price: toNumber(doc.querySelector(".main-price")?.textContent) };
+  }
+
   /**
    * @param {Document} doc
    * @param {string} href  the page's address
    * @returns {{url: string, title: string, price: number|null}|null}  null when the page is not a product page
    */
   function readProduct(doc, href) {
-    const found = fromJsonLd(doc) ?? fromOpenGraph(doc) ?? fromMagento(doc) ?? fromWooCommerce(doc);
+    const found = fromJsonLd(doc) ?? fromOpenGraph(doc) ?? fromMagento(doc) ?? fromWooCommerce(doc) ?? fromStorefront(doc);
     if (!found) return null;
     // A WooCommerce store's visible name beats its Product data, which some fill with a search-engine title ("Buy Apple Airpods
     // 2 Pro at Lowest price in Pakistan" on eezepc, 2026-11-07).
@@ -104,5 +112,14 @@
     return { url: href, title: title.slice(0, 300), price };
   }
 
-  globalThis.ShopSavvyReader = { readProduct };
+  /**
+   * The product's name on a shop abroad (Amazon), where only the name is any use: its prices are in another currency.
+   * @returns {{url: string, title: string}|null}  null when the page is not a product page
+   */
+  function readLookup(doc, href) {
+    const title = clean(doc.querySelector("#productTitle")?.textContent) ?? fromJsonLd(doc)?.title ?? fromOpenGraph(doc)?.title;
+    return title ? { url: href, title: title.slice(0, 300) } : null;
+  }
+
+  globalThis.ShopSavvyReader = { readProduct, readLookup };
 })();
