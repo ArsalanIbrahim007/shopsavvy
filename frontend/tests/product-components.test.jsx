@@ -152,7 +152,7 @@ describe("ScoreCell", () => {
     const tip = screen.getByRole("tooltip");
     expect(cell).toHaveAttribute("aria-describedby", tip.id);
     expect(tip).toHaveTextContent("Price competitiveness50.0 / 60");
-    expect(tip).toHaveTextContent("Store trust18.0 / 20");
+    expect(tip).toHaveTextContent("Store trust and rating18.0 / 20");
     expect(tip).toHaveTextContent("Data freshness9.0 / 10");
     expect(tip).toHaveTextContent("Availability5.5 / 10");
     expect(tip).toHaveTextContent("Total82.5 / 100");
@@ -227,7 +227,7 @@ describe("OfferTable: scores, verdicts and best deal", () => {
 
   it("explains the score in a footnote", () => {
     inRouter(<OfferTable offers={offers} name="Phone" />);
-    expect(screen.getByText(/price \(60\), store trust \(20\), data freshness \(10\) and availability \(10\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/fair price for its specs \(60\), store trust and the product's rating \(20\), data freshness \(10\) and availability \(10\)/i)).toBeInTheDocument();
   });
 });
 

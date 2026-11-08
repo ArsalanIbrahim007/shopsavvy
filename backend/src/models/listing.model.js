@@ -109,6 +109,11 @@ const listingSchema = new mongoose.Schema(
     // null means "the store did not show it", never zero.
     rating:      { type: Number, default: null, min: 0, max: 5 },
     reviewCount: { type: Number, default: null, min: 0 },
+    // Marketplaces (AlfaMall, DigiMall) say which of their sellers sells a product, and when and how it is delivered (2026-11-08).
+    seller:      { type: String, default: null }, // the seller's name as the store shows it
+    // set when the store's whole catalogue no longer lists it (catalogueRefresh.service.js); cleared when it is scraped again
+    notInCatalogueSince: { type: Date, default: null },
+    delivery:    { type: mongoose.Schema.Types.Mixed, default: null }, // { window: "10 Nov - 11 Nov, 2026", express: bool, freeShipping: bool }
     // Flat label -> value strings from the store's specification table.
     specs:       { type: mongoose.Schema.Types.Mixed, default: null },
     // The typed, canonical specifications read from the store's product page by the Specs engine (specsEngine.service.js), written

@@ -93,13 +93,32 @@ export function normalizeColourOptions(value) {
  * scraper sent some: a scrape that says nothing about them must not undo what a store's product page said on an earlier day
  * (pageEnrichment.service.js). A listing that has never had a rating still reads null from the schema default.
  */
+/** A seller's name: plain text, at most 80 characters, or null. */
+export function normalizeSeller(value) {
+  const text = typeof value === "string" ? value.replace(/\s+/g, " ").trim() : "";
+  return text && text.length <= 80 ? text : null;
+}
+
+/** { window, express, freeShipping } from a store's delivery fields, or null when it says nothing. */
+export function normalizeDelivery(value) {
+  if (!value || typeof value !== "object") return null;
+  const window = typeof value.window === "string" && value.window.trim().length <= 40 ? value.window.trim() : null;
+  const express = value.express === true;
+  const freeShipping = value.freeShipping === true;
+  return window || express || freeShipping ? { window, express, freeShipping } : null;
+}
+
 export function extractExtras(scraped = {}) {
   const colourOptions = normalizeColourOptions(scraped.colourOptions);
   const rating = normalizeRating(scraped.rating);
   const reviewCount = normalizeReviewCount(scraped.reviewCount);
+  const seller = normalizeSeller(scraped.seller);
+  const delivery = normalizeDelivery(scraped.delivery);
   return {
     ...(rating !== null ? { rating } : {}),
     ...(reviewCount !== null ? { reviewCount } : {}),
+    ...(seller !== null ? { seller } : {}),
+    ...(delivery !== null ? { delivery } : {}),
     specs: normalizeSpecs(scraped.specs),
     ...(colourOptions.length > 0 ? { colourOptions } : {}),
   };

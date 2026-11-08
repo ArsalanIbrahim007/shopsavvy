@@ -59,11 +59,25 @@ export function canonicalPlatform(platform = "") {
   return PLATFORM_ALIASES[stripped] || stripped;
 }
 
-export function calculateTrustScore(platform = "", weight = 20) {
+// A product's own rating counts once enough shoppers gave one (2026-11-08: the initial report promised ranking on price, rating,
+// delivery and reliability, and rating was not in the score). It is a fifth of the trust part, beside the store's reputation; a
+// product without MIN_REVIEWS ratings is judged on the store alone, so having no reviews costs nothing.
+export const MIN_REVIEWS = 5;
+export const RATING_SHARE = 0.2;
+
+/** 0 for a 3-star average or less, 1 for 5 stars, in a straight line between; null without enough reviews. */
+export function ratingValue(rating, reviewCount) {
+  if (!(Number(rating) > 0) || !(Number(reviewCount) >= MIN_REVIEWS)) return null;
+  return Math.min(1, Math.max(0, (Number(rating) - 3) / 2));
+}
+
+export function calculateTrustScore(platform = "", weight = 20, { rating = null, reviewCount = null } = {}) {
   const key = canonicalPlatform(platform);
   const trustValue = PLATFORM_TRUST_SCORES[key] ?? DEFAULT_TRUST;
+  const product = ratingValue(rating, reviewCount);
+  const value = product === null ? trustValue : trustValue * (1 - RATING_SHARE) + product * RATING_SHARE;
 
-  return Number((trustValue * weight).toFixed(2));
+  return Number((value * weight).toFixed(2));
 }
 
 export { PLATFORM_TRUST_SCORES, DEFAULT_TRUST };

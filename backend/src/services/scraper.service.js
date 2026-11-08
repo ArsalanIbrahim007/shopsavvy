@@ -111,6 +111,7 @@ function toListingDoc(scraped) {
     inStock:         scraped.inStock !== false,
     isActive:        true,
     lastScrapedAt:   new Date(),
+    notInCatalogueSince: null, // seen at the store again (catalogueRefresh.service.js marks one its whole catalogue no longer lists)
     scrapedAt:       scraped.scrapedAt ? new Date(scraped.scrapedAt) : new Date(),
     ...extractAttributes(scraped.title),
     ...extractExtras(scraped),

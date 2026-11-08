@@ -47,3 +47,31 @@ describe("shouldAppendEntry", () => {
     expect(shouldAppendEntry(early, later)).toBe(false);
   });
 });
+
+// 2026-11-08: the catalogue refresh records tens of thousands of prices a night, in batches.
+describe("PriceHistory.recordPrices", () => {
+  it("reads the histories in one query, and per listing appends by the same rule, keeps the lowest and highest, or creates it", async () => {
+    const { default: PriceHistory } = await import("../src/models/priceHistory.model.js");
+    const { vi } = await import("vitest");
+    const yesterday = { _id: "h1", platform: "mega", sourceUrl: "https://mega.pk/a", entries: [{ price: 1000, originalPrice: null, recordedAt: at("2026-11-07T06:00:00Z") }] };
+    const today = { _id: "h2", platform: "mega", sourceUrl: "https://mega.pk/b", entries: [{ price: 2000, originalPrice: null, recordedAt: at("2026-11-08T05:00:00Z") }] };
+    const find = vi.spyOn(PriceHistory, "find").mockReturnValue({ lean: async () => [yesterday, today] });
+    const bulkWrite = vi.spyOn(PriceHistory, "bulkWrite").mockResolvedValue({});
+
+    const result = await PriceHistory.recordPrices([
+      { platform: "mega", sourceUrl: "https://mega.pk/a", title: "A", price: 1000 }, // a new day, same price: appended
+      { platform: "mega", sourceUrl: "https://mega.pk/b", title: "B", price: 2000 }, // the same day, same price: not appended
+      { platform: "mega", sourceUrl: "https://mega.pk/c", title: "C", price: 3000 }, // no history yet: created
+      { platform: "mega", sourceUrl: "https://mega.pk/d", title: "D", price: 0 }, // no price: ignored
+    ], at("2026-11-08T07:00:00Z"));
+
+    expect(find).toHaveBeenCalledTimes(1);
+    expect(result).toEqual({ appended: 1, created: 1 });
+    const [a, b, c] = bulkWrite.mock.calls[0][0].map((op) => op.updateOne);
+    expect(a.update.$push.entries).toMatchObject({ price: 1000 });
+    expect(a.update).toMatchObject({ $min: { lowestPrice: 1000 }, $max: { highestPrice: 1000 } });
+    expect(b.update.$push).toBeUndefined();
+    expect(c).toMatchObject({ upsert: true, update: { $setOnInsert: { lowestPrice: 3000, highestPrice: 3000 } } });
+    vi.restoreAllMocks();
+  });
+});

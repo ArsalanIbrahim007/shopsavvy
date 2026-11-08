@@ -99,6 +99,14 @@ const report = (over = {}) => ({
     history: { points: 8296, days: 25, since: "2026-07-03T00:00:00Z" },
   },
   evaluation: {
+    grouping: { recall: 64.3, pairPrecision: 98.8, labelledPairs: 170, firstRecall: 30.5, together: 40 },
+    fairPrice: {
+      trainedAt: "2026-11-08T15:00:00Z",
+      categories: [
+        { category: "tv", medianError: 0.091, within15: 0.683, r2: 0.921, baselineBrandStorage: 0.513, baselineCategory: 0.563, testListings: 1100, used: true },
+        { category: "headphones", medianError: 0.329, within15: 0.238, r2: 0.586, baselineBrandStorage: 0.307, baselineCategory: 0.53, testListings: 680, used: false },
+      ],
+    },
     outlook: {
       generatedAt: "2026-10-01T07:29:34.670Z", comparisons: 221, from: "2026-07-03", to: "2026-08-17", minimumToJudge: 30,
       rows: [
@@ -198,6 +206,30 @@ describe("HonestPrices page", () => {
     expect(within(unusual).getByText("0")).toBeInTheDocument();
     expect(within(unusual).getByText(/None right now/)).toBeInTheDocument();
     expect(within(unusual).getByText(/offers set aside right now/)).toBeInTheDocument();
+  });
+
+  // 2026-11-08: the fair-price model (a linear regression), shown against the simple guess, with the categories it is not used for.
+  it("shows the price model's error per category beside the baseline, and which categories it is not used for", async () => {
+    vi.mocked(getIntegrity).mockResolvedValue(report());
+    renderPage();
+    const section = (await screen.findByRole("heading", { name: "Is a price fair for what it is?" })).closest("section");
+    const table = within(section).getByRole("table", { name: /fair-price model's error on unseen products/ });
+    expect(within(table).getByRole("row", { name: /TVs.*9\.1%.*68\.3%.*51\.3%.*56\.3%/ })).toBeInTheDocument();
+    expect(within(table).getByRole("row", { name: /Headphones \(not used\).*32\.9%/ })).toBeInTheDocument();
+    expect(within(section).getByText(/Tested on whole products held out/)).toBeInTheDocument();
+  });
+
+  it("says so when the price model's results are missing", async () => {
+    vi.mocked(getIntegrity).mockResolvedValue(report({ evaluation: { ...report().evaluation, fairPrice: null } }));
+    renderPage();
+    expect(await screen.findByText(/price model's results could not be loaded/)).toBeInTheDocument();
+  });
+
+  it("shows how the live site groups offers: how many joins are right, and how many pairs it finds", async () => {
+    vi.mocked(getIntegrity).mockResolvedValue(report());
+    renderPage();
+    expect(await screen.findByText(/Of the offers the site shows as one product, 99 in 100 pairs really are one product/)).toBeInTheDocument();
+    expect(screen.getByText(/it shows 64 in 100 together \(31 before the matcher's October fixes\)/)).toBeInTheDocument();
   });
 
   it("says one offer, not one offers", async () => {

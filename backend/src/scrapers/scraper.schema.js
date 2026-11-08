@@ -46,6 +46,8 @@ function makeListing({
   reviewCount = null,
   specs = null,
   colourOptions = null,
+  seller = null,
+  delivery = null,
 }) {
   if (!platform || !sourceUrl || !title) {
     throw new Error("makeListing: platform, sourceUrl, and title are required");
@@ -63,6 +65,8 @@ function makeListing({
     reviewCount,
     specs,
     colourOptions,
+    seller,
+    delivery,
     scrapedAt: new Date().toISOString(),
   };
 }

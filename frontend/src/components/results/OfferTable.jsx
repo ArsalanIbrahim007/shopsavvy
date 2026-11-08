@@ -61,6 +61,20 @@ function ColourTag({ entry, colour }) {
   );
 }
 
+/**
+ * Which of a marketplace's sellers sells it, and its delivery (AlfaMall and DigiMall say so: 2026-11-08). Nothing for a store that
+ * does not.
+ */
+function SellerDelivery({ offer }) {
+  const parts = [];
+  if (offer.seller) parts.push(`Sold by ${offer.seller}`);
+  if (offer.delivery?.window) parts.push(`Delivery ${offer.delivery.window.replace(/\s*-\s*/, "–").replace(/,\s*\d{4}$/, "")}`);
+  if (offer.delivery?.express) parts.push("Express");
+  if (offer.delivery?.freeShipping) parts.push("Free shipping");
+  if (parts.length === 0) return null;
+  return <span className="offer-table__seller small muted">{parts.join(" · ")}</span>;
+}
+
 export default function OfferTable({ offers, name, currentId, colour = null }) {
   // One row per store and price: a store's colour variants at one price are one offer that lists its colours.
   const entries = collapseVariants(offers, { colour, currentId }).sort((a, b) => a.offer.price - b.offer.price);
@@ -101,6 +115,7 @@ export default function OfferTable({ offers, name, currentId, colour = null }) {
                     {has(entry, bestId) && <span className="offer-table__best small">Best deal</span>}
                     {has(entry, currentId) && <span className="offer-table__current small muted">The one you opened</span>}
                   </div>
+                  <SellerDelivery offer={offer} />
                   <RatingTag offer={offer} />
                   <ColourTag entry={entry} colour={colour} />
                   {condition && <div className="offer-table__pta"><VerdictBadge tone={condition.tone} label={condition.label} title={condition.reason} /></div>}
@@ -141,7 +156,7 @@ export default function OfferTable({ offers, name, currentId, colour = null }) {
         </tbody>
       </table>
       <p className="offer-table__note small muted">
-        Deal score: price (60), store trust (20), data freshness (10) and availability (10). Hover a score for its parts.
+        Deal score: price against the other stores and the fair price for its specs (60), store trust and the product's rating (20), data freshness (10) and availability (10). Hover a score for its parts.
       </p>
     </div>
   );

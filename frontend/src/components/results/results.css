@@ -130,6 +130,11 @@
 @media (min-width: 720px) { .result-group__price { justify-items: end; text-align: right; } }
 .result-group__amount { font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 500; letter-spacing: -0.05em; line-height: 1.05; color: var(--ink); }
 .result-group__price .btn { margin-top: var(--space-2); }
+/* the trained price model's estimate for these specs, under the lowest price */
+.fair-price { margin-top: var(--space-2); color: var(--ink-faint); }
+.fair-price__value { color: var(--ink-soft); }
+.fair-price__gap--good { color: var(--good); }
+.fair-price__gap--caution { color: var(--caution); }
 /* notes about the comparison (stale prices, PTA, condition): one quiet line each with a mark, not a coloured banner */
 .result-group__pta { margin: 0 var(--space-5) var(--space-2); padding-left: 22px; position: relative; color: var(--ink-soft); }
 .result-group__pta::before {
@@ -168,6 +173,7 @@
 .offer-table__best { color: var(--brand); font-weight: 700; }
 .offer-table__rec { display: grid; gap: var(--space-1); justify-items: start; }
 .offer-table__age { display: block; }
+.offer-table__seller { display: block; margin-top: 2px; max-width: 26ch; }
 .offer-table__note { padding: var(--space-3) var(--space-4); border-top: 1px solid var(--line-soft); }
 
 /* deal score */

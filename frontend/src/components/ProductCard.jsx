@@ -72,7 +72,7 @@ export default function ProductCard({ group }) {
           above are left for verdicts (unslop audit, 2026-11-08: six pills per card). */}
       {(score !== null || best.lastScrapedAt) && (
         <p className="small muted product-card__meta">
-          {score !== null && <span title="Deal score out of 100: price, store trust, freshness and availability">Score {Math.round(score)}</span>}
+          {score !== null && <span title="Deal score out of 100: price (against other stores and the fair price for its specs), store trust and rating, freshness and availability">Score {Math.round(score)}</span>}
           {score !== null && best.lastScrapedAt && " · "}
           {best.lastScrapedAt && `Price checked ${timeAgo(best.lastScrapedAt)}`}
         </p>

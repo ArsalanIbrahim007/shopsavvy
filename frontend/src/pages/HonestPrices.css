@@ -98,3 +98,9 @@
   .honest-table--wide { min-width: 0; font-size: 0.875rem; }
   .honest-table--wide th, .honest-table--wide td { padding-inline: var(--space-1); }
 }
+
+/* the live site's grouping, two rings side by side */
+.honest-live-grouping { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); align-items: center; }
+.honest-live-grouping > .small { grid-column: 1 / -1; }
+.honest-live-grouping .ring-gauge { width: 140px !important; height: 140px !important; }
+.honest-live-grouping__text { flex: 1 1 160px; }

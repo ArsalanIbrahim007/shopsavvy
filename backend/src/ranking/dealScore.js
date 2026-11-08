@@ -5,6 +5,7 @@ import { calculateTrustScore } from "./scores/trustScore.js";
 import { calculateFakeDiscountScore } from "./scores/fakeDiscountScore.js";
 import { analyzeDiscountAnomaly } from "../services/discountAnomaly.service.js";
 import { analyzePricePlausibility } from "../services/pricePlausibility.service.js";
+import { fairPriceOf, fairPriceScore } from "../services/fairPrice.service.js";
 import { SCORE_WEIGHTS } from "./scoreWeights.js";
 
 /**
@@ -26,6 +27,49 @@ function getOfferPriceHistory(offer = {}) {
   const validHistory = possibleHistorySources.find(Array.isArray);
 
   return validHistory || [];
+}
+
+/**
+ * When a listing's own price history is too short to judge its claimed discount (2026-11-08: 54% of claims were "unverified", most
+ * because the listing had fewer than three recorded prices), two other pieces of evidence are tried, in this order:
+ *  1. the product's history at every store we track (the group's offers' histories together): the same product's price elsewhere;
+ *  2. the fair price for its specs (services/fairPrice.service.js): a "was" price above the range the model saw for such products is
+ *     suspicious, one at or below the fair price plus its usual error is likely genuine; in between it stays unverified.
+ * The verdict says which evidence it rests on (discountAnalysis.basis), and its reason says so in words.
+ */
+export function judgeWithMoreEvidence(analysis, offer, { pooledHistory = [], fairPrice = null } = {}) {
+  if (analysis?.classification !== "unverified_discount") return { ...analysis, basis: analysis?.classification === "no_claimed_discount" ? null : "listing_history" };
+
+  const pooled = calculateFakeDiscountScore({ currentPrice: offer.price, originalPrice: offer.originalPrice, priceHistory: pooledHistory });
+  if (pooled.classification !== "unverified_discount" && pooled.classification !== "insufficient_data") {
+    return {
+      ...pooled,
+      basis: "product_history",
+      reason: `Judged against this product's price history at every store we track (${pooled.metrics.historyCount} recorded prices), as this store's own is too short. ${pooled.reason}`,
+    };
+  }
+
+  const was = Number(offer.originalPrice);
+  if (fairPrice && was > 0) {
+    const formatted = (n) => `PKR ${Math.round(n).toLocaleString("en-US")}`;
+    if (was > fairPrice.high) {
+      return {
+        ...analysis,
+        classification: "suspicious",
+        basis: "fair_price",
+        reason: `The "was" price, ${formatted(was)}, is above what products with these specs usually cost: our price model puts them at ${formatted(fairPrice.price)}, and 9 in 10 at or under ${formatted(fairPrice.high)}. There is not enough price history to check the claim directly.`,
+      };
+    }
+    if (was <= fairPrice.price * (1 + fairPrice.medianError)) {
+      return {
+        ...analysis,
+        classification: "possibly_genuine",
+        basis: "fair_price",
+        reason: `The "was" price, ${formatted(was)}, is in line with what products with these specs usually cost (our price model puts them at ${formatted(fairPrice.price)}). There is not enough price history to verify the claim directly.`,
+      };
+    }
+  }
+  return { ...analysis, basis: "listing_history" };
 }
 
 /**
@@ -82,6 +126,8 @@ export function calculateDealScores(offers = []) {
     .filter((price) => Number.isFinite(price) && price > 0);
 
   const scoringPrices = believablePrices.length > 0 ? believablePrices : validPrices;
+  // the product's price history at every store, for a listing whose own is too short (judgeWithMoreEvidence)
+  const pooledHistory = plainOffers.flatMap((offer) => getOfferPriceHistory(offer));
   const minPrice = Math.min(...scoringPrices);
   const maxPrice = Math.max(...scoringPrices);
 
@@ -89,16 +135,20 @@ export function calculateDealScores(offers = []) {
     .map((plainOffer, index) => {
       const priceCheck = priceChecks[index];
 
+      // The price part (2026-11-08): half against the other stores' prices for this product, half against the fair price for its specs
+      // (the trained linear regression, services/fairPrice.service.js). A product only one store sells used to get a neutral half
+      // mark whatever its price; it is now judged against the fair price alone. Without a trusted fair price, as before.
       // An implausibly cheap offer gets no price credit, so it cannot be crowned best deal.
-      const priceScore =
-        priceCheck.status === "suspect_low"
-          ? 0
-          : calculatePriceScore(plainOffer.price, minPrice, maxPrice, SCORE_WEIGHTS.price);
+      const fairPrice = fairPriceOf(plainOffer);
+      const againstFair = fairPriceScore(plainOffer.price, fairPrice);
+      const againstStores = calculatePriceScore(plainOffer.price, minPrice, maxPrice, 1);
+      const priceShare = againstFair === null ? againstStores : minPrice === maxPrice ? againstFair : (againstStores + againstFair) / 2;
+      const priceScore = priceCheck.status === "suspect_low" ? 0 : Number((priceShare * SCORE_WEIGHTS.price).toFixed(2));
 
-      const trustScore = calculateTrustScore(
-        plainOffer.platform,
-        SCORE_WEIGHTS.trust
-      );
+      const trustScore = calculateTrustScore(plainOffer.platform, SCORE_WEIGHTS.trust, {
+        rating: plainOffer.rating,
+        reviewCount: plainOffer.reviewCount,
+      });
 
       const freshnessScore = calculateFreshnessScore(
         plainOffer.lastScrapedAt,
@@ -110,11 +160,15 @@ export function calculateDealScores(offers = []) {
         SCORE_WEIGHTS.availability
       );
 
-      const discountAnalysis = calculateFakeDiscountScore({
-        currentPrice: plainOffer.price,
-        originalPrice: plainOffer.originalPrice,
-        priceHistory: getOfferPriceHistory(plainOffer),
-      });
+      const discountAnalysis = judgeWithMoreEvidence(
+        calculateFakeDiscountScore({
+          currentPrice: plainOffer.price,
+          originalPrice: plainOffer.originalPrice,
+          priceHistory: getOfferPriceHistory(plainOffer),
+        }),
+        plainOffer,
+        { pooledHistory, fairPrice },
+      );
 
       // Cross-store check: judges the claim against the other offers in this
       // same product group (always one product -- the only caller is
@@ -149,6 +203,8 @@ export function calculateDealScores(offers = []) {
         discountAnomaly,
 
         priceCheck,
+
+        fairPrice,
       };
     })
     .sort((a, b) => b.dealScore - a.dealScore);

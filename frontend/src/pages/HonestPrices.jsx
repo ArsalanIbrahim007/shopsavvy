@@ -18,6 +18,7 @@ import { useCountUp, useInView } from "../hooks/useCountUp.js";
 import { usePageTitle } from "../hooks/usePageTitle.js";
 import { formatDate, formatNumber, formatPrice, timeAgo } from "../lib/format.js";
 import { discountRows, formatScore, formatShare, markupRows, matcherRows, outlookJudgeable, outlookRows, perHundred, ptaRows, share } from "../lib/integrity.js";
+import { categoryName } from "../lib/categories.js";
 import { platformName } from "../lib/platforms.js";
 import "./HowItWorks.css"; // the shared reading column (.prose)
 import "./HonestPrices.css";
@@ -252,6 +253,38 @@ function LiveSection({ report }) {
   return <LiveNumbers live={report.data.live} generatedAt={report.data.generatedAt} />;
 }
 
+/**
+ * How the live site groups offers (GROUPING_RECALL.md): of the pairs of offers of one product, how many it shows together, and of the
+ * pairs it shows together, how many are one product. The model's own test pairs (the table below) are the hardest cases; these are
+ * what a shopper sees.
+ */
+function LiveGrouping({ grouping }) {
+  if (!grouping?.recall) return null;
+  return (
+    <div className="honest-live-grouping">
+      <div className="honest-chart-row">
+        <RingGauge outer={grouping.pairPrecision} inner={grouping.pairPrecision}>
+          <Figure value={`${Math.round(grouping.pairPrecision)}%`} label="joins right" />
+        </RingGauge>
+        <p className="muted honest-live-grouping__text">
+          Of the offers the site shows as one product, {Math.round(grouping.pairPrecision)} in 100 pairs really are one product.
+        </p>
+      </div>
+      <div className="honest-chart-row">
+        <RingGauge outer={grouping.recall} inner={grouping.recall}>
+          <Figure value={`${Math.round(grouping.recall)}%`} label="found" />
+        </RingGauge>
+        <p className="muted honest-live-grouping__text">
+          Of the pairs of offers of one product, it shows {Math.round(grouping.recall)} in 100 together
+          {grouping.firstRecall ? ` (${Math.round(grouping.firstRecall)} before the matcher's October fixes)` : ""}. The rest show as two products:
+          the safer mistake.
+        </p>
+      </div>
+      {grouping.labelledPairs && <p className="small muted">On the live site, from {grouping.labelledPairs} pairs of offers labelled by hand.</p>}
+    </div>
+  );
+}
+
 function MatcherSection({ report }) {
   const matcher = report.status === "success" ? report.data.evaluation.matcher : null;
   if (report.status === "loading") return <Skeleton height={140} />;
@@ -261,6 +294,8 @@ function MatcherSection({ report }) {
   const production = matcher.models.production;
   return (
     <>
+      <LiveGrouping grouping={report.data.evaluation.grouping} />
+      <p className="honest-chart-title">The model on its hardest test pairs (titles that look alike but name different models)</p>
       <BarGroups
         groups={rows.map((row) => ({
           label: row.label,
@@ -368,6 +403,61 @@ function DiscountModelSection({ report }) {
   );
 }
 
+/**
+ * The fair-price model (a linear regression, 2026-11-08): its typical error on products it never saw, per category, beside the simple
+ * baseline (the median price of the same brand and storage). Lower is better; a category where it did not beat the baselines is shown
+ * faded and is not used on the site.
+ */
+function FairPriceSection({ report }) {
+  if (report.status === "loading") return <Skeleton height={140} />;
+  const fair = report.status === "success" ? report.data.evaluation.fairPrice : null;
+  if (!fair) return <p className="muted">The price model's results could not be loaded right now.</p>;
+  const rows = [...fair.categories].sort((a, b) => a.medianError - b.medianError);
+  const pct = (v) => `${(v * 100).toFixed(1)}%`;
+  return (
+    <>
+      <p>
+        A linear regression learns what a product should cost from its title's words, storage, RAM, screen size, tonnage and the store,
+        across {formatNumber(rows.reduce((n, r) => n + r.testListings * 5, 0))} listings. It judges a price even when only one store
+        sells the product, and a "was" price even without price history.
+      </p>
+      <p className="honest-chart-title">Typical error on products it never saw (lower is better)</p>
+      <BarGroups
+        groups={rows.map((row) => ({
+          label: `${categoryName(row.category)}${row.used ? "" : " (not used: it did not beat the simple guess)"}`,
+          highlight: row.used,
+          bars: [
+            { label: "Our model", value: row.medianError * 100, text: pct(row.medianError), tone: row.used ? "good" : "neutral" },
+            { label: "Brand + storage median", value: row.baselineBrandStorage * 100, text: pct(row.baselineBrandStorage), tone: "neutral" },
+          ],
+        }))}
+      />
+      <Numbers>
+        <table className="honest-table honest-table--wide">
+          <caption className="visually-hidden">The fair-price model's error on unseen products, by category</caption>
+          <thead>
+            <tr><th scope="col">Category</th><th scope="col" className="num">Median error</th><th scope="col" className="num">Within 15%</th><th scope="col" className="num">Brand + storage median</th><th scope="col" className="num">Category median</th></tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.category}>
+                <th scope="row">{categoryName(row.category)}{row.used ? "" : " (not used)"}</th>
+                <td className="num">{pct(row.medianError)}</td>
+                <td className="num">{pct(row.within15)}</td>
+                <td className="num">{pct(row.baselineBrandStorage)}</td>
+                <td className="num">{pct(row.baselineCategory)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Numbers>
+      <p className="small muted">
+        Tested on whole products held out with every store's listing of them, so the model had not seen them anywhere. Trained {formatDate(fair.trainedAt)}.
+      </p>
+    </>
+  );
+}
+
 function OutlookSection({ report }) {
   if (report.status === "loading") return <Skeleton height={140} />;
   const outlook = report.status === "success" ? report.data.evaluation.outlook : null;
@@ -469,6 +559,11 @@ export default function HonestPrices() {
           price comparison after it wrong.
         </p>
         <MatcherSection report={report} />
+      </section>
+
+      <section aria-labelledby="fair-heading">
+        <h2 id="fair-heading">Is a price fair for what it is?</h2>
+        <FairPriceSection report={report} />
       </section>
 
       <section aria-labelledby="was-heading">

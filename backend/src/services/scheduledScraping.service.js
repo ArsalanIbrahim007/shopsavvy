@@ -288,3 +288,16 @@ export async function runScheduledScrape(opts = {}) {
   summary.durationMs = now() - startedAt;
   return summary;
 }
+
+/**
+ * The plan without the stores whose catalogue was just read: an entry that names its stores loses those, and is dropped when none
+ * is left; an entry for every store (a new product's discovery) stays as it is.
+ */
+export function withoutRefreshedStores(plan, refreshed) {
+  if (refreshed.size === 0) return plan;
+  return plan.flatMap((entry) => {
+    if (!entry.platforms) return [entry];
+    const platforms = entry.platforms.filter((p) => !refreshed.has(p));
+    return platforms.length ? [{ ...entry, platforms }] : [];
+  });
+}

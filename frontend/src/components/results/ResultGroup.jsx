@@ -17,6 +17,7 @@ import { cardBadges } from "../../lib/verdicts.js";
 import ColourPicker from "../ColourPicker.jsx";
 import ProductImage from "../ProductImage.jsx";
 import VerdictBadge from "../VerdictBadge.jsx";
+import FairPrice from "./FairPrice.jsx";
 import OfferTable from "./OfferTable.jsx";
 import "./results.css";
 
@@ -69,6 +70,7 @@ export default function ResultGroup({ group, currentId, colour = null, onColour 
         <div className="result-group__price">
           <p className="price result-group__amount">{formatPrice(best.price)}</p>
           <p className="small muted">Lowest at {platformName(best.platform)}</p>
+          <FairPrice price={best.price} fair={best.fairPrice} />
         </div>
       </div>
 

@@ -17,9 +17,9 @@ export const formatShare = (value) => (value === null || value === undefined ? "
 
 const VERDICTS = [
   { id: "genuine", label: "Verified", tone: "good", hint: "The price history supports the claimed discount" },
-  { id: "likelyGenuine", label: "Likely genuine", tone: "good", hint: "Mostly supported by the price history" },
+  { id: "likelyGenuine", label: "Likely genuine", tone: "good", hint: "Mostly supported by the price history, or a \"was\" price in line with the fair price for its specs" },
   { id: "unverified", label: "Unverified", tone: "neutral", hint: "Too little price history to judge (three recorded prices are needed)" },
-  { id: "suspicious", label: "Suspicious", tone: "caution", hint: "The claimed discount is larger than the price history supports" },
+  { id: "suspicious", label: "Suspicious", tone: "caution", hint: "Larger than the price history supports, or a \"was\" price above what such specs usually cost" },
   { id: "likelyFake", label: "Likely fake", tone: "bad", hint: "The price history strongly contradicts the claimed discount" },
 ];
 

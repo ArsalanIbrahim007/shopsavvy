@@ -186,5 +186,63 @@ priceHistorySchema.statics.recordPrice = async function (listing) {
   return existing.save();
 };
 
+/**
+ * recordPrice for many listings at once (the catalogue refresh: tens of thousands a night). The same rule decides whether an entry is
+ * added (shouldAppendEntry), but the histories are read in one query and written in one bulkWrite per batch, instead of two round
+ * trips per listing (catalogueRefresh.service.js; an hour per night over a remote database, one at a time).
+ *
+ * @param {object[]} listings  [{ platform, sourceUrl, title, price, originalPrice, inStock }]
+ * @param {Date} [at]
+ * @returns {Promise<{appended: number, created: number}>}
+ */
+priceHistorySchema.statics.recordPrices = async function (listings, at = new Date()) {
+  const items = listings.filter((l) => l?.price && l.platform && l.sourceUrl);
+  if (items.length === 0) return { appended: 0, created: 0 };
+
+  const key = (platform, sourceUrl) => `${platform}\u0000${sourceUrl}`;
+  const byPlatform = new Map();
+  for (const item of items) byPlatform.set(item.platform, [...(byPlatform.get(item.platform) ?? []), item.sourceUrl]);
+  const existing = new Map();
+  for (const [platform, urls] of byPlatform) {
+    const docs = await this.find({ platform, sourceUrl: { $in: urls } }, { platform: 1, sourceUrl: 1, entries: { $slice: -1 } }).lean();
+    for (const doc of docs) existing.set(key(doc.platform, doc.sourceUrl), doc);
+  }
+
+  let appended = 0;
+  let created = 0;
+  const ops = items.map((item) => {
+    const entry = { price: item.price, originalPrice: item.originalPrice ?? null, inStock: item.inStock ?? true, recordedAt: at };
+    const doc = existing.get(key(item.platform, item.sourceUrl));
+    if (!doc) {
+      created += 1;
+      return {
+        updateOne: {
+          filter: { platform: item.platform, sourceUrl: item.sourceUrl },
+          update: {
+            $setOnInsert: { entries: [entry], lowestPrice: item.price, highestPrice: item.price, source: "scraper" },
+            $set: { title: item.title, currentPrice: item.price, lastScrapedAt: at },
+          },
+          upsert: true,
+        },
+      };
+    }
+    const append = shouldAppendEntry(doc.entries?.[0], entry);
+    if (append) appended += 1;
+    return {
+      updateOne: {
+        filter: { _id: doc._id },
+        update: {
+          ...(append ? { $push: { entries: entry } } : {}),
+          $set: { title: item.title, currentPrice: item.price, lastScrapedAt: at },
+          $min: { lowestPrice: item.price },
+          $max: { highestPrice: item.price },
+        },
+      },
+    };
+  });
+  await this.bulkWrite(ops, { ordered: false });
+  return { appended, created };
+};
+
 const PriceHistory = mongoose.model("PriceHistory", priceHistorySchema);
 export default PriceHistory; 

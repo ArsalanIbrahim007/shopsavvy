@@ -8,7 +8,7 @@ import { currentOffers } from "./freshness.js";
 
 const PARTS = [
   { key: "price", label: "Price competitiveness", fallbackMax: 60 },
-  { key: "trust", label: "Store trust", fallbackMax: 20 },
+  { key: "trust", label: "Store trust and rating", fallbackMax: 20 },
   { key: "freshness", label: "Data freshness", fallbackMax: 10 },
   { key: "availability", label: "Availability", fallbackMax: 10 },
 ];

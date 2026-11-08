@@ -11,6 +11,11 @@
 //   node src/scripts/run-scheduled-scrape.js --plan           (show what the run would query, in order, and exit; scrapes nothing)
 //   node src/scripts/run-scheduled-scrape.js --force          (run even if today's scrape already happened)
 //   node src/scripts/run-scheduled-scrape.js --no-pages         (skip the page check (PTA status, colours) that follows the scrape)
+//   node src/scripts/run-scheduled-scrape.js --no-catalogue     (skip the catalogue refresh that comes first)
+//
+// First the catalogue refresh (services/catalogueRefresh.service.js): the Shopify, WooCommerce and AlfaMall/DigiMall stores' whole
+// catalogues are read and every listing we hold there is updated, in minutes. Then the searches, which no longer ask a store whose
+// catalogue was just read (2026-11-08: searching refreshed AlfaMall, 42% of our listings, only 30% within a day).
 //
 // Shares today's "already done / running" record with the backend's own daily job
 // (src/jobs/scrapeState.js), so a day is scraped once however it was started:
@@ -22,8 +27,9 @@ config({ quiet: true });
 import mongoose from "mongoose";
 
 import { isDoneToday, markDone, markFailed, tryStart } from "../jobs/scrapeState.js";
+import { CATALOGUE_STORES, refreshCatalogue } from "../services/catalogueRefresh.service.js";
 import { enrichFromPages } from "../services/pageEnrichment.service.js";
-import { buildScheduledQueryPlan, createQueryLog, RUN_BUDGET_MS, runScheduledScrape } from "../services/scheduledScraping.service.js";
+import { buildScheduledQueryPlan, createQueryLog, RUN_BUDGET_MS, runScheduledScrape, withoutRefreshedStores } from "../services/scheduledScraping.service.js";
 
 const minOffersArg = process.argv.find((a) => a.startsWith("--min-offers="));
 const minOffers = minOffersArg ? Number(minOffersArg.split("=")[1]) : 2;
@@ -74,8 +80,24 @@ let exitCode = 0;
 try {
   await mongoose.connect(process.env.MONGO_URI);
 
+  // 1. The catalogues: every listing we hold at these stores, refreshed in a few hundred requests.
+  const refreshed = new Set();
+  if (!process.argv.includes("--no-catalogue")) {
+    for (const store of CATALOGUE_STORES) {
+      try {
+        const s = await refreshCatalogue(store);
+        refreshed.add(store.platform);
+        console.log(`[${stamp()}] catalogue ${s.platform}: ${s.updated} of our ${s.known} listings updated${s.gone ? `, ${s.gone} no longer sold` : ""} (${s.items} in its catalogue, ${s.pages} pages, ${Math.round(s.durationMs / 1000)} s)`);
+      } catch (err) {
+        console.warn(`[${stamp()}] catalogue ${store.platform} failed: ${err.message} (its searches still run)`);
+      }
+    }
+  }
+
+  // 2. The searches, for the stores without a catalogue (and for new products): a store refreshed above is not asked again.
   const queryLog = createQueryLog();
-  const plan = await buildScheduledQueryPlan({ minOffers, staleSingles, lastQueried: queryLog.lastQueried });
+  const fullPlan = await buildScheduledQueryPlan({ minOffers, staleSingles, lastQueried: queryLog.lastQueried });
+  const plan = withoutRefreshedStores(fullPlan, refreshed);
   const queries = plan.map((entry) => entry.query);
   const byKind = (kind) => plan.filter((entry) => entry.kind === kind).length;
   console.log(`[${stamp()}] ${queries.length} queries to re-scrape, longest since last run first (min ${minOffers} offer(s) per product; ${byKind("compared")} compared products + ${byKind("stale-single")} stale single-store ones).`);

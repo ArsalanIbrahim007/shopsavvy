@@ -162,15 +162,55 @@ export function readEvaluation() {
   const discount = discountArtifact ? parseDiscountReport(read(join(ML_DIR, "discount", "EVALUATION_REPORT.md")), discountArtifact.threshold) : null;
 
   const outlook = parseOutlookBacktest(read(join(ML_DIR, "OUTLOOK_BACKTEST.md")));
+  const fairPrice = fairPriceEvaluation(readJson(join(ML_DIR, "fairPrice", "model.artifact.json")));
+  const grouping = parseGroupingRecall(read(join(ML_DIR, "GROUPING_RECALL.md")));
 
   cached = {
     outlook,
+    fairPrice,
+    grouping,
     matcher: matcher && matcherArtifact
       ? { ...matcher, trainingPairs: matcherArtifact.trainingSize ?? null, trainedAt: matcherArtifact.trainedAt ?? null }
       : null,
     discount: discount && discountArtifact ? { ...discount, trainingRows: discountArtifact.trainingRows ?? null, trainedAt: discountArtifact.trainedAt ?? null } : null,
   };
   return cached;
+}
+
+/**
+ * The fair-price model's held-out results per category (scripts/ml/fairPrice/01-train-evaluate.js), with whether the site uses it there
+ * (services/fairPrice.service.js: it must beat both baselines and stay within 22% median error). Null without a trained model.
+ */
+export function fairPriceEvaluation(artifact) {
+  if (!artifact?.categories) return null;
+  const categories = Object.entries(artifact.categories).map(([category, { metrics: m }]) => ({
+    category,
+    medianError: m.mdape,
+    within15: m.within15,
+    r2: m.r2,
+    baselineBrandStorage: m.baselines.brandStorage.mdape,
+    baselineCategory: m.baselines.category.mdape,
+    testListings: m.testListings,
+    used: m.mdape <= 0.22 && m.mdape < m.baselines.brandStorage.mdape && m.mdape < m.baselines.category.mdape,
+  }));
+  return { trainedAt: artifact.trainedAt ?? null, method: artifact.method ?? null, categories };
+}
+
+/**
+ * How the LIVE site groups offers (GROUPING_RECALL.md, scripts/ml/11 and 12): of the pairs of offers of one product, the share it puts
+ * together (recall), and of the pairs it puts together, the share that are one product (pair precision). The latest figures are the
+ * last ones in the report (after a fix, its "After the fixes" section). Null when the report is missing or unreadable.
+ */
+export function parseGroupingRecall(text) {
+  if (!text) return null;
+  const recalls = [...text.matchAll(/\*\*recall: ([\d.]+)%\*\*/gi)].map((m) => Number(m[1]));
+  const precisions = [...text.matchAll(/\*\*pair precision: ([\d.]+)%\*\*/gi)].map((m) => Number(m[1]));
+  const first = text.match(/\*\*Recall: ([\d.]+)%\*\*/);
+  const pairs = text.match(/\| together \(one product on the site\) \| [\d,]+ \| (\d+) \|/);
+  const sampled = [...text.matchAll(/^\| (?:together|apart)[^|]*\| [\d,]+ \| (\d+) \|/gm)].reduce((n, m) => n + Number(m[1]), 0);
+  const recall = recalls.at(-1) ?? (first ? Number(first[1]) : null);
+  if (recall === null) return null;
+  return { recall, pairPrecision: precisions.at(-1) ?? null, labelledPairs: sampled || null, firstRecall: first ? Number(first[1]) : null, together: pairs ? Number(pairs[1]) : null };
 }
 
 /** For tests. */

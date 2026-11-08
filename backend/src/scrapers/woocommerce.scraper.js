@@ -24,7 +24,7 @@ import { fetchJson as politeFetchJson } from "./politeJson.js";
 const PER_PAGE = 50;
 const MAX_PAGES = 3;
 const MIN_PRODUCTS = 2;
-const VARIATIONS_PER_PAGE = 50;
+export const VARIATIONS_PER_PAGE = 50;
 const MAX_EXPANDED = 3;
 
 // Words that name a kind of product, not a model: a store's search needs "samsung", not "samsung tv" (a search for both
@@ -32,7 +32,7 @@ const MAX_EXPANDED = 3;
 const GENERIC = new Set(["tv", "tvs", "led", "laptop", "laptops", "phone", "phones", "mobile", "mobiles", "smartphone", "smartphones", "tablet", "tablets"]);
 
 /** The text of a title that arrives HTML-escaped ("43&#8243; Samsung", "Cases &amp; Covers"). */
-const decode = (text) => cleanText(cheerio.load(`<p>${String(text ?? "")}</p>`)("p").text());
+export const decode = (text) => cleanText(cheerio.load(`<p>${String(text ?? "")}</p>`)("p").text());
 
 /** A price in whole rupees from the store's minor-unit integer, or null when there is none. */
 function rupees(amount, minorUnit) {
@@ -61,7 +61,7 @@ function variationOptions(variation) {
 
 const isColour = (option) => /^colou?r$/i.test(option.name);
 
-function toListing(platform, product, { title, colourOptions = null }) {
+export function toListing(platform, product, { title, colourOptions = null }) {
   const prices = product.prices ?? {};
   const minor = prices.currency_minor_unit;
   const price = rupees(prices.price_range?.min_amount ?? prices.price, minor);
@@ -88,7 +88,7 @@ function toListing(platform, product, { title, colourOptions = null }) {
  * The listings for a variable product's variations: one per capacity (or other non-colour option) and price, with the
  * colours folded into it. Without any non-colour option the variations are kept as they are, colour in the title.
  */
-function listingsFromVariations(platform, parent, name, variations) {
+export function listingsFromVariations(platform, parent, name, variations) {
   const entries = variations.map((variation) => ({ variation, options: variationOptions(variation.variation) }));
   const hasOtherOption = entries.some((entry) => entry.options.some((option) => !isColour(option)));
 

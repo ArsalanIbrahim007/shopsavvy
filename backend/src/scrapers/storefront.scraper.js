@@ -60,28 +60,30 @@ export async function scrapeStorefrontSearch({ platform, baseUrl, apiUrl, params
     if (body.results.length < PER_PAGE || products >= MIN_PRODUCTS) break;
   }
 
-  return safeMap(
-    items,
-    (item) => {
-      const title = cleanText(item.title);
-      const handle = String(item.handle ?? "").trim();
-      if (!title || !handle || /[\s/?#]/.test(handle)) return null;
+  return safeMap(items, (item) => storefrontListing({ platform, baseUrl, productPath }, item), platform);
+}
 
-      const price = parsePrice(item.variant_detail?.discounted_price);
-      if (!(price > 0)) return null;
-      const was = parsePrice(item.variant_detail?.original_price);
-      if (notAPrice(title, price, was)) return null;
-      const image = Array.isArray(item.images) ? item.images.find((src) => /^https:\/\//.test(String(src))) : null;
-      return makeListing({
-        platform,
-        sourceUrl: `${baseUrl}${productPath}${encodeURIComponent(handle)}`,
-        title,
-        price,
-        originalPrice: was > price ? was : null,
-        imageUrl: image ?? null,
-        inStock: item.sold_out !== true,
-      });
-    },
-    platform
-  );
+/** One search result as a listing, or null when it is not a product at a price (also used by the catalogue refresh, catalogue.js). */
+export function storefrontListing({ platform, baseUrl, productPath }, item) {
+  const title = cleanText(item.title);
+  const handle = String(item.handle ?? "").trim();
+  if (!title || !handle || /[\s/?#]/.test(handle)) return null;
+
+  const price = parsePrice(item.variant_detail?.discounted_price);
+  if (!(price > 0)) return null;
+  const was = parsePrice(item.variant_detail?.original_price);
+  if (notAPrice(title, price, was)) return null;
+  const image = Array.isArray(item.images) ? item.images.find((src) => /^https:\/\//.test(String(src))) : null;
+  return makeListing({
+    platform,
+    sourceUrl: `${baseUrl}${productPath}${encodeURIComponent(handle)}`,
+    title,
+    price,
+    originalPrice: was > price ? was : null,
+    imageUrl: image ?? null,
+    inStock: item.sold_out !== true,
+    // which of the marketplace's sellers sells it, and its delivery (the seller's phone number in the same answer is not kept)
+    seller: typeof item.vendor?.name === "string" ? item.vendor.name : null,
+    delivery: { window: typeof item.delivery_date === "string" ? item.delivery_date : null, express: item.express_delivery === true, freeShipping: item.free_shipping === true },
+  });
 }
