@@ -16,6 +16,7 @@ import { VISIBLE_PLATFORMS_FILTER } from "../config/platforms.js";
 import { attachPriceHistory } from "./historyEnrichment.service.js";
 import { DEFAULT_MAX_AGE_HOURS } from "./dealsRanking.service.js";
 import { computeDealsOffThread } from "./grouping.service.js";
+import { readSnapshot, writeSnapshot } from "./snapshot.service.js";
 
 // Categories where "the same product at several stores" is the point of the site. The last four were added on 2026-10-22: the stores
 // already sold them (about 1,300 listings, then filed as "appliance" or "other"), and they have matching rules of their own
@@ -64,6 +65,7 @@ function refresh(category, now) {
     .then((deals) => {
       const entry = { expires: now + CACHE_TTL_MS, generatedAt: new Date(now).toISOString(), deals };
       cache.set(category, entry);
+      writeSnapshot(`deals-${category}`, { generatedAt: entry.generatedAt, deals });
       return entry;
     })
     .finally(() => inFlight.delete(category));
@@ -81,6 +83,14 @@ async function categoryDeals(category, now) {
   if (hit) {
     refresh(category, now).catch((error) => console.warn(`[deals] Could not refresh ${category}: ${error.message}`));
     return hit;
+  }
+  // After a restart, the list saved before it (snapshot.service.js) is served while a fresh one is computed.
+  const saved = await readSnapshot(`deals-${category}`);
+  if (saved && !cache.has(category)) {
+    const entry = { expires: 0, generatedAt: saved.generatedAt, deals: saved.deals };
+    cache.set(category, entry);
+    refresh(category, now).catch((error) => console.warn(`[deals] Could not refresh ${category}: ${error.message}`));
+    return entry;
   }
   return refresh(category, now);
 }

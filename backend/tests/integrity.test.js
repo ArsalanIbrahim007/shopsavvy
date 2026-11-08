@@ -266,9 +266,10 @@ describe("getIntegrityReport", () => {
     expect(getCatalogGroups).toHaveBeenCalledTimes(2);
     await getIntegrityReport({ now: NOW + 9 * 60000 });
     expect(getCatalogGroups).toHaveBeenCalledTimes(2);
-    await getIntegrityReport({ now: NOW + 11 * 60000 });
+    // past ten minutes the last report answers at once, and a fresh one is computed in the background (2026-11-08)
+    expect(await getIntegrityReport({ now: NOW + 11 * 60000 })).toBe(a);
+    await vi.waitFor(() => expect(count).toHaveBeenCalledTimes(2));
     expect(getCatalogGroups).toHaveBeenCalledTimes(4);
-    expect(count).toHaveBeenCalledTimes(2);
   });
 
   it("does not cache a failure", async () => {

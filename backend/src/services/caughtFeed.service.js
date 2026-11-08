@@ -10,6 +10,7 @@
 // Built only from the category catalogues already computed (catalogFeed.service.js, warmed at start-up), never by computing one,
 // as the sitemap is: a category not computed yet is left out until it is.
 
+import { readSnapshot, writeSnapshot } from "./snapshot.service.js";
 import { CATALOG_CATEGORIES, peekCatalogGroups } from "./catalogFeed.service.js";
 
 const CACHE_TTL_MS = 10 * 60 * 1000;
@@ -104,9 +105,16 @@ export function caughtFromGroups(groupsByCategory) {
 }
 
 let cached = null;
+let saved = null; // the last complete feed, from disk (snapshot.service.js), until every catalogue is computed again
 
 export function clearCaughtCache() {
   cached = null;
+  saved = null;
+}
+
+/** Reads the feed saved before a restart, to answer with while the catalogues are grouped again. Called at start-up. */
+export async function loadCaughtSnapshot() {
+  saved = await readSnapshot("caught");
 }
 
 /** The feed, from the cache while it is young enough; `missing` lists categories whose catalogue is not computed yet. */
@@ -119,7 +127,10 @@ export function getCaught({ now = Date.now() } = {}) {
     if (catalog) groupsByCategory[category] = catalog.groups;
     else missing.push(category);
   }
+  // Some catalogues are not computed yet (start-up): the complete feed saved before the restart is better than a partial one.
+  if (missing.length && saved) return saved;
   const value = { ...caughtFromGroups(groupsByCategory), generatedAt: new Date(now).toISOString(), missing };
+  if (missing.length === 0) writeSnapshot("caught", value, { now });
   // A feed missing a category is kept only a minute, so the complete one follows soon after start-up.
   cached = { expires: now + (missing.length ? 60 * 1000 : CACHE_TTL_MS), value };
   return value;

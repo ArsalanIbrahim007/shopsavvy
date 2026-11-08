@@ -22,6 +22,7 @@ import priceAlertRoutes from "./routes/priceAlert.routes.js";
 import alertPageRoutes from "./routes/alertPages.routes.js";
 import sitemapRoutes from "./routes/sitemap.routes.js";
 import shareRoutes from "./routes/share.routes.js";
+import compression from "compression";
 
 export function createApp(env = process.env) {
   const app = express();
@@ -36,6 +37,9 @@ export function createApp(env = process.env) {
   // First, so every later log line and error body can carry the request id.
   app.use(requestId);
   app.use(requestLogger);
+  // Compressed answers: a home page row of five products was 424 KB of JSON and a search 860 KB; gzip makes them about a tenth
+  // (2026-11-08). Small answers (under 1 KB) are sent as they are. On the server Caddy would compress too, but not twice.
+  app.use(compression({ threshold: 1024 }));
 
   // Standard security headers (see config/securityHeaders.js). The Swagger page needs inline scripts and styles, so it gets the
   // same headers without the strict content policy; the alert pages send their own, stricter, nonce-based policy.

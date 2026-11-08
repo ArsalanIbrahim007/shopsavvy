@@ -9,6 +9,7 @@ import { formatDropPercent, formatDay } from "../lib/drops.js";
 import { formatPrice } from "../lib/format.js";
 import { platformName } from "../lib/platforms.js";
 import { productPath } from "../lib/productPath.js";
+import { prefetchProps } from "../lib/prefetch.js";
 import { StoreMark } from "./StoreLogo.jsx";
 import ProductImage from "./ProductImage.jsx";
 import VerdictBadge from "./VerdictBadge.jsx";
@@ -19,7 +20,7 @@ export default function DropCard({ item }) {
   const nowShare = drop.before > 0 ? Math.max(4, Math.min(100, (drop.price / drop.before) * 100)) : 100;
   return (
     <article className="product-card card">
-      <Link to={productPath(item._id, item.title)} className="product-card__link">
+      <Link {...prefetchProps(item._id)} to={productPath(item._id, item.title)} className="product-card__link">
         <ProductImage src={item.imageUrl} alt="" />
         <p className="product-card__kicker small muted">{categoryName(item.productCategory)}</p>
         <h3 className="product-card__name">{item.title}</h3>

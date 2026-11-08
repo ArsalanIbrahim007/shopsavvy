@@ -25,6 +25,7 @@ vi.mock("../src/services/priceHistory.service.js", () => ({
 import Listing from "../src/models/listing.model.js";
 import { createApp } from "../src/createApp.js";
 import { clearCategoryCountsCache } from "../src/controllers/feeds.controller.js";
+import { clearProductCache } from "../src/controllers/product.controller.js";
 import { fetchAndRefreshListings } from "../src/services/scraper.service.js";
 import { attachPriceHistory } from "../src/services/historyEnrichment.service.js";
 import { getMarketMovement } from "../src/services/marketMovement.service.js";
@@ -80,6 +81,7 @@ beforeEach(() => {
   vi.spyOn(console, "log").mockImplementation(() => {});
   vi.spyOn(console, "error").mockImplementation(() => {});
   clearCategoryCountsCache();
+  clearProductCache();
   vi.spyOn(Listing, "aggregate").mockResolvedValue([]);
 });
 afterEach(() => {
@@ -292,6 +294,18 @@ describe("GET /api/listings/search", () => {
 
 describe("GET /api/listings/:id", () => {
   const selected = row(1, "priceoye", 60000);
+
+  // 2026-11-08: building a product page takes about 0.35 s, and the same page is often opened again within seconds.
+  it("answers the same product again from a minute's cache, without asking the database", async () => {
+    const findOne = vi.spyOn(Listing, "findOne").mockResolvedValue(selected);
+    vi.spyOn(Listing, "find").mockImplementation(() => chain([]));
+    const first = await json(`/api/listings/${ID(1)}`);
+    const again = await json(`/api/listings/${ID(1)}`);
+    expect(first.res.status).toBe(200);
+    expect(again.body).toEqual(first.body);
+    expect(again.res.headers.get("x-cache")).toBe("hit");
+    expect(findOne).toHaveBeenCalledTimes(1);
+  });
 
   it("answers 404 NOT_FOUND for a well-formed id that does not exist", async () => {
     vi.spyOn(Listing, "findOne").mockResolvedValue(null);

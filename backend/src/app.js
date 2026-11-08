@@ -7,6 +7,7 @@ import { describeCorsPolicy } from "./config/cors.js";
 import { describeTrustProxy } from "./config/proxy.js";
 import { warmDealsCache } from "./services/dealsFeed.service.js";
 import { warmCatalogCache } from "./services/catalogFeed.service.js";
+import { loadCaughtSnapshot } from "./services/caughtFeed.service.js";
 import { startEventLoopMonitor } from "./services/runtimeStats.service.js";
 import { warmGroupingPool } from "./services/grouping.service.js";
 import { startPriceHistoryJob } from "./jobs/priceHistoryJob.js";
@@ -25,6 +26,7 @@ const PORT = process.env.PORT || 5000;
 // computation, so requests are not held up). Set WARM_DEALS=false to skip the cache fill.
 connectDB().then(() => {
   warmGroupingPool();
+  loadCaughtSnapshot();
   // One after the other, so the two warm-ups do not fill the worker pool between them.
   if (process.env.WARM_DEALS !== "false") warmDealsCache().then(() => warmCatalogCache());
 });

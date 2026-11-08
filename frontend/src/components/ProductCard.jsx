@@ -10,6 +10,7 @@ import { formatPrice, timeAgo } from "../lib/format.js";
 import { lowestFlag } from "../lib/outlook.js";
 import { platformName } from "../lib/platforms.js";
 import { productPath } from "../lib/productPath.js";
+import { prefetchProps } from "../lib/prefetch.js";
 import { ptaFlag } from "../lib/pta.js";
 import { scoreOf } from "../lib/score.js";
 import { StoreMark } from "./StoreLogo.jsx";
@@ -40,7 +41,7 @@ export default function ProductCard({ group }) {
     <article className="product-card card">
       {/* `from` lets the product page's back link return to this exact list, filters included; `name` keeps the
           title the shopper clicked (the page re-groups the product, and its first title can differ) */}
-      <Link to={productPath(best._id, best.title)} state={{ from: `${pathname}${search}`, name: group.productName }} className="product-card__link">
+      <Link {...prefetchProps(best._id)} to={productPath(best._id, best.title)} state={{ from: `${pathname}${search}`, name: group.productName }} className="product-card__link">
         <ProductImage src={best.imageUrl} alt="" />
         <h3 className="product-card__name">{group.productName}</h3>
       </Link>

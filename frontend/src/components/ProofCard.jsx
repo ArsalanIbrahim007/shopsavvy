@@ -10,6 +10,7 @@ import { prefersReducedMotion, useCountUp } from "../hooks/useCountUp.js";
 import { formatNumber, formatPrice } from "../lib/format.js";
 import { platformName } from "../lib/platforms.js";
 import { productPath } from "../lib/productPath.js";
+import { prefetchProps } from "../lib/prefetch.js";
 import ProductImage from "./ProductImage.jsx";
 import { StoreMark } from "./StoreLogo.jsx";
 import VerdictBadge from "./VerdictBadge.jsx";
@@ -37,7 +38,7 @@ function facts(item) {
 function Proof({ item }) {
   return (
     <div className="proof__body">
-      <Link to={productPath(item.id, item.title)} className="proof__product">
+      <Link {...prefetchProps(item.id)} to={productPath(item.id, item.title)} className="proof__product">
         <ProductImage src={item.imageUrl} alt="" height={64} priority />
         <span className="proof__name">{item.productName}</span>
       </Link>

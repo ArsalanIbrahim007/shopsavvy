@@ -342,3 +342,28 @@ describe("getStats categories and getCatalog", () => {
     await expect(getCatalog({ category: "toaster" })).rejects.toMatchObject({ status: 400, code: "BAD_REQUEST" });
   });
 });
+
+// 2026-11-08: a product's data is asked for when its card is hovered or touched, and the page then uses it instead of asking again.
+describe("prefetchListing", () => {
+  afterEach(() => endpoints.clearPrefetched());
+
+  it("asks once on hover, and the product page takes that answer", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(respond(200, { success: true, listing: { _id: "p1", title: "A17" }, offers: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+    endpoints.prefetchListing("p1");
+    endpoints.prefetchListing("p1"); // a second hover within the 30 s asks nothing more
+    const product = await getListing("p1");
+    expect(product.listing.title).toBe("A17");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("asks again when the early answer failed", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(respond(500, { success: false, code: "INTERNAL_ERROR" }))
+      .mockResolvedValue(respond(200, { success: true, listing: { _id: "p2" }, offers: [] }));
+    vi.stubGlobal("fetch", fetchMock);
+    endpoints.prefetchListing("p2");
+    expect((await getListing("p2")).listing._id).toBe("p2");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+});

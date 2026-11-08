@@ -197,3 +197,32 @@ describe("detectCategory: laptop parts and add-ons", () => {
     expect(detectCategory("Lenovo IdeaPad Flex 5 15.6 Inches Core i7 (16GB RAM - 512GB SSD)").category).toBe("laptop");
   });
 });
+
+// 2026-11-08: the price drops' "Smartphones" showed Redmi Buds, a Xiaomi outdoor camera and an air purifier. A phone maker's bare
+// name tied with the product's own word, and the phone list came first. Live titles.
+describe("detectCategory: a phone maker's other products, and phones that only name their line", () => {
+  it.each([
+    ["Redmi Buds 8 Lite", "headphones"],
+    ["Xiaomi Redmi Buds 6 Pro", "headphones"], // two brand names are still one brand
+    ["XIAOMI SOLAR OUTDOOR CAMERA BW400 PRO", "camera"],
+    ["Xiaomi Smart Air Purifier 4 Lite", "appliance"],
+    ["Infinix Smart Air Purifier", "appliance"],
+    ["Xiaomi Redmi Watch 5", "smartwatch"],
+    ["Huawei Band 10", "smartwatch"],
+    ["Xiaomi 45W Nano Turbo Charging Power Adapter (2-Port)", "accessory"],
+    ["Xiaomi Redmi Pad 2 8/256", "tablet"],
+    // still phones
+    ["Xiaomi 15T Pro 12GB 512GB", "smartphone"],
+    ["Redmi Note 15 Pro 256GB", "smartphone"],
+    ["Vivo V70 RAM 12GB ROM 256 GB Camera 50mp Battery 6500 Mah One year Brand Warranty", "smartphone"], // its cameras, not a camera
+    ["Vivo V60 12/256 | PTA Approved | On Easy Monthly Installments | Fast Delivery | Electronix Hub", "smartphone"], // the seller, not a hub
+    ["Samsung A17 8GB 256GB At 0% Markup On Upto 6 Months Installments", "smartphone"],
+    ["Infinix Smart 20 128GB 4GB RAM Shadow Black", "smartphone"],
+    ["Nothing Phone 3a Lite 5G | 8/256 GB | Urban Hub", "smartphone"],
+    // and the rest stay where they were
+    ["UGreen 60568 USB C HUB 3 IN 1", "accessory"],
+    ["Haier AC 2 ton Floor Standing With Air Purifier T3 PLUS Inverter HPU-24HJ", "air_conditioner"],
+  ])("%s -> %s", (title, expected) => {
+    expect(detectCategory(title).category).toBe(expected);
+  });
+});

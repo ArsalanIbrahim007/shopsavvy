@@ -3,6 +3,6 @@
 # certificate itself (Let's Encrypt); ports 80 and 443 must be open.
 
 {$API_DOMAIN} {
-	encode gzip
+	encode zstd gzip
 	reverse_proxy 127.0.0.1:5000
 }

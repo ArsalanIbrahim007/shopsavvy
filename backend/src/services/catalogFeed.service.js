@@ -16,6 +16,7 @@ import { VISIBLE_PLATFORMS_FILTER } from "../config/platforms.js";
 import { attachPriceHistory } from "./historyEnrichment.service.js";
 import { groupListings } from "./grouping.service.js";
 import { DEAL_CATEGORIES } from "./dealsFeed.service.js";
+import { readSnapshot, writeSnapshot } from "./snapshot.service.js";
 
 // The categories the site is about (the same list the deals feed uses).
 export const CATALOG_CATEGORIES = DEAL_CATEGORIES;
@@ -29,10 +30,20 @@ export const CATALOG_JOB_TIMEOUT_MS = 5 * 60 * 1000;
 
 const cache = new Map(); // category -> { expires, generatedAt, groups }
 const inFlight = new Map(); // category -> Promise
+// The first SNAPSHOT_GROUPS products of each category are saved to disk (snapshot.service.js): after a restart they answer the home
+// page's rows and a category's first page at once, while the whole category is grouped again (30 s to minutes).
+export const SNAPSHOT_GROUPS = 60;
+const fromDisk = new Map(); // category -> Promise<{ generatedAt, total, groups } | null>
 
 export function clearCatalogCache() {
   cache.clear();
   inFlight.clear();
+  fromDisk.clear();
+}
+
+function diskCatalog(category) {
+  if (!fromDisk.has(category)) fromDisk.set(category, readSnapshot(`catalog-${category}`));
+  return fromDisk.get(category);
 }
 
 /** Most offers first (the products people compare most), then the cheaper one. */
@@ -64,6 +75,7 @@ function refresh(category, now) {
     .then((groups) => {
       const entry = { expires: now + CACHE_TTL_MS, generatedAt: new Date(now).toISOString(), groups };
       cache.set(category, entry);
+      writeSnapshot(`catalog-${category}`, { generatedAt: entry.generatedAt, total: groups.length, groups: groups.slice(0, SNAPSHOT_GROUPS) });
       return entry;
     })
     .finally(() => inFlight.delete(category));
@@ -108,6 +120,14 @@ export async function getCatalogGroups(category, now = Date.now()) {
  * @returns {Promise<{groups: object[], total: number, generatedAt: string}>}
  */
 export async function getCatalog({ category, limit = 24, offset = 0, now = Date.now() }) {
+  // Nothing computed since start-up: the saved first page answers if it covers the page asked for, and the category is grouped meanwhile.
+  if (!cache.has(category)) {
+    const saved = await diskCatalog(category);
+    if (saved && offset + limit <= saved.groups.length) {
+      refresh(category, now).catch((error) => console.warn(`[catalog] Could not refresh ${category}: ${error.message}`));
+      return { groups: saved.groups.slice(offset, offset + limit), total: saved.total, generatedAt: saved.generatedAt };
+    }
+  }
   const entry = await categoryCatalog(category, now);
   return { groups: entry.groups.slice(offset, offset + limit), total: entry.groups.length, generatedAt: entry.generatedAt };
 }

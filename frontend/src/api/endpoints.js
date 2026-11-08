@@ -39,8 +39,27 @@ export async function searchListings({ q, category, signal }) {
  * One listing with the other offers for the same product, and `outlook`: what the product's own recorded prices say about waiting
  * (see lib/outlook.js). `outlook` is null when the server could not work it out; the page then shows nothing about it.
  */
+// A product's answer asked for ahead of the click (prefetchListing: the shopper hovered or touched its card), kept PREFETCH_MS.
+// getListing takes it from here instead of asking again, so the product page often opens with its data already here (2026-11-08).
+export const PREFETCH_MS = 30 * 1000;
+const prefetched = new Map(); // id -> { at, promise } (the promise gives the body, or null if it failed)
+
+export function prefetchListing(id) {
+  const key = String(id ?? "");
+  if (!key) return;
+  const hit = prefetched.get(key);
+  if (hit && Date.now() - hit.at < PREFETCH_MS) return;
+  prefetched.set(key, { at: Date.now(), promise: request(`/listings/${encodeURIComponent(key)}`).catch(() => null) });
+}
+
+export function clearPrefetched() {
+  prefetched.clear();
+}
+
 export async function getListing(id, { signal } = {}) {
-  const body = await request(`/listings/${encodeURIComponent(id)}`, { signal });
+  const hit = prefetched.get(String(id));
+  const early = hit && Date.now() - hit.at < PREFETCH_MS ? await hit.promise : null;
+  const body = early ?? (await request(`/listings/${encodeURIComponent(id)}`, { signal }));
   return {
     listing: body.listing,
     offers: body.offers ?? [],

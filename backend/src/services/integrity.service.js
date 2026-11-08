@@ -9,6 +9,7 @@ import PriceHistory from "../models/priceHistory.model.js";
 import { VISIBLE_PLATFORMS_FILTER } from "../config/platforms.js";
 import Listing from "../models/listing.model.js";
 import { CATALOG_CATEGORIES, getCatalogGroups } from "./catalogFeed.service.js";
+import { readSnapshot, writeSnapshot } from "./snapshot.service.js";
 import { readEvaluation } from "./evaluationReport.service.js";
 import { isOutOfDate, STALE_AFTER_DAYS } from "./offerFreshness.service.js";
 
@@ -125,18 +126,32 @@ async function compute(now) {
   return { generatedAt: new Date(now).toISOString(), live: { ...live, listings, history }, evaluation: readEvaluation() };
 }
 
-/** The honesty report, cached for ten minutes; concurrent first requests share one computation. */
-export async function getIntegrityReport({ now = Date.now() } = {}) {
-  if (cache && cache.expires > now) return cache.report;
+function refresh(now) {
   if (inFlight) return inFlight;
-
   inFlight = compute(now)
     .then((report) => {
       cache = { expires: now + CACHE_TTL_MS, report };
+      writeSnapshot("integrity", report);
       return report;
     })
     .finally(() => {
       inFlight = null;
     });
   return inFlight;
+}
+
+/**
+ * The honesty report, cached for ten minutes; concurrent first requests share one computation. Past its ten minutes the last report
+ * is served while a fresh one is computed, and after a restart the report saved before it is (it needs every category grouped: 83 s
+ * after a restart on 2026-11-08). Only the very first computation, with nothing saved, is waited for.
+ */
+export async function getIntegrityReport({ now = Date.now() } = {}) {
+  if (cache && cache.expires > now) return cache.report;
+  const stale = cache?.report ?? (await readSnapshot("integrity"));
+  if (stale) {
+    if (!cache) cache = { expires: 0, report: stale };
+    refresh(now).catch((error) => console.warn(`[integrity] Could not refresh: ${error.message}`));
+    return stale;
+  }
+  return refresh(now);
 }

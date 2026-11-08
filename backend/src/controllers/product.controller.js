@@ -82,11 +82,29 @@ export async function getProductComparison(req, res) {
   res.json({ success: true, ...result });
 }
 
+// A product page's answer is kept a minute (2026-11-08): building it groups the product with every store's offers (about 0.35 s), and
+// a page is often opened again within seconds (back from a store, a shared link, the colour picker). Prices change at most nightly,
+// so a minute never shows a stale price for long. At most PRODUCT_CACHE_MAX answers; the oldest goes first.
+export const PRODUCT_CACHE_MS = 60 * 1000;
+const PRODUCT_CACHE_MAX = 500;
+const productCache = new Map(); // `${id}:${strategy}` -> { at, body }
+
+export function clearProductCache() {
+  productCache.clear();
+}
+
 export async function getListingDetails(req, res) {
   const { id } = req.params;
 
   if (!mongoose.isValidObjectId(id)) {
     throw AppError.invalidId("Invalid listing ID");
+  }
+
+  const cacheKey = `${id}:${resolveMatchStrategy(req)}`;
+  const kept = productCache.get(cacheKey);
+  if (kept && Date.now() - kept.at < PRODUCT_CACHE_MS) {
+    res.set("X-Cache", "hit");
+    return res.json(kept.body);
   }
 
   const listing = await Listing.findOne({ _id: id, ...VISIBLE_PLATFORMS_FILTER });
@@ -147,7 +165,7 @@ export async function getListingDetails(req, res) {
     console.error("[dropChance] could not be worked out:", error.message);
   }
 
-  res.json({
+  const body = {
     success: true,
     listing: selectedListing,
     productGroup: selectedGroup,
@@ -171,5 +189,9 @@ export async function getListingDetails(req, res) {
     outlook,
     dropChances,
     offers,
-  });
+  };
+  productCache.delete(cacheKey);
+  productCache.set(cacheKey, { at: Date.now(), body });
+  if (productCache.size > PRODUCT_CACHE_MAX) productCache.delete(productCache.keys().next().value);
+  res.json(body);
 }

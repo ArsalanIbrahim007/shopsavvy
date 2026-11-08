@@ -11,7 +11,13 @@
  * Matched with a word-boundary regex instead of a plain substring check.
  */
 // "rog" too: as a substring it made an "MXG PGC-01 Frog Mechanism Gaming Chair" a laptop.
-const WORD_BOUNDARY_KEYWORDS = new Set(["tv", "oven", "rog"]);
+const WORD_BOUNDARY_KEYWORDS = new Set(["tv", "oven", "rog", "hub"]);
+
+// Phone makers' bare names: they also sell earbuds, cameras, air purifiers, scooters... ("Redmi Buds 8", "Xiaomi Smart Air Purifier 4
+// Lite" and "XIAOMI SOLAR OUTDOOR CAMERA" were filed as phones, 2026-11-08: the brand tied with the product's own word, and the phone
+// list came first). A bare brand counts for less than any word that names the product, and still decides when nothing else does
+// ("Xiaomi 15T Pro 12GB 512GB").
+const BRAND_ONLY_KEYWORDS = new Set(["xiaomi", "redmi", "poco", "oppo", "vivo", "realme", "huawei", "nokia", "motorola", "oneplus"]);
 
 /**
  * "... for iPhone 17 Pro", "... for Galaxy S25": a product made for a phone, never the phone. Like
@@ -84,6 +90,12 @@ const CATEGORIES = {
             "tecno phantom",
             "honor magic",
             "honor x",
+            // "Samsung A17 8/256" and "Infinix Smart 20 4/64" (no "Galaxy", no phone word) were "other" (2026-11-08). A digit after
+            // the "a", so "Samsung AC" and "Samsung A/C" never match.
+            ...[0, 1, 2, 3, 4, 5, 7].map((n) => `samsung a${n}`),
+            "infinix smart",
+            "nothing phone", // "Nothing Phone 3a Lite 5G | 8/256 GB" was "other" (2026-11-08)
+            "cmf phone",
             // "Samsung S23 Ultra 12GB RAM" (no "Galaxy") was "other". Not "samsung s2": Samsung's monitors are S24C310, S27D...
             ...[21, 22, 23, 24, 25, 26].flatMap((n) => [`s${n} ultra`, `s${n} plus`, `s${n} fe`, `s${n}+`]),
             "s25 edge",
@@ -98,6 +110,7 @@ const CATEGORIES = {
             "screen protector",
             "back cover",
             "battery (bl", // "Infinix Note 12 Battery (BL-44FX)": a replacement battery, not the phone
+            "purifier", // "Infinix Smart Air Purifier": a phone line's name on an appliance (2026-11-08)
             ...FOR_A_PHONE,
             ...TV_DEVICES,
         ],
@@ -391,6 +404,18 @@ const CATEGORIES = {
             "camera battery",
             "camera charger",
             "camera lens",
+            // A phone's title lists its cameras with its battery and memory ("Vivo V70 RAM 12GB ROM 256 GB Camera 50mp Battery
+            // 6500 Mah"): those are phones, not cameras (2026-11-08).
+            "mah",
+            "gb ram",
+            "ram 1",
+            "ram 4",
+            "ram 6",
+            "ram 8",
+            "main camera",
+            "front camera",
+            "back camera",
+            "rear camera",
         ],
     },
 
@@ -502,8 +527,15 @@ const CATEGORIES = {
             // "Xiaomi Multifunctional Rice Cooker 4L" scored as a phone on "xiaomi" (2026-11-07).
             "rice cooker",
             "pressure cooker",
+            "air purifier", // "Xiaomi Smart Air Purifier 4 Lite" was a phone (2026-11-08)
         ],
         exclude: [
+            // an air conditioner with an air-purifying filter is an air conditioner ("Haier AC 2 ton ... With Air Purifier")
+            "1 ton",
+            "1.5 ton",
+            "2 ton",
+            "2.5 ton",
+            "purifier ac",
             "filter",
             "cover",
             "replacement",
@@ -532,7 +564,7 @@ const CATEGORIES = {
             "cooling pad",
             "cooling fan",
             "laptop cooler",
-            "hub",
+            "hub", // a whole word; sellers named "... Hub" are removed first (SELLER_NAMES)
             "dock",
             "stand",
             "holder",
@@ -552,14 +584,19 @@ const CATEGORIES = {
  * @param {string} title
  * @returns {{category: string, confidence: number}}
  */
+// Sellers' names that some marketplace titles end with, and that read as a product word: "... | Fast Delivery | Electronix Hub" put 40
+// phones among the accessories on "hub" once brand names counted for less (2026-11-08). Removed before scoring.
+const SELLER_NAMES = ["electronix hub", "urban hub"];
+
 function detectCategory(title) {
-    const text = title.toLowerCase().trim();
+    const text = SELLER_NAMES.reduce((t, name) => t.split(name).join(" "), title.toLowerCase()).trim();
 
     let bestCategory = "other";
     let bestScore = 0;
 
     for (const [category, config] of Object.entries(CATEGORIES)) {
         let score = 0;
+        let brandCounted = false; // "Xiaomi Redmi Watch 5": two brand names are still one brand
 
         // Excluded terms strongly indicate that this is
         // an accessory rather than the main product.
@@ -601,6 +638,9 @@ function detectCategory(title) {
                     keyword === "tv"
                 ) {
                     score += 6;
+                } else if (BRAND_ONLY_KEYWORDS.has(keyword)) {
+                    if (!brandCounted) score += 1.5;
+                    brandCounted = true;
                 } else if (keyword.length >= 8) {
                     score += 3;
                 } else {
