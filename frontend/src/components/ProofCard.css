@@ -1,0 +1,64 @@
+.proof {
+  padding: var(--space-5);
+  display: grid; gap: var(--space-4);
+  box-shadow: var(--shadow-pop);
+  width: 100%; max-width: 440px; justify-self: center;
+}
+.proof--loading { min-height: 360px; }
+
+.proof__head { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--ink-faint); font-weight: 500; }
+.proof__pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--bad); position: relative; }
+.proof__pulse::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--bad);
+  animation: proof-pulse 2s var(--ease) infinite;
+}
+@keyframes proof-pulse { from { transform: scale(1); opacity: 0.6; } to { transform: scale(2.8); opacity: 0; } }
+
+.proof__body { display: grid; gap: var(--space-4); animation: rise var(--dur-slow) var(--ease) both; }
+
+.proof__product { display: grid; grid-template-columns: 64px 1fr; gap: var(--space-3); align-items: center; color: var(--ink); }
+.proof__product:hover { text-decoration: none; }
+.proof__product:hover .proof__name { color: var(--brand); }
+.proof__name {
+  font-weight: 500; line-height: 1.35;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  transition: color var(--dur-fast) var(--ease);
+}
+
+.proof__claim {
+  display: grid; gap: var(--space-1); justify-items: start;
+  padding: var(--space-4); border-radius: var(--radius-control);
+  background: var(--raised); border: 1px solid var(--line-soft);
+}
+.proof__label { display: inline-flex; align-items: center; gap: var(--space-2); color: var(--ink-faint); }
+.proof__was { font-size: 1.125rem; color: var(--ink-faint); }
+/* the signature: a red line strikes the claimed "was" price, drawn left to right */
+.proof__was s { text-decoration: none; position: relative; }
+.proof__was s::after {
+  content: ""; position: absolute; left: -4px; right: -4px; top: 52%; height: 2px; border-radius: 2px;
+  background: var(--bad); transform-origin: left center;
+  animation: proof-strike 560ms var(--ease) 420ms both;
+}
+@keyframes proof-strike { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.proof__now { font-size: clamp(1.75rem, 4vw, 2.25rem); font-weight: 600; letter-spacing: -0.04em; line-height: 1.1; color: var(--ink); }
+.proof__claim .badge { margin-top: var(--space-2); animation: rise var(--dur-base) var(--ease) 900ms both; }
+
+.proof__facts { margin: 0; display: grid; }
+.proof__fact {
+  display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3);
+  padding-block: var(--space-2); border-top: 1px solid var(--line-soft);
+}
+.proof__fact:first-child { border-top: 0; }
+.proof__fact dt { color: var(--ink-soft); }
+.proof__fact dd { margin: 0; font-weight: 500; color: var(--ink); white-space: nowrap; }
+
+.proof__dots { display: flex; gap: var(--space-2); justify-content: center; }
+.proof__dot {
+  width: 24px; height: 24px; padding: 0; border: 0; background: none; cursor: pointer;
+  display: grid; place-items: center;
+}
+.proof__dot::before {
+  content: ""; width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--line);
+  transition: width var(--dur-base) var(--ease), background-color var(--dur-base) var(--ease);
+}
+.proof__dot[aria-pressed="true"]::before { width: 18px; background: var(--accent); }

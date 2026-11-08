@@ -50,7 +50,7 @@ describe("tokens.css dark mode", () => {
   });
 
   it("redefines every colour token, except the ones deliberately the same in both themes", () => {
-    const SAME_IN_BOTH = ["--accent", "--accent-hover", "--on-accent", "--on-navy", "--on-navy-soft", "--neutral-fill", "--mark-tile", "--logo-tile"];
+    const SAME_IN_BOTH = ["--accent", "--accent-hover", "--on-accent", "--neutral-fill", "--mark-tile", "--on-store"];
     const colourTokens = Object.entries(light)
       .filter(([, v]) => /^#|^transparent$|rgba?\(/.test(v))
       .map(([k]) => k);
@@ -75,8 +75,8 @@ describe("tokens.css dark mode", () => {
     ["--on-caution", "--caution"],
     ["--caution", "--good-soft"], ["--bad", "--good-soft"], ["--ink", "--good-soft"], ["--ink-soft", "--good-soft"], // the lowest-price row
     ["--ink", "--caution-soft"], ["--ink", "--bad-soft"], ["--ink-soft", "--caution-soft"],
-    ["--on-navy", "--hero-top"], ["--on-navy", "--hero-mid"], ["--on-navy-soft", "--hero-mid"], ["--on-navy-soft", "--hero-bottom"],
-    ["--on-navy-soft", "--hero-top"], ["--on-navy-soft", "--brand-deep"], ["--accent", "--brand-deep"], ["--on-navy", "--brand-deep"],
+    ["--accent-ink", "--paper"], ["--accent-ink", "--canvas"], ["--accent-ink", "--accent-soft"], ["--ink", "--accent-soft"],
+    ["--ink", "--raised"], ["--ink-soft", "--raised"], ["--ink-faint", "--raised"],
   ];
 
   for (const [name, tokens] of [["light", light], ["dark", dark]]) {
@@ -134,34 +134,34 @@ describe("theme choice", () => {
     document.documentElement.removeAttribute("data-theme");
   });
 
-  it("cycles device -> light -> dark -> device", () => {
-    expect(THEMES).toEqual(["system", "light", "dark"]);
-    expect(nextTheme("system")).toBe("light");
-    expect(nextTheme("light")).toBe("dark");
-    expect(nextTheme("dark")).toBe("system");
-    expect(nextTheme("junk")).toBe("system");
+  it("cycles dark -> light -> device -> dark", () => {
+    expect(THEMES).toEqual(["dark", "light", "system"]);
+    expect(nextTheme("dark")).toBe("light");
+    expect(nextTheme("light")).toBe("system");
+    expect(nextTheme("system")).toBe("dark");
+    expect(nextTheme("junk")).toBe("dark");
   });
 
-  it("follows the device when nothing or junk is stored", () => {
-    expect(getStoredTheme()).toBe("system");
-    window.localStorage.setItem(THEME_KEY, "purple");
-    expect(getStoredTheme()).toBe("system");
-  });
-
-  it("remembers light and dark, and forgets the choice when it goes back to the device", () => {
-    storeTheme("dark");
+  it("opens dark when nothing or junk is stored", () => {
     expect(getStoredTheme()).toBe("dark");
+    window.localStorage.setItem(THEME_KEY, "purple");
+    expect(getStoredTheme()).toBe("dark");
+  });
+
+  it("remembers each choice, including following the device", () => {
     storeTheme("light");
     expect(getStoredTheme()).toBe("light");
     storeTheme("system");
-    expect(window.localStorage.getItem(THEME_KEY)).toBeNull();
+    expect(getStoredTheme()).toBe("system");
+    storeTheme("dark");
+    expect(getStoredTheme()).toBe("dark");
   });
 
   it("works when storage is blocked", () => {
     vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => { throw new Error("blocked"); });
     vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => { throw new Error("blocked"); });
-    expect(getStoredTheme()).toBe("system");
-    expect(() => storeTheme("dark")).not.toThrow();
+    expect(getStoredTheme()).toBe("dark");
+    expect(() => storeTheme("light")).not.toThrow();
   });
 
   it("sets data-theme for light and dark and clears it for the device setting", () => {
@@ -173,7 +173,24 @@ describe("theme choice", () => {
     expect(document.documentElement.hasAttribute("data-theme")).toBe(false);
   });
 
-  it("uses the same storage key as the inline script in index.html that prevents a flash", () => {
-    expect(read("index.html")).toContain(`"${THEME_KEY}"`);
+  it("uses the same storage key and default as the inline script in index.html that prevents a flash", () => {
+    const html = read("index.html");
+    expect(html).toContain(`"${THEME_KEY}"`);
+    // run the inline script as the browser would, for each stored value
+    const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
+    for (const [stored, expected] of [[null, "dark"], ["purple", "dark"], ["dark", "dark"], ["light", "light"], ["system", null]]) {
+      document.documentElement.removeAttribute("data-theme");
+      if (stored === null) window.localStorage.removeItem(THEME_KEY); else window.localStorage.setItem(THEME_KEY, stored);
+      new Function(script)();
+      expect(document.documentElement.getAttribute("data-theme"), String(stored)).toBe(expected);
+    }
+  });
+
+  it("every token a stylesheet uses is defined in tokens.css", () => {
+    // tokens.css, plus the few a component sets inline for itself (a store's colour: style={{ "--store": colour }})
+    const inline = files("src", ".jsx").flatMap((p) => [...read(p).matchAll(/"(--[\w-]+)":/g)].map((m) => m[1]));
+    const defined = new Set([...tokensCss.matchAll(/(--[\w-]+)\s*:/g)].map((m) => m[1]).concat(inline));
+    const used = files("src", ".css").flatMap((p) => [...read(p).matchAll(/var\((--[\w-]+)/g)].map((m) => `${p}: ${m[1]}`));
+    expect(used.filter((u) => !defined.has(u.split(": ")[1]))).toEqual([]);
   });
 });

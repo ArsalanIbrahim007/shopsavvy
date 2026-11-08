@@ -1,5 +1,6 @@
-// Home.jsx — the front door: what the site does, a search box, the categories we cover (with
-// real counts), verified deals, the most compared phones, and how prices are checked.
+// Home.jsx — the front door: what the site does and a search box beside a real discount our checks caught, three figures we can
+// back, the categories we cover (with real counts), verified deals, the caught discounts, the most compared products, and how
+// prices are checked.
 //
 // Every block that depends on the server handles its own loading and failure, so one slow or
 // failing request never blanks the page. The deals block hides itself when there are none: the
@@ -10,6 +11,7 @@ import { Link, useLocation } from "react-router-dom";
 
 import { getCatalog, getCaught, getDeals, getStats } from "../api/endpoints.js";
 import { useAsync } from "../hooks/useAsync.js";
+import { useCountUp } from "../hooks/useCountUp.js";
 import { usePageTitle } from "../hooks/usePageTitle.js";
 import { featuredCategories } from "../lib/categories.js";
 import { formatNumber, timeAgo } from "../lib/format.js";
@@ -18,6 +20,7 @@ import CaughtCard from "../components/CaughtCard.jsx";
 import DealCard from "../components/DealCard.jsx";
 import ErrorState from "../components/ErrorState.jsx";
 import ProductCard from "../components/ProductCard.jsx";
+import ProofCard from "../components/ProofCard.jsx";
 import SearchBox from "../components/SearchBox.jsx";
 import { CardSkeleton, Skeleton } from "../components/Skeleton.jsx";
 import "./Home.css";
@@ -26,68 +29,66 @@ import "./Home.css";
 const POPULAR_SEARCHES = ["iPhone 17 Pro Max", "Samsung Galaxy A17", "Redmi Note 15", "MacBook Air", "Samsung TV"];
 
 const HOW_WE_CHECK = [
-  { step: "Step 1", title: "The same product, matched", text: "We compare storage, RAM, screen size and PTA status, so a 128 GB phone is never priced against a 256 GB one." },
-  { step: "Step 2", title: "Every discount, checked", text: "A \"was\" price only counts if the price history and the other stores back it up. Otherwise we say so." },
-  { step: "Step 3", title: "Odd prices, flagged", text: "A price far out of line with other stores is marked as unusual, and never counted as a saving." },
+  { title: "Matched", text: "Same storage, RAM, screen and PTA status. Never 128 GB against 256 GB." },
+  { title: "Checked", text: "A \"was\" price counts only if its history and other stores back it." },
+  { title: "Flagged", text: "A price far out of line is marked unusual, never shown as a saving." },
 ];
 
-function Hero() {
+function Hero({ caught }) {
   // This browser's own last searches (never sent anywhere); read once when the page opens.
   const [recent, setRecent] = useState(getRecentSearches);
 
   return (
     <section className="hero">
       <div className="container hero__inner">
-        <h1 className="hero__title">Know if the price is real, before you buy</h1>
-        <p className="hero__lead">
-          Compare electronics across Pakistani stores. We check every discount against price history and other stores.
-        </p>
-        <div className="hero__search">
-          <SearchBox size="large" />
-        </div>
-        <p className="hero__lead small">
-          Seen it on Amazon, AliExpress or Temu? Paste the link above to see what it costs in Pakistan.
-        </p>
-        <p className="hero__popular small">
-          <span>Popular:</span>
-          {POPULAR_SEARCHES.map((term) => (
-            <Link key={term} className="chip" to={`/results?q=${encodeURIComponent(term)}`}>{term}</Link>
-          ))}
-        </p>
-        {recent.length > 0 && (
-          <p className="hero__popular small" aria-label="Your recent searches">
-            <span>Recent:</span>
-            {recent.map((term) => (
+        <div className="hero__copy stagger">
+          <h1 className="hero__title">Know if the price is real, before you buy</h1>
+          <p className="hero__lead">One search across Pakistan's electronics stores. Every discount checked against price history.</p>
+          <div className="hero__search">
+            <SearchBox size="large" />
+          </div>
+          <p className="hero__popular small">
+            <span>Try</span>
+            {POPULAR_SEARCHES.map((term) => (
               <Link key={term} className="chip" to={`/results?q=${encodeURIComponent(term)}`}>{term}</Link>
             ))}
-            <button type="button" className="hero__clear" onClick={() => { clearRecentSearches(); setRecent([]); }}>Clear</button>
           </p>
-        )}
+          {recent.length > 0 && (
+            <p className="hero__popular small" aria-label="Your recent searches">
+              <span>Recent</span>
+              {recent.map((term) => (
+                <Link key={term} className="chip" to={`/results?q=${encodeURIComponent(term)}`}>{term}</Link>
+              ))}
+              <button type="button" className="hero__clear" onClick={() => { clearRecentSearches(); setRecent([]); }}>Clear</button>
+            </p>
+          )}
+          <p className="hero__hint small">Seen it on Amazon, AliExpress or Temu? Paste the link to see the price here.</p>
+        </div>
+        <ProofCard caught={caught} />
       </div>
     </section>
   );
 }
 
-// Only claims we can back with data: the store count and listing count come from the API, and the
-// other two describe checks the backend really runs.
-function TrustRow({ stats }) {
-  const items = [
-    { value: stats.status === "success" ? `${stats.data.platforms} stores` : "Stores", label: "compared on every search" },
-    { value: stats.status === "success" ? `${formatNumber(stats.data.products)} listings` : "Listings", label: "tracked, each with its update time" },
-    { value: "Discount checks", label: "against price history and other stores" },
-    { value: "Unusual prices", label: "flagged, never counted as savings" },
-  ];
+function Stat({ value, label }) {
+  const shown = useCountUp(value ?? 0);
+  return (
+    <div className="trust__item">
+      <span className="trust__value">{value == null ? "—" : formatNumber(shown)}</span>
+      <span className="trust__label">{label}</span>
+    </div>
+  );
+}
 
+// Three figures, each one we can back with data: the stores and listings from the API, the caught discounts from our own checks.
+function TrustRow({ stats, caught }) {
+  const data = stats.status === "success" ? stats.data : null;
+  const fake = caught.status === "success" ? caught.data.counts.fakeDiscount : 0;
   return (
     <section className="trust container" aria-label="What ShopSavvy checks">
-      <div className="trust__grid card">
-        {items.map((item) => (
-          <div key={item.value} className="trust__item">
-            <span className="trust__value">{item.value}</span>
-            <span className="trust__label">{item.label}</span>
-          </div>
-        ))}
-      </div>
+      <Stat value={data?.platforms} label="stores compared on every search" />
+      <Stat value={data?.products} label="listings tracked, each with its update time" />
+      <Stat value={fake > 0 ? fake : null} label="fake discounts caught and kept off our deal lists" />
     </section>
   );
 }
@@ -101,16 +102,14 @@ function Categories({ stats }) {
       )}
       {stats.status === "error" && <ErrorState error={stats.error} onRetry={stats.reload} />}
       {stats.status === "success" && (
-        <>
-          <div className="tiles">
-            {featuredCategories(stats.data.categories).map((tile) => (
-              <Link key={tile.category} className="tile card" to={`/results?category=${tile.category}`}>
-                <span className="tile__name">{tile.name}</span>
-                <span className="tile__count small muted">{formatNumber(tile.count)} listings</span>
-              </Link>
-            ))}
-          </div>
-        </>
+        <div className="tiles stagger">
+          {featuredCategories(stats.data.categories).map((tile) => (
+            <Link key={tile.category} className="tile card" to={`/results?category=${tile.category}`}>
+              <span className="tile__name">{tile.name}</span>
+              <span className="tile__count small">{formatNumber(tile.count)} listings</span>
+            </Link>
+          ))}
+        </div>
       )}
     </section>
   );
@@ -148,22 +147,22 @@ function Deals() {
 
 // "Deals we didn't show you": the discounts our checks caught, with the evidence. Other comparison sites show such claims as their
 // hottest deals ("89% off" a Rs 10,000 inverter sold for Rs 94,000 elsewhere); this shows what checking them is worth.
-function Caught() {
-  const caught = useAsync((signal) => getCaught({ signal }), []);
+function Caught({ caught }) {
   if (caught.status !== "success" || caught.data.examples.length === 0) return null; // a bonus: nothing while loading or on error
 
   const { counts, examples } = caught.data;
   return (
     <section className="home-section container" aria-labelledby="caught-heading">
       <div className="home-section__head">
-        <h2 id="caught-heading">Deals we didn't show you</h2>
+        <div className="home-section__title">
+          <h2 id="caught-heading">Deals we didn't show you</h2>
+          <p className="muted">
+            {formatNumber(counts.fakeDiscount)} fake discounts, {formatNumber(counts.aboveMarket)} inflated "was" prices and{" "}
+            {formatNumber(counts.unusualPrice)} likely listing errors, kept off our deal lists. The worst:
+          </p>
+        </div>
         <Link to="/honest-prices">How we check</Link>
       </div>
-      <p className="muted" style={{ marginTop: "calc(-1 * var(--space-2))" }}>
-        Our checks caught {formatNumber(counts.fakeDiscount)} discounts that the price history does not support,{" "}
-        {formatNumber(counts.aboveMarket)} "was" prices above what every other store charges, and {formatNumber(counts.unusualPrice)}{" "}
-        prices that look like listing errors. None of them is shown as a deal. The worst:
-      </p>
       <div className="card-grid">
         {examples.map((item) => <CaughtCard key={item.id} item={item} />)}
       </div>
@@ -205,30 +204,31 @@ function HowWeCheck() {
           <Link to="/honest-prices">See the numbers</Link>
         </span>
       </div>
-      <div className="how-grid">
-        {HOW_WE_CHECK.map((item) => (
-          <div key={item.title} className="card how-card">
-            <p className="how-card__step">{item.step.toUpperCase()}</p>
+      <ol className="how-steps">
+        {HOW_WE_CHECK.map((item, i) => (
+          <li key={item.title} className="how-step">
+            <span className="how-step__num price" aria-hidden="true">0{i + 1}</span>
             <h3>{item.title}</h3>
             <p className="muted">{item.text}</p>
-          </div>
+          </li>
         ))}
-      </div>
+      </ol>
     </section>
   );
 }
 
 export default function Home() {
   const stats = useAsync((signal) => getStats({ signal }), []);
+  const caught = useAsync((signal) => getCaught({ signal }), []);
   usePageTitle("");
 
   return (
     <>
-      <Hero />
-      <TrustRow stats={stats} />
+      <Hero caught={caught} />
+      <TrustRow stats={stats} caught={caught} />
       <Categories stats={stats} />
       <Deals />
-      <Caught />
+      <Caught caught={caught} />
       <MostCompared category="smartphone" title="Most compared phones" allLabel="See all phones" />
       <MostCompared category="laptop" title="Most compared laptops" allLabel="See all laptops" />
       <MostCompared category="tv" title="Most compared TVs" allLabel="See all TVs" />

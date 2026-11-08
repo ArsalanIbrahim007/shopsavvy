@@ -141,7 +141,7 @@ export default function OfferTable({ offers, name, currentId, colour = null }) {
         </tbody>
       </table>
       <p className="offer-table__note small muted">
-        The deal score combines price (60), store trust (20), data freshness (10) and availability (10). Hover or focus a score to see its parts.
+        Deal score: price (60), store trust (20), data freshness (10) and availability (10). Hover a score for its parts.
       </p>
     </div>
   );

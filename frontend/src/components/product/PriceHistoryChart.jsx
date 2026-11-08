@@ -178,7 +178,7 @@ export default function PriceHistoryChart({ offers, currentId, now }) {
                 const series = visible.find((s) => s.id === line.id);
                 return (
                   <g key={line.id} className={line.isCurrent ? "history__line history__line--current" : "history__line"} style={{ "--store": platformColor(series.platform) }}>
-                    <path d={line.path} fill="none" />
+                    <path d={line.path} fill="none" pathLength="1" />
                     {line.isCurrent && line.dots.map((dot) => <circle key={dot.at.getTime()} cx={dot.cx} cy={dot.cy} r="3.5" />)}
                   </g>
                 );

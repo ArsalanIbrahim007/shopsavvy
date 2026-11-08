@@ -21,12 +21,26 @@ function Reason({ text }) {
   );
 }
 
-function Card({ title, children }) {
+// One check: its question and verdict on one line; the reasons open below it, so the page is not a wall of text.
+// A check with no verdict (nothing to judge) is a plain card with its one sentence.
+function Card({ title, badge, children }) {
+  if (!badge) {
+    return (
+      <div className="verdict-card card">
+        <h3 className="verdict-card__title">{title}</h3>
+        {children}
+      </div>
+    );
+  }
   return (
-    <div className="verdict-card card">
-      <h3 className="verdict-card__title">{title}</h3>
-      {children}
-    </div>
+    <details className="verdict-card card">
+      <summary className="verdict-card__summary">
+        <h3 className="verdict-card__title">{title}</h3>
+        {badge}
+        <span className="verdict-card__why small" aria-hidden="true">Why</span>
+      </summary>
+      <div className="verdict-card__body">{children}</div>
+    </details>
   );
 }
 
@@ -34,34 +48,21 @@ export default function DealVerdict({ listing, lowestPrice = null }) {
   const rec = offerVerdict(listing, { lowestPrice });
   const discount = DISCOUNT_VERDICTS[listing.discountAnalysis?.classification];
   const market = marketVerdict(listing);
+  const recReason = rec.reason || "There is not enough price history yet to judge this price.";
 
   return (
     <div className="verdict-grid">
-      <Card title="This store's price">
-        <VerdictBadge tone={rec.tone} label={rec.label} />
-        <Reason text={rec.reason || "There is not enough price history yet to judge this price."} />
+      <Card title="This store's price" badge={rec.reason ? <VerdictBadge tone={rec.tone} label={rec.label} /> : null}>
+        {!rec.reason && <VerdictBadge tone={rec.tone} label={rec.label} />}
+        <Reason text={recReason} />
       </Card>
 
-      <Card title="Is the discount real?">
-        {discount ? (
-          <>
-            <VerdictBadge tone={discount.tone} label={discount.label} />
-            <Reason text={listing.discountAnalysis.reason} />
-          </>
-        ) : (
-          <p className="muted">This store does not claim a discount.</p>
-        )}
+      <Card title="Is the discount real?" badge={discount ? <VerdictBadge tone={discount.tone} label={discount.label} /> : null}>
+        {discount ? <Reason text={listing.discountAnalysis.reason} /> : <p className="muted">This store does not claim a discount.</p>}
       </Card>
 
-      <Card title="Compared with other stores">
-        {market ? (
-          <>
-            <VerdictBadge tone={market.tone} label={market.label} />
-            <Reason text={market.reason} />
-          </>
-        ) : (
-          <p className="muted">Not assessed for this offer.</p>
-        )}
+      <Card title="Compared with other stores" badge={market ? <VerdictBadge tone={market.tone} label={market.label} /> : null}>
+        {market ? <Reason text={market.reason} /> : <p className="muted">Not assessed for this offer.</p>}
       </Card>
     </div>
   );

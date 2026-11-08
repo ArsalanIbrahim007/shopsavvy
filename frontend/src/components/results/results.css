@@ -1,7 +1,7 @@
 /* summary cards */
 .summary-cards { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
 .summary-card { padding: var(--space-4); display: grid; gap: 2px; }
-.summary-card__value { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; color: var(--brand); line-height: 1.2; }
+.summary-card__value { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 500; letter-spacing: -0.04em; color: var(--ink); line-height: 1.2; }
 .summary-card__note { color: var(--caution); font-weight: 600; } /* the non-PTA price beside the headline (SummaryCards) */
 
 /* integrity strip */
@@ -48,30 +48,41 @@
 
 /* one product */
 .result-group { overflow: hidden; }
-.result-group__head { display: grid; gap: var(--space-4); padding: var(--space-4); }
+.result-group__head { display: grid; gap: var(--space-5); padding: var(--space-5); }
 @media (min-width: 720px) { .result-group__head { grid-template-columns: 140px minmax(0, 1fr) auto; align-items: center; } }
 .result-group__badges { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-2); }
-.result-group__name { font-size: 1.125rem; line-height: 1.3; }
+.result-group__name { font-size: clamp(1.25rem, 2.6vw, 1.75rem); line-height: 1.2; letter-spacing: -0.03em; margin-bottom: var(--space-1); }
 .result-group__name a { color: var(--ink); }
 .result-group__name a:hover { color: var(--brand); text-decoration: none; }
 .result-group__price { display: grid; gap: var(--space-1); justify-items: start; }
 @media (min-width: 720px) { .result-group__price { justify-items: end; text-align: right; } }
-.result-group__amount { font-family: var(--font-display); font-size: 1.625rem; font-weight: 800; color: var(--brand); }
+.result-group__amount { font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 500; letter-spacing: -0.05em; line-height: 1.05; color: var(--ink); }
 .result-group__price .btn { margin-top: var(--space-2); }
-.result-group__pta { margin: 0 var(--space-4) var(--space-4); padding: var(--space-3); border: 1px solid var(--caution-line); border-radius: var(--radius-control); background: var(--caution-soft); color: var(--ink); }
+/* notes about the comparison (stale prices, PTA, condition): one quiet line each with a mark, not a coloured banner */
+.result-group__pta { margin: 0 var(--space-5) var(--space-2); padding-left: 22px; position: relative; color: var(--ink-soft); }
+.result-group__pta::before {
+  content: "!"; position: absolute; left: 0; top: 1px; width: 15px; height: 15px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 0.6875rem; font-weight: 700; line-height: 1;
+  background: var(--caution-soft); color: var(--caution); border: 1px solid var(--caution-line);
+}
+.result-group__pta:last-of-type { margin-bottom: var(--space-4); }
 
 /* the offers table */
-.offer-table__wrap { border-top: 1px solid var(--line); overflow-x: auto; background: var(--canvas); }
+.offer-table__wrap { border-top: 1px solid var(--line); overflow-x: auto; }
 .offer-table { width: 100%; min-width: 620px; border-collapse: collapse; }
 .offer-table th, .offer-table td { padding: var(--space-3) var(--space-4); text-align: left; vertical-align: middle; border-bottom: 1px solid var(--line-soft); }
-.offer-table th { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); font-weight: 700; }
+.offer-table th { font-size: 0.8125rem; color: var(--ink-faint); font-weight: 500; background: var(--raised); }
 .offer-table .num { text-align: right; }
 .offer-table tbody tr:last-child td { border-bottom: 0; }
-.offer-table tr.is-lowest { background: var(--good-soft); }
+.offer-table tbody tr { transition: background-color var(--dur-fast) var(--ease); }
+.offer-table tbody tr:hover { background: var(--raised); }
+/* the lowest price: an amber edge (the price tag) on a faint amber row */
+.offer-table tr.is-lowest td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
+.offer-table tr.is-lowest { background: var(--raised); }
 .offer-table__store { font-weight: 600; display: block; }
-.offer-table__lowest { color: var(--good); font-weight: 600; }
-.offer-table__price { display: block; font-weight: 700; }
-.offer-table__was { display: block; text-decoration: line-through; }
+.offer-table__lowest { color: var(--accent-ink); font-weight: 600; }
+.offer-table__price { display: block; font-weight: 500; font-size: 1.0625rem; color: var(--ink); white-space: nowrap; }
+.offer-table__was { display: block; text-decoration: line-through; white-space: nowrap; }
 .offer-table__flags { display: flex; flex-wrap: wrap; gap: var(--space-1); }
 .offer-table__go { min-height: 36px; padding: 0 var(--space-4); font-size: 0.875rem; white-space: nowrap; }
 .offer-table__current { display: block; }
@@ -89,7 +100,7 @@
 
 /* deal score */
 .score-cell { position: relative; display: grid; gap: 4px; width: 92px; outline-offset: 4px; }
-.score-value { font-family: var(--font-display); font-weight: 800; font-size: 1.0625rem; }
+.score-value { font-family: var(--font-mono); font-weight: 500; font-size: 1rem; letter-spacing: -0.03em; }
 .score-high { color: var(--good); }
 .score-mid { color: var(--caution); }
 .score-low { color: var(--bad); }

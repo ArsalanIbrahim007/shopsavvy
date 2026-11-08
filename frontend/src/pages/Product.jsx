@@ -30,15 +30,14 @@ import "./Product.css";
 
 function Explainer() {
   return (
-    <section className="explain card" aria-labelledby="explain-heading">
-      <h2 id="explain-heading">How we check a discount</h2>
-      <p className="muted">A store's "was" price is only a claim. We test it in three ways, and show you the reason for each result:</p>
-      <ul>
-        <li><strong>Against this listing's own history.</strong> If the price was never anywhere near the claimed one, the discount is flagged. This needs at least three recorded prices, so a new listing stays "unverified".</li>
-        <li><strong>Against the other stores.</strong> A "was" price above anything other stores charge for the same product is marked as above market.</li>
-        <li><strong>Against what is plausible.</strong> A price far out of line with every other store is marked unusual, and is never counted as the lowest price or a saving.</li>
-      </ul>
-      <p className="small"><Link to="/how-it-works">Read more about how ShopSavvy checks prices</Link> · <Link to="/honest-prices">how accurate the checks are</Link></p>
+    <section className="explain" aria-labelledby="explain-heading">
+      <h2 id="explain-heading" className="explain__title">How we check a discount</h2>
+      <ol className="explain__steps">
+        <li><strong>History.</strong> <span className="muted">Was it ever near the "was" price? Needs three recorded prices.</span></li>
+        <li><strong>Other stores.</strong> <span className="muted">Is the "was" price above what they all charge?</span></li>
+        <li><strong>Plausible.</strong> <span className="muted">Far out of line is unusual, never the lowest or a saving.</span></li>
+      </ol>
+      <p className="small"><Link to="/how-it-works">How ShopSavvy checks prices</Link> · <Link to="/honest-prices">How accurate the checks are</Link></p>
     </section>
   );
 }
@@ -139,8 +138,10 @@ export default function Product() {
 
   return (
     <div className="container product">
-      {back}
-      <ShareButton id={shared._id} title={shared.title} name={group.productName} />
+      <div className="product__bar">
+        {back}
+        <ShareButton id={shared._id} title={shared.title} name={group.productName} />
+      </div>
       <StructuredData data={productJsonLd({ name: group.productName, offers: allOffers, url: canonical })} />
       <ResultGroup group={group} currentId={listing._id} colour={colour} onColour={chooseColour} />
 

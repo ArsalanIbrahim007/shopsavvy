@@ -61,7 +61,7 @@ function Chart({ outlook }) {
           {model.references.map((ref) => (
             <line key={ref.id} className={`outlook-chart__ref outlook-chart__ref--${ref.id}`} x1={model.pad.left} x2={model.width - model.pad.right} y1={ref.y} y2={ref.y} />
           ))}
-          <path className="outlook-chart__line" d={model.path} fill="none" />
+          <path className="outlook-chart__line" d={model.path} fill="none" pathLength="1" />
           {model.dots.slice(0, -1).map((dot) => <circle key={dot.at.getTime()} className="outlook-chart__dot" cx={dot.cx} cy={dot.cy} r="3" />)}
           <circle className="outlook-chart__today-ring" cx={model.today.cx} cy={model.today.cy} r="9" />
           <circle className="outlook-chart__today" cx={model.today.cx} cy={model.today.cy} r="5" />
@@ -148,38 +148,42 @@ export default function PriceOutlook({ outlook }) {
   return (
     <section className="product-section" aria-labelledby="outlook-heading">
       <h2 id="outlook-heading">Wait or buy?</h2>
-      <div className={`outlook card outlook--${view.tone}`}>
-        <header className="outlook__head">
+      {/* The verdict on one line; what it rests on opens below it. Open from the start when there is a picture to show. */}
+      <details className={`outlook card outlook--${view.tone}`} open={Boolean(view.gauge) || undefined}>
+        <summary className="outlook__head">
           <span className="outlook__glyph" aria-hidden="true">{view.glyph}</span>
           <div className="outlook__verdict">
             <p className="outlook__label">{view.label}</p>
             <p className="outlook__headline">{view.headline}</p>
-            {view.detail && <p className="muted">{view.detail}</p>}
           </div>
           {view.early && <span className="badge badge-neutral" title="Based on less than four weeks of price records">Early estimate</span>}
-        </header>
+          <span className="outlook__toggle small" aria-hidden="true">Details</span>
+        </summary>
 
-        {(view.gauge || drawsChart) && (
-          <div className="outlook__visuals">
-            {view.gauge && <Gauge gauge={view.gauge} tone={view.tone} />}
-            {drawsChart && <Chart outlook={outlook} />}
-          </div>
-        )}
+        <div className="outlook__body">
+          {view.detail && <p className="muted">{view.detail}</p>}
 
-        {view.tiles.length > 0 && <Tiles tiles={view.tiles} />}
+          {(view.gauge || drawsChart) && (
+            <div className="outlook__visuals">
+              {view.gauge && <Gauge gauge={view.gauge} tone={view.tone} />}
+              {drawsChart && <Chart outlook={outlook} />}
+            </div>
+          )}
 
-        {(view.evidence || view.movement) && (
-          <div className="outlook__foot">
-            {view.evidence && <Evidence evidence={view.evidence} />}
-            {view.movement && <Movement movement={view.movement} />}
-          </div>
-        )}
+          {view.tiles.length > 0 && <Tiles tiles={view.tiles} />}
 
-        <p className="small muted">
-          This is not a forecast. It shows where today's price sits among the prices we have recorded, and cannot know about a sale or a
-          price rise. <Link to="/honest-prices">How much to trust it</Link>
-        </p>
-      </div>
+          {(view.evidence || view.movement) && (
+            <div className="outlook__foot">
+              {view.evidence && <Evidence evidence={view.evidence} />}
+              {view.movement && <Movement movement={view.movement} />}
+            </div>
+          )}
+
+          <p className="small muted">
+            This is not a forecast. It shows where today's price sits among the prices we recorded. <Link to="/honest-prices">How much to trust it</Link>
+          </p>
+        </div>
+      </details>
     </section>
   );
 }

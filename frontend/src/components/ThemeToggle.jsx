@@ -1,4 +1,4 @@
-// ThemeToggle.jsx — one button in the header that cycles the colour theme: device -> light -> dark.
+// ThemeToggle.jsx — one button in the header that cycles the colour theme: dark -> light -> device.
 // The icon shows the current choice; the label says what it is and what a click does, so it reads the
 // same to a screen reader.
 

@@ -1,1 +1,5 @@
-.product { padding-block: var(--space-6); display: grid; gap: var(--space-4); align-content: start; min-height: 100vh; }
+.product { padding-block: var(--space-5) var(--space-6); display: grid; gap: var(--space-6); align-content: start; min-height: 100vh; }
+.product > * { animation: rise var(--dur-slow) var(--ease) both; }
+.product > :nth-child(3) { animation-delay: 60ms; }
+.product > :nth-child(n + 4) { animation-delay: 120ms; }
+.product__bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); }
