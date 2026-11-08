@@ -44,6 +44,16 @@ describe("the shipped fair-price model", () => {
   });
 });
 
+describe("the model's abstention", () => {
+  it("says nothing for a listing whose own price is far outside the range it expects (a rare 98-inch TV)", () => {
+    const tv = { title: "Samsung UA98DU9000U 98-Inch Crystal UHD 4K Smart TV", productCategory: "tv", platform: "eezepc", condition: "new" };
+    const estimate = fairPriceOf(tv); // no price given: the estimate alone
+    expect(estimate).not.toBeNull();
+    expect(fairPriceOf({ ...tv, price: Math.round(estimate.high * 1.5) })).toBeNull();
+    expect(fairPriceOf({ ...tv, price: estimate.price })).toEqual(estimate);
+  });
+});
+
 describe("fairPriceScore", () => {
   const fair = { price: 100000, medianError: 0.1 };
   it("is a half at the fair price, full well below it, nothing well above it", () => {
@@ -61,7 +71,7 @@ describe("the deal score's price part", () => {
   });
 
   it("judges a product only one store sells against its fair price, instead of a neutral half", () => {
-    const fair = fairPriceOf(offer("mega", 1)).price;
+    const fair = fairPriceOf({ ...offer("mega", 1), price: undefined }).price; // the estimate alone
     const [cheap] = calculateDealScores([offer("mega", Math.round(fair * 0.8))]);
     const [dear] = calculateDealScores([offer("mega", Math.round(fair * 1.25))]);
     expect(cheap.scoreBreakdown.price).toBeGreaterThan(30); // more than the old neutral 30 of 60

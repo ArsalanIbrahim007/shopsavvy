@@ -1,6 +1,7 @@
-import { normalizeTitle, extractStorage, modelTokens } from "./normalizeTitle.service.js";
+import { normalizeTitle, extractStorage, modelTokens, extractModelCodes } from "./normalizeTitle.service.js";
 import { isSimilarProduct, attributeConflict, tokenize, VARIANT_TOKENS } from "./similarity.service.js";
 import { calculateDealScores } from "../ranking/dealScore.js";
+import { SHARED_CODE_PRICE_GAP, brandOf, prefixConflict } from "./similarityModel.service.js";
 import { currentOffers } from "./offerFreshness.service.js";
 import { COLOURS, extractNetworkGeneration, extractPtaStatus, networkFamilyKey } from "./productAttributes.service.js";
 
@@ -164,6 +165,19 @@ const sameStoreVariant = (a, b, titleA, titleB) =>
   a.price > 0 && b.price > 0 &&
   Math.abs(a.price - b.price) / Math.min(a.price, b.price) > SAME_STORE_PRICE_GAP;
 
+/** A hard reason the listing may not share a group with this member, whatever the titles' similarity says. */
+function conflictsWithMember(listing, rawTitle, member, networkFamilies) {
+  const memberTitle = member.title || member.normalizedTitle || "";
+  return (
+    ptaConflict(listing, member) ||
+    ptaPriceConflict(listing, member) ||
+    sameStoreVariant(listing, member, rawTitle, memberTitle) ||
+    attributeConflict(rawTitle, memberTitle, { ignoreUnstatedStorage: true }) ||
+    isNetworkSplit(rawTitle, memberTitle, networkFamilies) ||
+    prefixConflict(rawTitle, memberTitle)
+  );
+}
+
 /**
  * The first group in `candidates` the listing may join, or null. The strategy decides whether it looks like the
  * group's product; on top of that it must not conflict with any member (see the comment inside).
@@ -191,13 +205,7 @@ function findMatchingGroup(listing, rawTitle, listingStorage, candidates, matchS
      */
     if (
       matchStrategy(rawTitle, group, listing, listingStorage) &&
-      !group.offers.some((member) =>
-        ptaConflict(listing, member) ||
-        ptaPriceConflict(listing, member) ||
-        sameStoreVariant(listing, member, rawTitle, member.title || member.normalizedTitle || "") ||
-        attributeConflict(rawTitle, member.title || member.normalizedTitle || "", { ignoreUnstatedStorage: true }) ||
-        isNetworkSplit(rawTitle, member.title || member.normalizedTitle || "", networkFamilies)
-      )
+      !group.offers.some((member) => conflictsWithMember(listing, rawTitle, member, networkFamilies))
     ) {
       // A listing that states its capacity has one variant to join: the first match, as before. So does one that matches a group
       // with no capacity either, unless it already matched a capacity variant.
@@ -214,6 +222,69 @@ function findMatchingGroup(listing, rawTitle, listingStorage, candidates, matchS
     }
   }
   return nearest;
+}
+
+/**
+ * Joins groups the first-match loop left apart although their titles name the same model. A listing joins the first group that
+ * matches, so two offers of one TV ("TCL 75" 75P79L" and "TCL - Smart Google TV QLED Premium 75 inch - P79L") could each settle in
+ * a different group of that TV, the second with offers whose titles carry no code at all. `sameModel` is the pair rule
+ * (similarityModel.service.js sharedModelCode: same brand, the same distinctive model code, prices within 25%); two groups join
+ * when it holds for an offer of each (comparing only the groups' own titles rejoined 35 of 396 pairs the rule had split), their
+ * capacities agree, and none of the joining offers conflicts with any offer already there (the checks findMatchingGroup makes).
+ * Groups are looked up by their offers' codes, a leading screen size dropped ("55u8000f" also files under "u8000f"), so only
+ * groups that share one are compared.
+ */
+function mergeSameModelGroups(groups, sameModel, networkFamilies) {
+  const titleOf = (offer) => offer.title || offer.normalizedTitle || "";
+  const keys = (title) => {
+    const codes = [...extractModelCodes(title, { minCodeLength: 4 })];
+    return [...codes, ...codes.map((code) => code.replace(/^\d{2,3}(?=[a-z][a-z0-9]{2,}$)/, ""))];
+  };
+  // One offer per distinct title and price is enough to ask the rule about (a store lists one TV many times).
+  const distinctOffers = (group) => [...new Map(group.offers.map((o) => [`${titleOf(o)}|${o.price}`, o])).values()];
+  const byKey = new Map();
+  const groupKeys = groups.map((group, i) => {
+    const own = new Set(group.offers.flatMap((offer) => keys(titleOf(offer))));
+    for (const key of own) {
+      if (!byKey.has(key)) byKey.set(key, []);
+      byKey.get(key).push(i);
+    }
+    return own;
+  });
+  const middle = (group) => (group.lowestPrice + group.highestPrice) / 2;
+  const absorbed = new Set();
+
+  groups.forEach((group, i) => {
+    if (absorbed.has(i)) return;
+    const others = new Set();
+    for (const key of groupKeys[i]) for (const j of byKey.get(key) ?? []) if (j > i && !absorbed.has(j)) others.add(j);
+    for (const j of [...others].sort((a, b) => a - b)) {
+      const other = groups[j];
+      if (group.storage !== null && other.storage !== null && group.storage !== other.storage) continue;
+      // The groups as wholes must agree too: one pair of offers alone chained Sony's WH-1000XM6 headphones (PKR 129,000) to its
+      // WF-1000XM6 earbuds (PKR 88,000), and an OKTRA TV to a PEL one.
+      if (brandOf(group.rawGroupKey) !== brandOf(other.rawGroupKey)) continue;
+      if (Math.abs(middle(group) - middle(other)) / Math.max(middle(group), middle(other)) > SHARED_CODE_PRICE_GAP) continue;
+      const mine = distinctOffers(group);
+      const named = distinctOffers(other).some((b) =>
+        mine.some((a) => sameModel({ title: titleOf(a), price: a.price }, { title: titleOf(b), price: b.price })));
+      if (!named) continue;
+      const clash = other.offers.some((listing) => {
+        const title = listing.title || listing.normalizedTitle || "";
+        return group.offers.some((member) => conflictsWithMember(listing, title, member, networkFamilies));
+      });
+      if (clash) continue;
+      for (const listing of other.offers) addOffer(group, listing);
+      if (group.storage === null && other.storage !== null) {
+        group.storage = other.storage;
+        group.normalizedGroupKey = other.normalizedGroupKey;
+        group.rawGroupKey = other.rawGroupKey;
+        group.productName = other.productName;
+      }
+      absorbed.add(j);
+    }
+  });
+  return groups.filter((_, i) => !absorbed.has(i));
 }
 
 function newGroup(listing, rawTitle, listingStorage) {
@@ -347,7 +418,7 @@ function groupIndex() {
   };
 }
 
-export function groupListingsByProduct(listings = [], { matchStrategy = ruleMatchStrategy, blocking = true } = {}) {
+export function groupListingsByProduct(listings = [], { matchStrategy = ruleMatchStrategy, blocking = true, sameModel = matchStrategy.sameModel ?? null } = {}) {
   let groups = [];
   const networkFamilies = splitNetworkFamilies(listings);
   const index = groupIndex();
@@ -383,6 +454,7 @@ export function groupListingsByProduct(listings = [], { matchStrategy = ruleMatc
     index.add(matchedGroup, rawTitle);
   });
 
+  if (sameModel) groups = mergeSameModelGroups(groups, sameModel, networkFamilies);
   groups = separateLikelyNonPta(groups, matchStrategy, networkFamilies);
 
   return groups

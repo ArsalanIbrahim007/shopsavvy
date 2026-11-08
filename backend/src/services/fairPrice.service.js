@@ -17,6 +17,10 @@ import { predictRidge } from "../ml/ridge.js";
 const here = dirname(fileURLToPath(import.meta.url));
 export const MAX_MEDIAN_ERROR = 0.22;
 export const MIN_COVERAGE = 0.5;
+// The model abstains for a listing whose own price lies well outside the range it expects (beyond its 80% range by more than
+// OUTSIDE_MARGIN): it does not describe that product, so it must not judge it (2026-11-08: a 98-inch Samsung TV at PKR 1,059,990,
+// which every store prices above PKR 1 million, got a fair price of PKR 454,739 and its "was" price was called suspicious).
+export const OUTSIDE_MARGIN = 0.15;
 
 let artifact = null;
 function load() {
@@ -51,12 +55,11 @@ export function fairPriceOf(listing) {
   if (vocabularyCoverage(listing, model) < MIN_COVERAGE) return null;
   const predicted = Math.exp(predictRidge(rowFor(listing, model), model));
   if (!Number.isFinite(predicted) || predicted <= 0) return null;
-  return {
-    price: Math.round(predicted),
-    low: Math.round(predicted * Math.exp(model.residual.p10)),
-    high: Math.round(predicted * Math.exp(model.residual.p90)),
-    medianError: m.mdape,
-  };
+  const low = predicted * Math.exp(model.residual.p10);
+  const high = predicted * Math.exp(model.residual.p90);
+  const price = Number(listing.price);
+  if (price > 0 && (price < low * (1 - OUTSIDE_MARGIN) || price > high * (1 + OUTSIDE_MARGIN))) return null;
+  return { price: Math.round(predicted), low: Math.round(low), high: Math.round(high), medianError: m.mdape };
 }
 
 /**

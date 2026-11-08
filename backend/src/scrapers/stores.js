@@ -53,7 +53,9 @@ import { scrapeWooSearch } from "./woocommerce.scraper.js";
 export const STORES = [
   { platform: "mistore", type: "shopify", baseUrl: "https://mistore.pk" },
   { platform: "mymart", type: "shopify", baseUrl: "https://mymart.pk" },
-  { platform: "alfatah", type: "shopify", baseUrl: "https://alfatah.pk" },
+  // A department store (groceries, clothes...): Shopify stops at 25,000 products, before most of its electronics, so its catalogue is
+  // read from its electronics collection (2026-11-08; scrapers/catalogue.js). Searches are unchanged.
+  { platform: "alfatah", type: "shopify", baseUrl: "https://alfatah.pk", collections: ["electronics-in-pakistan", "headphones-airpods-earbuds", "home-appliances"] },
   { platform: "xcessorieshub", type: "woocommerce", baseUrl: "https://xcessorieshub.com" },
   { platform: "eezepc", type: "woocommerce", baseUrl: "https://eezepc.com" },
   { platform: "ledshop", type: "woocommerce", baseUrl: "https://ledshop.pk" },

@@ -3,7 +3,7 @@
 import { describe, it, expect, vi } from "vitest";
 
 import { shopifyCatalogue, shopifyListing, storefrontCatalogue, wooCatalogue, STOREFRONT_PER_PAGE } from "../src/scrapers/catalogue.js";
-import { refreshCatalogue, storefrontTerms } from "../src/services/catalogueRefresh.service.js";
+import { coversHeldListings, refreshCatalogue, storefrontTerms } from "../src/services/catalogueRefresh.service.js";
 import { withoutRefreshedStores } from "../src/services/scheduledScraping.service.js";
 
 const collect = async (pages) => {
@@ -52,6 +52,18 @@ describe("the catalogue readers", () => {
     expect(errors).toHaveLength(1);
   });
 
+  it("reads past a short storefront page while the store's count says there is more (AlfaMall answers 37-39 of 40)", async () => {
+    const STORE = { platform: "alfamall", type: "storefront", baseUrl: "https://alfamall.com", apiUrl: "https://api.example/search", params: {}, productPath: "/" };
+    const item = (i) => ({ title: `Haier item ${i}`, handle: `haier-${i}`, variant_detail: { discounted_price: 1000 + i }, images: [] });
+    const fetchJson = vi.fn(async (url) => {
+      const page = Number(new URL(url).searchParams.get("page"));
+      return { count: 110, results: Array.from({ length: page < 3 ? 37 : 30 }, (_, i) => item(page * 100 + i)) };
+    });
+    const pages = await collect(storefrontCatalogue(STORE, ["haier"], { fetchJson }));
+    expect(pages).toHaveLength(3); // 3 x 40 >= 110
+    expect(pages.flat()).toHaveLength(37 + 37 + 30);
+  });
+
   it("skips a storefront brand whose search fails, and fails only when every brand does", async () => {
     const STORE = { platform: "alfamall", type: "storefront", baseUrl: "https://alfamall.com", apiUrl: "https://api.example/search", params: {}, productPath: "/" };
     const ok = { count: 1, results: [{ title: "Apple iPhone 17", handle: "apple-iphone-17", variant_detail: { discounted_price: 300000 }, images: [] }] };
@@ -66,6 +78,16 @@ describe("the catalogue readers", () => {
     expect(pages.flat().map((l) => l.title)).toEqual(["Apple iPhone 17"]);
     expect(errors).toEqual(["slow", "odd"]);
     await expect(collect(storefrontCatalogue(STORE, ["slow", "odd"], { fetchJson }))).rejects.toThrow(/every search failed/);
+  });
+
+  it("reports a WooCommerce read that stopped part-way, so the refresh marks nothing gone after it", async () => {
+    const WOO = { platform: "techroid", type: "woocommerce", baseUrl: "https://techroid.com" };
+    const simple = (id) => ({ id, name: `Item ${id}`, type: "simple", permalink: `https://techroid.com/product/item-${id}/`, prices: { price: "50000", currency_minor_unit: 2 } });
+    const errors = [];
+    const fetchJson = async (url) => (new URL(url).searchParams.get("page") === "1" ? Array.from({ length: 100 }, (_, i) => simple(i)) : { code: "rest_error" });
+    const pages = await collect(wooCatalogue(WOO, { fetchJson, onError: (e) => errors.push(e) }));
+    expect(pages.flat()).toHaveLength(100);
+    expect(errors).toHaveLength(1);
   });
 
   it("refuses an answer that is not a catalogue", async () => {
@@ -152,6 +174,27 @@ describe("refreshCatalogue", () => {
     expect(sparse.listing.updateMany).not.toHaveBeenCalled();
   });
 
+  it("marks nothing gone after reading only some collections, or a store larger than the readers' page limit (Al-Fatah, 2026-11-08)", async () => {
+    const held = ["https://mistore.pk/products/held-a", "https://mistore.pk/products/held-b", "https://mistore.pk/products/accessory-c"];
+    const fetchJson = async () => ({ products: shopifyPage(listingFor("held-a", 1000), listingFor("held-b", 3000)) });
+
+    // three collections of the store: a product outside them is not gone (1,185 Al-Fatah listings were marked so)
+    const partial = fakeModels(held);
+    partial.listing.updateMany = vi.fn();
+    const some = await refreshCatalogue({ ...SHOP, collections: ["electronics"] }, { fetchJson, ...partial });
+    expect(some).toMatchObject({ matched: 2, gone: 0 });
+    expect(partial.listing.updateMany).not.toHaveBeenCalled();
+
+    // every page full up to Shopify's limit: the store goes on, so the read is not the whole catalogue
+    const full = Array.from({ length: 250 }, (_, i) => product(`p${i}`, [{ price: "1000.00" }]));
+    const big = fakeModels(["https://mistore.pk/products/p1", "https://mistore.pk/products/p2", "https://mistore.pk/products/later"]);
+    big.listing.updateMany = vi.fn();
+    const capped = await refreshCatalogue(SHOP, { fetchJson: async () => ({ products: full }), ...big });
+    expect(capped.errors).toBe(1);
+    expect(capped.gone).toBe(0);
+    expect(big.listing.updateMany).not.toHaveBeenCalled();
+  });
+
   it("skips an implausible price, and writes nothing on a dry run", async () => {
     const { listing, priceHistory } = fakeModels(["https://mistore.pk/products/held-a", "https://mistore.pk/products/held-b"]);
     const fetchJson = async () => ({ products: shopifyPage(listingFor("held-a", 5), listingFor("held-b", 3000)) });
@@ -167,6 +210,14 @@ describe("storefrontTerms", () => {
     const titles = ["Samsung A17", "Samsung A57", "Samsung TV", "Apple iPhone 17", "Apple iPhone 16", "Apple Watch", "Apple AirPods", "Oddity Thing"];
     const listing = { find: () => ({ lean: async () => titles.map((title) => ({ title })) }) };
     expect(await storefrontTerms("alfamall", { listing })).toEqual(["apple", "samsung"]);
+  });
+});
+
+describe("coversHeldListings", () => {
+  it("lets the nightly scrape skip a store's searches only when its catalogue read found nearly all our listings there", () => {
+    expect(coversHeldListings({ known: 200, matched: 195 })).toBe(true);
+    expect(coversHeldListings({ known: 2444, matched: 1259 })).toBe(false); // Al-Fatah's three collections
+    expect(coversHeldListings({ known: 0, matched: 0 })).toBe(true);
   });
 });
 

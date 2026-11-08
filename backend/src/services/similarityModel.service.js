@@ -13,8 +13,8 @@ import { dirname, join } from "path";
 import { buildFeatureVector } from "../ml/features.js";
 import { FILLER_WORDS } from "../ml/fillerWords.js";
 import { predictProba } from "../ml/logisticRegression.js";
-import { attributeConflict, tokenize, sameSet } from "./similarity.service.js";
-import { modelTokens, extractStorage, extractPtaStatus } from "./normalizeTitle.service.js";
+import { attributeConflict, tokenize, sameSet, statedSizes, withoutSizePrefix } from "./similarity.service.js";
+import { modelTokens, extractStorage, extractPtaStatus, extractModelCodes } from "./normalizeTitle.service.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // The live model. SHOPSAVVY_MATCH_MODEL names another artifact in src/ml/ to try a
@@ -39,10 +39,59 @@ function loadModel() {
  * @param {{title:string, price?:number}} itemB
  * @returns {{isMatch: boolean, probability: number}}
  */
+// Two titles naming the same distinctive model code are one product, whatever else their wording says (2026-11-08: "TCL 40" QLED
+// Smart TV (40S59K)" and "TCL - Smart Google TV QLED 40 inch - S59K - 40S59K - (SNS65)" scored 0.17, kept apart because one title
+// carries an extra internal code). Only after the veto above (stated size, storage, PTA, generation...), only for a code with letters
+// and digits of at least SHARED_CODE_LENGTH characters (a leading screen size dropped), and only when the prices are within
+// SHARED_CODE_PRICE_GAP of each other (a code shared by a product and its accessory, or a typo, is far apart in price).
+// Not for computers: a processor's code ("1355U", "13420H") is shared by many different laptops.
+// Both titles must start with the same brand, and the code must not be that brand ("A4Tech" joined 3,206 pairs of different
+// headsets in the first measurement) nor a code that is not a model: a warranty ("1Year", "6Months"), a spec ("HDR10", "DDR5",
+// a router's speed class "BE3600") or a store's own reference ("ISPK-0545", "SNS65").
+export const SHARED_CODE_LENGTH = 4;
+export const SHARED_CODE_PRICE_GAP = 0.25;
+const COMPUTER =
+  /\b(laptop|notebook|macbook|chromebook|ultrabook|thinkpad|thinkbook|core\s*(i[3579]|ultra)|ryzen|intel|amd|celeron|pentium|processor|cpu|gpu|rtx|gtx|ddr\d)\b/i;
+const NOT_A_MODEL = /^(\d+(years?|yrs?|months?|days?)|hdr\d+|ddr\d+|lpddr\d+[a-z]?|wifi\d+|usb\d+|be\d{4}|ax\d{4}|ac\d{4}|ispk\d*|sns\d+)$/;
+export const brandOf = (title) => (String(title).toLowerCase().match(/[a-z0-9]+/) ?? [""])[0];
+
+export function sharedModelCode(itemA, itemB) {
+  if (process.env.SHOPSAVVY_NO_SHARED_CODE) return null; // to measure the grouping without this rule (09-recheck-group-merges.js --save)
+  if (COMPUTER.test(itemA.title) || COMPUTER.test(itemB.title)) return null;
+  const brand = brandOf(itemA.title);
+  if (!brand || brand !== brandOf(itemB.title)) return null;
+  const sizes = statedSizes(itemA.title, itemB.title);
+  const distinctive = (code) =>
+    code.length >= SHARED_CODE_LENGTH && /[a-z]/i.test(code) && /\d/.test(code) && code !== brand && !NOT_A_MODEL.test(code);
+  const codesA = [...withoutSizePrefix(extractModelCodes(itemA.title, { minCodeLength: 4 }), sizes)].filter(distinctive);
+  if (codesA.length === 0) return null;
+  const codesB = withoutSizePrefix(extractModelCodes(itemB.title, { minCodeLength: 4 }), sizes);
+  const shared = codesA.find((code) => codesB.has(code));
+  if (!shared) return null;
+  const a = Number(itemA.price);
+  const b = Number(itemB.price);
+  if (!(a > 0 && b > 0) || Math.abs(a - b) / Math.max(a, b) > SHARED_CODE_PRICE_GAP) return null;
+  return shared;
+}
+
+/**
+ * True when the titles name one model number under different hyphened prefixes: Sony's WH-1000XM6 headphones and WF-1000XM6
+ * earbuds share "1000XM6", and the classifier put "Sony WF-1000XM6 Wireless Headphones" with the headphones. Only a hyphen joins
+ * a prefix ("LED 55S80EUX" and "TV 55S80EUX" are one TV), and only a number-led code has one.
+ */
+export function prefixConflict(titleA, titleB) {
+  const hyphened = (title) => new Map([...String(title).matchAll(/\b([a-z]{1,4})-(\d[a-z0-9]{3,})\b/gi)].map((m) => [m[2].toLowerCase(), m[1].toLowerCase()]));
+  const a = hyphened(titleA);
+  if (a.size === 0) return false;
+  for (const [code, prefix] of hyphened(titleB)) if (a.has(code) && a.get(code) !== prefix) return true;
+  return false;
+}
+
 export function classifyPairML(itemA, itemB) {
-  if (attributeConflict(itemA.title, itemB.title, { ignoreUnstatedStorage: true })) {
+  if (attributeConflict(itemA.title, itemB.title, { ignoreUnstatedStorage: true }) || prefixConflict(itemA.title, itemB.title)) {
     return { isMatch: false, probability: 0 };
   }
+  if (sharedModelCode(itemA, itemB)) return { isMatch: true, probability: 1, reason: "shared model code" };
 
   const loadedModel = loadModel();
   const features = buildFeatureVector(
@@ -136,3 +185,7 @@ export function mlMatchStrategy(rawTitle, group, listing) {
 
   return false;
 }
+
+// The grouping's last pass (productGrouping.service.js mergeSameModelGroups) joins groups of one model that the first-match loop
+// left apart; groupListingsByProduct takes it from the strategy, so every caller using the trained strategy gets it.
+mlMatchStrategy.sameModel = sharedModelCode;

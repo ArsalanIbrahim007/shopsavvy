@@ -18,9 +18,13 @@ import { canonicalSourceUrl, toListingDoc } from "./scraper.service.js";
 export const BATCH_SIZE = 500;
 // A listing missing from a store's whole catalogue is no longer sold there (MyMart, 2026-11-08: 90 of 200 listings, last seen in
 // October, were gone from its catalogue), so it is marked out of stock and its old price stops counting as current. Only after a read
-// of the WHOLE catalogue without an error (a Shopify or WooCommerce store; a marketplace is read by brand and can miss things), and
+// of the WHOLE catalogue without an error (a Shopify or WooCommerce store read whole; a marketplace is read by brand and can miss things), and
 // only when at least MIN_FOUND_SHARE of our listings were found: a read that went wrong must never mark a store's products gone.
 export const MIN_FOUND_SHARE = 0.5;
+// The nightly scrape skips the searches at a store whose catalogue was read, but only when the read found at least COVERED_SHARE of
+// our listings there: Al-Fatah's three collections find about half, and the other half are still refreshed by searching.
+export const COVERED_SHARE = 0.9;
+export const coversHeldListings = (stats) => stats.known === 0 || stats.matched / stats.known >= COVERED_SHARE;
 // A storefront marketplace is read one brand at a time: the brands are the first words of the titles we hold for it, those with at
 // least MIN_TERM_LISTINGS listings (a long tail of one-off words would cost a request each for almost nothing).
 export const MIN_TERM_LISTINGS = 3;
@@ -113,7 +117,11 @@ export async function refreshCatalogue(store, { fetchJson, terms, dryRun = false
   await flush();
 
   stats.gone = 0;
-  const complete = store.type !== "storefront" && stats.errors === 0 && stats.known > 0 && stats.matched / stats.known >= MIN_FOUND_SHARE;
+  // Only a read of the whole store: not a marketplace read by brand, not chosen collections (Al-Fatah, 2026-11-08: its three
+  // collections found 1,259 of our 2,444 listings, and the other 1,185, accessories and the like, were marked gone though still sold),
+  // and not one a reader stopped early (an error, or a page limit reached: catalogue.js reports both through onError).
+  const wholeStore = store.type !== "storefront" && !store.collections?.length;
+  const complete = wholeStore && stats.errors === 0 && stats.known > 0 && stats.matched / stats.known >= MIN_FOUND_SHARE;
   if (complete) {
     const gone = [...known].filter((url) => !seen.has(url));
     stats.gone = gone.length;

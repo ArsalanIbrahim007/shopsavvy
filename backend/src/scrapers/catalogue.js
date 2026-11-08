@@ -50,12 +50,21 @@ export function shopifyListing({ platform, baseUrl }, product) {
 // pages read until then are kept, and the rest is left to the searches.
 export const SHOPIFY_MAX_PAGES = 100;
 
-/** Every page of a Shopify store's catalogue, as arrays of listings. A later page that fails ends the read; the first must not. */
-export async function* shopifyCatalogue(store, { fetchJson = politeFetchJson, onError } = {}) {
+/**
+ * Every page of a Shopify store's catalogue, as arrays of listings: the whole store, or only `store.collections` when it names some
+ * (a department store whose catalogue is larger than Shopify will page through). A later page that fails ends that read; the first
+ * must not.
+ */
+export async function* shopifyCatalogue(store, options = {}) {
+  const paths = store.collections?.length ? store.collections.map((handle) => `/collections/${encodeURIComponent(handle)}/products.json`) : ["/products.json"];
+  for (const path of paths) yield* shopifyPages(store, path, options);
+}
+
+async function* shopifyPages(store, path, { fetchJson = politeFetchJson, onError } = {}) {
   for (let page = 1; page <= SHOPIFY_MAX_PAGES; page++) {
     let body;
     try {
-      body = await fetchJson(`${store.baseUrl}/products.json?limit=${SHOPIFY_PER_PAGE}&page=${page}`);
+      body = await fetchJson(`${store.baseUrl}${path}?limit=${SHOPIFY_PER_PAGE}&page=${page}`);
     } catch (error) {
       if (page === 1) throw error;
       onError?.({ page, error });
@@ -64,12 +73,15 @@ export async function* shopifyCatalogue(store, { fetchJson = politeFetchJson, on
     const products = body?.products;
     if (!Array.isArray(products)) {
       if (page === 1) throw new Error(`${store.platform}: unexpected catalogue response`);
+      onError?.({ page, error: new Error(`${store.platform}: unexpected catalogue response at page ${page}`) });
       return;
     }
     if (products.length === 0) return;
     yield safeMap(products, (product) => shopifyListing(store, product), store.platform);
     if (products.length < SHOPIFY_PER_PAGE) return;
   }
+  // Every page was full: the store has more than Shopify serves, so this was not the whole catalogue (the refresh then marks nothing gone).
+  onError?.({ page: SHOPIFY_MAX_PAGES, error: new Error(`${store.platform}: stopped at ${SHOPIFY_MAX_PAGES} pages, the catalogue goes on`) });
 }
 
 /**
@@ -78,12 +90,13 @@ export async function* shopifyCatalogue(store, { fetchJson = politeFetchJson, on
  * listing per capacity and price exactly as a search makes them: at Techroid all 309 listings the plain catalogue missed were
  * such variations (2026-11-08).
  */
-export async function* wooCatalogue(store, { fetchJson = politeFetchJson, expand = () => false } = {}) {
+export async function* wooCatalogue(store, { fetchJson = politeFetchJson, expand = () => false, onError } = {}) {
   const api = `${store.baseUrl}/wp-json/wc/store/v1/products`;
   for (let page = 1; page <= MAX_PAGES; page++) {
     const batch = await fetchJson(`${api}?per_page=${WOO_PER_PAGE}&page=${page}`);
     if (!Array.isArray(batch)) {
       if (page === 1) throw new Error(`${store.platform}: unexpected catalogue response`);
+      onError?.({ page, error: new Error(`${store.platform}: unexpected catalogue response at page ${page}`) });
       return;
     }
     if (batch.length === 0) return;
@@ -107,6 +120,7 @@ export async function* wooCatalogue(store, { fetchJson = politeFetchJson, expand
     yield listings;
     if (batch.length < WOO_PER_PAGE) return;
   }
+  onError?.({ page: MAX_PAGES, error: new Error(`${store.platform}: stopped at ${MAX_PAGES} pages, the catalogue goes on`) });
 }
 
 /**
@@ -132,8 +146,10 @@ export async function* storefrontCatalogue(store, terms, { fetchJson = politeFet
       }
       if (body.results.length === 0) break;
       yield safeMap(body.results, (item) => storefrontListing(store, item), store.platform);
+      // Stop at the count the store reports, not at a short page: AlfaMall often answers 37 to 39 of 40 (2026-11-08: stopping at
+      // the first short page read two pages of most brands, and found 21% of our AlfaMall listings).
       const total = Math.min(Number(body.count) || 0, STOREFRONT_MAX_RESULTS);
-      if (body.results.length < STOREFRONT_PER_PAGE || page * STOREFRONT_PER_PAGE >= total) break;
+      if (page * STOREFRONT_PER_PAGE >= total) break;
     }
   }
   if (terms.length > 0 && failedTerms === terms.length) throw new Error(`${store.platform}: every search failed`);

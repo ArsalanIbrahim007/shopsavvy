@@ -229,7 +229,7 @@ describe("HonestPrices page", () => {
     vi.mocked(getIntegrity).mockResolvedValue(report());
     renderPage();
     expect(await screen.findByText(/Of the offers the site shows as one product, 99 in 100 pairs really are one product/)).toBeInTheDocument();
-    expect(screen.getByText(/it shows 64 in 100 together \(31 before the matcher's October fixes\)/)).toBeInTheDocument();
+    expect(screen.getByText(/it shows 64 in 100 together \(31 before the matcher's fixes in October and November\)/)).toBeInTheDocument();
   });
 
   it("says one offer, not one offers", async () => {

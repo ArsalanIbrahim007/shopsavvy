@@ -83,6 +83,38 @@ correct merge was newly split (the two split ones, m034 and m047, were split bef
 read; all were the same product (store price differences such as instalment prices, not different models). The trained matcher's
 pair scores (EVALUATION_REPORT.md) rose: accuracy 79.0% to 80.0%, precision 76.9% to 78.6%, recall 34.5% to 37.9%.
 
+## Model codes (2026-11-08)
+
+Most missed pairs left were televisions, tablets and watches whose titles name the same model code in different wording ("TCL |
+50 Inch | 50P79L | Premium QLED TV" and "TCL - Smart Google TV QLED Premium 50 inch - P79L"); the trained matcher scored such pairs
+as low as 0.17. Two changes (similarityModel.service.js `sharedModelCode`, `prefixConflict`; productGrouping.service.js
+`mergeSameModelGroups`):
+
+- Two titles of the same brand naming the same distinctive code (letters and digits, at least 4 characters, a leading screen
+  size dropped) are one product when their prices are within 25%, after every veto (size, storage, PTA, generation...). Never for
+  computers (a processor's code is shared by many laptops), nor for the brand itself, a warranty ("1Year"), a spec ("HDR10",
+  "DDR5", "BE3600") or a store's own reference ("ISPK-0545", "SNS65").
+- A listing joins the first group that matches, so two offers of one TV could settle in two groups of that TV. A last pass joins
+  such groups when an offer of each names the model, the groups' brands and middle prices agree, and no offer conflicts with any
+  offer of the other group.
+- One number under different hyphened prefixes is two models (Sony's WH-1000XM6 headphones and WF-1000XM6 earbuds). This veto
+  applies to every match, and split a mix-up the trained matcher had made before.
+
+The first version took any shared code. Its 10,568 newly joined pairs were read by code: "A4Tech" (the brand) alone joined 3,206
+pairs of different headsets, and "1Year", "HDR10", "DDR5" and "SNS67" joined others, so the exclusions above were added and it was
+measured again. The final version, against a snapshot of the grouping without it taken the same day:
+
+- **recall: 72.5%** (63.3% on the same day without it; the 64.3% above was before the 2026-11-08 price refresh);
+  estimated 15,173 same-product pairs together, 5,766 apart
+- **pair precision: 98.9%**; estimated 166 different-product pairs together (the same pairs as before)
+- same-product pairs now together that were apart without it: r014, r036, r065, r147; different-product pairs now together: none.
+  r067 is split with or without it (its two prices are now 25% apart)
+- merge precision (GROUPING_EVALUATION.md sample): 59 of 61, 96.7%, as without it; no labelled merge changed
+- groups 9,218 to 8,914; 6,583 pairs of offers newly together, 329 newly apart. Of the newly together, a random 40 and the 25 joined
+  only through a group (not by a pair of their own) furthest apart in price were read: all one product, some at a store charging far
+  more than the rest. The newly apart are mostly offers of one phone or TV now in two groups of it instead of one (a lost comparison,
+  not a wrong one), plus the Sony headphones and earbuds, now correctly apart.
+
 ## What this does and does not measure
 
 Pair recall among candidate pairs: one product split into two groups of five offers each counts as 25 missed pairs, as is usual for this

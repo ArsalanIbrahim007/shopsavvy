@@ -276,7 +276,7 @@ function LiveGrouping({ grouping }) {
         </RingGauge>
         <p className="muted honest-live-grouping__text">
           Of the pairs of offers of one product, it shows {Math.round(grouping.recall)} in 100 together
-          {grouping.firstRecall ? ` (${Math.round(grouping.firstRecall)} before the matcher's October fixes)` : ""}. The rest show as two products:
+          {grouping.firstRecall ? ` (${Math.round(grouping.firstRecall)} before the matcher's fixes in October and November)` : ""}. The rest show as two products:
           the safer mistake.
         </p>
       </div>

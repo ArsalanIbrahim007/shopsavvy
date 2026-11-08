@@ -27,7 +27,7 @@ config({ quiet: true });
 import mongoose from "mongoose";
 
 import { isDoneToday, markDone, markFailed, tryStart } from "../jobs/scrapeState.js";
-import { CATALOGUE_STORES, refreshCatalogue } from "../services/catalogueRefresh.service.js";
+import { CATALOGUE_STORES, coversHeldListings, refreshCatalogue } from "../services/catalogueRefresh.service.js";
 import { enrichFromPages } from "../services/pageEnrichment.service.js";
 import { buildScheduledQueryPlan, createQueryLog, RUN_BUDGET_MS, runScheduledScrape, withoutRefreshedStores } from "../services/scheduledScraping.service.js";
 
@@ -86,7 +86,7 @@ try {
     for (const store of CATALOGUE_STORES) {
       try {
         const s = await refreshCatalogue(store);
-        refreshed.add(store.platform);
+        if (coversHeldListings(s)) refreshed.add(store.platform);
         console.log(`[${stamp()}] catalogue ${s.platform}: ${s.updated} of our ${s.known} listings updated${s.gone ? `, ${s.gone} no longer sold` : ""} (${s.items} in its catalogue, ${s.pages} pages, ${Math.round(s.durationMs / 1000)} s)`);
       } catch (err) {
         console.warn(`[${stamp()}] catalogue ${store.platform} failed: ${err.message} (its searches still run)`);
@@ -94,7 +94,8 @@ try {
     }
   }
 
-  // 2. The searches, for the stores without a catalogue (and for new products): a store refreshed above is not asked again.
+  // 2. The searches, for the stores without a catalogue (and for new products): a store whose catalogue read found nearly all our
+  // listings there is not asked again (coversHeldListings).
   const queryLog = createQueryLog();
   const fullPlan = await buildScheduledQueryPlan({ minOffers, staleSingles, lastQueried: queryLog.lastQueried });
   const plan = withoutRefreshedStores(fullPlan, refreshed);
