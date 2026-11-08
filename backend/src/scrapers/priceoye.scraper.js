@@ -21,7 +21,9 @@ async function scrapePriceOyeSearch(searchUrl) {
     const html = await fetchHtml(pageUrl);
     const $ = cheerio.load(html);
 
-    const cards = $("a.product-card").toArray();
+    // Each result was an <a class="product-card">; since about 2026-11-08 it is the link inside a <div class="productBox">, and the
+    // scraper found nothing (every PriceOye search came back empty). Both layouts are read; the title and price classes are the same.
+    const cards = $("a.product-card, .productBox > a").toArray();
 
     if (cards.length === 0) {
       break;
