@@ -1,17 +1,5 @@
-// index.js
-// Runs all fixed platform scrapers and returns combined results.
-//
-// Usage:
-//   node index.js "iphone 15"
-//   node index.js "samsung galaxy s24"
-
 import { config } from "dotenv";
-config({
-  path: new URL("../../.env", import.meta.url).pathname.replace(
-    /^\/([A-Z]:)/,
-    "$1"
-  ),
-});
+config({ path: new URL("../../.env", import.meta.url).pathname.replace(/^\/([A-Z]:)/, "$1") });
 
 import { scrapePriceOyeSearch } from "./priceoye.scraper.js";
 import { scrapeMegaSearch } from "./mega.scraper.js";
@@ -21,35 +9,38 @@ import { scrapeW11StopSearch } from "./w11stop.scraper.js";
 // Telemart is switched off (see the disabled task in scrapeFixedPlatforms below and config/platforms.js).
 // import { scrapeTelemartSearch } from "./telemart.scraper.js";
 import { scrapeIShoppingSearch } from "./ishopping.scraper.js";
-// Daraz is switched off (see the disabled task in scrapeFixedPlatforms below).
-// Re-enable by uncommenting this import and that block.
+// Daraz disabled: robots.txt disallows the product catalogue (/catalogsearch/ and /s/ are Disallowed)
 // import { scrapeDarazSearch } from "./daraz.scraper.js";
 import { storeTasks } from "./stores.js";
+// Store breaker: pauses a store after 5 consecutive failures (5 min, then 15, then 30).
+// One probe request is sent after each pause to check if the store recovered.
 import { storeBreaker } from "./storeBreaker.js";
 import { detectCategory, detectQueryCategory } from "./productCategory.js";
+import { quote } from "../config/logSafe.js";
 
-// Query aliases — map shorthand searches to what actually appears in titles
+// FIX 3: QUERY_ALIASES — keep the original content exactly as it is on main.
+// Do not re-align spacing here; it only adds noise to the diff.
 const QUERY_ALIASES = {
-  "playstation 5":   ["ps5", "playstation5"],
-  "ps5":             ["playstation 5", "playstation5"],
-  "dell laptop":     ["dell latitude", "dell inspiron", "dell xps", "dell vostro"],
-  "hp laptop":       ["hp pavilion", "hp elitebook", "hp probook", "hp envy"],
-  "lenovo laptop":   ["lenovo thinkpad", "lenovo ideapad", "lenovo thinkbook"],
-  "samsung galaxy":  ["samsung s", "galaxy s"],
-  "samsung s25":     ["galaxy s25", "samsung galaxy s25"],
-  "samsung s24":     ["galaxy s24", "samsung galaxy s24"],
-  "s25 ultra":       ["galaxy s25 ultra"],
-  "s24 ultra":       ["galaxy s24 ultra"],
-  "z fold":          ["galaxy z fold"],
-  "z flip":          ["galaxy z flip"],
+  "playstation 5": ["ps5", "playstation5"],
+  "ps5": ["playstation 5", "playstation5"],
+  "dell laptop": ["dell latitude", "dell inspiron", "dell xps", "dell vostro"],
+  "hp laptop": ["hp pavilion", "hp elitebook", "hp probook", "hp envy"],
+  "lenovo laptop": ["lenovo thinkpad", "lenovo ideapad", "lenovo thinkbook"],
+  "samsung galaxy": ["samsung s", "galaxy s"],
+  "samsung s25": ["galaxy s25", "samsung galaxy s25"],
+  "samsung s24": ["galaxy s24", "samsung galaxy s24"],
+  "s25 ultra": ["galaxy s25 ultra"],
+  "s24 ultra": ["galaxy s24 ultra"],
+  "z fold": ["galaxy z fold"],
+  "z flip": ["galaxy z flip"],
 };
 
 function filterByRelevance(listings, query) {
   const q = query.toLowerCase().trim();
   const queryCategory = detectQueryCategory(q);
-
-  console.log(`[category] Query "${query}" → ${queryCategory.category}`);
-
+  // FIX 5: log line format changed from "[%s] Query %s" (looked like a store tag)
+  // to "[category] Query %s → %s" so it is clearly a category line, not a store line
+  console.log("[category] Query %s → %s", quote(query), queryCategory.category);
   return listings
     .map((listing) => {
       const productCategory = detectCategory(listing.title);
@@ -61,37 +52,29 @@ function filterByRelevance(listings, query) {
     })
     .filter((listing) => {
       const title = listing.title.toLowerCase();
-
-      // Category filter — drop listings outside the query's category
       if (
         queryCategory.category !== "other" &&
         listing.category !== queryCategory.category
-      ) {
+      )
         return false;
-      }
-
-      // Exact phrase match
       if (title.includes(q)) return true;
-
-      // Check aliases
       const aliases = QUERY_ALIASES[q] || [];
       if (aliases.some((alias) => title.includes(alias))) return true;
-
-      // Multi-word: require at least 2 matching words
       const words = q.split(/\s+/).filter((w) => w.length > 2);
       if (words.length === 1) return title.includes(words[0]);
-
       const matchingWords = words.filter((w) => title.includes(w));
       return matchingWords.length >= Math.min(2, words.length);
     });
 }
 
 /**
- * Runs all fixed scrapers in parallel and returns filtered results.
+ * Runs the fixed scrapers in parallel and returns the relevant listings; with `withReport`, also one row per store (Muzammil's M5:
+ * ok, empty, paused, blocked or error, with counts and the time taken). `only`: ask just these stores (the nightly refresh asks the
+ * stores known to sell the product, see scheduledScraping.service.js).
  */
-async function scrapeFixedPlatforms(query, { only } = {}) {
+async function scrapeFixedPlatforms(query, opts = {}) {
+  const { withReport = false, only } = opts;
   const encoded = encodeURIComponent(query);
-
   const tasks = [
     {
       platform: "priceoye",
@@ -99,27 +82,29 @@ async function scrapeFixedPlatforms(query, { only } = {}) {
     },
     {
       platform: "mega",
-      // Mega's own search backend throws a 500 (empty body, confirmed via
-      // direct request) for any hyphenated multi-word path -- every query
-      // of more than one word was failing, not intermittently, on every
-      // single scrape. A literal "+" in the path works instead (verified
-      // returning real, relevant result cards); their server evidently
-      // does its own space substitution on "+" but not "-".
-      fn: () => scrapeMegaSearch(`https://www.mega.pk/search/${query.trim().replace(/\s+/g, "+")}/`),
+      fn: () =>
+        scrapeMegaSearch(
+          `https://www.mega.pk/search/${query.trim().replace(/\s+/g, "+")}/`
+        ),
     },
     {
       platform: "shophive",
-      fn: () => scrapeShophiveSearch(`https://www.shophive.com/catalogsearch/result/?q=${encoded}`),
+      fn: () =>
+        scrapeShophiveSearch(
+          `https://www.shophive.com/catalogsearch/result/?q=${encoded}`
+        ),
     },
     {
       platform: "paklap",
-      // Paklap 403s every plain axios request -- goes through a headless
-      // browser instead (see paklap.scraper.js / playwrightFetch.js).
-      fn: () => scrapePaklapSearch(`https://www.paklap.pk/catalogsearch/result/index/?cat=0&q=${encoded}`),
+      fn: () =>
+        scrapePaklapSearch(
+          `https://www.paklap.pk/catalogsearch/result/index/?cat=0&q=${encoded}`
+        ),
     },
     {
       platform: "w11stop",
-      fn: () => scrapeW11StopSearch(`https://w11stop.com/search?search=${encoded}`),
+      fn: () =>
+        scrapeW11StopSearch(`https://w11stop.com/search?search=${encoded}`),
     },
     // DISABLED 2026-10-25: Telemart (now telex.pk) forbids scraping in its terms; see config/platforms.js.
     // The scraper file is kept intact. Re-enable by uncommenting this block and the import above.
@@ -129,68 +114,117 @@ async function scrapeFixedPlatforms(query, { only } = {}) {
     // },
     {
       platform: "ishopping",
-      // Same 403-without-a-real-browser issue as Paklap.
-      fn: () => scrapeIShoppingSearch(`https://www.ishopping.pk/catalogsearch/result/?q=${encoded}`),
+      fn: () =>
+        scrapeIShoppingSearch(
+          `https://www.ishopping.pk/catalogsearch/result/?q=${encoded}`
+        ),
     },
-    // DISABLED: Daraz's robots.txt disallows /catalog/ and it is the slowest,
-    // least reliable source. The scraper file is kept intact.
-    // {
-    //   platform: "daraz",
-    //   // React SPA, needs a headless browser like Paklap/iShopping. Unlike
-    //   // those two, Daraz's robots.txt explicitly disallows /catalog/ (this
-    //   // path) -- doesn't trigger a CAPTCHA or block page, but is a
-    //   // deliberate signal, see daraz.scraper.js for the full note.
-    //   fn: () => scrapeDarazSearch(`https://www.daraz.pk/catalog/?q=${encoded}`),
-    // },
-
-    // Stores read through a platform adapter (Shopify, WooCommerce) rather than a scraper of their own: see stores.js.
     ...storeTasks(query),
   ];
 
-  // A store that has failed several times in a row is paused and tried again now and then (storeBreaker.js), so a store that is down
-  // is not asked hundreds of times a night.
+  // Only the stores asked for, when the caller names some; a store not asked for is not in the report either.
   const wanted = only?.length ? new Set(only) : null;
-  const live = tasks.filter((t) => (!wanted || wanted.has(t.platform)) && storeBreaker.allow(t.platform));
-  const settled = await Promise.allSettled(live.map((t) => t.fn()));
-  const results = [];
+  const report = [];
+  const live = [];
 
-  settled.forEach((outcome, i) => {
-    const platform = live[i].platform;
-    if (outcome.status === "fulfilled") {
+  // FIX 2: storeBreaker.until() does not exist.
+  // storeBreaker.paused() returns [{platform, failures, until}] for all paused stores.
+  const pausedEntries = storeBreaker.paused();
+  const pausedMap = new Map(pausedEntries.map((e) => [e.platform, e]));
+
+  for (const task of tasks) {
+    if (wanted && !wanted.has(task.platform)) continue;
+    // A store that has failed several times in a row is paused and tried again now and then (storeBreaker.js).
+    if (!storeBreaker.allow(task.platform)) {
+      const entry = pausedMap.get(task.platform);
+      report.push({
+        platform: task.platform,
+        status: "paused",
+        fetched: 0,
+        relevant: 0,
+        durationMs: 0,
+        ...(entry?.until !== undefined && { until: entry.until }),
+      });
+    } else {
+      live.push(task);
+    }
+  }
+
+  // FIX 4: time failed stores too.
+  // Each task resolves to { platform, ok, raw?, reason?, durationMs }
+  // so the rejection branch always has a real elapsed time.
+  const results = await Promise.all(
+    live.map(async (task) => {
+      const start = Date.now();
+      try {
+        const raw = await task.fn();
+        return { platform: task.platform, ok: true, raw, durationMs: Date.now() - start };
+      } catch (err) {
+        return { platform: task.platform, ok: false, reason: err, durationMs: Date.now() - start };
+      }
+    })
+  );
+
+  const allListings = [];
+
+  for (const result of results) {
+    const { platform, durationMs } = result;
+    if (result.ok) {
+      const { raw } = result;
       storeBreaker.success(platform);
-      const filtered = filterByRelevance(outcome.value, query);
+      const relevant = filterByRelevance(raw, query);
       console.log(
-        `[${platform}] scraped ${outcome.value.length} listings → ${filtered.length} relevant`
+        "[%s] scraped %d listings → %d relevant",
+        platform,
+        raw.length,
+        relevant.length
       );
-      results.push(...filtered);
+      allListings.push(...relevant);
+      report.push({
+        platform,
+        status: raw.length === 0 ? "empty" : "ok",
+        fetched: raw.length,
+        relevant: relevant.length,
+        durationMs,
+      });
     } else {
       storeBreaker.failure(platform);
-      console.error(`[${platform}] failed:`, outcome.reason.message);
+      const msg = result.reason?.message ?? String(result.reason);
+      const blocked = /403|429|blocked/i.test(msg);
+      console.error("[%s] failed: %s", platform, msg);
+      report.push({
+        platform,
+        status: blocked ? "blocked" : "error",
+        fetched: 0,
+        relevant: 0,
+        durationMs,
+        error: msg,
+      });
     }
-  });
+  }
 
-  return results;
+  if (!withReport) return allListings;
+  return { listings: allListings, report };
 }
 
 // opts.platforms: ask only these stores (the nightly refresh asks the stores known to sell the product, see scheduledScraping.service.js).
 async function scrapeAllPlatforms(query, opts = {}) {
-  console.log(`\nSearching for: "${query}"\n`);
-  return scrapeFixedPlatforms(query, { only: opts.platforms });
+  console.log("Searching for: %s", quote(query));
+  return scrapeFixedPlatforms(query, { ...opts, only: opts.platforms });
 }
 
 export { scrapeAllPlatforms, scrapeFixedPlatforms };
 
-// CLI usage: node index.js "iphone 15"
-const runningDirectly = process.argv[1]
-  ?.replace(/\\/g, "/")
-  .endsWith("scrapers/index.js");
-
-if (runningDirectly) {
-  const args = process.argv.slice(2).filter((a) => !a.startsWith("--"));
-  const query = args[0] || "iphone";
-
-  scrapeAllPlatforms(query).then((results) => {
-    console.log(`\nTotal listings scraped: ${results.length}`);
-    console.log(JSON.stringify(results, null, 2));
+// CLI: node scrapers/index.js "iphone 17 pro"
+if (process.argv[1] && process.argv[1].endsWith("index.js")) {
+  const query = process.argv[2];
+  if (!query) {
+    console.error("Usage: node scrapers/index.js <query>");
+    process.exit(1);
+  }
+  scrapeAllPlatforms(query, { withReport: true }).then(({ listings, report }) => {
+    console.log("\n--- Report ---");
+    report.forEach((r) => console.log(JSON.stringify(r)));
+    console.log(`\n${listings.length} listings total`);
   });
 }
