@@ -58,13 +58,8 @@ async function computeCategory(category, now) {
   return computeDealsInWorker(enriched, { now });
 }
 
-/** Deals for one category, from cache when fresh. */
-async function categoryDeals(category, now) {
-  const hit = cache.get(category);
-  if (hit && hit.expires > now) return hit;
-
+function refresh(category, now) {
   if (inFlight.has(category)) return inFlight.get(category);
-
   const computation = computeCategory(category, now)
     .then((deals) => {
       const entry = { expires: now + CACHE_TTL_MS, generatedAt: new Date(now).toISOString(), deals };
@@ -72,9 +67,22 @@ async function categoryDeals(category, now) {
       return entry;
     })
     .finally(() => inFlight.delete(category));
-
   inFlight.set(category, computation);
   return computation;
+}
+
+/**
+ * Deals for one category, from cache. Past its ten minutes the last list is still served at once while a fresh one is computed
+ * in the background, as the category catalogs are (catalogFeed.service.js): only the first computation is waited for.
+ */
+async function categoryDeals(category, now) {
+  const hit = cache.get(category);
+  if (hit && hit.expires > now) return hit;
+  if (hit) {
+    refresh(category, now).catch((error) => console.warn(`[deals] Could not refresh ${category}: ${error.message}`));
+    return hit;
+  }
+  return refresh(category, now);
 }
 
 /**

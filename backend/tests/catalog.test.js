@@ -101,11 +101,19 @@ describe("getCatalog", () => {
     expect(find).toHaveBeenCalledTimes(1);
   });
 
-  it("recomputes after the cache expires", async () => {
+  // 2026-11-08: a large category takes 30 to 90 s to regroup, and the home page's rows waited that long every ten minutes.
+  it("past its ten minutes, answers at once from the last catalog and recomputes in the background", async () => {
     const t = Date.now();
-    await getCatalog({ category: "smartphone", now: t });
-    await getCatalog({ category: "smartphone", now: t + 11 * 60 * 1000 });
-    expect(find).toHaveBeenCalledTimes(2);
+    const first = await getCatalog({ category: "smartphone", now: t });
+
+    let finish;
+    find.mockImplementation(() => ({ lean: () => new Promise((resolve) => { finish = () => resolve(LISTINGS.slice(0, 3)); }) }));
+    const stale = await getCatalog({ category: "smartphone", now: t + 11 * 60 * 1000 });
+    expect(stale.generatedAt).toBe(first.generatedAt); // the old one, without waiting
+    expect(find).toHaveBeenCalledTimes(2); // the recomputation has started
+
+    finish();
+    await vi.waitFor(async () => expect((await getCatalog({ category: "smartphone", now: t + 12 * 60 * 1000 })).total).toBe(1));
   });
 
   it("asks the database only for visible listings of that category with a real price", async () => {

@@ -27,7 +27,7 @@
 .searchbox--large .searchbox__button { width: 44px; height: 44px; right: 6px; top: 6px; }
 
 .searchbox__list {
-  position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 6px);
+  position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + var(--space-2));
   margin: 0; padding: var(--space-1); list-style: none;
   box-shadow: var(--shadow-pop);
 }

@@ -38,10 +38,7 @@ function Hero() {
   return (
     <section className="hero">
       <div className="container hero__inner">
-        <span className="hero__eyebrow">Price comparison for Pakistan</span>
-        <h1 className="hero__title">
-          Know if the price is real, <span className="hero__accent">before you buy.</span>
-        </h1>
+        <h1 className="hero__title">Know if the price is real, before you buy</h1>
         <p className="hero__lead">
           Compare electronics across Pakistani stores. We check every discount against price history and other stores.
         </p>
@@ -98,10 +95,7 @@ function TrustRow({ stats }) {
 function Categories({ stats }) {
   return (
     <section className="home-section container" aria-labelledby="cat-heading" aria-busy={stats.status === "loading"}>
-      <div>
-        <p className="eyebrow">Catalog</p>
-        <h2 id="cat-heading">Browse by category</h2>
-      </div>
+      <h2 id="cat-heading">Browse by category</h2>
       {stats.status === "loading" && (
         <div className="tiles">{Array.from({ length: 6 }, (_, i) => <Skeleton key={i} height={84} style={{ borderRadius: "var(--radius-card)" }} />)}</div>
       )}
@@ -177,9 +171,11 @@ function Caught() {
   );
 }
 
-// The products of one category that the most stores sell, straight from the server's cached catalog.
+// The products of one category that the most stores sell, straight from the server's cached catalog. One row of five (a wide
+// screen's row), not two: three sections of two identical rows made the page about 5,600 px long; "See all" has the rest.
+const MOST_COMPARED_SHOWN = 5;
 function MostCompared({ category, title, allLabel }) {
-  const products = useAsync((signal) => getCatalog({ category, limit: 8, signal }), [category]);
+  const products = useAsync((signal) => getCatalog({ category, limit: MOST_COMPARED_SHOWN, signal }), [category]);
 
   if (products.status === "error") return null;
   if (products.status === "success" && products.data.groups.length === 0) return null;

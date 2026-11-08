@@ -362,6 +362,20 @@ describe("Home", () => {
     expect(categories).toEqual(["laptop", "smartphone", "tv"]);
   });
 
+  // The unslop audit's polish (2026-11-08): no pill badge above the headline, a headline without a period, no uppercase "Catalog"
+  // label, one row of five products per category, and the deal score as quiet text rather than another pill.
+  it("keeps the hero and sections quiet: one headline, one row of products, verdict badges only", async () => {
+    vi.mocked(api.getCatalog).mockResolvedValue({ groups: [group("Samsung Galaxy A17", [offer("p1", "priceoye", 64000, { dealScore: 88 }), offer("p2", "mega", 65500)])], total: 1, offset: 0, generatedAt: NOW });
+    const { container } = renderAt("/", <Home />);
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(/^Know if the price is real, before you buy$/);
+    expect(container.querySelector(".hero__eyebrow")).toBeNull();
+    expect(screen.queryByText(/^catalog$/i)).toBeNull();
+    await screen.findByRole("heading", { name: /most compared phones/i });
+    expect(vi.mocked(api.getCatalog).mock.calls.every(([arg]) => arg.limit === 5)).toBe(true);
+    const card = (await screen.findAllByRole("article")).find((a) => a.textContent.includes("Samsung Galaxy A17"));
+    expect(within(card).queryByText(/^Score \d+$/).closest(".badge")).toBeNull();
+  });
+
   it("has the hero search and popular searches that go to the results page", async () => {
     renderAt("/", <Home />);
     expect(screen.getByRole("combobox")).toBeInTheDocument();

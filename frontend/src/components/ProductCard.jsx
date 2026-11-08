@@ -55,7 +55,6 @@ export default function ProductCard({ group }) {
       <div className="product-card__badges">
         {condition && <VerdictBadge tone={condition.tone} label={condition.label} title={condition.reason} />}
         {oldPrice && <VerdictBadge tone={oldPrice.tone} label={oldPrice.label} title={oldPrice.reason} />}
-        {score !== null && <span className="badge badge-neutral" title="Deal score out of 100: price, store trust, freshness and availability">Score {Math.round(score)}</span>}
         {pta && <VerdictBadge tone={pta.tone} label={pta.label} title={pta.reason} />}
         {lowest && <VerdictBadge tone={lowest.tone} label={lowest.label} title={lowest.reason} />}
         {badges.map((badge) => (
@@ -68,8 +67,15 @@ export default function ProductCard({ group }) {
       <p className="small muted">
         {summary.count} {summary.count === 1 ? "offer" : "offers"} from {summary.platformCount} {summary.platformCount === 1 ? "store" : "stores"}
       </p>
-      {/* When the price shown was last read from the store, as on the product page's offers table. */}
-      {best.lastScrapedAt && <p className="small muted">Price checked {timeAgo(best.lastScrapedAt)}</p>}
+      {/* Meta as quiet text, not more pills: the deal score, and when the price shown was last read from the store. The badges
+          above are left for verdicts (unslop audit, 2026-11-08: six pills per card). */}
+      {(score !== null || best.lastScrapedAt) && (
+        <p className="small muted product-card__meta">
+          {score !== null && <span title="Deal score out of 100: price, store trust, freshness and availability">Score {Math.round(score)}</span>}
+          {score !== null && best.lastScrapedAt && " · "}
+          {best.lastScrapedAt && `Price checked ${timeAgo(best.lastScrapedAt)}`}
+        </p>
+      )}
     </article>
   );
 }

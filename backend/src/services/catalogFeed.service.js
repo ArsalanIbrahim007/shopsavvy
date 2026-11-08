@@ -54,12 +54,8 @@ async function computeCategory(category) {
   return groups.sort(mostCompared).map(withoutHistory);
 }
 
-async function categoryCatalog(category, now) {
-  const hit = cache.get(category);
-  if (hit && hit.expires > now) return hit;
-
+function refresh(category, now) {
   if (inFlight.has(category)) return inFlight.get(category);
-
   const computation = computeCategory(category)
     .then((groups) => {
       const entry = { expires: now + CACHE_TTL_MS, generatedAt: new Date(now).toISOString(), groups };
@@ -67,9 +63,21 @@ async function categoryCatalog(category, now) {
       return entry;
     })
     .finally(() => inFlight.delete(category));
-
   inFlight.set(category, computation);
   return computation;
+}
+
+// Past its ten minutes, a category's last catalog is still served at once while a fresh one is computed in the background.
+// Recomputing a large category takes 30 to 90 s (smartphones, TVs: 31 s and 88 s on 2026-11-08), and every ten minutes the home
+// page's "Most compared" rows waited that long on spinners. Only the very first computation, at start-up, is waited for.
+async function categoryCatalog(category, now) {
+  const hit = cache.get(category);
+  if (hit && hit.expires > now) return hit;
+  if (hit) {
+    refresh(category, now).catch((error) => console.warn(`[catalog] Could not refresh ${category}: ${error.message}`));
+    return hit;
+  }
+  return refresh(category, now);
 }
 
 /**
