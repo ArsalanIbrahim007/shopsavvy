@@ -13,7 +13,7 @@ import { DISABLED_PLATFORMS } from "../config/platforms.js";
 import Listing from "../models/listing.model.js";
 import { extractColourOptions } from "./colourPage.service.js";
 import { extractPtaFromPage } from "./ptaPage.service.js";
-import { extractPriceOyeRating } from "./ratingPage.service.js";
+import { extractJudgeMeRating, extractPriceOyeRating } from "./ratingPage.service.js";
 import { readSpecSheet, SPEC_CATEGORIES } from "./specsEngine.service.js";
 
 // Where a colour choice is useful. PTA only applies to the first two.
@@ -27,7 +27,11 @@ const NEEDS_BROWSER = new Set(["ishopping", "paklap"]);
 // How to read a rating from each store whose pages were checked (see ratingPage.service.js for what was found, and why Mega, iShopping
 // and the others are not here). A store joins this list after the same check: pages of different products, compared with what the
 // page shows a shopper.
-export const RATING_READERS = new Map([["priceoye", extractPriceOyeRating]]);
+export const RATING_READERS = new Map([
+  ["priceoye", extractPriceOyeRating],
+  // Shopify stores whose product pages show Judge.me reviews (checked 2026-11-09)
+  ...["audionic", "zerolifestyle", "ronin", "baseus", "mistore", "mymart"].map((store) => [store, extractJudgeMeRating]),
+]);
 const USER_AGENT = "ShopSavvyBot/1.0 (student price-comparison project; reads product pages for PTA status and colours)";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

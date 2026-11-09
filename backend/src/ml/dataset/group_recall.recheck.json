@@ -1,10 +1,10 @@
 {
-  "at": "2026-11-09T10:59:22.752Z",
+  "at": "2026-11-09T11:21:34.991Z",
   "recall": 0.7521284653632709,
-  "precision": 0.9895957089946761,
+  "precision": 1,
   "correct": 15748.531969448992,
   "missed": 5190.08782051282,
-  "wrong": 165.575,
+  "wrong": 0,
   "sameNowTogether": [
     "r003",
     "r014",
@@ -23,6 +23,7 @@
   ],
   "differentNowTogether": [],
   "differentNowApart": [
+    "r030",
     "r040"
   ],
   "gone": [

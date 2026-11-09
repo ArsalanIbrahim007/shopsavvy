@@ -48,8 +48,8 @@ export function ratingInfo(offer) {
 /**
  * The product's rating, for every store's offer of it: a rating is about the product (a Galaxy A17 is the same phone at every store),
  * so the one resting on the most reviews is shown once for the whole product, saying whose buyers gave it. Only a rating with enough
- * reviews to show (MIN_REVIEWS_TO_SHOW). PriceOye is the only store we read whose pages show ratings (2026-11-09), so without this a
- * product sold at PriceOye and four other stores showed its rating on one row of five, and none on its card.
+ * reviews to show (MIN_REVIEWS_TO_SHOW). Few stores' pages show ratings (PriceOye, and six Shopify stores using Judge.me: 2026-11-09),
+ * so without this a product sold at PriceOye and four other stores showed its rating on one row of five, and none on its card.
  * @returns {null | {value: string, count: number, countText: string, store: string, line: string, title: string, spoken: string}}
  */
 export function productRating(offers) {

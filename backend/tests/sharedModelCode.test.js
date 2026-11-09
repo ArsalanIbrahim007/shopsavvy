@@ -206,3 +206,24 @@ describe("the grouping leftovers (2026-11-09)", () => {
     expect(holding(groups, "c")).not.toBe(holding(groups, "d"));
   });
 });
+
+describe("a TV that names its processor, and a store's UE reference (2026-11-09, labelled pair r287)", () => {
+  it("a TV's 'Q4 AI Processor' is not a computer's; a laptop's still is", () => {
+    expect(sharedModelCode(
+      item("Samsung QN70F Neo QLED 4K Smart TV (NQ4 AI Gen2 Processor & Motion Xcelerator 144Hz) 75 Inch", 599000),
+      item("Samsung 75\" QN70F Neo QLED 4K AI Smart TV (2025)", 615000),
+    )).toBe("qn70f");
+    expect(mlMatchStrategy.sameModel(
+      item("Samsung Q7F QLED 4K Vision AI Smart TV (Q4 AI Processor & Quantum HDR) 55 Inch", 208999),
+      item("Samsung 55 Inch 4K HD Smart QLED TV (55Q7F)", 214000),
+    )).toBe("q7f");
+    expect(sharedModelCode(item("HP 250 G10 i5 Processor 8GB 512GB 1335U", 150000), item("HP ProBook 450 G10 Processor 1335U 8GB", 160000))).toBeNull();
+  });
+
+  it("an instalment seller's 'UE001' is not a model: a TCL P6L and T6D shared only that", () => {
+    expect(sharedModelCode(
+      item("TCL 65-Inch 65P6L 4K Google TV – Smart UHD Google TV with AiPQ Processor (Latest 2026 Model) 0% Markup 0% Processing ON INSTALLMENTS-UE001", 199990),
+      item("TCL 65T6D 65 Inch 4K QLED Smart Google TV 0% Markup 0% Processing ON INSTALLMENTS-UE001", 217399),
+    )).toBeNull();
+  });
+});

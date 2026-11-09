@@ -41,6 +41,14 @@ const TV_DEVICES = ["tv box", "mi box", "tv stick", "streaming media player"];
 // A product that names a laptop but is kept out of laptops by an exclusion below ("G-Mart Laptop Back Skin Protector", "Easy
 // Shop Foldable Wooden Laptop Table") is an accessory too, rather than "other".
 const NAMES_A_LAPTOP = ["laptop", "macbook", "notebook", "chromebook"];
+// Things made to hold, steady or power a device, named with the device: "Multi-Angle Smartphone Car Mount" (phone 3 points, "mount" 2)
+// was a phone, "Universal Car Back Seat Tablet Holder" a tablet, "3V Lithium Button Cell Battery For Camera (CR2025)" a camera
+// (found 2026-11-09 among one AlfaMall seller's 182 accessories; 11 were filed as devices). Excluded from the device categories, as
+// the laptop category already excludes "cell battery" and "microphone".
+const FOR_A_DEVICE = [
+    "holder", "mount", "stabilizer", "stabiliser", "gimbal", "handle rig", "video rig", "selfie stick", "tripod",
+    "microphone", "mic for", "button cell", "cell battery", "battery for", "lithium battery",
+];
 
 const BRAND_CATEGORY = {
   iphone: "smartphone", apple: "smartphone", samsung: "smartphone",
@@ -111,6 +119,7 @@ const CATEGORIES = {
             "back cover",
             "battery (bl", // "Infinix Note 12 Battery (BL-44FX)": a replacement battery, not the phone
             "purifier", // "Infinix Smart Air Purifier": a phone line's name on an appliance (2026-11-08)
+            ...FOR_A_DEVICE,
             ...FOR_A_PHONE,
             ...TV_DEVICES,
         ],
@@ -286,6 +295,11 @@ const CATEGORIES = {
             "tablet stand",
             "tablet keyboard",
             "screen protector",
+            ...FOR_A_DEVICE,
+            // An LCD writing or drawing pad is not a tablet computer ("8.5 inch Gracile Font LCD Tablet Drawing", PKR 879).
+            "lcd tablet",
+            "writing tablet",
+            "drawing",
             // "Headset for iPhone/iPod/iPad", "Hub For iPhone IPAD": made for the device, not the device.
             ...FOR_A_PHONE,
             ...FOR_A_TABLET,
@@ -313,6 +327,12 @@ const CATEGORIES = {
             "watch case",
             "watch charger",
             "screen protector",
+            ...FOR_A_DEVICE,
+            // Exercise bands are not fitness bands ("Chest Expander Silicone Bands 5 Tubes", "Resistance Exercise Bands Sets").
+            "resistance band",
+            "resistance exercise",
+            "exercise band",
+            "chest expander",
         ],
     },
 
@@ -404,6 +424,13 @@ const CATEGORIES = {
             "camera battery",
             "camera charger",
             "camera lens",
+            // Not a bare "microphone": "USB Web Camera with Microphone" is a camera. A microphone made for a camera is not.
+            ...FOR_A_DEVICE.filter((word) => word !== "microphone"),
+            "on-camera",
+            "shotgun microphone",
+            "lavalier",
+            "videomic",
+            "camera microphone",
             // A phone's title lists its cameras with its battery and memory ("Vivo V70 RAM 12GB ROM 256 GB Camera 50mp Battery
             // 6500 Mah"): those are phones, not cameras (2026-11-08).
             "mah",
@@ -486,6 +513,11 @@ const CATEGORIES = {
             "fridge mat",
             "water filter",
             "gasket",
+            // "Adjustable Basket Rack For Fridge" (PKR 825).
+            "basket",
+            "rack",
+            "organizer",
+            "organiser",
         ],
     },
 
@@ -571,6 +603,8 @@ const CATEGORIES = {
             "mount",
             "stylus",
             "tripod",
+            "gimbal",
+            "selfie stick",
             "remote",
             "controller",
             "gamepad",

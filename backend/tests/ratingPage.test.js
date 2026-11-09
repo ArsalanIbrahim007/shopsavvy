@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { extractPriceOyeRating } from "../src/services/ratingPage.service.js";
+import { extractJudgeMeRating, extractPriceOyeRating } from "../src/services/ratingPage.service.js";
 
 // The rating block as PriceOye's product page writes it (read 2026-10-08), with the stars as images.
 const block = (points, count, wrapper = "po-rating-section") =>
@@ -55,5 +55,24 @@ describe("extractPriceOyeRating", () => {
   it("takes the points and the count from inside that block only", () => {
     const stray = `<div class="rating-points">1.0</div><div class="rating-count">5 Reviews</div>`;
     expect(extractPriceOyeRating(page(stray + block("4.4", "20 Reviews")))).toEqual({ rating: 4.4, reviewCount: 20 });
+  });
+});
+
+describe("extractJudgeMeRating (Shopify stores using Judge.me, checked 2026-11-09)", () => {
+  // The product review widget as Zero's page writes it, and a carousel badge of another product before it.
+  const widget = (average, count, shopReviews = "false") =>
+    `<div class="jdgm-widget jdgm-preview-badge"><div class='jdgm-prev-badge' data-average-rating='4.70' data-number-of-reviews='81'></div></div>` +
+    `<div id='judgeme_product_reviews' class='jdgm-widget jdgm-review-widget' data-product-title='Icon Smartwatch' data-widget="review" data-shop-reviews="${shopReviews}">` +
+    `<div class='jdgm-rev-widg' data-updated-at='2026-11-09T06:49:08Z' data-average-rating='${average}' data-number-of-reviews='${count}' data-number-of-questions='0'></div></div>`;
+
+  it("reads the product's own average and count, not another product's badge", () => {
+    expect(extractJudgeMeRating(page(widget("4.82", "202")))).toEqual({ rating: 4.8, reviewCount: 202 });
+    expect(extractJudgeMeRating(page(widget("4.98", "21924")))).toEqual({ rating: 5, reviewCount: 21924 });
+  });
+
+  it("nothing without reviews, for the shop's reviews, or without the widget", () => {
+    expect(extractJudgeMeRating(page(widget("0.00", "0")))).toBeNull();
+    expect(extractJudgeMeRating(page(widget("4.9", "269", "true")))).toBeNull();
+    expect(extractJudgeMeRating(page(`<div class='jdgm-prev-badge' data-average-rating='4.70' data-number-of-reviews='81'></div>`))).toBeNull();
   });
 });

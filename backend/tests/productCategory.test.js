@@ -226,3 +226,29 @@ describe("detectCategory: a phone maker's other products, and phones that only n
     expect(detectCategory(title).category).toBe(expected);
   });
 });
+
+describe("things made for a device are not the device (2026-11-09, one AlfaMall seller's accessories)", () => {
+  it.each([
+    ["Muzamil Store Multi-Angle Smartphone Car Mount", "accessory"],
+    ["Muzamil Store Two-in-one Car Rear Seat Mobile Phone Holder (K336)", "accessory"],
+    ["Muzamil Store Universal Car Back Seat Tablet Holder - Black", "accessory"],
+    ["Zhiyun Smooth 5 Smartphone Gimbal", "accessory"],
+    ["Muzamil Store On-Camera Microphone Recording Mic for Phone Smartphone", "!camera"],
+    ["Rode VideoMic NTG On-Camera Shotgun Microphone", "!camera"],
+    ["Muzamil Store 3V Lithium Button Cell Battery For Camera (CR2025) - Pack Of 5", "!camera"],
+    ["Muzamil Store 3V Cell lithium Battery For Watches (CR2032) - Pack Of 5", "!smartwatch"],
+    ["Muzamil Store Resistance Exercise Bands Sets - 5Pcs", "!smartwatch"],
+    ["Muzamil Store Chest Expander Silicone Bands 5 Tubes", "!smartwatch"],
+    ["Muzamil Store Adjustable Basket Rack For Fridge", "!refrigerator"],
+    ["Muzamil Store 8.5 inch Gracile Font LCD Tablet Drawing", "!tablet"],
+    // and the devices stay devices
+    ["UGREEN 15728 1080p USB Web Camera with Microphone Plug and Play Webcam (NEW)", "camera"],
+    ["Westpoint Revolve WP-5010 Smart Watch 1.43 Inch AMOLED Display, Bluetooth 5.3 & IP67 Water Resistance", "smartwatch"],
+    ["Haier HRF-368 Refrigerator", "refrigerator"],
+    ["Samsung Galaxy A17 6GB RAM 128GB Storage PTA Approved", "smartphone"],
+  ])("%s -> %s", (title, expected) => {
+    const { category } = detectCategory(title);
+    if (expected.startsWith("!")) expect(category).not.toBe(expected.slice(1));
+    else expect(category).toBe(expected);
+  });
+});

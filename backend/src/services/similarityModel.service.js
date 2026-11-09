@@ -48,12 +48,16 @@ function loadModel() {
 // Not for computers: a processor's code ("1355U", "13420H") is shared by many different laptops.
 // Both titles must start with the same brand, and the code must not be that brand ("A4Tech" joined 3,206 pairs of different
 // headsets in the first measurement) nor a code that is not a model: a warranty ("1Year", "6Months"), a spec ("HDR10", "DDR5",
-// a router's speed class "BE3600") or a store's own reference ("ISPK-0545", "SNS65").
+// a router's speed class "BE3600") or a store's own reference ("ISPK-0545", "SNS65", "ON INSTALLMENTS-UE001").
 export const SHARED_CODE_LENGTH = 4;
 export const SHARED_CODE_PRICE_GAP = 0.25;
 const COMPUTER =
-  /\b(laptop|notebook|macbook|chromebook|ultrabook|thinkpad|thinkbook|core\s*(i[3579]|ultra)|ryzen|intel|amd|celeron|pentium|processor|cpu|gpu|rtx|gtx|ddr\d)\b/i;
-const NOT_A_MODEL = /^(\d+(years?|yrs?|months?|days?)|hdr\d+|ddr\d+|lpddr\d+[a-z]?|wifi\d+|usb\d+|be\d{4}|ax\d{4}|ac\d{4}|ispk\d*|sns\d+)$/;
+  /\b(laptop|notebook|macbook|chromebook|ultrabook|thinkpad|thinkbook|core\s*(i[3579]|ultra)|ryzen|intel|amd|celeron|pentium|cpu|gpu|rtx|gtx|ddr\d)\b/i;
+// "Processor" alone marks a computer, but not in a TV's title: Samsung's "Q7F QLED 4K Vision AI Smart TV (Q4 AI Processor ...)" and TCL's
+// "AiPQ Processor" were left out of the rule (2026-11-09, labelled pair r287).
+const TV_TITLE = /\b(tv|television|qled|oled)\b/i;
+const isComputer = (title) => COMPUTER.test(title) || (/\bprocessor\b/i.test(title) && !TV_TITLE.test(title));
+const NOT_A_MODEL = /^(\d+(years?|yrs?|months?|days?)|hdr\d+|ddr\d+|lpddr\d+[a-z]?|wifi\d+|usb\d+|be\d{4}|ax\d{4}|ac\d{4}|ispk\d*|sns\d+|ue\d{3})$/;
 export const brandOf = (title) => (String(title).toLowerCase().match(/[a-z0-9]+/) ?? [""])[0];
 // The brand as one store writes it, or the line a store names alone: "A4tech Bloody MR710" and "Bloody MR710" are one maker's
 // (2026-11-09, labelled pair r020). The second word counts only when it is a word of letters, four or more, so "Haier LED 55..."
@@ -70,7 +74,7 @@ export function sameBrand(titleA, titleB) {
 
 export function sharedModelCode(itemA, itemB, { shortTvCode = false } = {}) {
   if (process.env.SHOPSAVVY_NO_SHARED_CODE) return null; // to measure the grouping without this rule (09-recheck-group-merges.js --save)
-  if (COMPUTER.test(itemA.title) || COMPUTER.test(itemB.title)) return null;
+  if (isComputer(itemA.title) || isComputer(itemB.title)) return null;
   if (!sameBrand(itemA.title, itemB.title)) return null;
   const brands = new Set([...brandWordsOf(itemA.title), ...brandWordsOf(itemB.title)]);
   const sizes = statedSizes(itemA.title, itemB.title);
@@ -313,7 +317,7 @@ const ramOf = (title) => {
   return short ? Number(short[1]) : null;
 };
 export function samePlainTitles(itemA, itemB) {
-  if (COMPUTER.test(itemA.title) || COMPUTER.test(itemB.title)) return false;
+  if (isComputer(itemA.title) || isComputer(itemB.title)) return false;
   if (SECOND_HAND.test(itemA.title) !== SECOND_HAND.test(itemB.title)) return false;
   const plainA = withoutStoreWording(itemA.title);
   const plainB = withoutStoreWording(itemB.title);

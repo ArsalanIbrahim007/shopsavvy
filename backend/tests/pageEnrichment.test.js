@@ -236,7 +236,7 @@ describe("enrichFromPages", () => {
     });
 
     it("takes ratings only from stores checked to state one per product: Mega's page states 4.5 from 1,341 on every product", async () => {
-      expect([...RATING_READERS.keys()]).toEqual(["priceoye"]);
+      expect([...RATING_READERS.keys()]).toEqual(["priceoye", "audionic", "zerolifestyle", "ronin", "baseus", "mistore", "mymart"]);
       model = modelReturning([row("a", "mega"), row("b", "ishopping"), row("c", "shophive"), row("d", "PriceOye")]);
       const summary = await enrichFromPages({ model, now: NOW, delayMs: 0, fetchPage: async () => rated(4.5, 1341) });
       const byId = Object.fromEntries(updates);

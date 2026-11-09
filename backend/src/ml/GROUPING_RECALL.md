@@ -243,6 +243,33 @@ Rechecked (`12-recheck-recall.js`, both samples, the same labels):
 
 Still apart: r243 (a member conflict), r287 (above), and the pairs worded too differently for the matcher.
 
+## A TV that names its processor (2026-11-09, night)
+
+The model-code rule left out every title naming a "processor", as a computer's. Samsung writes "Q4 AI Processor" and "NQ4 AI Gen2
+Processor" in its TV titles, and TCL "AiPQ Processor", so those TVs were never joined by their codes (r287). "Processor" now marks a
+computer only when the title does not say TV, television, QLED or OLED; every other computer word stays as it was.
+
+Freed, the rule found that some of those titles share a store's own reference, "ON INSTALLMENTS-UE001" (one instalment seller's
+UE001, UE002, UE005), and had been joining different TVs through it in the titles without "processor" too: a TCL 55P6L with a 55T6D,
+a 43S51K with a 43T6D, a 55P6K with a 55T6C, a Dawlance 50" Prismax with a 55" Apollo. "UE" and three digits is now a store reference,
+like ISPK-0545 and SNS65, never a model.
+
+Together: 31 joins of TV groups, all read (Samsung Q7F, Q8F, QN70F, QN85F, QN900F, S85F and S90F titles naming their processor,
+with their model at the same size; TCL P6L, T6C, P8K), and 11 splits, each taking an offer out of a group it had been joined to by the
+UE reference or by a title stating no size (an S85F 55" and 65"). Laptops and monitors unchanged.
+
+| Sample | Recall before | Recall after | Pair precision before | Pair precision after |
+|---|---:|---:|---:|---:|
+| Fresh (2026-11-09) | 81.2% | 84.6% | 97.0% | 97.1% |
+| First | 75.2% | 75.2% | 99.0% | 100.0% |
+
+- **recall: 84.6%** on the fresh sample: r287 joined, with r020, r195 and r289; nothing that was together came apart.
+- **pair precision: 97.1%**; the first sample's one different pair together (r030) came apart. On the fresh one the different pairs
+  together are still the iPhone Air and r001 above.
+
+Still apart: r243 (an offer of each group conflicts with the other group) and pairs worded too differently for the matcher (a
+Xiaomi soundbar, Audionic earbuds, a Zero watch).
+
 ## What this does and does not measure
 
 Pair recall among candidate pairs: one product split into two groups of five offers each counts as 25 missed pairs, as is usual for this
