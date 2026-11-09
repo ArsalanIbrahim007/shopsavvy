@@ -10,12 +10,12 @@ vi.mock("../src/services/historyEnrichment.service.js", () => ({
 }));
 vi.mock("../src/services/catalogFeed.service.js", async (importOriginal) => ({
   ...(await importOriginal()),
-  getCatalogGroups: vi.fn(),
+  peekCatalogGroups: vi.fn(),
 }));
 
 import Listing from "../src/models/listing.model.js";
 import { createApp } from "../src/createApp.js";
-import { getCatalogGroups } from "../src/services/catalogFeed.service.js";
+import { peekCatalogGroups } from "../src/services/catalogFeed.service.js";
 import { clearCompareCache, parseCompareIds, COMPARE_LIMITS } from "../src/services/productCompare.service.js";
 import { loadSpecsEngine, resetSpecsEngine } from "../src/services/specsEngine.service.js";
 import { normalizeTitle } from "../src/services/normalizeTitle.service.js";
@@ -84,8 +84,8 @@ beforeEach(async () => {
   await loadSpecsEngine({ exists: () => false });
   vi.spyOn(console, "log").mockImplementation(() => {});
   vi.spyOn(Listing, "find").mockImplementation(fakeFind);
-  getCatalogGroups.mockReset();
-  getCatalogGroups.mockImplementation(async () => catalogGroups());
+  peekCatalogGroups.mockReset();
+  peekCatalogGroups.mockImplementation(() => catalogGroups());
 });
 afterEach(() => { vi.restoreAllMocks(); resetSpecsEngine(); });
 
@@ -123,7 +123,7 @@ describe("GET /api/listings/compare", () => {
     expect(body.products[0]).toMatchObject({ specs: { ramGb: 8, batteryMah: 5000, nfc: true }, specScore: null, rank: null });
     expect(body.products[0].specsFrom.sort()).toEqual(["mega", "priceoye"]);
     expect(body.products[1]).toMatchObject({ specs: null, specsFrom: [], specScore: null, rank: null });
-    expect(getCatalogGroups).not.toHaveBeenCalled();
+    expect(peekCatalogGroups).not.toHaveBeenCalled();
   });
 
   it("with the Specs engine: the score with its parts, and the rank among the OTHER products of the category", async () => {
@@ -144,8 +144,18 @@ describe("GET /api/listings/compare", () => {
     const rebuilt = catalogGroups();
     rebuilt.generatedAt = "t2";
     rebuilt.groups.push({ lowestPrice: 63000, bestDeal: { _id: ID(93) }, offers: [{ _id: ID(93), platform: "x", specSheet: { ramGb: 12, batteryMah: 4800 } }] });
-    getCatalogGroups.mockImplementation(async () => rebuilt);
+    peekCatalogGroups.mockImplementation(() => rebuilt);
     expect((await get(`${ID(1)},${ID(6)}`)).body.products[0].rank).toMatchObject({ rank: 3, of: 4 });
+  });
+
+  it("never waits for a category to be grouped: before the catalog is ready, no rank (2026-11-09)", async () => {
+    resetSpecsEngine();
+    await loadSpecsEngine({ exists: () => true, importer: async () => fakeEngine });
+    peekCatalogGroups.mockImplementation(() => null);
+    const { res, body } = await get(`${ID(1)},${ID(6)}`);
+    expect(res.status).toBe(200);
+    expect(body.products[0].specScore).toMatchObject({ score: 82 });
+    expect(body.products[0].rank).toMatchObject({ rank: 1, of: 1 }); // nothing to rank against yet; the page shows no rank below 3
   });
 
   it("refuses a bad request and names the ids it cannot find", async () => {

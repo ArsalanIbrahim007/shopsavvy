@@ -9,6 +9,7 @@
 //   node src/scripts/maintenance/enrich-pages.js --again --store=priceoye --limit=100   read pages again even if read lately
 //
 // Options: --limit=N (default 150), --store=ID (repeatable), --match=TEXT (only titles containing it, e.g. --match=iphone),
+// --category=ID (repeatable: only these categories, e.g. --category=smartphone --category=laptop to fill in specifications),
 // --delay=MS between pages (default 2500), --dry, --again (also pages read within the last 14 days, oldest first: to fill in a
 // new field, such as ratings, without waiting for each page to come due).
 // It is also run after the nightly scrape (src/scripts/run-scheduled-scrape.js) with the default limit.
@@ -24,12 +25,13 @@ const limit = Number(arg("limit")[0] ?? DEFAULT_LIMIT);
 const delayMs = Number(arg("delay")[0] ?? 2500);
 const stores = arg("store").map((s) => s.toLowerCase());
 const match = arg("match")[0] ?? null;
+const categories = arg("category").map((c) => c.toLowerCase());
 const dry = process.argv.includes("--dry");
 const again = process.argv.includes("--again");
 
 await mongoose.connect(process.env.MONGO_URI);
 try {
-  const summary = await enrichFromPages({ limit, delayMs, stores, match, dry, again, log: console.log });
+  const summary = await enrichFromPages({ limit, delayMs, stores, match, categories, dry, again, log: console.log });
   // A dry run also shows each specification sheet in full, to check the Specs engine against real pages before anything is saved.
   if (dry) {
     for (const result of summary.results.filter((r) => r.specs)) console.log(`\n[specs] ${result.platform} "${result.title}":\n${JSON.stringify(result.specs, null, 2)}`);

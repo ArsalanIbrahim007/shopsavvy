@@ -23,6 +23,7 @@ import PriceOutlook from "../components/product/PriceOutlook.jsx";
 import PriceHistoryChart from "../components/product/PriceHistoryChart.jsx";
 import ShareButton from "../components/product/ShareButton.jsx";
 import Specifications from "../components/product/Specifications.jsx";
+import CompareButton from "../components/CompareButton.jsx";
 import ResultGroup from "../components/results/ResultGroup.jsx";
 import { Skeleton } from "../components/Skeleton.jsx";
 import "../components/product/product.css";
@@ -131,7 +132,7 @@ export default function Product() {
     );
   }
 
-  const { listing, outlook, dropChances } = product.data;
+  const { listing, outlook, dropChances, specs } = product.data;
   const allOffers = offersOf(product.data);
   const group = { productName: productName(product.data, state), offers: allOffers };
   const shared = summarizeOffers(allOffers).lowest ?? listing; // the share page opens the product at its canonical offer
@@ -140,7 +141,10 @@ export default function Product() {
     <div className="container product">
       <div className="product__bar">
         {back}
-        <ShareButton id={shared._id} title={shared.title} name={group.productName} />
+        <span className="product__actions">
+          <CompareButton item={{ id: String(shared._id), name: group.productName, category: listing.productCategory, image: shared.imageUrl ?? listing.imageUrl }} />
+          <ShareButton id={shared._id} title={shared.title} name={group.productName} />
+        </span>
       </div>
       <StructuredData data={productJsonLd({ name: group.productName, offers: allOffers, url: canonical })} />
       <ResultGroup group={group} currentId={listing._id} colour={colour} onColour={chooseColour} />
@@ -165,7 +169,7 @@ export default function Product() {
         </section>
         <div className="product-section">
           <CrossStoreSummary offers={allOffers} />
-          <Specifications listing={listing} />
+          <Specifications listing={listing} specs={specs} />
         </div>
       </div>
 

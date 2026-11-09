@@ -128,6 +128,18 @@ export async function rankSpecScore(product, others) {
 }
 
 /**
+ * A sheet with the RAM and storage the listing's own title states (productAttributes: `ramGb`, `storageGb`), which name the variant
+ * being sold; a store's page often lists every variant ("4/6 GB") or none, so the title's capacity wins where it states one.
+ * @returns {object|null}
+ */
+export function withStatedCapacity(specs, listing) {
+  const stated = {};
+  if (Number(listing?.ramGb) > 0) stated.ramGb = Number(listing.ramGb);
+  if (Number(listing?.storageGb) > 0) stated.storageGb = Number(listing.storageGb);
+  return sanitizeSpecSheet({ ...(specs ?? {}), ...stated });
+}
+
+/**
  * One sheet for a product from its offers' sheets (each store's page is read separately and they can disagree). For each field,
  * the value most offers give; a tie goes to `preferId`'s offer, then to the page read most recently. `from` lists the stores whose
  * pages contributed.
@@ -143,10 +155,15 @@ export function mergeSpecSheets(offers, { preferId } = {}) {
 
   const specs = {};
   for (const field of Object.keys(SPEC_FIELDS)) {
-    const counts = new Map(); // value -> count, in order of first appearance (the preferred offer first)
+    // One vote per store: a marketplace lists one phone through several sellers, each with the same page text ("Dimensity 7200 Pro
+    // / Dimensity 7300" twice at DigiMall outvoted PriceOye's "Dimensity 7300 Pro", 2026-11-09).
+    const counts = new Map(); // value -> stores, in order of first appearance (the preferred offer first)
+    const voted = new Set();
     for (const offer of read) {
       const value = offer.specSheet[field];
       if (value === undefined || value === null) continue;
+      if (voted.has(offer.platform)) continue;
+      voted.add(offer.platform);
       const key = JSON.stringify(value);
       counts.set(key, (counts.get(key) ?? 0) + 1);
     }

@@ -7,14 +7,18 @@
 
 import { VISIBLE_PLATFORMS_FILTER } from "../config/platforms.js";
 import Listing from "../models/listing.model.js";
-import { getCatalogGroups, isCatalogCategory } from "./catalogFeed.service.js";
+import { isCatalogCategory, peekCatalogGroups } from "./catalogFeed.service.js";
+
+// The rank among products priced alike uses the category as already grouped, never groups it on the spot: grouping a category from
+// cold takes a minute or more, and a comparison waited for it after every restart (2026-11-09). Until it is ready the rank is left out.
+const cachedCatalog = (category) => peekCatalogGroups(category) ?? { groups: [], generatedAt: null };
 import { currentOffers, isOutOfDate } from "./offerFreshness.service.js";
 import { isSuspectPrice } from "./pricePlausibility.service.js";
 import { extractPtaStatus } from "./productAttributes.service.js";
 import { siteUrl } from "./productMatch.service.js";
 import { productPath } from "./productPath.js";
 import { buildProductView } from "./productView.service.js";
-import { loadSpecsEngine, mergeSpecSheets, rankSpecScore, scoreSpecSheet } from "./specsEngine.service.js";
+import { loadSpecsEngine, mergeSpecSheets, rankSpecScore, scoreSpecSheet, withStatedCapacity } from "./specsEngine.service.js";
 
 export const COMPARE_LIMITS = Object.freeze({ min: 2, max: 4 });
 
@@ -70,7 +74,7 @@ async function scoredCategory(category, catalog) {
   const entries = [];
   for (const group of groups) {
     const { specs } = mergeSpecSheets(group.offers || []);
-    const scored = await scoreSpecSheet(specs, category);
+    const scored = await scoreSpecSheet(withStatedCapacity(specs, group.bestDeal ?? group.offers?.[0]), category);
     if (!scored) continue;
     entries.push({
       id: idOf(group.bestDeal) ?? idOf(group.offers[0]),
@@ -93,13 +97,15 @@ async function rankInCategory(category, product, { catalog, memberIds }) {
 }
 
 /** One column of the comparison. */
-export async function describeProduct(listing, { strategy = "ml", now = Date.now(), site, catalog = getCatalogGroups } = {}) {
+export async function describeProduct(listing, { strategy = "ml", now = Date.now(), site, catalog = cachedCatalog } = {}) {
   const id = idOf(listing);
   const { selectedListing, selectedGroup, offers } = await buildProductView(listing, { strategy });
   const category = listing.productCategory || "other";
   const best = selectedGroup?.bestDeal ?? selectedListing;
   const lowestPrice = lowestCurrentPrice(offers, now);
-  const { specs, from } = mergeSpecSheets(offers, { preferId: id });
+  const merged = mergeSpecSheets(offers, { preferId: id });
+  const specs = withStatedCapacity(merged.specs, selectedListing ?? listing);
+  const from = merged.from;
   const specScore = await scoreSpecSheet(specs, category);
   const rank = specScore
     ? await rankInCategory(category, { id, category, score: specScore.score, price: lowestPrice ?? best.price }, { catalog, memberIds: new Set(offers.map(idOf)) })
@@ -127,7 +133,7 @@ export async function describeProduct(listing, { strategy = "ml", now = Date.now
  * @param {string[]} ids  2 to 4 listing ids (parseCompareIds)
  * @returns {Promise<{missing: string[]} | {products: object[], specsEngine: "ready"|"missing"}>}
  */
-export async function compareProducts(ids, { strategy = "ml", env = process.env, now = Date.now(), catalog = getCatalogGroups } = {}) {
+export async function compareProducts(ids, { strategy = "ml", env = process.env, now = Date.now(), catalog = cachedCatalog } = {}) {
   const listings = await Listing.find({ ...VISIBLE_PLATFORMS_FILTER, _id: { $in: ids } }).lean();
   const byId = new Map(listings.map((l) => [idOf(l), l]));
   const missing = ids.filter((id) => !byId.has(id.toLowerCase()) && !byId.has(id));

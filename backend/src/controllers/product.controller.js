@@ -14,6 +14,7 @@ import { compareProducts, parseCompareIds } from "../services/productCompare.ser
 import { LIMITS as MATCH_LIMITS, matchPage } from "../services/productMatch.service.js";
 import { dropChance } from "../services/dropChance.service.js";
 import { buildProductView } from "../services/productView.service.js";
+import { mergeSpecSheets, scoreSpecSheet, withStatedCapacity } from "../services/specsEngine.service.js";
 import { textParam } from "../services/queryParams.service.js";
 import { priceStats } from "./priceStats.js";
 import { resolveMatchStrategy } from "./matchStrategy.js";
@@ -165,6 +166,17 @@ export async function getListingDetails(req, res) {
     console.error("[dropChance] could not be worked out:", error.message);
   }
 
+  // The specifications the stores' own pages state (merged across them, the listing's own capacity first) and their score, for the
+  // Specifications section. Context only: without them the page shows what the title says, as before.
+  let specs = null;
+  try {
+    const merged = mergeSpecSheets(offers, { preferId: String(selectedListing._id) });
+    const sheet = withStatedCapacity(merged.specs, selectedListing);
+    if (merged.specs) specs = { sheet, from: merged.from, score: await scoreSpecSheet(sheet, selectedListing.productCategory) };
+  } catch (error) {
+    console.error("[specs] could not be merged:", error.message);
+  }
+
   const body = {
     success: true,
     listing: selectedListing,
@@ -188,6 +200,7 @@ export async function getListingDetails(req, res) {
     },
     outlook,
     dropChances,
+    specs,
     offers,
   };
   productCache.delete(cacheKey);

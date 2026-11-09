@@ -1,104 +1,147 @@
-/** Parse a float from a string like "8 GB", "5000 mAh", "6.7 inch", "120Hz". */
-function parseFloat_(s) {
-  const m = String(s).match(/[\d.]+/);
-  return m ? parseFloat(m[0]) : NaN;
-}
+// normalize.js — a store's label/value pairs (extractors.js) in, the canonical typed sheet out (specsEngine.service.js SPEC_FIELDS).
+//
+// Stores name one thing many ways and put several things in one value, so a label is matched by what it means and a value read by
+// its unit (all seen on real pages, 2026-11-09):
+//   "Battery Type: 5000 mAh" (iShopping), "Battery Type: 3692 mAh" (PriceOye, its "Type" in the "Battery" group),
+//   "Battery: 5500mAh, 45W Turbo Charging" (Techroid: battery and charging in one value),
+//   "Display: 6.67" AMOLED, 2400 x 1080 resolution, 120Hz refresh rate" (eezepc: size, panel and refresh rate in one value),
+//   "Screen Type: AMOLED (90HZ)", "Installed RAM: 8 GB", "Hard drive size: 512 GB SSD", "Weight: 1.83kg" (Paklap, a laptop).
+// A value that lists several variants ("RAM: 4/6 GB", "Internal Memory: 256GB / 512GB", "Storage: 8GB - 256GB 12GB - 512GB") says
+// nothing about the one being sold, so RAM and storage are taken only from a value with a single capacity; the listing's own title
+// (productAttributes) states its variant anyway. Nothing is guessed: a field the page does not state is left out.
 
-/** Parse a boolean from "Yes"/"No"/"true"/"false"/etc. Returns null if unrecognizable. */
-function parseBool(s) {
-  const v = String(s).trim().toLowerCase();
-  if (["yes", "true", "1", "supported", "available"].includes(v)) return true;
-  if (["no", "false", "0", "not supported", "unavailable", "n/a"].includes(v)) return false;
+/** The numbers in a text before a unit ("50 MP + 12 MP" -> [50, 12]). */
+const numbersBefore = (text, unit) =>
+  [...String(text).matchAll(new RegExp(`(\\d+(?:\\.\\d+)?)\\s*(?:${unit})(?![a-z])`, "gi"))].map((m) => Number(m[1]));
+const isNotStated = (value) => /^\s*(n\/?a|-+|none|not available|unknown|tbd)\s*$/i.test(String(value));
+
+function parseBool(value) {
+  const v = String(value).trim().toLowerCase();
+  if (/^(yes|true|supported|available|built-?in)\b/.test(v)) return true;
+  if (/^(no|false|not supported|unavailable)\b/.test(v)) return false;
   return null;
 }
 
-/** Extract camera MP from "50 MP + 12 MP + 10 MP" → 50 (take first/largest). */
-function parseCameraMp(s) {
-  const nums = String(s).match(/[\d.]+/g)?.map(Number) ?? [];
-  return nums.length > 0 ? Math.max(...nums) : NaN;
+/** One capacity in GB, or null when the value states none or several ("4/6 GB", "8GB + 128GB 12GB + 256GB"). */
+function singleCapacityGb(value) {
+  const text = String(value);
+  if (/\d\s*\/\s*\d/.test(text)) return null; // "4/6 GB", "256GB / 512GB"
+  // Digits, not word edges: a variant picker's text runs together ("Choose an option8GB - 256GBClear").
+  const found = [...text.matchAll(/(?<![\d.])(\d+(?:\.\d+)?)\s*(gb|tb)/gi)].map((m) => (m[2].toLowerCase() === "tb" ? Number(m[1]) * 1024 : Number(m[1])));
+  const distinct = [...new Set(found)];
+  if (distinct.length === 1) return distinct[0];
+  if (distinct.length === 0 && /^\s*\d+(\.\d+)?\s*$/.test(text)) return Number(text); // a bare number under a capacity label
+  return null;
 }
 
-/** Classify chipset string into tier. */
-function chipsetTier(name) {
-  const n = name.toLowerCase();
-  // Flagship
-  if (/snapdragon\s*(8\s*(gen\s*[123]|[+]\s*gen\s*1)|888|865|870)/.test(n)) return "flagship";
-  if (/dimensity\s*(9[0-9]{3}|1[0-9]{4})/.test(n)) return "flagship";
-  if (/apple\s*(a1[5-9]|a[2-9]\d)/.test(n)) return "flagship";
-  if (/exynos\s*(2[0-9]{3}|990|980)/.test(n)) return "flagship";
-  if (/kirin\s*(9[0-9]{3}|1[0-9]{4})/.test(n)) return "flagship";
-  // Upper-mid
-  if (/snapdragon\s*(7[+]\s*gen\s*[23]|7\s*gen\s*[123]|780|778|76[0-9])/.test(n)) return "upper-mid";
-  if (/dimensity\s*(8[0-9]{3})/.test(n)) return "upper-mid";
-  if (/exynos\s*(1[0-2][0-9]{2})/.test(n)) return "upper-mid";
-  // Mid
-  if (/snapdragon\s*(6\s*gen|695|690|68[0-9]|67[0-9])/.test(n)) return "mid";
-  if (/dimensity\s*(7[0-9]{3})/.test(n)) return "mid";
-  if (/helio\s*g(9[0-9]|8[5-9])/.test(n)) return "mid";
-  if (/exynos\s*(8[5-9][0-9])/.test(n)) return "mid";
-  // Entry
-  if (/snapdragon\s*(4\s*gen|4[0-9]{2}|[34][0-9]{2})/.test(n)) return "entry";
-  if (/dimensity\s*(7[0-2][0-9]|[5-6][0-9]{2})/.test(n)) return "entry";
-  if (/helio\s*(g[0-7][0-9]|p[0-9]{2}|a[0-9]{2})/.test(n)) return "entry";
-  if (/unisoc|spreadtrum/.test(n)) return "entry";
-  return null; // unknown
+/** A screen size in inches from "6.7 Inches", "6.6"", "6.67″ AMOLED", "15.6-Inch WUXGA", or a bare "15.6" under a size label. */
+function inches(value, { bare = false } = {}) {
+  const m = String(value).match(/(\d{1,2}(?:\.\d+)?)\s*(?:["″”]|''|-?\s*inch(?:es)?\b|-?\s*in\b)/i);
+  if (m) return Number(m[1]);
+  if (bare) {
+    const n = String(value).match(/^\s*(\d{1,2}(?:\.\d+)?)\s*$/);
+    if (n) return Number(n[1]);
+  }
+  return null;
 }
 
-/** Normalize a display type string. */
-function normalizeDisplayType(s) {
-  const v = s.toUpperCase();
-  if (v.includes("AMOLED") || v.includes("SUPER AMOLED")) return "AMOLED";
-  if (v.includes("OLED")) return "OLED";
-  if (v.includes("IPS")) return "IPS";
-  if (v.includes("LCD") || v.includes("TFT") || v.includes("PLS")) return "LCD";
+function displayType(value) {
+  const v = String(value).toUpperCase();
+  if (v.includes("AMOLED")) return "AMOLED";
+  if (/\bOLED\b|XDR OLED|P-?OLED/.test(v)) return "OLED";
+  if (/\bIPS\b/.test(v)) return "IPS";
+  if (/\bLCD\b|\bTFT\b|\bPLS\b/.test(v)) return "LCD";
+  return null;
+}
+
+/** "Intel® Core™ i5-12450H Processor (8 core, ...)" -> "Intel Core i5-12450H"; "Helio G100 (6nm), Octa-core ..." -> "Helio G100". */
+function chipsetName(value) {
+  const name = String(value)
+    .replace(/[®™©]|\((?:r|tm)\)/gi, "")
+    .split(/[(,]/)[0]
+    .replace(/\bprocessor\b.*$/i, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return name.length >= 2 ? name.slice(0, 80) : null;
+}
+
+/** The tier of a phone, tablet or laptop chip; null when it is not one we know. */
+export function chipsetTier(name) {
+  const n = String(name).toLowerCase();
+  // laptops and tablets
+  if (/apple\s*m\d|core\s*(i9|ultra\s*9)|ryzen\s*9|\bultra\s*9\b/.test(n)) return "flagship";
+  if (/core\s*(i7|ultra\s*7)|ryzen\s*7|\bultra\s*7\b|\bi7[- ]/.test(n)) return "upper-mid";
+  if (/core\s*(i5|ultra\s*5)|ryzen\s*5|\bultra\s*5\b|\bi5[- ]/.test(n)) return "mid";
+  if (/core\s*i3|ryzen\s*3|celeron|pentium|athlon|\bi3[- ]|intel\s*n\d{2,3}\b/.test(n)) return "entry";
+  // phones
+  if (/snapdragon\s*(8\s*(elite|gen\s*[1-9]|s?\+?\s*gen\s*\d)|888|865|870)/.test(n)) return "flagship";
+  if (/dimensity\s*(9\d{3}|1\d{4})|apple\s*a(1[5-9]|[2-9]\d)|exynos\s*(2\d{3}|990)|tensor|kirin\s*9\d{3}/.test(n)) return "flagship";
+  if (/snapdragon\s*(7\+?\s*(s\s*)?gen\s*\d|78\d|77\d)|dimensity\s*8\d{3}|exynos\s*1[4-5]\d{2}|apple\s*a1[2-4]/.test(n)) return "upper-mid";
+  if (/snapdragon\s*(6\s*(s\s*)?gen\s*\d|69\d|68\d)|dimensity\s*7\d{3}|helio\s*g(8[5-9]|9\d|1\d\d)|exynos\s*1[23]\d{2}|exynos\s*8\d{2}/.test(n)) return "mid";
+  if (/snapdragon\s*(4\s*(s\s*)?gen\s*\d|[34]\d{2})|dimensity\s*[6]\d{3}|dimensity\s*[5-7]\d{2}\b|helio\s*(g[0-7]\d|p\d{2}|a\d{2})|unisoc|spreadtrum|tiger\s*t\d/.test(n)) return "entry";
   return null;
 }
 
 /**
- * Raw field name patterns → canonical field extractor.
- * Each entry: [pattern to match the raw key, function to parse the raw value].
+ * Each rule: the labels it reads (by meaning) and how it reads a value into fields. Rules are tried in order; a field is set by the
+ * first label that gives it, so a store's dedicated row ("Refresh Rate") wins over a value that mentions it in passing.
  */
-const FIELD_PARSERS = [
-  [/^(chipset|processor|cpu|soc|processor name)$/i,   (v) => ({ chipset: v.trim().slice(0, 80) || null })],
-  [/^ram(\s*memory)?$|^memory$/i,                     (v) => ({ ramGb: parseFloat_(v) || null })],
-  [/^(internal\s*)?storage$|^rom$|^built-in storage$/i, (v) => ({ storageGb: parseFloat_(v) || null })],
-  [/^display\s*(size|screen)?$|^screen\s*size$/i,      (v) => ({ displayInches: parseFloat_(v) || null })],
-  [/^refresh\s*rate$/i,                               (v) => ({ refreshHz: parseFloat_(v) || null })],
-  [/^display\s*type$|^screen\s*type$|^panel(\s*type)?$/i, (v) => ({ displayType: normalizeDisplayType(v) })],
-  [/^battery(\s*capacity)?$|^battery\s*life$/i,       (v) => ({ batteryMah: parseFloat_(v) || null })],
-  [/^charging(\s*speed)?$|^fast\s*charg/i,            (v) => ({ chargingW: parseFloat_(v) || null })],
-  [/^(main|rear|back|primary)?\s*camera$/i,            (v) => ({ mainCameraMp: parseCameraMp(v) || null })],
-  [/^(front|selfie|secondary)\s*camera$/i,             (v) => ({ frontCameraMp: parseCameraMp(v) || null })],
-  [/^(operating\s*)?system$|^android(\s*version)?$|^ios$/i, (v) => ({ os: v.trim().slice(0, 80) || null })],
-  [/^5g$|^network\s*technology$/i,                    (v) => ({ has5g: parseBool(v) })],
-  [/^nfc$/i,                                          (v) => ({ nfc: parseBool(v) })],
-  [/^weight(\s*(grams?|g))?$/i,                       (v) => ({ weightG: parseFloat_(v) || null })],
+const RULES = [
+  { label: /^(chipset|processor|processor (name|type)|cpu|soc|platform)$/i, read: (v) => ({ chipset: chipsetName(v) }) },
+  { label: /^(installed\s*)?ram(\s*memory)?$|^memory\s*\(ram\)$/i, read: (v) => ({ ramGb: singleCapacityGb(v) }) },
+  {
+    label: /^(internal\s*(memory|storage)|storage(\s*capacity)?|rom|built-?in storage|hard\s*drive\s*size|ssd|capacity)$/i,
+    read: (v) => ({ storageGb: singleCapacityGb(v) }),
+  },
+  { label: /^refresh\s*rate$/i, read: (v) => ({ refreshHz: Math.max(...numbersBefore(v, "hz"), 0) || null }) },
+  { label: /^(screen|display)\s*(size|surface)?$/i, read: (v) => ({ displayInches: inches(v, { bare: true }), displayType: displayType(v), refreshHz: Math.max(...numbersBefore(v, "hz"), 0) || null }) },
+  { label: /^(screen|display|panel)\s*type$|^panel$/i, read: (v) => ({ displayType: displayType(v), refreshHz: Math.max(...numbersBefore(v, "hz"), 0) || null }) },
+  {
+    label: /battery|charging/i,
+    read: (v) => ({
+      batteryMah: Math.max(...numbersBefore(v, "mah"), 0) || null,
+      chargingW: Math.max(...numbersBefore(v, "w").filter((w) => w >= 5 && w <= 300), 0) || null,
+    }),
+  },
+  { label: /^(back|rear|main|primary)\s*cameras?(\s*pixel)?$/i, read: (v) => ({ mainCameraMp: Math.max(...numbersBefore(v, "mp|megapixels?"), 0) || (/^\s*\d+(\.\d+)?\s*$/.test(v) ? Number(v) : null) }) },
+  // A bare "Camera" is a phone's main camera, but on a laptop page it is the webcam ("2.0 MP Full HD (1080p) Webcam", Paklap): taken
+  // only from 5 MP up.
+  { label: /^cameras?$/i, read: (v) => ({ mainCameraMp: Math.max(...numbersBefore(v, "mp|megapixels?").filter((mp) => mp >= 5), 0) || null }) },
+  { label: /^(front|selfie)\s*camera(\s*pixel)?$/i, read: (v) => ({ frontCameraMp: Math.max(...numbersBefore(v, "mp|megapixels?"), 0) || (/^\s*\d+(\.\d+)?\s*$/.test(v) ? Number(v) : null) }) },
+  { label: /^(operating\s*system|os)(\s*\(primary\))?$/i, read: (v) => ({ os: String(v).trim().slice(0, 80) || null }) },
+  { label: /^5g$/i, read: (v) => ({ has5g: parseBool(v) }) },
+  { label: /^network(\s*technology)?$/i, read: (v) => (/\b5g\b/i.test(v) ? { has5g: true } : {}) },
+  { label: /^nfc$/i, read: (v) => ({ nfc: parseBool(v) }) },
+  {
+    label: /^(phone\s*|tablet\s*|laptop\s*)?weight$/i,
+    read: (v) => {
+      const kg = numbersBefore(v, "kg")[0];
+      const g = numbersBefore(v, "g|grams?")[0];
+      return { weightG: kg ? Math.round(kg * 1000) : g ?? null };
+    },
+  },
 ];
 
 /**
- * Turn raw label/value pairs into a typed canonical spec sheet.
- * Fields outside the canonical set are dropped. Returns the sheet (may be sparse).
- *
+ * Turn raw label/value pairs into a typed canonical spec sheet (may be sparse; empty when nothing is recognised).
  * @param {Record<string, string>} raw
  * @returns {Record<string, string|number|boolean>}
  */
 export function normalizeSpecs(raw) {
   const sheet = {};
-  for (const [key, val] of Object.entries(raw)) {
-    for (const [pattern, parse] of FIELD_PARSERS) {
-      if (pattern.test(key)) {
-        const result = parse(val);
-        for (const [field, value] of Object.entries(result)) {
-          if (value !== null && value !== undefined && !Number.isNaN(value)) {
-            sheet[field] = value;
-          }
-        }
-        break;
+  for (const [label, value] of Object.entries(raw ?? {})) {
+    if (isNotStated(value)) continue;
+    const key = String(label).replace(/^[&\s]+/, "").trim();
+    for (const rule of RULES) {
+      if (!rule.label.test(key)) continue;
+      for (const [field, parsed] of Object.entries(rule.read(value))) {
+        if (parsed === null || parsed === undefined || Number.isNaN(parsed) || field in sheet) continue;
+        sheet[field] = parsed;
       }
+      break;
     }
   }
-  // Derive chipsetTier from chipset if present
-  if (sheet.chipset && !sheet.chipsetTier) {
+  if (sheet.chipset) {
     const tier = chipsetTier(sheet.chipset);
     if (tier) sheet.chipsetTier = tier;
   }

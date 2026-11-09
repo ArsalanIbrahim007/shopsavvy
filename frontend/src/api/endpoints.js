@@ -68,7 +68,20 @@ export async function getListing(id, { signal } = {}) {
     outlook: body.outlook ?? null,
     // The trained drop forecast: the stores whose price is among those it ranks most likely to fall this week (often none).
     dropChances: body.dropChances ?? [],
+    // What the stores' own pages state about the product ({ sheet, from, score }), or null when no page did.
+    specs: body.specs ?? null,
   };
+}
+
+/**
+ * 2 to 4 products side by side (GET /api/listings/compare): for each, its best offer, lowest current price, the specifications
+ * its stores' pages state, their score and where that ranks among products priced like it.
+ * @param {string[]} ids  listing ids
+ * @returns {Promise<{products: object[]}>}
+ */
+export async function compareProducts(ids, { signal } = {}) {
+  const body = await request("/listings/compare", { params: { ids: ids.join(",") }, signal, timeoutMs: 60000 });
+  return { products: body.products ?? [] };
 }
 
 /**

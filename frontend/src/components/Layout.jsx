@@ -14,6 +14,7 @@ import Logo from "./Logo.jsx";
 import SearchBox from "./SearchBox.jsx";
 import { StoreMark } from "./StoreLogo.jsx";
 import ThemeToggle from "./ThemeToggle.jsx";
+import CompareTray from "./CompareTray.jsx";
 import "./Layout.css";
 
 const STORES = [
@@ -27,6 +28,7 @@ const STORES = [
 const NAV = [
   { label: "Deals", to: "/#deals", hash: "#deals" },
   { label: "Price drops", to: "/drops", path: "/drops" },
+  { label: "Compare", to: "/compare", path: "/compare" },
   { label: "How it works", to: "/how-it-works", path: "/how-it-works" },
 ];
 
@@ -121,6 +123,7 @@ export default function Layout() {
           <Outlet />
         </ErrorBoundary>
       </main>
+      <CompareTray />
       <Footer />
     </>
   );

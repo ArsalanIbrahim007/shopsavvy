@@ -20,6 +20,7 @@ import { ColourStrip } from "./ColourPicker.jsx";
 import ProductImage from "./ProductImage.jsx";
 import ProductRating from "./ProductRating.jsx";
 import VerdictBadge from "./VerdictBadge.jsx";
+import CompareButton from "./CompareButton.jsx";
 import "./cards.css";
 
 export default function ProductCard({ group }) {
@@ -79,6 +80,7 @@ export default function ProductCard({ group }) {
           {best.lastScrapedAt && `Price checked ${timeAgo(best.lastScrapedAt)}`}
         </p>
       )}
+      <CompareButton item={{ id: String(best._id), name: group.productName, category: best.productCategory, image: best.imageUrl }} />
     </article>
   );
 }

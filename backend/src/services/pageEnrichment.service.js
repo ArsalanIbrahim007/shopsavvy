@@ -77,6 +77,7 @@ export async function defaultFetchPage(listing) {
  * @param {boolean} [options.again]       include pages read within the last 14 days (oldest first), not only the ones that are due
  * @param {string[]} [options.stores]     only these stores (lowercase ids)
  * @param {string} [options.match]        only listings whose title contains this text (case-insensitive), to fill in one product first
+ * @param {string[]} [options.categories] only these of PAGE_CATEGORIES (e.g. the spec categories, to fill in specifications first)
  * @param {number} [options.now]          epoch ms, injectable for tests
  * @param {Function} [options.fetchPage]  (listing) => html, injectable for tests
  * @param {Function} [options.readSpecs]  (platform, html, {log}) => canonical sheet | null: the Specs engine (specsEngine.service.js),
@@ -86,12 +87,12 @@ export async function defaultFetchPage(listing) {
  * @returns {Promise<{checked: number, approved: number, nonPta: number, unknown: number, withColours: number, withSpecs: number, failed: number, dry: boolean, results: object[]}>}
  */
 export async function enrichFromPages({
-  limit = DEFAULT_LIMIT, delayMs = 2500, dry = false, again = false, stores = null, match = null, now = Date.now(),
+  limit = DEFAULT_LIMIT, delayMs = 2500, dry = false, again = false, stores = null, match = null, categories = null, now = Date.now(),
   fetchPage = defaultFetchPage, readSpecs = readSpecSheet, model = Listing, log = () => {},
 } = {}) {
   const due = new Date(now - RECHECK_DAYS * DAY_MS);
   const filter = {
-    productCategory: { $in: PAGE_CATEGORIES },
+    productCategory: { $in: categories?.length ? PAGE_CATEGORIES.filter((c) => categories.includes(c)) : PAGE_CATEGORIES },
     isActive: true,
   };
   // `again`: also the pages read lately (oldest first), to fill in a field that did not exist when they were read.

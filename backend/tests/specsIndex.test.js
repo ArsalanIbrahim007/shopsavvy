@@ -81,27 +81,30 @@ describe("specScore", () => {
     expect(specScore({}, "smartphone")).toBeNull();
   });
 
-  it("returns score 0–100 and parts array for a valid sheet", () => {
-    const { score, parts } = specScore({ ramGb: 8, batteryMah: 5000 }, "smartphone");
+  it("returns score 0–100 and the parts it rests on, for a sheet with enough known fields", () => {
+    const { score, parts } = specScore({ ramGb: 8, batteryMah: 5000, refreshHz: 120, mainCameraMp: 50 }, "smartphone");
     expect(score).toBeGreaterThanOrEqual(0);
     expect(score).toBeLessThanOrEqual(100);
-    expect(parts.some((p) => p.field === "ramGb" && p.points > 0)).toBe(true);
+    expect(parts.map((p) => p.field).sort()).toEqual(["batteryMah", "mainCameraMp", "ramGb", "refreshHz"]);
+    expect(parts.every((p) => p.points > 0 && p.points <= p.max)).toBe(true);
   });
 
-  it("returns 100 for a fully populated smartphone sheet", () => {
-    const full = {
-      chipset: "Snapdragon 8 Gen 3", chipsetTier: "flagship",
-      ramGb: 12, storageGb: 256, displayInches: 6.7, refreshHz: 120,
-      displayType: "AMOLED", batteryMah: 5000, chargingW: 45,
-      mainCameraMp: 50, frontCameraMp: 12, os: "Android 14",
-      has5g: true, nfc: true,
-    };
-    expect(specScore(full, "smartphone").score).toBe(100);
+  it("scores what the values are, not how many are known (2026-11-09: the score had measured a page's completeness)", () => {
+    const flagship = { chipsetTier: "flagship", ramGb: 16, storageGb: 512, batteryMah: 7000, refreshHz: 144, displayType: "AMOLED", mainCameraMp: 200, frontCameraMp: 32, chargingW: 120, has5g: true, nfc: true };
+    expect(specScore(flagship, "smartphone").score).toBe(100);
+    const entry = { chipsetTier: "entry", ramGb: 4, storageGb: 64, batteryMah: 5000, refreshHz: 60, displayType: "LCD", mainCameraMp: 13, frontCameraMp: 5, chargingW: 10, has5g: false, nfc: false };
+    const better = { chipsetTier: "upper-mid", ramGb: 12, storageGb: 256, batteryMah: 5000, refreshHz: 120 };
+    expect(specScore(entry, "smartphone").score).toBeLessThan(specScore(better, "smartphone").score); // more fields, worse phone
+    expect(specScore({ ramGb: 4, storageGb: 64, batteryMah: 4000, refreshHz: 60 }, "smartphone").score)
+      .toBeLessThan(specScore({ ramGb: 12, storageGb: 256, batteryMah: 6000, refreshHz: 120 }, "smartphone").score);
   });
 
-  it("falls back to default weights for unknown category", () => {
-    const { score } = specScore({ ramGb: 8, batteryMah: 5000 }, "toaster");
-    expect(score).toBeGreaterThan(0);
+  it("a laptop scores from its chip, RAM and storage, lighter is better, and an unscaled category gives none", () => {
+    expect(specScore({ chipsetTier: "mid", ramGb: 16, storageGb: 512 }, "laptop").score).toBeGreaterThan(0);
+    const light = specScore({ chipsetTier: "mid", ramGb: 16, storageGb: 512, weightG: 1200 }, "laptop").score;
+    const heavy = specScore({ chipsetTier: "mid", ramGb: 16, storageGb: 512, weightG: 2600 }, "laptop").score;
+    expect(light).toBeGreaterThan(heavy);
+    expect(specScore({ ramGb: 8, batteryMah: 5000, refreshHz: 60, os: "x" }, "toaster")).toBeNull();
   });
 });
 
