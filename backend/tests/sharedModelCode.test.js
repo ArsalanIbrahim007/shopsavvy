@@ -3,7 +3,8 @@
 // of live titles from the 2026-11-08 measurement (09-recheck-group-merges.js, 12-recheck-recall.js).
 import { describe, it, expect } from "vitest";
 
-import { sharedModelCode, prefixConflict, classifyPairML, mlMatchStrategy, samePlainTitles, withoutStoreWording } from "../src/services/similarityModel.service.js";
+import { sharedModelCode, sameBrand, prefixConflict, classifyPairML, mlMatchStrategy, samePlainTitles, withoutStoreWording } from "../src/services/similarityModel.service.js";
+import { extractStorage, ramStorageShorthand } from "../src/services/normalizeTitle.service.js";
 import { groupListingsByProduct } from "../src/services/productGrouping.service.js";
 
 const item = (title, price) => ({ title, price });
@@ -157,5 +158,51 @@ describe("grouping joins the groups of one model the first-match loop left apart
       tv("b", "digimall", "TCL - Smart Google TV QLED Premium 50 inch - P79L - Free Delivery Nationwide", 138999),
     ]);
     expect(groups).toHaveLength(2);
+  });
+});
+
+describe("the grouping leftovers (2026-11-09)", () => {
+  const phone = (id, platform, title, price) => ({ _id: id, platform, title, price, ptaStatus: "unknown", productCategory: "smartphone", inStock: true });
+  const holding = (groups, id) => groups.find((g) => g.offers.some((o) => o._id === id));
+
+  it("a line named alone is its maker's brand: A4tech Bloody MR710 and Bloody MR710 (labelled pair r020)", () => {
+    expect(sameBrand("A4tech Bloody MR710 Wireless + Wired Multi-Mode RGB Gaming Headphones", "Bloody MR710 RGB Wireless Gaming Bluetooth Headset (Black)")).toBe(true);
+    expect(sharedModelCode(item("A4tech Bloody MR710 Wireless + Wired Multi-Mode RGB Gaming Headphones", 11413), item("Bloody MR710 RGB Wireless Gaming Bluetooth Headset (Black)", 12695))).toBe("mr710");
+    // A second word of three letters is not a line: "Haier LED" is not the brand "led".
+    expect(sameBrand("Haier LED 55 Inch 55S80EUX", "LED 55 Inch 55S80EUX")).toBe(false);
+  });
+
+  it("but a variant word after the code is a different product: the R50i NC is not the R50i", () => {
+    expect(sharedModelCode(item("Anker Soundcore R50i NC True Wireless Bluetooth Earbuds A3949H12", 7699), item("Soundcore by Anker R50i Earbuds", 7649))).toBeNull();
+    expect(sharedModelCode(item("Samsung 75\" QN70F Neo QLED 4K AI Smart TV (2025)", 615000), item("Samsung 75\" Neo QLED 4K Vision AI Smart TV (QA75QN70FAUSMM) QN70F", 600000))).toBe("qn70f");
+  });
+
+  it("a TV's code with and without its screen size, 55Q7F and Q7F, only where finished groups join (labelled pair r287)", () => {
+    const a = item("Samsung 55\" QLED 4K Vision AI Smart LED TV (55Q7F)", 196980);
+    const b = item("SAMSUNG 55\" QLED Q7F 4K Samsung Vision AI Smart TV - hub", 208999);
+    expect(mlMatchStrategy.sameModel(a, b)).toBe("q7f");
+    expect(sharedModelCode(a, b)).toBeNull(); // not in every pair comparison
+    expect(mlMatchStrategy.sameModel(item("TCL 75P8L 75'' Premium Mini QLED TV", 385000), item("TCL P8L 75\" QD-Mini LED Dimming TV", 367000))).toBe("p8l");
+    expect(mlMatchStrategy.sameModel(a, item("Samsung 65\" QLED Q7F", 208999))).toBeNull();
+    expect(mlMatchStrategy.sameModel(a, item("SAMSUNG 55\" QLED Q7F", 240000))).toBeNull();
+  });
+
+  it("reads a seller's 8/256 for the store-wording pass, not for the grouping loop", () => {
+    expect(ramStorageShorthand("Infinix Note 60 Pro 8/256 | PTA Approved")).toEqual([8, 256]);
+    expect(ramStorageShorthand("Nothing CMF Phone 2 Pro | 8/128 GB | Urban Hub")).toEqual([8, 128]);
+    expect(ramStorageShorthand("Mount 1/2 inch")).toBeNull();
+    expect(ramStorageShorthand("Support 24/7")).toBeNull();
+    expect(extractStorage("Infinix Note 60 Pro 8/256 | PTA Approved")).toBeNull();
+    const groups = groupListingsByProduct(
+      [
+        phone("a", "alfamall", "Xiaomi Redmi Note 15 8/256 | PTA Approved | With Official Warranty | On Installments By 3AZ Mart", 74739),
+        phone("b", "priceoye", "Xiaomi Redmi Note 15 8GB 256GB", 74999),
+        phone("c", "alfamall", "Tecno Spark Go 3 4/128 | PTA Approved | On Easy Monthly Installments | With 0% Markup Upto 6 Months | Fast Delivery | Electronix Hub", 44229),
+        phone("d", "priceoye", "Infinix Smart 20 4GB 128GB", 46999),
+      ],
+      { matchStrategy: mlMatchStrategy },
+    );
+    expect(holding(groups, "a")).toBe(holding(groups, "b"));
+    expect(holding(groups, "c")).not.toBe(holding(groups, "d"));
   });
 });

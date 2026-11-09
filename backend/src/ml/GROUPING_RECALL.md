@@ -204,6 +204,45 @@ Still apart: r243 (Infinix Note 60: its two groups now meet, but an offer of one
 three characters is too short for the model-code rule), and pairs worded too differently for the matcher (a Xiaomi soundbar,
 Audionic earbuds, a Zero watch).
 
+## Three leftovers (2026-11-09, evening)
+
+Each change was measured alone against a snapshot of the live grouping (every group it joined or split, read), then both samples.
+
+1. **A line named alone is its maker's brand** (`sameBrand`). "A4tech Bloody MR710" and "Bloody MR710" were kept apart by the
+   model-code rule's same-brand test. A title's second word now counts as its brand too, when it is a word of four letters or more
+   ("Haier LED" is not the brand "led"). It joined 12 groups of A4tech Bloody headsets (G535, G575, MR710, MH390, G230P, MR575...),
+   all one model each. It also joined "Soundcore by Anker R50i" with "Anker Soundcore R50i **NC**", a different product: the
+   model-code rule now refuses a code followed by a variant word in one title and not the other (NC, ANC, Pro, Plus, Max, Lite). A
+   longer list (Neo, Mini, Ultra) was tried and dropped: "QN70F Neo QLED", "H75M80FUX Mini LED" and "55P79L Ultra HD" continue a TV's
+   name, and those TVs' groups came apart.
+2. **A TV's code with and without its screen size, "55Q7F" and "Q7F"** (`sameTvShortCode`). Both titles must state the same size
+   (or the code itself carries it: "TCL 75P8L 75''", whose 75'' the size reader does not read), and the prices be within 10%. Used
+   in every pair comparison it re-formed the TVs' groups (1,744 to 1,606, a few wrongly: a TCL P725 with a P6L), so it is used only
+   where finished groups join (`mergeSameModelGroups`), and there the groups' own titles must name the code as well: through one
+   offer it had joined a Dawlance KORE group holding two E3A offers to the E3A, and a TCL C6 holding a P6K to the P6K. It joins 77
+   groups into others (TVs 1,744 to 1,599: TCL P6L, P8L, C6K, C7L, T6D, T6C; Samsung Q7F, Q6F, Q8F; Dawlance E22, G3A; Haier K85,
+   S80; and two pairs of iPad 11 A16), splitting none. r287 itself stays apart: one of its groups is headed by "Samsung Q7F ... (Q4 AI
+   Processor ...)", and the model-code rule leaves out any title naming a processor, as computers do (left as it is: narrowing it
+   changes every TV that names its "AiPQ Processor").
+3. **A seller's "8/256"** (`ramStorageShorthand`). 399 phone listings, nearly all from two AlfaMall sellers, write RAM and storage
+   that way and stated no capacity. Read by the grouping loop's storage reader, it let different phones join, since those titles are
+   mostly the seller's wording (a Tecno Spark Go 3, a Redmi A5 and an Infinix Smart 20 in one group); read by the RAM reader, it
+   changed what the trained matcher sees (its features compare RAM), with the same effect. So it is read only by the store-wording
+   pass (`mergeStoreWordedGroups`), whose checks stand: 42 joins (phones 2,196 to 2,148), no splits, and the same 6 groups mixing
+   two models among these sellers' titles as before (an older fault, not this change's).
+
+Rechecked (`12-recheck-recall.js`, both samples, the same labels):
+
+| Sample | Recall before | Recall after | Pair precision before | Pair precision after |
+|---|---:|---:|---:|---:|
+| Fresh (2026-11-09) | 77.9% | 81.2% | 96.9% | 97.0% |
+| First | 75.2% | 75.2% | 99.0% | 99.0% |
+
+- **recall: 81.2%** on the fresh sample: it joined r020 (Bloody MR710) as well as r195 and r289, and split no pair that was together.
+- **pair precision: 97.0%**; the different pairs together are still the iPhone Air and r001 above.
+
+Still apart: r243 (a member conflict), r287 (above), and the pairs worded too differently for the matcher.
+
 ## What this does and does not measure
 
 Pair recall among candidate pairs: one product split into two groups of five offers each counts as 25 missed pairs, as is usual for this

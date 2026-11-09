@@ -1,7 +1,7 @@
-import { normalizeTitle, extractStorage, modelTokens, extractModelCodes } from "./normalizeTitle.service.js";
+import { normalizeTitle, extractStorage, modelTokens, extractModelCodes, extractScreenInches, ramStorageShorthand } from "./normalizeTitle.service.js";
 import { isSimilarProduct, attributeConflict, tokenize, VARIANT_TOKENS } from "./similarity.service.js";
 import { calculateDealScores } from "../ranking/dealScore.js";
-import { SHARED_CODE_PRICE_GAP, brandOf, prefixConflict, withoutStoreWording } from "./similarityModel.service.js";
+import { SHARED_CODE_LENGTH, SHARED_CODE_PRICE_GAP, brandOf, prefixConflict, sameBrand, withoutStoreWording } from "./similarityModel.service.js";
 import { currentOffers } from "./offerFreshness.service.js";
 import { COLOURS, extractNetworkGeneration, extractPtaStatus, networkFamilyKey } from "./productAttributes.service.js";
 
@@ -238,7 +238,9 @@ function mergeSameModelGroups(groups, sameModel, networkFamilies) {
   const titleOf = (offer) => offer.title || offer.normalizedTitle || "";
   const keys = (title) => {
     const codes = [...extractModelCodes(title, { minCodeLength: 4 })];
-    return [...codes, ...codes.map((code) => code.replace(/^\d{2,3}(?=[a-z][a-z0-9]{2,}$)/, ""))];
+    // A TV title's three-character codes too ("Q7F"), for the rule's "55Q7F" / "Q7F" case (sameTvShortCode).
+    const short = extractScreenInches(title) !== null ? [...extractModelCodes(title, { minCodeLength: 3 })].filter((code) => code.length === 3) : [];
+    return [...codes, ...codes.map((code) => code.replace(/^\d{2,3}(?=[a-z][a-z0-9]{2,}$)/, "")), ...short];
   };
   // One offer per distinct title and price is enough to ask the rule about (a store lists one TV many times).
   const distinctOffers = (group) => [...new Map(group.offers.map((o) => [`${titleOf(o)}|${o.price}`, o])).values()];
@@ -263,12 +265,20 @@ function mergeSameModelGroups(groups, sameModel, networkFamilies) {
       if (group.storage !== null && other.storage !== null && group.storage !== other.storage) continue;
       // The groups as wholes must agree too: one pair of offers alone chained Sony's WH-1000XM6 headphones (PKR 129,000) to its
       // WF-1000XM6 earbuds (PKR 88,000), and an OKTRA TV to a PEL one.
-      if (brandOf(group.rawGroupKey) !== brandOf(other.rawGroupKey)) continue;
+      if (!sameBrand(group.rawGroupKey, other.rawGroupKey)) continue;
       if (Math.abs(middle(group) - middle(other)) / Math.max(middle(group), middle(other)) > SHARED_CODE_PRICE_GAP) continue;
       const mine = distinctOffers(group);
-      const named = distinctOffers(other).some((b) =>
-        mine.some((a) => sameModel({ title: titleOf(a), price: a.price }, { title: titleOf(b), price: b.price })));
+      let named = null;
+      for (const b of distinctOffers(other)) {
+        named = mine.map((a) => sameModel({ title: titleOf(a), price: a.price }, { title: titleOf(b), price: b.price })).find(Boolean) ?? null;
+        if (named) break;
+      }
       if (!named) continue;
+      // A three-character TV code ("55Q7F" / "Q7F", sameTvShortCode) must name the groups themselves too: through one offer it joined
+      // a group of Dawlance KORE TVs that also held two E3A offers to the E3A's group, and a TCL C6 to a P6K (2026-11-09).
+      if (named.length < SHARED_CODE_LENGTH &&
+        // (the groups' prices were compared above, so the titles are asked at one price)
+        !sameModel({ title: group.rawGroupKey, price: 1 }, { title: other.rawGroupKey, price: 1 })) continue;
       const clash = other.offers.some((listing) => {
         const title = listing.title || listing.normalizedTitle || "";
         return group.offers.some((member) => conflictsWithMember(listing, title, member, networkFamilies));
@@ -309,8 +319,11 @@ function mergeStoreWordedGroups(groups, samePlainTitles, networkFamilies) {
   };
   const byVariant = new Map();
   groups.forEach((group, i) => {
-    if (group.storage === null) return;
-    const key = `${brandOf(group.rawGroupKey)}|${group.storage}`;
+    // The capacity as the grouping read it, or as a seller's "8/256" states it (ramStorageShorthand), which the grouping loop does
+    // not read (see extractStorage).
+    const storage = group.storage ?? ramStorageShorthand(group.rawGroupKey)?.[1] ?? null;
+    if (storage === null) return;
+    const key = `${brandOf(group.rawGroupKey)}|${storage}`;
     if (!byVariant.has(key)) byVariant.set(key, []);
     byVariant.get(key).push(i);
   });

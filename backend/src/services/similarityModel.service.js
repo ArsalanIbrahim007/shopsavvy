@@ -14,7 +14,7 @@ import { buildFeatureVector } from "../ml/features.js";
 import { FILLER_WORDS } from "../ml/fillerWords.js";
 import { predictProba } from "../ml/logisticRegression.js";
 import { attributeConflict, tokenize, sameSet, statedSizes, withoutSizePrefix } from "./similarity.service.js";
-import { modelTokens, extractStorage, extractPtaStatus, extractModelCodes } from "./normalizeTitle.service.js";
+import { modelTokens, extractStorage, extractPtaStatus, extractModelCodes, extractScreenInches } from "./normalizeTitle.service.js";
 import { extractRamGb } from "./productAttributes.service.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -55,24 +55,76 @@ const COMPUTER =
   /\b(laptop|notebook|macbook|chromebook|ultrabook|thinkpad|thinkbook|core\s*(i[3579]|ultra)|ryzen|intel|amd|celeron|pentium|processor|cpu|gpu|rtx|gtx|ddr\d)\b/i;
 const NOT_A_MODEL = /^(\d+(years?|yrs?|months?|days?)|hdr\d+|ddr\d+|lpddr\d+[a-z]?|wifi\d+|usb\d+|be\d{4}|ax\d{4}|ac\d{4}|ispk\d*|sns\d+)$/;
 export const brandOf = (title) => (String(title).toLowerCase().match(/[a-z0-9]+/) ?? [""])[0];
+// The brand as one store writes it, or the line a store names alone: "A4tech Bloody MR710" and "Bloody MR710" are one maker's
+// (2026-11-09, labelled pair r020). The second word counts only when it is a word of letters, four or more, so "Haier LED 55..."
+// does not become the brand "led".
+const brandWordsOf = (title) => {
+  const [first = "", second = ""] = String(title).toLowerCase().match(/[a-z0-9]+/g) ?? [];
+  return /^[a-z]{4,}$/.test(second) ? [first, second] : [first];
+};
+export function sameBrand(titleA, titleB) {
+  const [firstA, ...restA] = brandWordsOf(titleA);
+  const [firstB, ...restB] = brandWordsOf(titleB);
+  return Boolean(firstA) && (firstA === firstB || restA.includes(firstB) || restB.includes(firstA));
+}
 
-export function sharedModelCode(itemA, itemB) {
+export function sharedModelCode(itemA, itemB, { shortTvCode = false } = {}) {
   if (process.env.SHOPSAVVY_NO_SHARED_CODE) return null; // to measure the grouping without this rule (09-recheck-group-merges.js --save)
   if (COMPUTER.test(itemA.title) || COMPUTER.test(itemB.title)) return null;
-  const brand = brandOf(itemA.title);
-  if (!brand || brand !== brandOf(itemB.title)) return null;
+  if (!sameBrand(itemA.title, itemB.title)) return null;
+  const brands = new Set([...brandWordsOf(itemA.title), ...brandWordsOf(itemB.title)]);
   const sizes = statedSizes(itemA.title, itemB.title);
   const a = Number(itemA.price);
   const b = Number(itemB.price);
   const gap = a > 0 && b > 0 ? Math.abs(a - b) / Math.max(a, b) : Infinity;
   const distinctive = (code) =>
-    code.length >= SHARED_CODE_LENGTH && /[a-z]/i.test(code) && /\d/.test(code) && code !== brand && !NOT_A_MODEL.test(code);
+    code.length >= SHARED_CODE_LENGTH && /[a-z]/i.test(code) && /\d/.test(code) && !brands.has(code) && !NOT_A_MODEL.test(code);
   const codesA = [...withoutSizePrefix(extractModelCodes(itemA.title, { minCodeLength: 4 }), sizes)].filter(distinctive);
   const codesB = withoutSizePrefix(extractModelCodes(itemB.title, { minCodeLength: 4 }), sizes);
   const shared = codesA.find((code) => codesB.has(code));
-  if (shared) return gap <= SHARED_CODE_PRICE_GAP ? shared : null;
-  const yearless = sameTvWithoutYearLetter(itemA.title, itemB.title, sizes);
+  if (shared) return gap <= SHARED_CODE_PRICE_GAP && !differentVariant(itemA.title, itemB.title, shared) ? shared : null;
+  const yearless = sameTvWithoutYearLetter(itemA.title, itemB.title, sizes) ?? (shortTvCode ? sameTvShortCode(itemA.title, itemB.title) : null);
   return yearless && gap <= YEAR_LETTER_PRICE_GAP ? yearless : null;
+}
+
+// A TV's code written with its screen size and without: Samsung's "55Q7F" and "Q7F" (2026-11-09, labelled pair r287). A code of
+// three characters is too short for the rule above, so only when one title's code is the screen size both titles state followed by
+// the other title's code, and (as for the year letter) the prices are within YEAR_LETTER_PRICE_GAP.
+function sameTvShortCode(titleA, titleB) {
+  const sized = (title) => [...extractModelCodes(title, { minCodeLength: 4 })]
+    .map((code) => code.match(/^(\d{2,3})([a-z][a-z0-9]{2})$/))
+    .filter((m) => m && /\d/.test(m[2]));
+  // The size the title states, or else the one its own code begins with ("TCL 75P8L 75''": the size reader does not read 75'').
+  const sizeOf = (title) => {
+    const stated = extractScreenInches(title);
+    if (stated !== null) return String(Math.round(stated));
+    const prefixes = new Set(sized(title).map((m) => m[1]));
+    return prefixes.size === 1 ? [...prefixes][0] : null;
+  };
+  const size = sizeOf(titleA);
+  if (size === null || size !== sizeOf(titleB)) return null; // both, the same
+  const withSize = (title) => sized(title).filter((m) => m[1] === size).map((m) => m[2]);
+  const short = (title) => [...extractModelCodes(title, { minCodeLength: 3 })].filter((code) => code.length === 3);
+  const codesB = new Set([...short(titleB), ...withSize(titleB)]);
+  const found = withSize(titleA).find((code) => codesB.has(code)) ?? withSize(titleB).find((code) => short(titleA).includes(code));
+  if (found) return found;
+  // Both written "Q7F", when both titles state the size themselves ("SAMSUNG 65" QLED Q7F" and "Samsung 65" Q7F 4K AI Smart TV").
+  const bothStated = extractScreenInches(titleA) !== null && extractScreenInches(titleB) !== null;
+  return bothStated ? short(titleA).find((code) => /^[a-z]/.test(code) && short(titleB).includes(code)) ?? null : null;
+}
+
+// A word after the code that names a different variant of it: "Anker Soundcore R50i NC" (noise cancelling) is not the R50i, and
+// joined it once "Soundcore by Anker R50i" was read as the same brand (2026-11-09). Not words a TV's name continues with: "QN70F
+// Neo QLED", "H75M80FUX Mini LED", "55P79L Ultra HD" (tried, and those TVs' groups came apart).
+const VARIANT_AFTER_CODE = new Set(["nc", "anc", "pro", "plus", "max", "lite"]);
+function differentVariant(titleA, titleB, code) {
+  const after = (title) => {
+    const words = String(title).toLowerCase().match(/[a-z0-9]+/g) ?? [];
+    const at = words.findIndex((word) => word === code || word.endsWith(code));
+    const next = at >= 0 ? words[at + 1] : undefined;
+    return VARIANT_AFTER_CODE.has(next) ? next : null;
+  };
+  return after(titleA) !== after(titleB);
 }
 
 // A TV's code with and without its last letter, the model year (Samsung's 65Q60D is the 2024 Q60; a store wrote "65Q60", 2026-11-09,
@@ -242,7 +294,9 @@ export function mlMatchStrategy(rawTitle, group, listing) {
 
 // The grouping's last pass (productGrouping.service.js mergeSameModelGroups) joins groups of one model that the first-match loop
 // left apart; groupListingsByProduct takes it from the strategy, so every caller using the trained strategy gets it.
-mlMatchStrategy.sameModel = sharedModelCode;
+// With the short TV code ("55Q7F" / "Q7F") only here, where finished groups join: in every pair comparison it re-formed the TVs'
+// groups (1,744 to 1,606, a few of them wrongly, 2026-11-09).
+mlMatchStrategy.sameModel = (itemA, itemB) => sharedModelCode(itemA, itemB, { shortTvCode: true });
 
 // The grouping's other last pass (productGrouping.service.js mergeStoreWordedGroups): two group titles are one product once the
 // store's wording is taken out of both, asked only when at least one of them has some (otherwise the grouping already compared

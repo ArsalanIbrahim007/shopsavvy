@@ -68,9 +68,23 @@ function normalizeUncached(title) {
  * apart from every 512GB listing of the same phone (found by the recall
  * sample, 2026-10-26). Such a title now states no storage.
  */
+/**
+ * RAM and storage written as a seller's shorthand, "Infinix Note 60 Pro 8/256" or "12/512", without a unit: [ram, storage] in GB, or
+ * null ("8/128 GB" too). Only phone and tablet values (RAM up to 24, storage 16 to 1024) and no other unit after, so "1/2 inch" or
+ * "24/7" are not read. 399 listings were written this way on 2026-11-09, nearly all from two AlfaMall sellers, and stated no capacity at all.
+ */
+const RAM_STORAGE_SHORTHAND = /(?<![\d.])(1|2|3|4|6|8|12|16|18|24)\s*\/\s*(16|32|64|128|256|512|1024)(?:\s*gb)?\b(?!\s*(?:tb|mb|mah|w|hz|"|inch))/i;
+export function ramStorageShorthand(title = "") {
+  const match = String(title).match(RAM_STORAGE_SHORTHAND);
+  return match ? [Number(match[1]), Number(match[2])] : null;
+}
+
 function extractStorageUncached(title = "") {
   const normalized = normalizeTitle(title);
   const capacities = [];
+  // Not the "8/256" shorthand (ramStorageShorthand): read here, it let the grouping loop join different phones whose titles are mostly
+  // one seller's wording ("Tecno Spark Go 3 4/128 | PTA Approved | On Easy Monthly Installments | ... | Electronix Hub" with a Redmi
+  // A5 and an Infinix Smart 20, 2026-11-09). Such groups join their product in productGrouping's mergeStoreWordedGroups instead.
 
   for (const match of normalized.matchAll(/\b(\d+)(gb|tb)\b(?!\s+(?:ram|memory)\b)/g)) {
     const value = Number(match[1]);
