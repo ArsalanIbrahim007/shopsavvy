@@ -3,7 +3,7 @@
 // of live titles from the 2026-11-08 measurement (09-recheck-group-merges.js, 12-recheck-recall.js).
 import { describe, it, expect } from "vitest";
 
-import { sharedModelCode, prefixConflict, classifyPairML, mlMatchStrategy } from "../src/services/similarityModel.service.js";
+import { sharedModelCode, prefixConflict, classifyPairML, mlMatchStrategy, samePlainTitles, withoutStoreWording } from "../src/services/similarityModel.service.js";
 import { groupListingsByProduct } from "../src/services/productGrouping.service.js";
 
 const item = (title, price) => ({ title, price });
@@ -49,6 +49,59 @@ describe("a TV code with and without its year letter (2026-11-09, labelled pair 
     expect(sharedModelCode(item("Samsung 65\" QLED TV (65Q60D)", 200000), item("Samsung 65 Inch QLED TV (65Q60)", 298999))).toBeNull();
     expect(sharedModelCode(item("Oppo A15 3GB 32GB", 30000), item("Oppo A15s 4GB 64GB", 31000))).toBeNull();
     expect(sharedModelCode(item("TCL 55 Inch QD-Mini LED (55C6K)", 200000), item("TCL 55 Inch (55C6KS)", 205000))).toBeNull();
+  });
+});
+
+describe("withoutStoreWording (2026-11-09)", () => {
+  it.each([
+    ["Infinix Note 60 | (256GB - 8GB RAM) | PTA Approved | Official Warranty With Free SURPRISE GIFT | Electro Ease", "Infinix Note 60 | (256GB - 8GB RAM) | PTA Approved"],
+    ["Infinix Hot 60 Pro - 8GB RAM - 128GB ROM - Installments (Pak Mobiles)", "Infinix Hot 60 Pro - 8GB RAM - 128GB ROM"],
+    ["Oppo A6K 128GB 4GB RAM - ISPK-0624", "Oppo A6K 128GB 4GB RAM"],
+    ["Haier - Q-LED Google TV 55 Inches - S80EUX - (SNS67)", "Haier - Q-LED Google TV 55 Inches - S80EUX"],
+    ["Samsung Galaxy A17 8GB 256GB (With 10% Markup Upto 6 Months)", "Samsung Galaxy A17 8GB 256GB"],
+    ["Samsung Galaxy S24 Ultra (12GB - 256GB) Free Home Delivery", "Samsung Galaxy S24 Ultra (12GB - 256GB)"],
+  ])("takes the store's wording out of %s", (title, plain) => {
+    expect(withoutStoreWording(title)).toBe(plain);
+  });
+
+  it("keeps the condition and PTA status, and leaves a plain title as it is", () => {
+    expect(withoutStoreWording("iPhone 15 128GB - 3 Months Warranty (Used)")).toBe("iPhone 15 128GB Used");
+    expect(withoutStoreWording("Samsung Galaxy S25 Ultra 12GB 512GB PTA Approved - 3 Month Warranty Like a New")).toBe("Samsung Galaxy S25 Ultra 12GB 512GB PTA Approved Like a New");
+    expect(withoutStoreWording("Redmi Note 13 Pro (8GB – 256GB) 8GB – 256GB")).toBe("Redmi Note 13 Pro (8GB – 256GB) 8GB – 256GB");
+  });
+});
+
+describe("grouping joins groups of one phone that a store's wording kept apart (labelled pair r243's groups)", () => {
+  const phone = (id, platform, title, price, ptaStatus = "unknown") => ({ _id: id, platform, title, price, ptaStatus, productCategory: "smartphone", inStock: true });
+  const holding = (groups, id) => groups.find((g) => g.offers.some((o) => o._id === id));
+
+  it("joins them, though the seller's title alone scores below the threshold", () => {
+    const seller = "Infinix Note 60 | (256GB - 8GB RAM) | PTA Approved | Official Warranty With Free SURPRISE GIFT | Electro Ease";
+    const plain = "Infinix Note 60 256GB 8GB RAM Fizz Blue";
+    expect(classifyPairML(item(seller, 118000), item(plain, 110000)).isMatch).toBe(false);
+    expect(samePlainTitles(item(seller, 118000), item(plain, 110000))).toBe(true);
+    const groups = groupListingsByProduct([phone("a", "alfamall", seller, 118000), phone("b", "ishopping", plain, 110000)], { matchStrategy: mlMatchStrategy });
+    expect(holding(groups, "a")).toBe(holding(groups, "b"));
+  });
+
+  it("not two titles without store wording, not computers, not a like-new unit with a new one, nor groups priced apart", () => {
+    expect(samePlainTitles(item("Infinix Note 60 256GB 8GB RAM", 110000), item("Infinix Note 60 8GB 256GB Blue", 112000))).toBe(false);
+    expect(samePlainTitles(
+      item("Dell Latitude 7400 14\" Core I5 8th Gen 8GB RAM 256GB M2 SSD Laptop - 3 Months Warranty - ISPK-0622", 60000),
+      item("DELL LATITUDE 5400 - CORE I5 8TH GENEARTION - 8GB RAM - 256GB M2 SSD - 14\" - 3 months WARRANTY", 56100),
+    )).toBe(false);
+    expect(samePlainTitles(item("Samsung Galaxy S25 Ultra 12GB 512GB PTA Approved - 3 Month Warranty Like a New", 325000), item("Samsung Galaxy S25 Ultra 12GB 512GB", 375000))).toBe(false);
+    // RAM written short ("8+256GB") is read too: the 8GB Nothing Phone 4a is not the 12GB one.
+    expect(samePlainTitles(item("Nothing Phone 4a 8+256GB 1 Year Warranty at 0% markup upto 6 months installments", 184000), item("Nothing Phone 4A 12GB 256GB", 210000))).toBe(false);
+    expect(samePlainTitles(item("Nothing Phone 4a 8+256GB 1 Year Warranty at 0% markup upto 6 months installments", 184000), item("Nothing Phone 4A 8GB 256GB", 175000))).toBe(true);
+    const groups = groupListingsByProduct(
+      [
+        phone("a", "alfamall", "Samsung Galaxy A17 | (256GB - 8GB RAM) | PTA Approved | Official Warranty With Free SURPRISE GIFT | Electro Ease", 80000),
+        phone("b", "paklap", "Samsung Galaxy A17 - 8GB RAM - 256GB ROM - Installments (Pak Mobiles)", 104000),
+      ],
+      { matchStrategy: mlMatchStrategy },
+    );
+    expect(holding(groups, "a")).not.toBe(holding(groups, "b"));
   });
 });
 

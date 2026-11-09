@@ -15,6 +15,7 @@ import { FILLER_WORDS } from "../ml/fillerWords.js";
 import { predictProba } from "../ml/logisticRegression.js";
 import { attributeConflict, tokenize, sameSet, statedSizes, withoutSizePrefix } from "./similarity.service.js";
 import { modelTokens, extractStorage, extractPtaStatus, extractModelCodes } from "./normalizeTitle.service.js";
+import { extractRamGb } from "./productAttributes.service.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // The live model. SHOPSAVVY_MATCH_MODEL names another artifact in src/ml/ to try a
@@ -129,6 +130,38 @@ export function classifyPairML(itemA, itemB) {
   return { isMatch: probability >= loadedModel.threshold, probability };
 }
 
+/**
+ * A title without its store's own wording: a seller's name, an instalment or delivery offer, a gift, a warranty line or a store
+ * reference ("Infinix Note 60 | (256GB - 8GB RAM) | PTA Approved | Official Warranty With Free SURPRISE GIFT | Electro Ease" is
+ * "Infinix Note 60 | (256GB - 8GB RAM) | PTA Approved"). Only those pieces go: a "|" segment, a " - " tail or a closing bracket
+ * that is such wording, and store codes anywhere. Everything that describes the product stays, the PTA status and condition too.
+ * Nearly all of it is AlfaMall's sellers' (counted 2026-11-09). Used only for the second try in mlMatchStrategy, never to show.
+ */
+const STORE_WORDING =
+  /\b(warranty|installments?|instal+ment|markup|delivery|free|gift|surprise|price in pakistan|electro ?ease|homecart|techelite|electronix hub|hub|et|authentico(\.pk)?|spark technologies|official (infinix |samsung |)store|mart|pak mobiles)\b/i;
+const STORE_CODE = /\(?\b(ispk-?\d+|sns\d+|ns\d+)\b\)?/gi;
+const STORE_PHRASE = /\b(free|fast) (home )?delivery\b/gi;
+// A piece of store wording may also state the condition or PTA status ("3 Months Warranty (Used)"): those words are kept.
+const KEPT_IN_WORDING = /\b(used|refurbished|renewed|open box|pre-?owned|like (a )?new|box pack(ed)?|non[- ]?pta|pta approved|pta)\b/gi;
+const drop = (piece) => (piece.match(KEPT_IN_WORDING) ?? []).map((word) => ` ${word}`).join("");
+// Store wording in the running text, from where it starts to the end of the title ("Redmi Note 15 8GB 128GB Official Pta Approved
+// 1Year Official Warranty At 0% Markup On Upto 6 Months Installments By Microtel Trading"): sellers put it after the product.
+const STORE_RUN = /\s*[([]?\s*\b(with\s+)?(\d+\s*years?\s+(official\s+|brand\s+)?warranty|official\s+warranty|(at\s+)?\d+%\s+markup|on\s+(easy\s+)?(monthly\s+)?install?ments?|easy\s+monthly\s+install?ments?)\b.*$/i;
+export function withoutStoreWording(title) {
+  let text = String(title || "").replace(STORE_CODE, " ").replace(STORE_PHRASE, " ");
+  text = text.replace(STORE_RUN, (run) => drop(run));
+  text = text.split("|").map((segment, i) => (i > 0 && STORE_WORDING.test(segment) ? drop(segment) : segment)).filter((s) => s.trim()).join("|");
+  let previous;
+  do {
+    previous = text;
+    text = text
+      .replace(/\s*[-–]\s*([^-–|()]*(\([^)]*\))?[^-–|()]*)\s*$/, (whole, tail) => (STORE_WORDING.test(tail) ? drop(tail) : whole))
+      .replace(/\s*\(([^()]*)\)\s*$/, (whole, inside) => (STORE_WORDING.test(inside) ? drop(inside) : whole))
+      .replace(/[\s|_([–-]+$/, "");
+  } while (text !== previous);
+  return text.replace(/\s+/g, " ").trim();
+}
+
 // Price tolerance when a capacity is missing on either side, matching the rule
 // strategy's tiebreak: a different capacity of one model differs by tens of
 // per cent, the same unit across stores by a few.
@@ -210,3 +243,30 @@ export function mlMatchStrategy(rawTitle, group, listing) {
 // The grouping's last pass (productGrouping.service.js mergeSameModelGroups) joins groups of one model that the first-match loop
 // left apart; groupListingsByProduct takes it from the strategy, so every caller using the trained strategy gets it.
 mlMatchStrategy.sameModel = sharedModelCode;
+
+// The grouping's other last pass (productGrouping.service.js mergeStoreWordedGroups): two group titles are one product once the
+// store's wording is taken out of both, asked only when at least one of them has some (otherwise the grouping already compared
+// them as they are).
+// Not for computers (a Dell Latitude 7400 joined a 5400 when tried, 2026-11-09), and never a used or like-new unit with a new one
+// (an S25 Ultra "3 Month Warranty Like a New" at PKR 322,000 joined new ones at 355,000+: the member checks do not read "like new").
+const SECOND_HAND = /\b(used|refurbished|renewed|open box|pre-?owned|like (a )?new)\b/i;
+// RAM also as sellers write it in short, "8+256GB" or "12 256GB", which extractRamGb does not read ("Nothing Phone 4a 8+256GB"
+// joined the 12GB 4a when tried).
+const ramOf = (title) => {
+  const stated = extractRamGb(title);
+  if (stated !== null) return stated;
+  const short = String(title).match(/\b(\d{1,2})\s*(?:gb)?\s*[+/]\s*\d{2,4}\s*gb\b/i) ?? String(title).match(/\b(\d{1,2})\s+\d{2,4}\s*gb\b/i);
+  return short ? Number(short[1]) : null;
+};
+export function samePlainTitles(itemA, itemB) {
+  if (COMPUTER.test(itemA.title) || COMPUTER.test(itemB.title)) return false;
+  if (SECOND_HAND.test(itemA.title) !== SECOND_HAND.test(itemB.title)) return false;
+  const plainA = withoutStoreWording(itemA.title);
+  const plainB = withoutStoreWording(itemB.title);
+  if (!plainA || !plainB || (plainA === itemA.title && plainB === itemB.title)) return false;
+  const ramA = ramOf(plainA);
+  const ramB = ramOf(plainB);
+  if (ramA !== null && ramB !== null && ramA !== ramB) return false;
+  return classifyPairML({ ...itemA, title: plainA }, { ...itemB, title: plainB }).isMatch;
+}
+mlMatchStrategy.samePlainTitles = samePlainTitles;

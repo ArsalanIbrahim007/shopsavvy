@@ -158,6 +158,52 @@ Tried on 2026-11-09 and not kept, because they made it worse:
 What would fix it is choosing a group's representative title more carefully (the plainest title, not the first one with a stated
 capacity); that changes every group and needs the full recheck, so it is left for after the submission.
 
+## Groups kept apart by a store's wording (2026-11-09, later the same day)
+
+The store wording was counted across the six categories' titles: nearly all of it is AlfaMall's sellers' ("| Electro Ease",
+"- (HomeCart)", "| On Installments By 3az Mart", "- ISPK-0624", "At 0% Markup On Upto 6 Months Installments By Microtel Trading").
+`withoutStoreWording` (similarityModel.service.js) takes out only such pieces (a "|" part, a " - " tail, a closing bracket, a run
+from "At 0% Markup" or "1 Year Official Warranty" to the end, and store codes) and keeps every word about the product, the PTA status
+and the condition ("3 Months Warranty (Used)" keeps "Used").
+
+Tried first, and not kept: letting an offer turned away by a group's title try again with both titles without that wording, while the
+groups were forming. The phones' groups re-formed (2,470 to 2,239): two missed pairs of the fresh sample joined, but three that were
+together came apart, and the old sample fell from 75.2% to 72.5%.
+
+Kept: a last pass over the finished groups (`mergeStoreWordedGroups`). Two groups join when, without the store wording, the matcher
+takes their titles for one product, and:
+- at least one of the two titles has store wording;
+- both state the same capacity, the same brand, and RAM that does not differ (also read as sellers write it short, "8+256GB");
+- their prices are within 15%, each group's price taken before the pass;
+- neither is a computer, and a used or like-new unit never joins a new one;
+- no offer of one conflicts with an offer of the other (the grouping's usual checks, and the 4G/5G families read on the titles
+  without the wording).
+
+It joins 143 groups into others (phones 2,470 to 2,329 groups; tablets; nothing in TVs, headphones, watches or laptops). All were read.
+The first version had joined two different laptops (a Dell Latitude 7400 with a 5400), a like-new S25 Ultra with new ones, an 8GB
+Nothing Phone 4a with the 12GB one, and a Samsung A17 with the A17 5G; the limits above came from those, and none of them joins
+now. Grouping time is unchanged (phones about 13 s).
+
+Rechecked (`12-recheck-recall.js`, both samples, the same labels):
+
+| Sample | Recall before | Recall after | Pair precision before | Pair precision after |
+|---|---:|---:|---:|---:|
+| Fresh (2026-11-09) | 71.1% | 77.9% | 97.5% | 96.9% |
+| First | 75.2% | 75.2% | 98.9% | 99.0% |
+
+- **recall: 77.9%** on the fresh sample; estimated 26,200 same-product pairs together, 7,454 apart. It joined r195 (Oppo A6K 4GB/128GB)
+  and r289 (Infinix Hot 60 Pro 8GB/128GB), and split no pair that was together.
+- **pair precision: 96.9%**; the different pairs together are the iPhone Air above and r001, a DigiMall "Samsung Galaxy S26 Plus 12GB
+  RAM" (storage unstated) at PKR 382,999 with a 512GB at 444,999. r001 was labelled different by its price (rule 5) and is one of
+  the uncertain labels set aside for a second, blind reading: the stores' prices on 2026-11-09 put the 12GB/256GB at PKR 346,000
+  to 360,000 and the 12GB/512GB at 383,000, which is the 512GB's price. The label was left as it was, so as not to change a label
+  after seeing the result.
+
+Still apart: r243 (Infinix Note 60: its two groups now meet, but an offer of one conflicts with an offer of the other), the A4Tech
+"Bloody MR710" (one title starts with the brand "A4tech", the other with its line "Bloody"), the Samsung "55Q7F" / "Q7F" (a code of
+three characters is too short for the model-code rule), and pairs worded too differently for the matcher (a Xiaomi soundbar,
+Audionic earbuds, a Zero watch).
+
 ## What this does and does not measure
 
 Pair recall among candidate pairs: one product split into two groups of five offers each counts as 25 missed pairs, as is usual for this

@@ -1,7 +1,7 @@
 import { normalizeTitle, extractStorage, modelTokens, extractModelCodes } from "./normalizeTitle.service.js";
 import { isSimilarProduct, attributeConflict, tokenize, VARIANT_TOKENS } from "./similarity.service.js";
 import { calculateDealScores } from "../ranking/dealScore.js";
-import { SHARED_CODE_PRICE_GAP, brandOf, prefixConflict } from "./similarityModel.service.js";
+import { SHARED_CODE_PRICE_GAP, brandOf, prefixConflict, withoutStoreWording } from "./similarityModel.service.js";
 import { currentOffers } from "./offerFreshness.service.js";
 import { COLOURS, extractNetworkGeneration, extractPtaStatus, networkFamilyKey } from "./productAttributes.service.js";
 
@@ -287,6 +287,60 @@ function mergeSameModelGroups(groups, sameModel, networkFamilies) {
   return groups.filter((_, i) => !absorbed.has(i));
 }
 
+/**
+ * Joins two groups of one phone that a store's wording kept apart (2026-11-09). A group is compared by one title, and when that
+ * title is an AlfaMall seller's ("Infinix Note 60 | (256GB - 8GB RAM) | PTA Approved | Official Warranty With Free SURPRISE GIFT |
+ * Electro Ease") the same phone's plain titles scored 0.32 against it and formed a second group. `samePlainTitles` is the strategy's
+ * test of two group titles without that wording (similarityModel.service.js). Two groups join only when both state the same
+ * capacity, have the same brand, sit within PRICE_PROXIMITY of each other, the test holds, and no offer of one conflicts with any
+ * offer of the other (the checks findMatchingGroup makes). It runs on finished groups and only joins them: letting offers try the
+ * plain titles while groups were still forming put many offers in different groups and was no better (GROUPING_RECALL.md).
+ * Each group is compared by its own title only, so a joined group does not reach further through the titles it took in.
+ */
+function mergeStoreWordedGroups(groups, samePlainTitles, networkFamilies) {
+  // Each group's price as it was before this pass: a group that has taken in others spans more, and reached a dearer one through
+  // them (a PKR 103,000 instalment listing reached an 83,000 group through a 91,000 one).
+  const middles = new Map(groups.map((group) => [group, (group.lowestPrice + group.highestPrice) / 2]));
+  const middle = (group) => middles.get(group);
+  const plainTitles = new Map();
+  const plainOf = (listing) => {
+    if (!plainTitles.has(listing)) plainTitles.set(listing, withoutStoreWording(listing.title || listing.normalizedTitle || ""));
+    return plainTitles.get(listing);
+  };
+  const byVariant = new Map();
+  groups.forEach((group, i) => {
+    if (group.storage === null) return;
+    const key = `${brandOf(group.rawGroupKey)}|${group.storage}`;
+    if (!byVariant.has(key)) byVariant.set(key, []);
+    byVariant.get(key).push(i);
+  });
+  const absorbed = new Set();
+  for (const members of byVariant.values()) {
+    for (const i of members) {
+      if (absorbed.has(i)) continue;
+      const group = groups[i];
+      for (const j of members) {
+        if (j <= i || absorbed.has(j)) continue;
+        const other = groups[j];
+        if (Math.abs(middle(group) - middle(other)) / Math.max(middle(group), middle(other)) > PRICE_PROXIMITY) continue;
+        if (!samePlainTitles({ title: group.rawGroupKey, price: middle(group) }, { title: other.rawGroupKey, price: middle(other) })) continue;
+        // The 4G/5G families are checked on the titles without store wording as well: Microtel's "Samsung Galaxy A17 8GB 256GB Pta
+        // Approved With Official Warranty At 0% Markup ... By Microtel Trading" is not read as one of the A17 family with its
+        // wording, and joined the A17 5G when tried.
+        const clash = other.offers.some((listing) => {
+          const title = listing.title || listing.normalizedTitle || "";
+          return group.offers.some((member) => conflictsWithMember(listing, title, member, networkFamilies) ||
+            isNetworkSplit(plainOf(listing), plainOf(member), networkFamilies));
+        });
+        if (clash) continue;
+        for (const listing of other.offers) addOffer(group, listing);
+        absorbed.add(j);
+      }
+    }
+  }
+  return groups.filter((_, i) => !absorbed.has(i));
+}
+
 function newGroup(listing, rawTitle, listingStorage) {
   return {
     productName: listing.title,
@@ -455,6 +509,7 @@ export function groupListingsByProduct(listings = [], { matchStrategy = ruleMatc
   });
 
   if (sameModel) groups = mergeSameModelGroups(groups, sameModel, networkFamilies);
+  if (matchStrategy.samePlainTitles) groups = mergeStoreWordedGroups(groups, matchStrategy.samePlainTitles, networkFamilies);
   groups = separateLikelyNonPta(groups, matchStrategy, networkFamilies);
 
   return groups
