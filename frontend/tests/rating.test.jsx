@@ -3,7 +3,8 @@ import { render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import axe from "axe-core";
 
-import { MIN_REVIEWS_TO_SHOW, ratingInfo } from "../src/lib/rating.js";
+import { MIN_REVIEWS_TO_SHOW, productRating, ratingInfo } from "../src/lib/rating.js";
+import ProductRating from "../src/components/ProductRating.jsx";
 import OfferTable from "../src/components/results/OfferTable.jsx";
 
 const offer = (id, platform, price, over = {}) => ({
@@ -92,5 +93,27 @@ describe("OfferTable with ratings", () => {
     ]} name="iPhone X" />);
     const results = await axe.run(container, { rules: { "color-contrast": { enabled: false }, region: { enabled: false } } });
     expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`)).toEqual([]);
+  });
+});
+
+describe("productRating", () => {
+  it("rates the product once, from the offer whose rating rests on the most reviews, saying whose buyers gave it", () => {
+    const offers = [
+      { platform: "mega", price: 60000 },
+      { platform: "priceoye", rating: 4.6, reviewCount: 42 },
+      { platform: "eezepc", rating: 5, reviewCount: 6 },
+      { platform: "xcessorieshub", rating: 5, reviewCount: 2 }, // too few to show
+    ];
+    expect(productRating(offers)).toMatchObject({ value: "4.6", count: 42, store: "PriceOye", line: "4.6 · 42 reviews at PriceOye" });
+  });
+
+  it("is nothing when no offer has a rating with enough reviews", () => {
+    expect(productRating([{ platform: "priceoye", rating: 5, reviewCount: 1 }, { platform: "mega" }])).toBeNull();
+    expect(productRating(undefined)).toBeNull();
+  });
+
+  it("is shown on the product, with the full figures for a screen reader", () => {
+    render(<ProductRating offers={[{ platform: "mega" }, { platform: "priceoye", rating: 4.6, reviewCount: 42 }]} />);
+    expect(screen.getByText("Rated 4.6 out of 5 by 42 reviews at PriceOye.")).toBeInTheDocument();
   });
 });

@@ -10,7 +10,7 @@
 
 import Listing from "../models/listing.model.js";
 import PriceHistory from "../models/priceHistory.model.js";
-import { shopifyCatalogue, storefrontCatalogue, wooCatalogue } from "../scrapers/catalogue.js";
+import { magentoCatalogue, shopifyCatalogue, storefrontCatalogue, wooCatalogue } from "../scrapers/catalogue.js";
 import { STORES as ADAPTER_STORES } from "../scrapers/stores.js";
 import { sanitizePrices } from "./priceSanity.service.js";
 import { canonicalSourceUrl, toListingDoc } from "./scraper.service.js";
@@ -31,7 +31,13 @@ export const MIN_TERM_LISTINGS = 3;
 export const MAX_TERMS = 200;
 
 /** The stores whose catalogue can be read: the Shopify, WooCommerce and storefront ones (scrapers/stores.js). */
-export const CATALOGUE_STORES = ADAPTER_STORES.filter((store) => ["shopify", "woocommerce", "storefront"].includes(store.type));
+// Stores whose catalogue is read but whose searches have a scraper of their own (scrapers/index.js), so they are not in stores.js.
+// Shophive (2026-11-09): its Magento GraphQL API lists all 7,920 products in 80 requests; searching kept it 51% fresh within a day.
+export const CATALOGUE_ONLY_STORES = Object.freeze([{ platform: "shophive", type: "magento", baseUrl: "https://www.shophive.com" }]);
+export const CATALOGUE_STORES = [
+  ...ADAPTER_STORES.filter((store) => ["shopify", "woocommerce", "storefront"].includes(store.type)),
+  ...CATALOGUE_ONLY_STORES,
+];
 
 /** The words to read a storefront marketplace by: the first word of the titles we hold for it, the most common first. */
 export async function storefrontTerms(platform, { listing = Listing } = {}) {
@@ -53,6 +59,7 @@ function pagesOf(store, { fetchJson, terms, known, onError }) {
     return wooCatalogue(store, { ...options, expand: (permalink) => parents.has(canonicalSourceUrl(permalink)) });
   }
   if (store.type === "storefront") return storefrontCatalogue(store, terms, options);
+  if (store.type === "magento") return magentoCatalogue(store, options);
   throw new Error(`${store.platform}: no catalogue reader for type ${store.type}`);
 }
 

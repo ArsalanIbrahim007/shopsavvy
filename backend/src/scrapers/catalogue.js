@@ -7,6 +7,7 @@
 //   Shopify       /products.json?limit=250&page=N                 (allowed by their robots.txt; checked 2026-11-08)
 //   WooCommerce   /wp-json/wc/store/v1/products?per_page=100      (the Store API their own pages use; the adapter searches it already)
 //   Storefront    the AlfaMall / DigiMall search API, one brand at a time (it answers at most 10,000 results per search)
+//   Magento       /graphql?query={ products(...) }                  (Shophive: its storefront's own API, over GET; checked 2026-11-09)
 //
 // Each item becomes a listing exactly as the store's search adapter makes it (same address, same title), so the refresh updates the
 // listing we hold instead of adding a second one. Every request goes through politeJson (one request per store every 1.5 s, no
@@ -44,6 +45,57 @@ export function shopifyListing({ platform, baseUrl }, product) {
     imageUrl: image ? String(image).replace(/^\/\//, "https://") : null,
     inStock: variants.some((v) => v.available !== false),
   });
+}
+
+// Magento (Shophive, 2026-11-09): its storefront's own GraphQL API, which answers a products query over GET without a login. Its
+// robots.txt is empty (everything allowed). 7,920 products in 80 pages of 100, sorted by name so the pages do not shift while read.
+export const MAGENTO_PER_PAGE = 100;
+const magentoQuery = (page) =>
+  `{ products(filter: { price: { from: "1" } }, pageSize: ${MAGENTO_PER_PAGE}, currentPage: ${page}, sort: { name: ASC }) ` +
+  "{ total_count page_info { total_pages } items { name url_key url_suffix stock_status small_image { url } " +
+  "price_range { minimum_price { final_price { value } regular_price { value } } } } } }";
+
+/** A Magento product (from its GraphQL API) as a listing, the way the store's search scraper makes it: at /<url_key>/. */
+export function magentoListing({ platform, baseUrl }, item) {
+  const title = cleanText(item?.name);
+  const key = String(item?.url_key ?? "").trim();
+  if (!title || !key || /[\s?#]/.test(key)) return null;
+  const prices = item.price_range?.minimum_price ?? {};
+  const price = Number(prices.final_price?.value);
+  if (!(price > 0)) return null;
+  const regular = Number(prices.regular_price?.value);
+  return makeListing({
+    platform,
+    sourceUrl: `${baseUrl}/${key}${item.url_suffix ?? "/"}`,
+    title,
+    price,
+    originalPrice: regular > price ? regular : null,
+    imageUrl: item.small_image?.url ?? null,
+    inStock: item.stock_status !== "OUT_OF_STOCK",
+  });
+}
+
+/** Every page of a Magento store's catalogue. As for the other readers: a later page that fails ends the read and is reported. */
+export async function* magentoCatalogue(store, { fetchJson = politeFetchJson, onError } = {}) {
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    let body;
+    try {
+      body = await fetchJson(`${store.baseUrl}/graphql?query=${encodeURIComponent(magentoQuery(page))}`);
+    } catch (error) {
+      if (page === 1) throw error;
+      onError?.({ page, error });
+      return;
+    }
+    const products = body?.data?.products;
+    if (!products || !Array.isArray(products.items)) {
+      if (page === 1) throw new Error(`${store.platform}: unexpected catalogue response`);
+      onError?.({ page, error: new Error(`${store.platform}: unexpected catalogue response at page ${page}`) });
+      return;
+    }
+    if (products.items.length > 0) yield safeMap(products.items, (item) => magentoListing(store, item), store.platform);
+    if (products.items.length === 0 || page >= Number(products.page_info?.total_pages ?? 0)) return;
+  }
+  onError?.({ page: MAX_PAGES, error: new Error(`${store.platform}: stopped at ${MAX_PAGES} pages, the catalogue goes on`) });
 }
 
 // Shopify answers at most 100 pages (25,000 products) by page number, then "400": a department store (Al-Fatah) has more. The
@@ -130,25 +182,50 @@ export async function* wooCatalogue(store, { fetchJson = politeFetchJson, expand
  */
 // A brand whose page fails (a timeout, an odd answer) is skipped and the read goes on (2026-11-08: one timeout at AlfaMall and one odd
 // answer at DigiMall stopped the whole store); only when every brand fails is the store's refresh a failure.
-export async function* storefrontCatalogue(store, terms, { fetchJson = politeFetchJson, onError } = {}) {
+// A storefront page that times out or answers oddly is asked again, up to STOREFRONT_RETRIES times, after a pause that grows: AlfaMall's
+// backend times out now and then under a long read. A refusal (HTTP 403 or 429) is an answer, and is never asked again.
+export const STOREFRONT_RETRIES = 2;
+export const STOREFRONT_RETRY_WAIT_MS = 5000;
+
+async function answeredPage(store, url, { fetchJson, retryWaitMs }) {
+  let error;
+  for (let attempt = 0; attempt <= STOREFRONT_RETRIES; attempt++) {
+    if (attempt > 0) await new Promise((resolve) => setTimeout(resolve, retryWaitMs * attempt));
+    try {
+      const body = await fetchJson(url);
+      if (!Array.isArray(body?.results)) throw new Error(`${store.platform}: unexpected search response`);
+      return { body };
+    } catch (err) {
+      error = err;
+      if (/HTTP (403|429)\b/.test(err.message)) break;
+    }
+  }
+  return { error };
+}
+
+export async function* storefrontCatalogue(store, terms, { fetchJson = politeFetchJson, onError, retryWaitMs = STOREFRONT_RETRY_WAIT_MS } = {}) {
   let failedTerms = 0;
   for (const term of terms) {
+    let total = null; // the count the store reported, once a page has answered
     for (let page = 1; page <= MAX_PAGES; page++) {
       const search = new URLSearchParams({ ...store.params, q: term, page: String(page), limit: String(STOREFRONT_PER_PAGE) });
-      let body;
-      try {
-        body = await fetchJson(`${store.apiUrl}?${search}`);
-        if (!Array.isArray(body?.results)) throw new Error(`${store.platform}: unexpected search response`);
-      } catch (error) {
+      const { body, error } = await answeredPage(store, `${store.apiUrl}?${search}`, { fetchJson, retryWaitMs });
+      if (error) {
         onError?.({ term, page, error });
-        if (page === 1) failedTerms += 1;
-        break;
+        if (total === null) {
+          failedTerms += 1; // nothing known about this brand: leave it
+          break;
+        }
+        // A page that still fails is skipped, not the rest of the brand (2026-11-09: one AlfaMall timeout ended a brand's read, and
+        // with it Kenwood's 1,720 results stopped at 766; 39% of our AlfaMall listings went unrefreshed).
+        if (page * STOREFRONT_PER_PAGE >= total) break;
+        continue;
       }
       if (body.results.length === 0) break;
       yield safeMap(body.results, (item) => storefrontListing(store, item), store.platform);
       // Stop at the count the store reports, not at a short page: AlfaMall often answers 37 to 39 of 40 (2026-11-08: stopping at
       // the first short page read two pages of most brands, and found 21% of our AlfaMall listings).
-      const total = Math.min(Number(body.count) || 0, STOREFRONT_MAX_RESULTS);
+      total = Math.min(Number(body.count) || 0, STOREFRONT_MAX_RESULTS);
       if (page * STOREFRONT_PER_PAGE >= total) break;
     }
   }

@@ -115,6 +115,49 @@ measured again. The final version, against a snapshot of the grouping without it
   more than the rest. The newly apart are mostly offers of one phone or TV now in two groups of it instead of one (a lost comparison,
   not a wrong one), plus the Sony headphones and earbuds, now correctly apart.
 
+## A fresh, larger sample (2026-11-09)
+
+In the first sample, one same-product pair among the 40 low-similarity pairs (a Zero watch) stood for 5,025 of the 5,766 missed
+pairs estimated above: the figure rested on one example. A fresh sample was drawn from the grouping of 2026-11-09
+(`10-sample-recall-pairs.js --tag=nov9 --n-low=160 --seed=20261109`), with the low-similarity stratum sampled 160 times instead
+of 40, and labelled (`group_recall_nov9.labels.json`, with a reason for each). The labels were not made blind: the list read showed
+each pair's stratum. Scored with `11-score-recall.js --tag=nov9`:
+
+| Stratum | Candidate pairs | Sampled | Same product |
+|---|---:|---:|---:|
+| together | 24,531 | 40 | 39 |
+| apart, high similarity | 11,804 | 50 | 1 |
+| apart, mid similarity | 45,650 | 40 | 6 |
+| apart, low similarity | 424,400 | 160 | 1 |
+
+- **recall: 71.1%** (95% interval 52.8% to 82.2%); estimated 23,918 same-product pairs together, 9,736 apart
+- **pair precision: 97.5%**; the one different pair together is an "iPhone Air 256GB" at PKR 411,990 with an "iPhone 17 Air" of
+  unstated storage at 475,199, the price of the 512GB
+- The old sample, rechecked the same day, gives 75.2%; the fresh one is the estimate to quote, as it rests on 8 same-product pairs
+  apart instead of 1.
+
+Where the missed pairs are now: the mid-similarity stratum holds about 6,800 of the 9,736. Its same-product pairs are a DigiMall
+title that states only the RAM ("Infinix Note 60 8GB RAM", "Oppo A6K 4GB RAM") beside one that states the storage, an A4Tech
+headset named "Bloody MR710" at one store, and a Samsung TV written "55Q7F" and "Q7F". Read in the live grouping, the cause is not
+the pair matcher (it scores four of these pairs 0.53 to 0.69, a match) but the order of grouping: an AlfaMall seller's title such as
+"Infinix Note 60 | (256GB - 8GB RAM) | PTA Approved | Official Warranty With Free SURPRISE GIFT | Electro Ease" heads a group, and
+offers compared with that title are turned away (0.40; 0.85 without the last two parts), so one phone sits in two groups.
+
+Changed on 2026-11-09:
+- A TV's code with and without its year letter ("65Q60D" and "65Q60", "43F6000F" and "43F6000") is one model, when both codes begin
+  with the stated screen size and the prices are within 10% (`sameTvWithoutYearLetter`). It joined 30 pairs of offers, all read and
+  all one TV, and labelled pair r089 of the first sample. The old sample's recall went from 72.5% to 75.2%, with no different pair
+  joined.
+
+Tried on 2026-11-09 and not kept, because they made it worse:
+- A last pass joining groups whose representative titles the matcher accepts (as `mergeSameModelGroups` does for model codes):
+  it joined none of the fresh sample's missed pairs, and joined r040 of the first sample, a different-product pair.
+- Cutting a marketplace title at its first part about the sale (warranty, gift, instalments) before matching: it fixed the Infinix
+  pair, but the groups re-formed differently, and five same-product pairs of the fresh sample that were together came apart
+  (recall 62.0%).
+What would fix it is choosing a group's representative title more carefully (the plainest title, not the first one with a stated
+capacity); that changes every group and needs the full recheck, so it is left for after the submission.
+
 ## What this does and does not measure
 
 Pair recall among candidate pairs: one product split into two groups of five offers each counts as 25 missed pairs, as is usual for this

@@ -15,6 +15,7 @@ import { ptaFlag, ptaNotice } from "../../lib/pta.js";
 import { possibleSaving, summarizeOffers } from "../../lib/summary.js";
 import { cardBadges } from "../../lib/verdicts.js";
 import ColourPicker from "../ColourPicker.jsx";
+import ProductRating from "../ProductRating.jsx";
 import ProductImage from "../ProductImage.jsx";
 import VerdictBadge from "../VerdictBadge.jsx";
 import FairPrice from "./FairPrice.jsx";
@@ -65,6 +66,7 @@ export default function ResultGroup({ group, currentId, colour = null, onColour 
             {summary.count} {summary.count === 1 ? "offer" : "offers"} from {summary.platformCount} {summary.platformCount === 1 ? "store" : "stores"}
             {saving > 0 ? ` · you can save up to ${formatPrice(saving)}` : ""}
           </p>
+          <ProductRating offers={allOffers} />
         </div>
 
         <div className="result-group__price">

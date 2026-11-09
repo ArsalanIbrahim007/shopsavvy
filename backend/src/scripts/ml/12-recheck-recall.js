@@ -11,6 +11,7 @@
 // Offers are found by their address; a pair with an offer no longer listed is left out of its stratum's sample.
 //
 //   node src/scripts/ml/12-recheck-recall.js            prints both, and writes src/ml/dataset/group_recall.recheck.json
+//   ... --tag=nov9                                   the same for a fresh sample (group_recall_nov9.*)
 //   (11-score-recall.js then adds the recheck to GROUPING_RECALL.md)
 
 import { readFileSync, writeFileSync } from "node:fs";
@@ -29,8 +30,10 @@ const ML = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "ml");
 const read = (name) => JSON.parse(readFileSync(join(ML, "dataset", name), "utf8"));
 const urlOf = (offer) => offer.productUrl || offer.sourceUrl || offer.url || null;
 
-const sample = read("group_recall.sample.json");
-const labels = read("group_recall.labels.json");
+const TAG = process.argv.find((a) => a.startsWith("--tag="))?.split("=")[1];
+const FILE = (kind) => `group_recall${TAG ? `_${TAG}` : ""}.${kind}.json`;
+const sample = read(FILE("sample"));
+const labels = read(FILE("labels"));
 
 await mongoose.connect(process.env.MONGO_URI);
 const groupOfUrl = new Map();
@@ -70,7 +73,7 @@ const record = {
   sameNowTogether: moved, sameNowSplit: split, differentNowTogether: newlyWrong, differentNowApart: fixedWrong,
   gone: pairs.filter((p) => p.gone).map((p) => p.id),
 };
-writeFileSync(join(ML, "dataset", "group_recall.recheck.json"), JSON.stringify(record, null, 2));
+writeFileSync(join(ML, "dataset", FILE("recheck")), JSON.stringify(record, null, 2));
 
 const pct = (x) => (x === null ? "n/a" : `${(x * 100).toFixed(1)}%`);
 console.log(`\nrecall now ${pct(record.recall)}, pair precision now ${pct(record.precision)}`);

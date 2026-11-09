@@ -18,6 +18,7 @@ import { cardBadges } from "../lib/verdicts.js";
 import { summarizeOffers } from "../lib/summary.js";
 import { ColourStrip } from "./ColourPicker.jsx";
 import ProductImage from "./ProductImage.jsx";
+import ProductRating from "./ProductRating.jsx";
 import VerdictBadge from "./VerdictBadge.jsx";
 import "./cards.css";
 
@@ -64,6 +65,7 @@ export default function ProductCard({ group }) {
       </div>
 
       <ColourStrip offers={offers} />
+      <ProductRating offers={offers} />
 
       <p className="small muted">
         {summary.count} {summary.count === 1 ? "offer" : "offers"} from {summary.platformCount} {summary.platformCount === 1 ? "store" : "stores"}

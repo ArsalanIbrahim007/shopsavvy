@@ -61,17 +61,38 @@ export function sharedModelCode(itemA, itemB) {
   const brand = brandOf(itemA.title);
   if (!brand || brand !== brandOf(itemB.title)) return null;
   const sizes = statedSizes(itemA.title, itemB.title);
+  const a = Number(itemA.price);
+  const b = Number(itemB.price);
+  const gap = a > 0 && b > 0 ? Math.abs(a - b) / Math.max(a, b) : Infinity;
   const distinctive = (code) =>
     code.length >= SHARED_CODE_LENGTH && /[a-z]/i.test(code) && /\d/.test(code) && code !== brand && !NOT_A_MODEL.test(code);
   const codesA = [...withoutSizePrefix(extractModelCodes(itemA.title, { minCodeLength: 4 }), sizes)].filter(distinctive);
-  if (codesA.length === 0) return null;
   const codesB = withoutSizePrefix(extractModelCodes(itemB.title, { minCodeLength: 4 }), sizes);
   const shared = codesA.find((code) => codesB.has(code));
-  if (!shared) return null;
-  const a = Number(itemA.price);
-  const b = Number(itemB.price);
-  if (!(a > 0 && b > 0) || Math.abs(a - b) / Math.max(a, b) > SHARED_CODE_PRICE_GAP) return null;
-  return shared;
+  if (shared) return gap <= SHARED_CODE_PRICE_GAP ? shared : null;
+  const yearless = sameTvWithoutYearLetter(itemA.title, itemB.title, sizes);
+  return yearless && gap <= YEAR_LETTER_PRICE_GAP ? yearless : null;
+}
+
+// A TV's code with and without its last letter, the model year (Samsung's 65Q60D is the 2024 Q60; a store wrote "65Q60", 2026-11-09,
+// labelled pair r089). Only codes that begin with the screen size both titles state, so a phone's name ("A15" and "A15s", two Oppo
+// phones) never matches this way, and only when the prices are within YEAR_LETTER_PRICE_GAP: a different year's set, still on sale,
+// is usually priced apart.
+export const YEAR_LETTER_PRICE_GAP = 0.1;
+function sameTvWithoutYearLetter(titleA, titleB, sizes) {
+  const tvCodes = (title) =>
+    [...extractModelCodes(title, { minCodeLength: 4 })].filter((code) => {
+      const size = code.match(/^(\d{2,3})(?=[a-z])/)?.[1];
+      return size && sizes.has(size) && /\d/.test(code.slice(size.length));
+    });
+  const codesB = tvCodes(titleB);
+  for (const codeA of tvCodes(titleA)) {
+    for (const codeB of codesB) {
+      const [short, long] = codeA.length < codeB.length ? [codeA, codeB] : [codeB, codeA];
+      if (long.length === short.length + 1 && long.startsWith(short) && /[a-z]$/.test(long) && /\d$/.test(short)) return long;
+    }
+  }
+  return null;
 }
 
 /**

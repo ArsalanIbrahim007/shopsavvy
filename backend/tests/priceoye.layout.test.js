@@ -7,7 +7,8 @@ const NEW_LAYOUT = `
   <div class="image-box"><img src="https://images.priceoye.pk/apple-iphone-17-pakistan-priceoye-270x270.webp" class="product-thumbnail-img product-thumbnail"></div>
   <div class="detail-box"><div class="text-box"><h4 class="p-title p-title-center bold h5"> Apple Iphone 17</h4></div>
   <div class="pricing-setting"><div class="price-box h2"><span><sup>Rs</sup>405,699</span></div>
-  <div class="price-diff"><div class="price-diff-retail"><span><sup>Rs</sup>434,599</span></div><div class="price-diff-saving">7% OFF </div></div></div></div>
+  <div class="price-diff"><div class="price-diff-retail"><span><sup>Rs</sup>434,599</span></div><div class="price-diff-saving">7% OFF </div></div></div>
+  <div class="user-rating-box"><div class="user-rating-content"><img src="https://static.priceoye.pk/images/stars.svg" alt="Rating Star"><span class="h6">4.9</span><span class="p6 space">11</span><span class="p6">Reviews</span></div></div></div>
 </a></div>
 <div class="productBox b-productBox"><a href="/mobiles/vivo/vivo-v80" class="ga-dataset">
   <div class="detail-box"><h4 class="p-title"> Vivo V80</h4><div class="pricing-setting"><div class="price-box h2"><span><sup>Rs</sup>209,999</span></div></div></div>
@@ -34,5 +35,12 @@ describe("scrapePriceOyeSearch", () => {
     fetchHtml.mockReset().mockResolvedValueOnce(OLD_LAYOUT).mockResolvedValue("<html></html>");
     const [listing] = await scrapePriceOyeSearch("https://priceoye.pk/search?q=a17");
     expect([listing.title, listing.price]).toEqual(["Samsung Galaxy A17", 64000]);
+  });
+
+  it("reads a card's rating and review count, and none from a card without reviews (2026-11-09)", async () => {
+    fetchHtml.mockReset().mockResolvedValueOnce(NEW_LAYOUT).mockResolvedValue("<html></html>");
+    const [rated, unrated] = await scrapePriceOyeSearch("https://priceoye.pk/search?q=iphone%2017");
+    expect([rated.rating, rated.reviewCount]).toEqual([4.9, 11]);
+    expect([unrated.rating, unrated.reviewCount]).toEqual([null, null]);
   });
 });

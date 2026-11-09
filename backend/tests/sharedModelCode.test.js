@@ -38,6 +38,20 @@ describe("sharedModelCode", () => {
   });
 });
 
+describe("a TV code with and without its year letter (2026-11-09, labelled pair r089)", () => {
+  it("joins 65Q60D and 65Q60, 43F6000F and 43F6000, when both state the screen size and the prices are within 10%", () => {
+    expect(sharedModelCode(item("Samsung 65\" 4K Smart QLED TV (65Q60D)", 272480), item("Samsung 65 Inch 4K Smart QLED TV (65Q60)", 298999))).toBe("65q60d");
+    expect(sharedModelCode(item("Samsung 43 Inch Full HD Smart LED TV Model 43F6000F", 102900), item("Samsung - Smart TV FHD 43 inch - F6000 - 43F6000", 99999))).toBe("43f6000f");
+  });
+
+  it("not across screen sizes, not 10% or more apart, not for a phone's name, and not when the shorter code ends in a letter", () => {
+    expect(sharedModelCode(item("Samsung 65\" QLED TV (65Q60D)", 272480), item("Samsung 55 Inch QLED TV (55Q60)", 199999))).toBeNull();
+    expect(sharedModelCode(item("Samsung 65\" QLED TV (65Q60D)", 200000), item("Samsung 65 Inch QLED TV (65Q60)", 298999))).toBeNull();
+    expect(sharedModelCode(item("Oppo A15 3GB 32GB", 30000), item("Oppo A15s 4GB 64GB", 31000))).toBeNull();
+    expect(sharedModelCode(item("TCL 55 Inch QD-Mini LED (55C6K)", 200000), item("TCL 55 Inch (55C6KS)", 205000))).toBeNull();
+  });
+});
+
 describe("prefixConflict", () => {
   it("tells apart one model number under different hyphened prefixes", () => {
     expect(prefixConflict("Sony WH-1000XM6 Wireless Headphones", "Sony WF-1000XM6 Wireless Headphones")).toBe(true);

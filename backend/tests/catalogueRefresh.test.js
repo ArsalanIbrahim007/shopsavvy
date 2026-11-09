@@ -2,8 +2,8 @@
 // AlfaMall, 42% of our listings, was only 30% up to date within a day when it was refreshed by searching.
 import { describe, it, expect, vi } from "vitest";
 
-import { shopifyCatalogue, shopifyListing, storefrontCatalogue, wooCatalogue, STOREFRONT_PER_PAGE } from "../src/scrapers/catalogue.js";
-import { coversHeldListings, refreshCatalogue, storefrontTerms } from "../src/services/catalogueRefresh.service.js";
+import { magentoCatalogue, magentoListing, shopifyCatalogue, shopifyListing, storefrontCatalogue, wooCatalogue, STOREFRONT_PER_PAGE } from "../src/scrapers/catalogue.js";
+import { CATALOGUE_STORES, coversHeldListings, refreshCatalogue, storefrontTerms } from "../src/services/catalogueRefresh.service.js";
 import { onlyStores, withoutRefreshedStores } from "../src/services/scheduledScraping.service.js";
 
 const collect = async (pages) => {
@@ -74,10 +74,36 @@ describe("the catalogue readers", () => {
       if (q === "odd") return { message: "busy" };
       return ok;
     };
-    const pages = await collect(storefrontCatalogue(STORE, ["slow", "apple", "odd"], { fetchJson, onError: (e) => errors.push(e.term) }));
+    const pages = await collect(storefrontCatalogue(STORE, ["slow", "apple", "odd"], { fetchJson, onError: (e) => errors.push(e.term), retryWaitMs: 0 }));
     expect(pages.flat().map((l) => l.title)).toEqual(["Apple iPhone 17"]);
     expect(errors).toEqual(["slow", "odd"]);
-    await expect(collect(storefrontCatalogue(STORE, ["slow", "odd"], { fetchJson }))).rejects.toThrow(/every search failed/);
+    await expect(collect(storefrontCatalogue(STORE, ["slow", "odd"], { fetchJson, retryWaitMs: 0 }))).rejects.toThrow(/every search failed/);
+  });
+
+  it("asks a timed-out storefront page again, and skips a page that keeps failing instead of the rest of the brand (Kenwood, 2026-11-09)", async () => {
+    const STORE = { platform: "alfamall", type: "storefront", baseUrl: "https://alfamall.com", apiUrl: "https://api.example/search", params: {}, productPath: "/" };
+    const item = (i) => ({ title: `Kenwood item ${i}`, handle: `kenwood-${i}`, variant_detail: { discounted_price: 1000 + i }, images: [] });
+    const calls = new Map();
+    const fetchJson = vi.fn(async (url) => {
+      const page = Number(new URL(url).searchParams.get("page"));
+      calls.set(page, (calls.get(page) ?? 0) + 1);
+      if (page === 2 && calls.get(2) === 1) throw new Error("be.alfamall.com: timeout of 15000ms exceeded"); // once, then fine
+      if (page === 3) throw new Error("be.alfamall.com: timeout of 15000ms exceeded"); // always
+      return { count: 160, results: Array.from({ length: 40 }, (_, i) => item(page * 100 + i)) };
+    });
+    const errors = [];
+    const pages = await collect(storefrontCatalogue(STORE, ["kenwood"], { fetchJson, onError: (e) => errors.push(e.page), retryWaitMs: 0 }));
+    expect(pages).toHaveLength(3); // pages 1, 2 (on its second try) and 4
+    expect(calls.get(2)).toBe(2);
+    expect(calls.get(3)).toBe(3); // the first try and two more
+    expect(errors).toEqual([3]);
+  });
+
+  it("never asks again after a refusal", async () => {
+    const STORE = { platform: "alfamall", type: "storefront", baseUrl: "https://alfamall.com", apiUrl: "https://api.example/search", params: {}, productPath: "/" };
+    const fetchJson = vi.fn(async () => { throw new Error("be.alfamall.com: HTTP 429"); });
+    await expect(collect(storefrontCatalogue(STORE, ["haier"], { fetchJson, retryWaitMs: 0 }))).rejects.toThrow(/every search failed/);
+    expect(fetchJson).toHaveBeenCalledTimes(1);
   });
 
   it("reports a WooCommerce read that stopped part-way, so the refresh marks nothing gone after it", async () => {
@@ -87,6 +113,38 @@ describe("the catalogue readers", () => {
     const fetchJson = async (url) => (new URL(url).searchParams.get("page") === "1" ? Array.from({ length: 100 }, (_, i) => simple(i)) : { code: "rest_error" });
     const pages = await collect(wooCatalogue(WOO, { fetchJson, onError: (e) => errors.push(e) }));
     expect(pages.flat()).toHaveLength(100);
+    expect(errors).toHaveLength(1);
+  });
+
+  it("reads a Magento store's catalogue through its GraphQL API over GET, page by page until its last (Shophive, 2026-11-09)", async () => {
+    const STORE = { platform: "shophive", type: "magento", baseUrl: "https://www.shophive.com" };
+    const item = (key, final, regular, stock = "IN_STOCK") => ({ name: `Item ${key}`, url_key: key, url_suffix: "/", stock_status: stock, small_image: { url: "https://www.shophive.com/i.jpg" }, price_range: { minimum_price: { final_price: { value: final }, regular_price: { value: regular } } } });
+    const fetchJson = vi.fn(async (url) => {
+      const query = new URL(url).searchParams.get("query");
+      const page = Number(query.match(/currentPage: (\d+)/)[1]);
+      return { data: { products: { total_count: 3, page_info: { total_pages: 2 }, items: page === 1 ? [item("a", 900, 1000), item("b", 0, 0)] : [item("c", 500, 500, "OUT_OF_STOCK")] } } };
+    });
+    const pages = await collect(magentoCatalogue(STORE, { fetchJson }));
+    expect(fetchJson).toHaveBeenCalledTimes(2);
+    expect(fetchJson.mock.calls[0][0]).toMatch(/^https:\/\/www\.shophive\.com\/graphql\?query=/);
+    const listings = pages.flat();
+    expect(listings.map((l) => [l.sourceUrl, l.price, l.originalPrice, l.inStock])).toEqual([
+      ["https://www.shophive.com/a/", 900, 1000, true], // "b" has no price: skipped
+      ["https://www.shophive.com/c/", 500, null, false],
+    ]);
+    expect(magentoListing(STORE, item("bad key", 100, 100))).toBeNull();
+    expect(CATALOGUE_STORES.find((s) => s.platform === "shophive")).toMatchObject({ type: "magento" });
+  });
+
+  it("refuses a Magento answer that is not a catalogue, and reports a later page that fails", async () => {
+    const STORE = { platform: "shophive", type: "magento", baseUrl: "https://www.shophive.com" };
+    await expect(collect(magentoCatalogue(STORE, { fetchJson: async () => ({ errors: [{ message: "Internal server error" }] }) }))).rejects.toThrow(/unexpected catalogue response/);
+    const errors = [];
+    const fetchJson = async (url) => (new URL(url).searchParams.get("query").includes("currentPage: 1,")
+      ? { data: { products: { page_info: { total_pages: 3 }, items: [{ name: "A", url_key: "a", price_range: { minimum_price: { final_price: { value: 10 } } } }] } } }
+      : (() => { throw new Error("HTTP 503"); })());
+    const pages = await collect(magentoCatalogue(STORE, { fetchJson, onError: (e) => errors.push(e) }));
+    expect(pages.flat()).toHaveLength(1);
     expect(errors).toHaveLength(1);
   });
 

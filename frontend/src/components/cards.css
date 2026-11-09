@@ -49,3 +49,7 @@
 .caught-card__claim { font-size: 0.95rem; font-weight: 600; }
 .caught-card__claim s { color: var(--ink-mute); font-weight: 400; }
 .caught-card__evidence { margin: 0; padding-left: 1.1em; color: var(--ink-soft, var(--ink-mute)); display: grid; gap: 2px; }
+
+/* the product's rating, once per product (ProductRating.jsx) */
+.product-rating { margin: 0; color: var(--ink); }
+.product-rating__star { color: var(--accent-ink); }

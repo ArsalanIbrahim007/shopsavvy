@@ -23,6 +23,8 @@
 //
 //   node src/scripts/ml/10-sample-recall-pairs.js            writes src/ml/dataset/group_recall.sample.json (--set=core)
 //   node src/scripts/ml/10-sample-recall-pairs.js --seed=7   another sample
+//   ... --tag=nov9 --n-low=160   a fresh sample in its own files (group_recall_nov9.*), the low-similarity stratum sampled harder
+//   (2026-11-09: in the first sample, one same-product pair among its 40 low-similarity pairs stood for 5,025 missed pairs)
 
 import { writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -47,11 +49,12 @@ export const STRATA = [
   { name: "together", test: (p) => p.together, n: 40 },
   { name: "apart_high", test: (p) => !p.together && p.similarity >= 0.8, n: 50 },
   { name: "apart_mid", test: (p) => !p.together && p.similarity >= 0.6 && p.similarity < 0.8, n: 40 },
-  { name: "apart_low", test: (p) => !p.together && p.similarity < 0.6, n: 40 },
+  { name: "apart_low", test: (p) => !p.together && p.similarity < 0.6, n: Number(process.argv.find((a) => a.startsWith("--n-low="))?.split("=")[1] ?? 40) },
 ];
 const seedArg = process.argv.find((a) => a.startsWith("--seed="));
 const SEED = seedArg ? Number(seedArg.split("=")[1]) : SET.seed + 1;
-const OUT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "ml", "dataset", `${SET.file.replace("group_merges", "group_recall")}.sample.json`);
+const TAG = process.argv.find((a) => a.startsWith("--tag="))?.split("=")[1];
+const OUT = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "ml", "dataset", `${SET.file.replace("group_merges", "group_recall")}${TAG ? `_${TAG}` : ""}.sample.json`);
 
 /** mulberry32: a small seeded random number generator, so the same seed draws the same sample. */
 function random(seed) {
@@ -124,7 +127,7 @@ for (const category of CATEGORIES) {
   population[category] = { listings: listings.length, groups: groups.length };
   for (const stratum of STRATA) {
     const inStratum = pairs.filter(stratum.test);
-    pool[stratum.name].push(...inStratum);
+    for (const pair of inStratum) pool[stratum.name].push(pair); // not push(...): a stratum can outgrow the call stack
     population[category][stratum.name] = inStratum.length;
   }
   console.log(`${category.padEnd(11)} ${String(listings.length).padStart(5)} listings, ${String(groups.length).padStart(5)} groups, candidate pairs: ` +

@@ -10,6 +10,7 @@
 // 20,000 times with a fixed seed, and taking the 2.5th and 97.5th percentiles of the recall that results.
 //
 //   node src/scripts/ml/11-score-recall.js     reads src/ml/dataset/group_recall.{sample,labels,reasons}.json, writes src/ml/GROUPING_RECALL.md
+//   node src/scripts/ml/11-score-recall.js --tag=nov9   scores a fresh sample (group_recall_nov9.*) and prints it; the report is kept
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -125,9 +126,11 @@ function recheckSection() {
 }
 
 function main() {
-  const sample = read("group_recall.sample.json");
-  const labels = read("group_recall.labels.json");
-  const reasons = read("group_recall.reasons.json");
+  const tag = process.argv.find((a) => a.startsWith("--tag="))?.split("=")[1];
+  const file = (kind) => `group_recall${tag ? `_${tag}` : ""}.${kind}.json`;
+  const sample = read(file("sample"));
+  const labels = read(file("labels"));
+  const reasons = read(file("reasons"));
   const pairs = sample.pairs.map((p) => ({ ...p, verdict: labels[p.id] ?? null }));
   const unlabelled = pairs.filter((p) => !p.verdict).length;
 
@@ -204,10 +207,11 @@ function main() {
     "",
   ].join("\n");
 
-  writeFileSync(join(ML, "GROUPING_RECALL.md"), md);
+  if (!tag) writeFileSync(join(ML, "GROUPING_RECALL.md"), md);
+  if (unlabelled) console.log(`${unlabelled} pairs not labelled yet`);
   console.log(`recall ${pct(result.recall)} (95% ${pct(result.interval[0])} to ${pct(result.interval[1])}); correct ${whole(result.correct)}, missed ${whole(result.missed)}`);
   for (const s of strata) console.log(`  ${s.name.padEnd(11)} ${String(s.population).padStart(7)} pairs, sampled ${s.judged}, same ${s.same}`);
-  console.log("written src/ml/GROUPING_RECALL.md");
+  console.log(tag ? "(a tagged sample: the report is not rewritten)" : "written src/ml/GROUPING_RECALL.md");
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) main();
