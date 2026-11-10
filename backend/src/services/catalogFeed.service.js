@@ -36,8 +36,11 @@ const inFlight = new Map(); // category -> Promise
 export const SNAPSHOT_GROUPS = 60;
 const fromDisk = new Map(); // category -> Promise<{ generatedAt, total, groups } | null>
 
+const brandCache = new Map(); // "category:brand" -> Promise<{ expires, generatedAt, groups }>
+
 export function clearCatalogCache() {
   cache.clear();
+  brandCache.clear();
   inFlight.clear();
   fromDisk.clear();
 }
@@ -76,7 +79,10 @@ function refresh(category, now) {
     .then((groups) => {
       const entry = { expires: now + CACHE_TTL_MS, generatedAt: new Date(now).toISOString(), groups };
       cache.set(category, entry);
-      writeSnapshot(`catalog-${category}`, { generatedAt: entry.generatedAt, total: groups.length, groups: groups.slice(0, SNAPSHOT_GROUPS) });
+      entry.brands = brandCounts(groups);
+      // The brand counts too: after a restart, a brand's page answers before the whole category is grouped again (brandCatalog below),
+      // and its brand filter still lists every brand.
+      writeSnapshot(`catalog-${category}`, { generatedAt: entry.generatedAt, total: groups.length, brands: entry.brands, groups: groups.slice(0, SNAPSHOT_GROUPS) });
       return entry;
     })
     .finally(() => inFlight.delete(category));
@@ -146,6 +152,27 @@ function brandCounts(groups) {
 }
 
 /**
+ * One brand's products, grouped from that brand's listings alone, for a brand's page before the whole category is grouped.
+ * 2026-11-10: /results?category=smartphone&brand=apple never loaded after a restart: it waited for all 6,300 phone listings to be
+ * grouped (over two minutes while the nightly scrape used the database), and the page gives up after 100 s. Apple's 668 listings are
+ * grouped in seconds. A product's brand is the one most of its offers state (brandOfGroup), so a group is kept only if that is it.
+ */
+function brandCatalog(category, brand, now) {
+  const key = `${category}:${brand}`;
+  const hit = brandCache.get(key);
+  if (hit && hit.expires > now) return hit.promise;
+  const promise = (async () => {
+    const listings = await Listing.find({ ...VISIBLE_PLATFORMS_FILTER, productCategory: category, brand, price: { $gt: 0 } }).lean();
+    const enriched = await attachPriceHistory(listings);
+    const groups = await groupListings(enriched, { strategy: "ml", recommend: true, threshold: 0, timeoutMs: CATALOG_JOB_TIMEOUT_MS });
+    return { generatedAt: new Date(now).toISOString(), groups: groups.filter((g) => brandOfGroup(g) === brand).sort(mostCompared).map(withoutHistory) };
+  })();
+  brandCache.set(key, { expires: now + CACHE_TTL_MS, promise });
+  promise.catch(() => brandCache.delete(key));
+  return promise;
+}
+
+/**
  * @param {object} options
  * @param {string} options.category  one of CATALOG_CATEGORIES
  * @param {number} [options.limit]   page size
@@ -163,8 +190,14 @@ export async function getCatalog({ category, limit = 24, offset = 0, brand = nul
       return { groups: saved.groups.slice(offset, offset + limit), total: saved.total, generatedAt: saved.generatedAt, brands: null };
     }
   }
-  const entry = await categoryCatalog(category, now);
   const wanted = brand ? String(brand).trim().toLowerCase() : null;
+  // One brand, and the category not grouped yet: that brand's listings alone, while the whole category is grouped in the background.
+  if (wanted && !cache.has(category)) {
+    refresh(category, now).catch((error) => console.warn(`[catalog] Could not refresh ${category}: ${error.message}`));
+    const [own, saved] = await Promise.all([brandCatalog(category, wanted, now), diskCatalog(category)]);
+    return { groups: own.groups.slice(offset, offset + limit), total: own.groups.length, generatedAt: own.generatedAt, brands: saved?.brands ?? null };
+  }
+  const entry = await categoryCatalog(category, now);
   const groups = wanted ? entry.groups.filter((group) => brandOfGroup(group) === wanted) : entry.groups;
   entry.brands ??= brandCounts(entry.groups); // once per computed catalog
   return { groups: groups.slice(offset, offset + limit), total: groups.length, generatedAt: entry.generatedAt, brands: entry.brands };

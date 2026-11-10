@@ -27,11 +27,6 @@ export const formatPta = (value) => PTA[value] || value;
 // Brands whose name, capitalised the usual way, is not how the maker writes it.
 const BRAND_LABELS = { oneplus: "OnePlus", iqoo: "iQOO", tcl: "TCL", jbl: "JBL", msi: "MSI", vgotel: "VGOTEL" };
 
-/** A brand as a filter option: "Nothing" alone read as "no brand" in the phones' brand filter (2026-11-10). */
-export function formatBrandOption(brand) {
-  return String(brand ?? "").trim().toLowerCase() === "nothing" ? "Nothing (brand)" : formatBrand(brand);
-}
-
 export function formatBrand(brand) {
   const text = String(brand ?? "").trim();
   if (!text) return "";

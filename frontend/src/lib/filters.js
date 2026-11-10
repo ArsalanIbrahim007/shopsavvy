@@ -8,7 +8,7 @@
 
 import { canonicalPlatform, platformName } from "./platforms.js";
 import { DEFAULT_FACETS, FACETS_BY_CATEGORY, RESOLUTION_ORDER } from "./categories.js";
-import { formatBrandOption, formatCapacity, formatCondition, formatPta, formatScreen } from "./format.js";
+import { formatBrand, formatCapacity, formatCondition, formatPta, formatScreen } from "./format.js";
 
 export const SORTS = [
   { id: "recommended", label: "Best deal", hint: "Recommended" },
@@ -22,7 +22,9 @@ const SORT_IDS = new Set(SORTS.map((s) => s.id));
 // A filter facet: which offer field it reads, how its options are ordered and labelled.
 export const FACET_DEFS = {
   // Stores write a brand in any case ("SAMSUNG", "Samsung"): one option each (2026-11-10).
-  brand: { title: "Brand", field: "brand", order: "count", format: formatBrandOption, normalize: (v) => String(v).trim().toLowerCase() },
+  // Not "Nothing" as an option: the phone maker's name read as "no brand" in the phones' brand filter, and Arsalan asked for it to go
+  // (2026-11-10). Its phones are still listed and found by search ("nothing phone").
+  brand: { title: "Brand", field: "brand", order: "count", format: formatBrand, normalize: (v) => String(v).trim().toLowerCase(), exclude: ["nothing"] },
   storage: { title: "Storage", field: "storageGb", numeric: true, order: "value", format: formatCapacity },
   ram: { title: "RAM", field: "ramGb", numeric: true, order: "value", format: formatCapacity },
   screen: { title: "Screen size", field: "screenInches", numeric: true, order: "value", format: formatScreen },
@@ -285,7 +287,9 @@ export function priceBounds(offers) {
  */
 export function withCategoryBrands(facets, brands) {
   const def = FACET_DEFS.brand;
-  const options = brands.map(({ brand, count }) => ({ value: def.normalize(brand), count, label: def.format(brand) }));
+  const options = brands
+    .map(({ brand, count }) => ({ value: def.normalize(brand), count, label: def.format(brand) }))
+    .filter(({ value }) => !def.exclude?.includes(value));
   if (options.length < 2) return facets;
   const facet = { key: "brand", title: def.title, options };
   return facets.some((f) => f.key === "brand") ? facets.map((f) => (f.key === "brand" ? facet : f)) : [facet, ...facets];

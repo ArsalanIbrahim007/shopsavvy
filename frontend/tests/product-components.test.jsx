@@ -15,7 +15,7 @@ vi.mock("../src/api/endpoints.js", () => ({
 
 import * as api from "../src/api/endpoints.js";
 import { ApiError } from "../src/api/errors.js";
-import { formatBrand, formatBrandOption, formatDate } from "../src/lib/format.js";
+import { formatBrand, formatDate } from "../src/lib/format.js";
 import { suggestedTarget, validateAlert } from "../src/lib/alertForm.js";
 import StoreLogo, { StoreMark } from "../src/components/StoreLogo.jsx";
 import { STORE_LOGO_FILES, logoSrc } from "../src/lib/storeLogos.js";
@@ -63,8 +63,6 @@ describe("formatBrand", () => {
     expect(formatBrand("  xiaomi ")).toBe("Xiaomi");
     expect(formatBrand("oneplus")).toBe("OnePlus");
     expect(formatBrand("nothing")).toBe("Nothing");
-    expect(formatBrandOption("nothing")).toBe("Nothing (brand)"); // a filter option "Nothing" read as "no brand"
-    expect(formatBrandOption("samsung")).toBe("Samsung");
     expect(formatBrand("")).toBe("");
     expect(formatBrand(undefined)).toBe("");
   });

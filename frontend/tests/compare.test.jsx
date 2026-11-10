@@ -164,6 +164,14 @@ describe("the brand filter", () => {
     const whole = withCategoryBrands(buildFacets(offers, "smartphone"), [{ brand: "samsung", count: 36 }, { brand: "apple", count: 35 }, { brand: "xiaomi", count: 10 }]);
     expect(whole.find((f) => f.key === "brand").options.map((o) => `${o.label} ${o.count}`)).toEqual(["Samsung 36", "Apple 35", "Xiaomi 10"]);
   });
+
+  it("offers no 'Nothing' option, on the page or over the category (it read as 'no brand')", async () => {
+    const { buildFacets, withCategoryBrands } = await import("../src/lib/filters.js");
+    const offers = ["samsung", "apple", "nothing"].map((brand, i) => ({ brand, productCategory: "smartphone", price: i + 1 }));
+    expect(buildFacets(offers, "smartphone").find((f) => f.key === "brand").options.map((o) => o.value)).toEqual(["samsung", "apple"]);
+    const whole = withCategoryBrands([], [{ brand: "samsung", count: 3 }, { brand: "nothing", count: 2 }, { brand: "apple", count: 1 }]);
+    expect(whole[0].options.map((o) => o.value)).toEqual(["samsung", "apple"]);
+  });
 });
 
 describe("filters that follow each other", () => {

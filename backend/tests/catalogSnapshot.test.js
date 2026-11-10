@@ -45,7 +45,28 @@ describe("the catalog across a restart", () => {
   it("saves the first page of what it computed", async () => {
     const find = vi.spyOn(Listing, "find").mockImplementation(() => ({ lean: async () => [] }));
     await getCatalog({ category: "tv", limit: 5 });
-    expect(writeMock).toHaveBeenCalledWith("catalog-tv", expect.objectContaining({ total: 0, groups: [] }));
+    expect(writeMock).toHaveBeenCalledWith("catalog-tv", expect.objectContaining({ total: 0, groups: [], brands: [] })); // with its brand counts
+    find.mockRestore();
+  });
+
+  it("answers one brand from that brand's listings alone before the category is grouped (2026-11-10: brand=apple never loaded)", async () => {
+    vi.mocked(readMock).mockResolvedValue({ generatedAt: "x", total: 900, brands: [{ brand: "samsung", count: 364 }, { brand: "apple", count: 235 }], groups: [] });
+    const listing = (id, title, brand) => ({ _id: id, title, brand, platform: "priceoye", price: 400000, productCategory: "smartphone" });
+    let releaseWhole;
+    const queries = [];
+    const find = vi.spyOn(Listing, "find").mockImplementation((query) => {
+      queries.push(query);
+      if (!query.brand) return { lean: () => new Promise((resolve) => { releaseWhole = () => resolve([]); }) }; // the whole category: slow
+      return { lean: async () => [listing("a1", "Apple iPhone 17 Pro Max 256GB", "apple"), listing("a2", "Apple iPhone 17 256GB", "apple")] };
+    });
+
+    const page = await getCatalog({ category: "smartphone", brand: "Apple", limit: 10 });
+    expect(queries.some((q) => q.brand === "apple")).toBe(true);
+    expect(page.total).toBe(2);
+    expect(page.groups.map((g) => g.offers.length)).toEqual([1, 1]);
+    expect(page.brands).toEqual([{ brand: "samsung", count: 364 }, { brand: "apple", count: 235 }]); // the filter still lists every brand
+    expect(queries.some((q) => !q.brand)).toBe(true); // and the whole category is being grouped meanwhile
+    releaseWhole();
     find.mockRestore();
   });
 });
