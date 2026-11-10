@@ -57,7 +57,7 @@ describe("unknown routes and bad ids", () => {
 
 describe("search input", () => {
   it("rejects a missing, non-text or over-long q with 400", async () => {
-    for (const path of ["/api/listings/search", "/api/listings/search?q=", "/api/listings/search?q[]=x", `/api/listings/search?q=${"a".repeat(101)}`]) {
+    for (const path of ["/api/listings/search", "/api/listings/search?q=", "/api/listings/search?q[]=x", `/api/listings/search?q=${"a".repeat(301)}`]) {
       const { res, body } = await json(path);
       expect(res.status, path).toBe(400);
       expect(body.code, path).toBe("BAD_REQUEST");

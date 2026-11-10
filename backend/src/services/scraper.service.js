@@ -16,7 +16,7 @@ import Listing from "../models/listing.model.js";
 import PriceHistory from "../models/priceHistory.model.js";
 import { normalizeTitle } from "./normalizeTitle.service.js";
 import { scrapeAllPlatforms } from "../scrapers/index.js";
-import { extractAttributes } from "./productAttributes.service.js";
+import { extractAttributes, extractBrand } from "./productAttributes.service.js";
 import { extractExtras } from "./scrapedExtras.service.js";
 import { retryOnDuplicateKey } from "./retryOnDuplicateKey.js";
 import { sanitizePrices } from "./priceSanity.service.js";
@@ -106,7 +106,7 @@ function toListingDoc(scraped) {
     sourceUrl:       scraped.sourceUrl,
     productUrl:      scraped.sourceUrl,
     imageUrl:        scraped.imageUrl ?? "",
-    brand:           scraped.brand ?? null,
+    brand:           extractBrand(scraped.title, scraped.brand), // one lower-case key, read from the title when the store states none
     category:        "Electronics",
     inStock:         scraped.inStock !== false,
     isActive:        true,

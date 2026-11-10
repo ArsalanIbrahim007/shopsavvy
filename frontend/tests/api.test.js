@@ -298,7 +298,15 @@ describe("getStats categories and getCatalog", () => {
     expect(url.pathname).toBe("/api/listings/catalog");
     expect(url.searchParams.get("category")).toBe("smartphone");
     expect(url.searchParams.get("offset")).toBe("24");
-    expect(result).toEqual({ groups: [{ productName: "Galaxy A17", offers: [] }], total: 1034, offset: 24, generatedAt: "2026-09-30T10:00:00Z" });
+    expect(result).toEqual({ groups: [{ productName: "Galaxy A17", offers: [] }], total: 1034, offset: 24, generatedAt: "2026-09-30T10:00:00Z", brands: null });
+  });
+
+  it("getCatalog asks for one brand's products and passes the category's brand counts through", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(respond(200, { success: true, total: 35, data: [], brands: [{ brand: "apple", count: 35 }, { brand: "samsung", count: 36 }] }));
+    vi.stubGlobal("fetch", fetchMock);
+    const result = await getCatalog({ category: "smartphone", brand: "apple", limit: 50 });
+    expect(new URL(fetchMock.mock.calls[0][0]).searchParams.get("brand")).toBe("apple");
+    expect(result.brands).toEqual([{ brand: "apple", count: 35 }, { brand: "samsung", count: 36 }]);
   });
 
   it("getIntegrity asks for the report with a long time limit and passes its three parts through", async () => {

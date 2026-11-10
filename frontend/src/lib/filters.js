@@ -21,7 +21,8 @@ const SORT_IDS = new Set(SORTS.map((s) => s.id));
 
 // A filter facet: which offer field it reads, how its options are ordered and labelled.
 export const FACET_DEFS = {
-  brand: { title: "Brand", field: "brand", order: "count", format: formatBrand },
+  // Stores write a brand in any case ("SAMSUNG", "Samsung"): one option each (2026-11-10).
+  brand: { title: "Brand", field: "brand", order: "count", format: formatBrand, normalize: (v) => String(v).trim().toLowerCase() },
   storage: { title: "Storage", field: "storageGb", numeric: true, order: "value", format: formatCapacity },
   ram: { title: "RAM", field: "ramGb", numeric: true, order: "value", format: formatCapacity },
   screen: { title: "Screen size", field: "screenInches", numeric: true, order: "value", format: formatScreen },
@@ -130,6 +131,12 @@ export function inCategory(offers, category) {
   return offers.filter((offer) => categoryOf(offer) === category);
 }
 
+/** An offer's value for a facet, normalised where the facet says so (a brand in one case). */
+function facetValue(offer, def) {
+  const value = offer[def.field];
+  return def.normalize && value !== null && value !== undefined && value !== "" ? def.normalize(value) : value;
+}
+
 /** Offers that satisfy every selected filter. An empty selection means "no constraint". */
 export function applyFilters(offers, filters) {
   const platforms = filters.platforms?.length ? new Set(filters.platforms) : null;
@@ -142,7 +149,7 @@ export function applyFilters(offers, filters) {
 
     for (const key of FACET_KEYS) {
       const selected = filters[key];
-      if (selected.length && !selected.includes(offer[FACET_DEFS[key].field])) return false;
+      if (selected.length && !selected.includes(facetValue(offer, FACET_DEFS[key]))) return false;
     }
     return true;
   });
@@ -213,36 +220,43 @@ export function activeCategory(offers, selectedCategory) {
 }
 
 /**
- * The filter groups to show, each with its options and counts. A facet with fewer
- * than two options gives no real choice and is left out.
+ * The filter groups to show, each with its options and counts. A facet with fewer than two options gives no real choice and is
+ * left out. With `filters`, an option's count is of the offers that pass every OTHER chosen filter, so a choice no offer can meet
+ * shows 0 (2026-11-10: 64 GB with 12 GB of RAM found nothing, since phones are sold as 4/64, 8/256...; now choosing 64 GB leaves the
+ * RAM sizes sold with it). The options and their order come from all the offers, so the list does not jump as filters are chosen.
  * @returns {Array<{key:string, title:string, options:Array<{value, label:string, count:number}>}>}
  */
-export function buildFacets(offers, category) {
+export function buildFacets(offers, category, filters = null) {
   const scoped = offers.filter((offer) => categoryOf(offer) === category);
   const keys = FACETS_BY_CATEGORY[category] || DEFAULT_FACETS;
+  const countBy = (list, def) => {
+    const counts = new Map();
+    for (const offer of list) {
+      const value = facetValue(offer, def);
+      if (value === null || value === undefined || value === "" || def.exclude?.includes(value)) continue;
+      counts.set(value, (counts.get(value) || 0) + 1);
+    }
+    return counts;
+  };
 
   return keys
     .map((key) => {
       const def = FACET_DEFS[key];
-      const counts = new Map();
+      const all = countBy(scoped, def);
+      const inContext = filters ? countBy(applyFilters(scoped, { ...filters, category, [key]: [] }), def) : all;
 
-      for (const offer of scoped) {
-        const value = offer[def.field];
-        if (value === null || value === undefined || value === "" || def.exclude?.includes(value)) continue;
-        counts.set(value, (counts.get(value) || 0) + 1);
-      }
-
-      const options = [...counts.entries()].map(([value, count]) => ({
+      const options = [...all.entries()].map(([value, total]) => ({
         value,
-        count,
+        count: inContext.get(value) || 0,
+        total,
         label: def.format ? def.format(value) : String(value),
       }));
 
       if (def.order === "value") options.sort((a, b) => a.value - b.value);
       else if (def.order === "resolution") options.sort((a, b) => (RESOLUTION_ORDER[a.value] ?? 99) - (RESOLUTION_ORDER[b.value] ?? 99));
-      else options.sort((a, b) => b.count - a.count);
+      else options.sort((a, b) => b.total - a.total);
 
-      return { key, title: def.title, options };
+      return { key, title: def.title, options: options.map(({ total: _total, ...option }) => option) };
     })
     .filter((facet) => facet.options.length >= 2);
 }
@@ -263,4 +277,16 @@ export function platformOptions(offers) {
 export function priceBounds(offers) {
   const prices = offers.map((o) => o.price).filter((p) => Number.isFinite(p));
   return prices.length ? { min: Math.min(...prices), max: Math.max(...prices) } : { min: 0, max: 0 };
+}
+
+/**
+ * The facets with the brand filter counted over a whole category (the catalog's `brands`: [{ brand, count }]) instead of the
+ * products on screen, which are only the most compared. The count is of products.
+ */
+export function withCategoryBrands(facets, brands) {
+  const def = FACET_DEFS.brand;
+  const options = brands.map(({ brand, count }) => ({ value: def.normalize(brand), count, label: def.format(brand) }));
+  if (options.length < 2) return facets;
+  const facet = { key: "brand", title: def.title, options };
+  return facets.some((f) => f.key === "brand") ? facets.map((f) => (f.key === "brand" ? facet : f)) : [facet, ...facets];
 }

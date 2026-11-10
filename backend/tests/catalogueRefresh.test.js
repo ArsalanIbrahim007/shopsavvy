@@ -232,6 +232,25 @@ describe("refreshCatalogue", () => {
     expect(sparse.listing.updateMany).not.toHaveBeenCalled();
   });
 
+  it("stops at the run's deadline, keeps what it read and marks nothing gone (AlfaMall kept the nightly past its limit, 2026-11-10)", async () => {
+    const held = ["https://mistore.pk/products/held-a", "https://mistore.pk/products/gone-c"];
+    const models = fakeModels(held);
+    models.listing.updateMany = vi.fn();
+    let pages = 0;
+    const fetchJson = async () => {
+      pages += 1;
+      return { products: pages === 1 ? shopifyPage(listingFor("held-a", 1000), ...Array.from({ length: 249 }, (_, i) => listingFor(`other-${i}`, 10))) : [] };
+    };
+    const past = await refreshCatalogue(SHOP, { fetchJson, deadline: Date.now() - 1, ...models });
+    expect(past).toMatchObject({ stoppedAtDeadline: true, gone: 0 });
+    expect(models.listing.updateMany).not.toHaveBeenCalled();
+    const whole = fakeModels(held);
+    whole.listing.updateMany = vi.fn(async () => ({}));
+    const inTime = await refreshCatalogue(SHOP, { fetchJson: async () => ({ products: shopifyPage(listingFor("held-a", 1000)) }), deadline: Date.now() + 60_000, ...whole });
+    expect(inTime.stoppedAtDeadline).toBeUndefined();
+    expect(inTime.gone).toBe(1); // read whole in time: what it no longer lists is marked as before
+  });
+
   it("marks nothing gone after reading only some collections, or a store larger than the readers' page limit (Al-Fatah, 2026-11-08)", async () => {
     const held = ["https://mistore.pk/products/held-a", "https://mistore.pk/products/held-b", "https://mistore.pk/products/accessory-c"];
     const fetchJson = async () => ({ products: shopifyPage(listingFor("held-a", 1000), listingFor("held-b", 3000)) });

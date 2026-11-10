@@ -285,6 +285,47 @@ export function extractResolution(title = "") {
   return null;
 }
 
+// Brands, as one lower-case key each, and the words that name them in a title. Only two stores (Mega, W11stop) state a brand, so 126
+// of 6,299 phones had one and the phones' brand filter listed "SAMSUNG 14, Samsung 10, Apple 2" (2026-11-10). A product line names its
+// maker ("iPhone 17" is Apple's, "Redmi Note 15" Xiaomi's, "CMF Phone 2" Nothing's).
+const BRAND_WORDS = {
+  apple: ["apple", "iphone", "ipad", "macbook", "airpods", "imac"],
+  samsung: ["samsung", "galaxy"],
+  xiaomi: ["xiaomi", "redmi", "poco", "mi"],
+  infinix: ["infinix"], tecno: ["tecno"], itel: ["itel"], oppo: ["oppo"], vivo: ["vivo"], realme: ["realme"], oneplus: ["oneplus"],
+  nothing: ["nothing", "cmf"], huawei: ["huawei"], honor: ["honor"], google: ["google", "pixel"], motorola: ["motorola", "moto"],
+  nokia: ["nokia"], sparx: ["sparx"], zte: ["zte", "nubia"], vgotel: ["vgotel"],
+  lenovo: ["lenovo", "thinkpad", "thinkbook", "ideapad", "legion", "yoga"], hp: ["hp", "omen", "victus", "pavilion", "probook", "elitebook"],
+  dell: ["dell", "latitude", "inspiron", "vostro", "alienware", "xps"], asus: ["asus", "vivobook", "zenbook", "rog", "tuf"], acer: ["acer", "aspire", "nitro", "predator", "extensa"],
+  msi: ["msi"], microsoft: ["microsoft", "surface"], dahua: ["dahua"],
+  tcl: ["tcl"], haier: ["haier"], dawlance: ["dawlance"], ecostar: ["ecostar"], pel: ["pel"], orient: ["orient"], gree: ["gree"], kenwood: ["kenwood"],
+  lg: ["lg"], sony: ["sony"], hisense: ["hisense"], changhong: ["changhong"], panasonic: ["panasonic"], philips: ["philips"], konvo: ["konvo"],
+  anker: ["anker", "soundcore"], audionic: ["audionic"], ronin: ["ronin"], zero: ["zero"], baseus: ["baseus"], a4tech: ["a4tech", "bloody"],
+  jbl: ["jbl"], amazfit: ["amazfit"], ugreen: ["ugreen"], joyroom: ["joyroom"], hoco: ["hoco"], awei: ["awei"],
+  canon: ["canon"], nikon: ["nikon"], gopro: ["gopro"], dji: ["dji"], epson: ["epson"], brother: ["brother"],
+  playstation: ["playstation", "ps5", "ps4"], xbox: ["xbox"], nintendo: ["nintendo"],
+};
+const WORD_TO_BRAND = new Map(Object.entries(BRAND_WORDS).flatMap(([brand, words]) => words.map((w) => [w, brand])));
+// Store names some marketplace titles start with ("Muzamil Store ...", "AlfaMall ..."), passed over to find the brand.
+const LEADING_NOISE = new Set(["new", "original", "official", "brand", "the", "buy", "latest", "muzamil", "store", "alfamall"]);
+
+/**
+ * The product's brand as one lower-case key: the store's own statement when it names a known brand (in any case, "SAMSUNG"), else
+ * the first known brand word among the title's first four words. Null when neither says.
+ */
+export function extractBrand(title = "", stated = null) {
+  const given = String(stated ?? "").trim().toLowerCase();
+  if (given && WORD_TO_BRAND.has(given)) return WORD_TO_BRAND.get(given);
+  const words = String(title).toLowerCase().match(/[a-z0-9]+/g) ?? [];
+  let looked = 0;
+  for (const word of words) {
+    if (LEADING_NOISE.has(word)) continue;
+    if (WORD_TO_BRAND.has(word)) return WORD_TO_BRAND.get(word);
+    if (++looked >= 4) break;
+  }
+  return given || null; // a brand we do not list is kept as the store wrote it (lower case)
+}
+
 export function extractAttributes(title = "") {
   const { category } = detectCategory(title);
 

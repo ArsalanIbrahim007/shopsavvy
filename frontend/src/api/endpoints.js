@@ -133,9 +133,14 @@ export async function getPriceDrops({ category, limit, signal } = {}) {
  * @param {string} options.category  smartphone, laptop, tv, tablet, smartwatch or headphones
  * @returns {Promise<{groups: object[], total: number, offset: number, generatedAt: string|null}>}
  */
-export async function getCatalog({ category, limit, offset, signal }) {
-  const body = await request("/listings/catalog", { params: { category, limit, offset }, signal, timeoutMs: 100000 });
-  return { groups: body.data ?? [], total: body.total ?? 0, offset: body.offset ?? 0, generatedAt: body.generatedAt ?? null };
+export async function getCatalog({ category, brand, limit, offset, signal }) {
+  const body = await request("/listings/catalog", { params: { category, brand, limit, offset }, signal, timeoutMs: 100000 });
+  return {
+    groups: body.data ?? [], total: body.total ?? 0, offset: body.offset ?? 0, generatedAt: body.generatedAt ?? null,
+    // How many products of the whole category each brand has ([{ brand, count }], most first), for the brand filter; null when the
+    // server answered from its saved first page.
+    brands: Array.isArray(body.brands) ? body.brands : null,
+  };
 }
 
 /**

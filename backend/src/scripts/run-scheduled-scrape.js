@@ -89,12 +89,14 @@ try {
   // different stores: the searches leave out every store whose whole catalogue is read, and each catalogue is read at once, each from
   // its own store, so the run takes as long as its longest part. A store read only in part (Al-Fatah, by collections) is searched too.
   const catalogueStores = process.argv.includes("--no-catalogue") ? [] : CATALOGUE_STORES;
+  const catalogueDeadline = Date.now() + RUN_BUDGET_MS;
   const readWhole = new Set(catalogueStores.filter((store) => !store.collections?.length).map((store) => store.platform));
   catalogues = Promise.all(
     catalogueStores.map(async (store) => {
       try {
-        const s = await refreshCatalogue(store);
-        console.log(`[${stamp()}] catalogue ${s.platform}: ${s.updated} of our ${s.known} listings updated${s.gone ? `, ${s.gone} no longer sold` : ""} (${s.items} in its catalogue, ${s.pages} pages, ${Math.round(s.durationMs / 1000)} s)`);
+        // The catalogues end with the searches' budget, so the page check runs and the run finishes inside Task Scheduler's limit.
+        const s = await refreshCatalogue(store, { deadline: catalogueDeadline });
+        console.log(`[${stamp()}] catalogue ${s.platform}: ${s.updated} of our ${s.known} listings updated${s.gone ? `, ${s.gone} no longer sold` : ""} (${s.items} in its catalogue, ${s.pages} pages, ${Math.round(s.durationMs / 1000)} s)${s.stoppedAtDeadline ? "; stopped at the run's time limit, the rest wait for tomorrow" : ""}`);
         if (readWhole.has(store.platform) && !coversHeldListings(s)) {
           console.warn(`[${stamp()}] catalogue ${s.platform} found only ${Math.round((100 * s.matched) / s.known)}% of our listings there; the rest were not refreshed tonight.`);
         }
@@ -123,7 +125,10 @@ try {
   });
   await catalogues;
 
-  if (claimed || !isDoneToday()) markDone();
+  // Only a whole run is the day's scrape. A forced run of some stores, or without the catalogues, is a catch-up: recorded as the
+  // day's, it made that evening's nightly stop with "already run" (2026-11-09: a PriceOye-only run at 04:17 skipped the 22:00 one).
+  const wholeRun = !stores && !process.argv.includes("--no-catalogue");
+  if (claimed || (wholeRun && !isDoneToday())) markDone();
   console.log(`\nDone. ${summary.totalQueries - summary.skipped} of ${summary.totalQueries} queries, ${summary.totalSaved} listings saved, ${summary.failures.length} failed, ${(summary.durationMs / 1000).toFixed(0)}s.`);
   for (const { platform, searches } of summary.silentStores) {
     console.warn(`[${stamp()}] WARNING ${platform}: 0 listings from all ${searches} searches. Its pages have probably changed; check its scraper (node src/scrapers/index.js "<a product>").`);

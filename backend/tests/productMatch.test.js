@@ -267,6 +267,14 @@ describe("GET /api/listings/match", () => {
     expect(same.body.matchedBy).not.toBe("url");
   });
 
+  it("places a marketplace page whose title lists its specifications by the product it names (Daraz, 2026-11-10)", async () => {
+    const title = "Apple iPhone 17 - 6.3 Inches Display - 256GB ROM - 48MP Rear Camera - 18MP Front Camera - A19 Bionic - Dual SIM - 3692mAh Battery";
+    const { body } = await get({ url: "https://www.daraz.pk/products/iphone-17-i9.html", title, price: "398000" });
+    expect(body).toMatchObject({ found: true, matchedBy: "similar", listing: null });
+    expect(body.offers.map((o) => o.platform)).toEqual(expect.arrayContaining(["mega", "shophive"]));
+    expect(decodeURIComponent(body.searchUrl)).toMatch(/\/results\?q=Apple iPhone 17 256GB ROM$/); // searchable, not 140 characters
+  });
+
   it("needs the page's price to place a page we do not store", async () => {
     expect((await get({ url: "https://www.mega.pk/unknown.html", title: "Apple iPhone 17 Pro 256GB" })).body).toMatchObject({ found: false, reason: "not_stored" });
     // With the price, the same page is placed.

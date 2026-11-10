@@ -78,6 +78,8 @@ export async function defaultFetchPage(listing) {
  * @param {string[]} [options.stores]     only these stores (lowercase ids)
  * @param {string} [options.match]        only listings whose title contains this text (case-insensitive), to fill in one product first
  * @param {string[]} [options.categories] only these of PAGE_CATEGORIES (e.g. the spec categories, to fill in specifications first)
+ * @param {string[]} [options.ids]        exactly these listings, in this order, read again whenever they were last read
+ *                                        (maintenance/fill-specs.js: the most compared products first)
  * @param {number} [options.now]          epoch ms, injectable for tests
  * @param {Function} [options.fetchPage]  (listing) => html, injectable for tests
  * @param {Function} [options.readSpecs]  (platform, html, {log}) => canonical sheet | null: the Specs engine (specsEngine.service.js),
@@ -87,7 +89,7 @@ export async function defaultFetchPage(listing) {
  * @returns {Promise<{checked: number, approved: number, nonPta: number, unknown: number, withColours: number, withSpecs: number, failed: number, dry: boolean, results: object[]}>}
  */
 export async function enrichFromPages({
-  limit = DEFAULT_LIMIT, delayMs = 2500, dry = false, again = false, stores = null, match = null, categories = null, now = Date.now(),
+  limit = DEFAULT_LIMIT, delayMs = 2500, dry = false, again = false, stores = null, match = null, categories = null, ids = null, now = Date.now(),
   fetchPage = defaultFetchPage, readSpecs = readSpecSheet, model = Listing, log = () => {},
 } = {}) {
   const due = new Date(now - RECHECK_DAYS * DAY_MS);
@@ -101,8 +103,15 @@ export async function enrichFromPages({
   const allowed = (stores?.length ? stores : null)?.filter((s) => !DISABLED_PLATFORMS.includes(s));
   filter.platform = allowed ? { $in: allowed } : { $nin: DISABLED_PLATFORMS };
   if (match) filter.title = { $regex: escapeRegex(String(match)), $options: "i" };
+  if (ids?.length) {
+    filter._id = { $in: ids };
+    delete filter.$or;
+  }
 
-  const candidates = await model.find(filter).sort({ pageCheckedAt: 1, lastScrapedAt: -1 }).limit(Math.max(limit, 0)).lean();
+  const found = await model.find(filter).sort({ pageCheckedAt: 1, lastScrapedAt: -1 }).limit(Math.max(limit, 0)).lean();
+  // Given ids keep their order (the most compared product first); otherwise the oldest-read page goes first.
+  const order = ids?.length ? new Map(ids.map((id, i) => [String(id), i])) : null;
+  const candidates = order ? [...found].sort((a, b) => (order.get(String(a._id)) ?? 1e9) - (order.get(String(b._id)) ?? 1e9)) : found;
   const queue = interleaveByStore(candidates);
 
   const summary = { checked: 0, approved: 0, nonPta: 0, unknown: 0, withColours: 0, withRating: 0, withSpecs: 0, failed: 0, dry, results: [] };

@@ -116,8 +116,14 @@ export default function FilterPanel({ filters, stores, categories, facets, bound
           <legend className="eyebrow">{facet.title}</legend>
           <div className="facet-chips">
             {facet.options.map((option) => (
-              <label key={String(option.value)} className="facet-chip">
-                <input type="checkbox" checked={filters[facet.key].includes(option.value)} onChange={() => toggleFacet(facet.key, option.value)} />
+              // An option no offer can meet with the other choices is greyed out (still one to untick if chosen).
+              <label key={String(option.value)} className={option.count === 0 && !filters[facet.key].includes(option.value) ? "facet-chip facet-chip--empty" : "facet-chip"}>
+                <input
+                  type="checkbox"
+                  checked={filters[facet.key].includes(option.value)}
+                  disabled={option.count === 0 && !filters[facet.key].includes(option.value)}
+                  onChange={() => toggleFacet(facet.key, option.value)}
+                />
                 <span>{option.label}</span>
                 <span className="facet-chip__count">{formatNumber(option.count)}</span>
               </label>

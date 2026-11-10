@@ -28,7 +28,7 @@ describe("the catalog across a restart", () => {
     const find = vi.spyOn(Listing, "find").mockImplementation(() => ({ lean: () => new Promise((resolve) => { release = () => resolve([]); }) }));
 
     const page = await getCatalog({ category: "smartphone", limit: 5 });
-    expect(page).toEqual({ groups: saved.groups.slice(0, 5), total: 900, generatedAt: saved.generatedAt });
+    expect(page).toEqual({ groups: saved.groups.slice(0, 5), total: 900, generatedAt: saved.generatedAt, brands: null }); // no brand counts from the saved page
     expect(find).toHaveBeenCalledTimes(1); // the regrouping has started
     release();
     find.mockRestore();

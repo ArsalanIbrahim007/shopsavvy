@@ -96,10 +96,11 @@ export async function getCategoryCatalog(req, res) {
 
   const limit = Math.min(Math.max(Math.floor(numberParam(req.query.limit) ?? 24), 1), 50);
   const offset = Math.max(Math.floor(Number(textParam(req.query.offset)) || 0), 0);
-  const { groups, total, generatedAt } = await getCatalog({ category, limit, offset });
+  const brand = textParam(req.query.brand)?.slice(0, 40) || null;
+  const { groups, total, generatedAt, brands } = await getCatalog({ category, limit, offset, brand });
 
   res.set("Cache-Control", "public, max-age=60");
-  res.json({ success: true, category, count: groups.length, total, offset, limit, generatedAt, data: groups });
+  res.json({ success: true, category, brand, count: groups.length, total, offset, limit, generatedAt, brands, data: groups });
 }
 
 /**

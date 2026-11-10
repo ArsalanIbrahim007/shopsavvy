@@ -73,7 +73,7 @@ function pagesOf(store, { fetchJson, terms, known, onError }) {
  * @param {boolean} [options.dryRun]      count what would be updated, write nothing
  * @param {Function} [options.onPage]     ({ pages, items, matched }) after each page
  */
-export async function refreshCatalogue(store, { fetchJson, terms, dryRun = false, onPage, listing = Listing, priceHistory = PriceHistory, now = () => new Date() } = {}) {
+export async function refreshCatalogue(store, { fetchJson, terms, dryRun = false, onPage, deadline = null, listing = Listing, priceHistory = PriceHistory, now = () => new Date() } = {}) {
   const startedAt = Date.now();
   const known = new Set((await listing.find({ platform: store.platform }, { sourceUrl: 1 }).lean()).map((row) => row.sourceUrl));
   const searchTerms = store.type === "storefront" ? terms ?? (await storefrontTerms(store.platform, { listing })) : undefined;
@@ -103,6 +103,13 @@ export async function refreshCatalogue(store, { fetchJson, terms, dryRun = false
   }
 
   for await (const page of pagesOf(store, { fetchJson, terms: searchTerms, known, onError })) {
+    // The run's time limit: what was read is kept, nothing is marked gone (a read stopped early is not the whole store). AlfaMall's
+    // read by brand takes over two hours with its retries; past the searches' budget it kept the nightly running until Task
+    // Scheduler ended it, before its page check, with nothing logged (2026-11-10).
+    if (deadline && Date.now() >= deadline) {
+      stats.stoppedAtDeadline = true;
+      break;
+    }
     stats.pages += 1;
     for (const scraped of page) {
       const sourceUrl = canonicalSourceUrl(scraped.sourceUrl);
@@ -128,7 +135,7 @@ export async function refreshCatalogue(store, { fetchJson, terms, dryRun = false
   // collections found 1,259 of our 2,444 listings, and the other 1,185, accessories and the like, were marked gone though still sold),
   // and not one a reader stopped early (an error, or a page limit reached: catalogue.js reports both through onError).
   const wholeStore = store.type !== "storefront" && !store.collections?.length;
-  const complete = wholeStore && stats.errors === 0 && stats.known > 0 && stats.matched / stats.known >= MIN_FOUND_SHARE;
+  const complete = wholeStore && !stats.stoppedAtDeadline && stats.errors === 0 && stats.known > 0 && stats.matched / stats.known >= MIN_FOUND_SHARE;
   if (complete) {
     const gone = [...known].filter((url) => !seen.has(url));
     stats.gone = gone.length;

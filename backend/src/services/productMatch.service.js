@@ -22,6 +22,7 @@ import { isOutOfDate } from "./offerFreshness.service.js";
 import { lowestBadge } from "./priceOutlook.service.js";
 import { isSuspectPrice } from "./pricePlausibility.service.js";
 import { extractCondition, extractPtaStatus } from "./productAttributes.service.js";
+import { coreTitle, searchableText } from "./coreTitle.service.js";
 import { productPath } from "./productPath.js";
 import { buildProductView } from "./productView.service.js";
 import { escapeRegex } from "./searchMatching.service.js";
@@ -198,7 +199,8 @@ const notFound = (reason, { title, site }) => ({
   advice: null,
   pta: null,
   productUrl: null,
-  searchUrl: title ? `${site}/results?q=${encodeURIComponent(title)}` : null,
+  // A marketplace title with its spec list is too long to search and matches nothing as it stands: its core is searched.
+  searchUrl: title ? `${site}/results?q=${encodeURIComponent(searchableText(coreTitle(title)))}` : null,
 });
 
 /**
@@ -232,7 +234,7 @@ export function matchResponse(view, { matchedBy, pageId, pagePrice, title, site,
     advice: stored && self.recommendation ? { action: self.recommendation.action, reason: self.recommendation.reason ?? "" } : null,
     pta: { product: productPta, thisPage: stored ? self.ptaAssessment ?? ptaOf(self) : extractPtaStatus(title || "") },
     productUrl: `${site}${productPath(productId, view.offers.find((o) => idOf(o) === productId)?.title)}`,
-    searchUrl: `${site}/results?q=${encodeURIComponent(title || self.title || "")}`,
+    searchUrl: `${site}/results?q=${encodeURIComponent(searchableText(coreTitle(title || self.title || "")))}`,
   };
 }
 
@@ -269,22 +271,35 @@ export async function matchPage({ url: address, title, price }, { strategy = "ml
 
   // Not stored: where would the matcher put this page? Needs a title and a price (the matcher compares prices).
   if (!title || !(price > 0)) return notFound("not_stored", { title, site });
-  const page = {
-    _id: new mongoose.Types.ObjectId(), // a fresh id: it matches no stored listing, and is never saved
-    platform: store.platform,
-    title,
-    normalizedTitle: normalizeTitle(title),
-    price,
-    originalPrice: null,
-    productCategory: detectCategory(title).category,
-    ptaStatus: extractPtaStatus(title),
-    condition: extractCondition(title),
-    inStock: true,
-    lastScrapedAt: new Date(now).toISOString(),
-    sourceUrl: store.url.href,
+  const asPage = (text) => {
+    const category = detectCategory(text).category;
+    return {
+      _id: new mongoose.Types.ObjectId(), // a fresh id: it matches no stored listing, and is never saved
+      platform: store.platform,
+      title: text,
+      normalizedTitle: normalizeTitle(text),
+      price,
+      originalPrice: null,
+      productCategory: category !== "other" ? category : detectCategory(title).category,
+      ptaStatus: extractPtaStatus(title), // the full title's word on PTA and condition, which the core may leave out
+      condition: extractCondition(title),
+      inStock: true,
+      lastScrapedAt: new Date(now).toISOString(),
+      sourceUrl: store.url.href,
+    };
   };
+  // A marketplace title that lists the specifications (Daraz: "Tecno Spark Go 3 - 6.75 Inches Display - 4GB RAM 64GB/128GB ROM -
+  // 8MP Front Camera - ...") is placed by its core ("Tecno Spark Go 3 4GB RAM", coreTitle.service.js) and only then as it stands:
+  // the spec words had kept it from every product (2026-11-10).
   // The closest SIMILAR_CANDIDATES listings are enough to place one page; the product page groups up to 300, which took 4 s in a
   // large category (accessories) for a page that matched nothing.
-  const view = await buildProductView(page, { strategy, cap: SIMILAR_CANDIDATES });
-  return matchResponse(view, { matchedBy: "similar", pageId: idOf(page), pagePrice: price, title, site, now });
+  const core = coreTitle(title);
+  let answer = null;
+  for (const text of core && core !== title ? [core, title] : [title]) {
+    const page = asPage(text);
+    const view = await buildProductView(page, { strategy, cap: SIMILAR_CANDIDATES });
+    answer = matchResponse(view, { matchedBy: "similar", pageId: idOf(page), pagePrice: price, title, site, now });
+    if (answer.found) return answer;
+  }
+  return answer;
 }

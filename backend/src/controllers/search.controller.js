@@ -14,6 +14,7 @@ import { normalizeTitle } from "../services/normalizeTitle.service.js";
 import { currentOffers } from "../services/offerFreshness.service.js";
 import { lowestBadge } from "../services/priceOutlook.service.js";
 import { textParam, numberParam } from "../services/queryParams.service.js";
+import { searchableText } from "../services/coreTitle.service.js";
 import { attachRecommendation } from "../services/recommendation/recommendation.service.js";
 import { fetchAndRefreshListings } from "../services/scraper.service.js";
 import { resultsState } from "../services/searchFreshness.js";
@@ -27,6 +28,7 @@ import { resolveMatchStrategy } from "./matchStrategy.js";
 // anything longer is a paste or an attack, and it would only be fed to
 // regex-building and scraping.
 const MAX_QUERY_LENGTH = 100;
+const MAX_PASTED_TITLE = 300; // as the extension's lookup (productMatch LIMITS.title)
 
 /**
  * Creates a flat listing array from the recommended grouped offers.
@@ -158,10 +160,12 @@ export async function searchListings(req, res) {
     throw AppError.badRequest("Search query is required. Example: /api/listings/search?q=iphone");
   }
 
-  if (q.length > MAX_QUERY_LENGTH) {
-    throw AppError.badRequest(`Search query is too long (maximum ${MAX_QUERY_LENGTH} characters).`);
+  // A pasted marketplace title ("Tecno Spark Go 3 - 6.75 Inches Display - 4GB RAM ... - 5000mAh Battery") is searched by the
+  // product it names (coreTitle.service.js), not refused for its length (2026-11-10). Beyond a title's length it is not a search.
+  if (q.length > MAX_PASTED_TITLE) {
+    throw AppError.badRequest(`Search query is too long (maximum ${MAX_PASTED_TITLE} characters).`);
   }
-  const trimmedQuery = q.trim();
+  const trimmedQuery = searchableText(q, MAX_QUERY_LENGTH);
 
   // "a", "1" or "?+" names nothing: it matched most of the catalogue (16,600 listings for "a") and ran into the worker's time
   // limit, and one that matched nothing would have sent every store a search for it.

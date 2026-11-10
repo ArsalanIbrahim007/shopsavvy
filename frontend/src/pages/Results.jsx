@@ -15,7 +15,7 @@ import { usePageTitle } from "../hooks/usePageTitle.js";
 import { categoryName, FEATURED_CATEGORIES } from "../lib/categories.js";
 import { splitByCondition } from "../lib/condition.js";
 import {
-  FACET_KEYS_FOR_RESET, activeCategory, applyFilters, buildFacets, categoryCounts, emptyFilters, filterGroups, filtersToParams,
+  FACET_KEYS_FOR_RESET, activeCategory, applyFilters, buildFacets, categoryCounts, emptyFilters, filterGroups, filtersToParams, withCategoryBrands,
   groupKey, inCategory, isFiltered, parseFilters, platformOptions, priceBounds, sortGroups,
 } from "../lib/filters.js";
 import { formatNumber, timeAgo } from "../lib/format.js";
@@ -48,17 +48,18 @@ const searchResult = (result) => ({
   spelling: result.matchedBy === "spelling",
 });
 
-function useResults(query, browseCategory) {
+function useResults(query, browseCategory, browseBrand) {
   const first = useAsync(
     async (signal) => {
       // Nothing to look up: no search text and not a category the server can browse. (Hooks run before the
       // page's early return, so without this guard a request with an empty category would be sent.)
       if (!query && !browseCategory) return { groups: [], total: 0, refreshing: false };
       if (query) return searchResult(await searchListings({ q: query, signal }));
-      const result = await getCatalog({ category: browseCategory, limit: CATALOG_LIMIT, signal });
-      return { groups: result.groups, total: result.total, refreshing: false };
+      // One brand picked while browsing: that brand's products from the whole category, not only those among the 50 shown.
+      const result = await getCatalog({ category: browseCategory, brand: browseBrand || undefined, limit: CATALOG_LIMIT, signal });
+      return { groups: result.groups, total: result.total, refreshing: false, brands: result.brands };
     },
-    [query, browseCategory]
+    [query, browseCategory, browseBrand]
   );
 
   // The later answers, tied to the first answer they follow, so a new search never shows an older one's update.
@@ -116,12 +117,18 @@ function GroupList({ groups }) {
   );
 }
 
-function ResultsView({ groups, total, refreshing = false, narrowed = null, spelling = false, query, browseCategory, filters, searchParams, setSearchParams }) {
+function ResultsView({ groups, total, refreshing = false, narrowed = null, spelling = false, brands = null, query, browseCategory, filters, searchParams, setSearchParams }) {
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const allOffers = groups.flatMap((group) => group.offers ?? []);
   const category = activeCategory(allOffers, filters.category);
-  const facets = buildFacets(allOffers, category);
+  // Browsing a category, the brand filter counts the whole category's products (the server's), not the 50 shown: it had listed
+  // "Apple 2" (2026-11-10).
+  // Each facet counts the offers that pass the other chosen filters. The whole category's brand counts are used only while nothing
+  // else is chosen (they cannot follow the other choices).
+  const onlyBrandOrNothing = !filters.minPrice && !filters.maxPrice && !filters.platforms?.length && FACET_KEYS_FOR_RESET.every((key) => key === "brand" || !filters[key]?.length);
+  const counted = buildFacets(allOffers, category, filters);
+  const facets = browseCategory && brands?.length && onlyBrandOrNothing ? withCategoryBrands(counted, brands) : counted;
   const stores = platformOptions(allOffers);
   const categories = categoryCounts(allOffers);
   const bounds = priceBounds(allOffers);
@@ -271,8 +278,9 @@ export default function Results() {
   const filters = parseFilters(searchParams);
   // Browsing without search text is only offered for the categories the server can serve (the featured ones).
   const browseCategory = !query && FEATURED_CATEGORIES.includes(filters.category) ? filters.category : "";
+  const browseBrand = browseCategory && filters.brand?.length === 1 ? filters.brand[0] : "";
 
-  const results = useResults(query, browseCategory);
+  const results = useResults(query, browseCategory, browseBrand);
   usePageTitle(query ? `${query} prices` : browseCategory ? `${categoryName(browseCategory)} prices` : "Search");
 
   if (!query && !browseCategory) {
@@ -322,6 +330,7 @@ export default function Results() {
       refreshing={results.data.refreshing}
       narrowed={results.data.narrowed}
       spelling={results.data.spelling}
+      brands={results.data.brands ?? null}
       query={query}
       browseCategory={browseCategory}
       filters={filters}

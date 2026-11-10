@@ -17,6 +17,7 @@ import { attachPriceHistory } from "./historyEnrichment.service.js";
 import { groupListings } from "./grouping.service.js";
 import { DEAL_CATEGORIES } from "./dealsFeed.service.js";
 import { readSnapshot, writeSnapshot } from "./snapshot.service.js";
+import { extractBrand } from "./productAttributes.service.js";
 
 // The categories the site is about (the same list the deals feed uses).
 export const CATALOG_CATEGORIES = DEAL_CATEGORIES;
@@ -119,17 +120,54 @@ export async function getCatalogGroups(category, now = Date.now()) {
  * @param {number} [options.offset]  how many products to skip
  * @returns {Promise<{groups: object[], total: number, generatedAt: string}>}
  */
-export async function getCatalog({ category, limit = 24, offset = 0, now = Date.now() }) {
+/**
+ * A product's brand: the one most of its offers state, in lower case, so "SAMSUNG" and "Samsung" are one brand (stores write it
+ * either way: the phones' brand list showed both, 2026-11-10). Null when no offer states one.
+ */
+export function brandOfGroup(group) {
+  const counts = new Map();
+  for (const offer of group.offers ?? []) {
+    const brand = extractBrand(offer.title, offer.brand); // read from the title too: most stores state no brand
+    if (brand) counts.set(brand, (counts.get(brand) ?? 0) + 1);
+  }
+  let best = null;
+  for (const [brand, n] of counts) if (!best || n > best.n) best = { brand, n };
+  return best?.brand ?? null;
+}
+
+/** How many products of the category each brand has, most first: for the brand filter, which otherwise counted the page shown. */
+function brandCounts(groups) {
+  const counts = new Map();
+  for (const group of groups) {
+    const brand = brandOfGroup(group);
+    if (brand) counts.set(brand, (counts.get(brand) ?? 0) + 1);
+  }
+  return [...counts].map(([brand, count]) => ({ brand, count })).sort((a, b) => b.count - a.count || a.brand.localeCompare(b.brand));
+}
+
+/**
+ * @param {object} options
+ * @param {string} options.category  one of CATALOG_CATEGORIES
+ * @param {number} [options.limit]   page size
+ * @param {number} [options.offset]  how many products to skip
+ * @param {string} [options.brand]   only this brand's products (any case)
+ * @returns {Promise<{groups: object[], total: number, generatedAt: string, brands: Array<{brand: string, count: number}>|null}>}
+ */
+export async function getCatalog({ category, limit = 24, offset = 0, brand = null, now = Date.now() }) {
   // Nothing computed since start-up: the saved first page answers if it covers the page asked for, and the category is grouped meanwhile.
-  if (!cache.has(category)) {
+  // Not for one brand: the saved page holds only the most compared products of every brand.
+  if (!cache.has(category) && !brand) {
     const saved = await diskCatalog(category);
     if (saved && offset + limit <= saved.groups.length) {
       refresh(category, now).catch((error) => console.warn(`[catalog] Could not refresh ${category}: ${error.message}`));
-      return { groups: saved.groups.slice(offset, offset + limit), total: saved.total, generatedAt: saved.generatedAt };
+      return { groups: saved.groups.slice(offset, offset + limit), total: saved.total, generatedAt: saved.generatedAt, brands: null };
     }
   }
   const entry = await categoryCatalog(category, now);
-  return { groups: entry.groups.slice(offset, offset + limit), total: entry.groups.length, generatedAt: entry.generatedAt };
+  const wanted = brand ? String(brand).trim().toLowerCase() : null;
+  const groups = wanted ? entry.groups.filter((group) => brandOfGroup(group) === wanted) : entry.groups;
+  entry.brands ??= brandCounts(entry.groups); // once per computed catalog
+  return { groups: groups.slice(offset, offset + limit), total: groups.length, generatedAt: entry.generatedAt, brands: entry.brands };
 }
 
 /** Fills the cache in the background at start-up, one category at a time. Never throws. */

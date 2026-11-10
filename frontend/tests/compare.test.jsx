@@ -149,3 +149,32 @@ describe("the product page's specifications", () => {
     expect(screen.getByText(/derived from the product title/i)).toBeInTheDocument();
   });
 });
+
+describe("the brand filter", () => {
+  it("counts one brand however a store writes it, and over a whole category while browsing", async () => {
+    const { buildFacets, applyFilters, emptyFilters, withCategoryBrands } = await import("../src/lib/filters.js");
+    const offers = [
+      { brand: "SAMSUNG", productCategory: "smartphone", price: 1 },
+      { brand: "Samsung", productCategory: "smartphone", price: 2 },
+      { brand: "apple", productCategory: "smartphone", price: 3 },
+    ];
+    const brand = buildFacets(offers, "smartphone").find((f) => f.key === "brand");
+    expect(brand.options).toEqual([{ value: "samsung", count: 2, label: "Samsung" }, { value: "apple", count: 1, label: "Apple" }]);
+    expect(applyFilters(offers, { ...emptyFilters(), category: "smartphone", brand: ["samsung"] })).toHaveLength(2);
+    const whole = withCategoryBrands(buildFacets(offers, "smartphone"), [{ brand: "samsung", count: 36 }, { brand: "apple", count: 35 }, { brand: "xiaomi", count: 10 }]);
+    expect(whole.find((f) => f.key === "brand").options.map((o) => `${o.label} ${o.count}`)).toEqual(["Samsung 36", "Apple 35", "Xiaomi 10"]);
+  });
+});
+
+describe("filters that follow each other", () => {
+  it("choosing 64 GB leaves only the RAM sizes sold with it; the rest show 0, in the same order", async () => {
+    const { buildFacets, emptyFilters } = await import("../src/lib/filters.js");
+    const phone = (ramGb, storageGb) => ({ ramGb, storageGb, productCategory: "smartphone", price: 1 });
+    const offers = [phone(4, 64), phone(4, 64), phone(4, 128), phone(8, 256), phone(12, 256), phone(12, 256), phone(12, 512)];
+    const ram = (filters) => buildFacets(offers, "smartphone", filters).find((f) => f.key === "ram").options.map((o) => `${o.value}:${o.count}`);
+    expect(ram({ ...emptyFilters(), category: "smartphone" })).toEqual(["4:3", "8:1", "12:3"]);
+    expect(ram({ ...emptyFilters(), category: "smartphone", storage: [64] })).toEqual(["4:2", "8:0", "12:0"]);
+    // its own choice does not narrow itself: other RAM sizes stay offered alongside 4 GB
+    expect(ram({ ...emptyFilters(), category: "smartphone", ram: [4] })).toEqual(["4:3", "8:1", "12:3"]);
+  });
+});
