@@ -26,6 +26,16 @@ export function pktDay(date = new Date()) {
   return new Date(date.getTime() + PKT_OFFSET_MS).toISOString().slice(0, 10);
 }
 
+// The night a scrape belongs to: the Pakistan day it began on, except that a start before 06:00 is the previous evening's night. A
+// catch-up run started by hand at 02:47 on 2026-11-10 was recorded as the 10th, so the 10 PM nightly that evening found "already run"
+// and did nothing.
+const NIGHT_ENDS_HOUR = 6;
+
+/** The night (YYYY-MM-DD, its evening's date) that `date` belongs to: 00:00-05:59 in Pakistan is still the previous night. */
+export function scrapeNight(date = new Date()) {
+  return pktDay(new Date(date.getTime() - NIGHT_ENDS_HOUR * 60 * 60 * 1000));
+}
+
 /** The hour (0-23) in Pakistan. */
 export function pktHour(date = new Date()) {
   return new Date(date.getTime() + PKT_OFFSET_MS).getUTCHours();
@@ -59,7 +69,7 @@ function write(file, state) {
  */
 export function tryStart({ now = new Date(), file = DEFAULT_STATE_FILE, isAlive = processIsAlive, pid = process.pid } = {}) {
   const state = read(file);
-  if (state.lastRunDate === pktDay(now)) return { ok: false, reason: "done-today" };
+  if (state.lastRunDate === scrapeNight(now)) return { ok: false, reason: "done-today" };
 
   const since = Date.parse(state.runningSince ?? "");
   const claimed = Number.isFinite(since) && now.getTime() - since < STALE_LOCK_MS;
@@ -76,7 +86,7 @@ export function tryStart({ now = new Date(), file = DEFAULT_STATE_FILE, isAlive 
  */
 export function markDone({ now = new Date(), file = DEFAULT_STATE_FILE } = {}) {
   const started = Date.parse(read(file).runningSince ?? "");
-  const day = pktDay(Number.isFinite(started) && started <= now.getTime() ? new Date(started) : now);
+  const day = scrapeNight(Number.isFinite(started) && started <= now.getTime() ? new Date(started) : now);
   write(file, { lastRunDate: day });
 }
 
@@ -88,5 +98,5 @@ export function markFailed({ file = DEFAULT_STATE_FILE } = {}) {
 
 /** Whether today's scrape has already run (for a quick check that does not claim anything). */
 export function isDoneToday({ now = new Date(), file = DEFAULT_STATE_FILE } = {}) {
-  return read(file).lastRunDate === pktDay(now);
+  return read(file).lastRunDate === scrapeNight(now);
 }

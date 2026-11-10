@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-import { STALE_LOCK_MS, isDoneToday, markDone, markFailed, pktDay, pktHour, tryStart } from "../src/jobs/scrapeState.js";
+import { STALE_LOCK_MS, isDoneToday, markDone, markFailed, pktDay, pktHour, scrapeNight, tryStart } from "../src/jobs/scrapeState.js";
 import { isWithinWindow } from "../src/jobs/priceHistoryJob.js";
 
 let dir;
@@ -74,8 +74,20 @@ describe("tryStart / markDone / markFailed", () => {
 
   it("starts again the next Pakistan day", () => {
     markDone({ now, file });
-    expect(isDoneToday({ now: at("2026-09-30T19:30:00Z"), file })).toBe(false); // 00:30 on 1 Oct in Pakistan
+    expect(isDoneToday({ now: at("2026-09-30T19:30:00Z"), file })).toBe(true); // 00:30 on 1 Oct in Pakistan: still the night of the 30th
+    expect(isDoneToday({ now: at("2026-10-01T01:00:00Z"), file })).toBe(false); // 06:00 on 1 Oct
     expect(tryStart({ now: at("2026-10-01T17:05:00Z"), file, pid: 100 })).toEqual({ ok: true });
+  });
+
+  it("a run started after midnight belongs to the night before, so that evening's 10 PM nightly still runs", () => {
+    // 2026-11-10: a catch-up run started by hand at 02:47 was recorded as the 10th, and the 10 PM nightly that day did nothing.
+    expect(scrapeNight(at("2026-11-09T21:47:00Z"))).toBe("2026-11-09"); // 02:47 on the 10th
+    expect(scrapeNight(at("2026-11-10T00:59:00Z"))).toBe("2026-11-09"); // 05:59
+    expect(scrapeNight(at("2026-11-10T01:00:00Z"))).toBe("2026-11-10"); // 06:00
+    expect(tryStart({ now: at("2026-11-09T21:47:00Z"), file, pid: 100 })).toEqual({ ok: true });
+    markDone({ now: at("2026-11-10T00:19:00Z"), file });
+    expect(saved()).toEqual({ lastRunDate: "2026-11-09" });
+    expect(tryStart({ now: at("2026-11-10T17:00:00Z"), file, pid: 200 })).toEqual({ ok: true }); // 10 PM on the 10th
   });
 
   it("takes over a claim whose process no longer exists (for example the backend restarted mid-run)", () => {
@@ -125,7 +137,7 @@ describe("run-scheduled-scrape.js skips a day that is already covered", { timeou
   };
 
   it("exits quietly, with success, when today's scrape already ran", () => {
-    const out = run({ lastRunDate: pktDay() });
+    const out = run({ lastRunDate: scrapeNight() });
     expect(out.status).toBe(0);
     expect(out.stdout).toMatch(/already run/i);
   });

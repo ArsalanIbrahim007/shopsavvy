@@ -252,3 +252,55 @@ describe("things made for a device are not the device (2026-11-09, one AlfaMall 
     else expect(category).toBe(expected);
   });
 });
+
+describe("only phones in the phones (2026-11-10: the phones' brand filter listed Audionic, Dell, HP, Ronin and Zero)", () => {
+  it.each([
+    // a maker's other products, filed as phones on its name alone
+    ["Xiaomi Smart Kettle 2 Pro-White", "!smartphone"],
+    ["Xiaomi Smart Projector L1 Pro", "!smartphone"],
+    ["Xiaomi Robot Vacuum X20 Pro", "appliance"],
+    ["Xiaomi Compact Hair Dryer H101", "!smartphone"],
+    ["Xiaomi 20W Power Strip", "!smartphone"],
+    ["Xiaomi 120W HyperCharge Combo (Type-A)", "!smartphone"],
+    ["Xiaomi 16-in-1 Ratchet Screwdriver", "!smartphone"],
+    ["Xiaomi 65 inch Q LED A Pro 2026", "!smartphone"],
+    ["Xiaomi Oscillation Electric Toothbrush", "!smartphone"],
+    ["Huawei 24-Port Gigabit L2 Managed Switch (S220S-24T4JX)", "!smartphone"],
+    // a phone word, but not a phone
+    ["Audionic Milan Mobile Speaker", "!smartphone"],
+    ["Dell Precision 15 5520 Mobile Workstation - 7th Gen Core i7 7820HQ Processor 16-GB 512-GB SSD", "laptop"],
+    ["HP Laser MFP 135w Printer 4ZB83A Mobile Printing (Official Warranty)", "printer"],
+    ["Ronin R-909 Type C To IPhone", "!smartphone"],
+    ["Ronin OTG iPhone Connector Black (R-3000)", "!smartphone"],
+    ["ZERO PIXEL SILVER WATCH", "smartwatch"],
+    ["Huawei GT6 Pro 46mm Titanium", "smartwatch"],
+    ["Samsung Galaxy Active 2 Aluminum (44mm)", "smartwatch"],
+    ["Oppo Enco Air", "headphones"],
+    ["Oppo Pad 3", "tablet"],
+    ["Huawei MediaPad T3 10", "tablet"],
+    ["WiWU Wi-P052 Galaxy Series 10000mah 35W Fast Charging Power Bank", "accessory"],
+    // and the phones stay phones, also those named by the maker and a model alone
+    ["Infinix Hot 70 | Official Pta Approved | With Free XP05 Powerbank | At 0% Markup", "smartphone"],
+    ["Xiaomi 15T Pro", "smartphone"],
+    ["Xiaomi Mi Note 10 Lite", "smartphone"],
+    ["Xiaomi Black Shark 4 Pro", "smartphone"],
+    ["Xiaomi Pocophone F2 Pro", "smartphone"],
+    ["Xiaomi Redmi Go", "smartphone"],
+    ["Vivo Y05", "smartphone"],
+    ["Vivo - V80 Lite 5G RAM", "smartphone"],
+    ["Vivo iQOO Neo", "smartphone"],
+    ["Oppo A6-S Pro - 8GB RAM", "smartphone"],
+    ["Huawei P40 Pro", "smartphone"],
+    ["Huawei Enjoy Max", "smartphone"],
+    ["Huawei Ascend Mate 7", "smartphone"],
+    ["Nokia 3210", "smartphone"],
+    ["OnePlus Clover", "smartphone"],
+    ["Nothing Phone 3A", "smartphone"],
+    ["Apple iPhone 16 Pro Max PTA Approved 1TB White Titanium", "smartphone"],
+    ["Samsung Galaxy S20 FE Fan Edition", "smartphone"],
+  ])("%s -> %s", (title, expected) => {
+    const { category } = detectCategory(title);
+    if (expected.startsWith("!")) expect(category).not.toBe(expected.slice(1));
+    else expect(category).toBe(expected);
+  });
+});

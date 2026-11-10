@@ -19,6 +19,29 @@ const WORD_BOUNDARY_KEYWORDS = new Set(["tv", "oven", "rog", "hub"]);
 // ("Xiaomi 15T Pro 12GB 512GB").
 const BRAND_ONLY_KEYWORDS = new Set(["xiaomi", "redmi", "poco", "oppo", "vivo", "realme", "huawei", "nokia", "motorola", "oneplus"]);
 
+// When a maker's name is a title's only sign of a phone, a phone's model must follow it: a number or code ("Xiaomi 15T Pro", "Vivo
+// Y05", "Huawei P40", "Nokia 3210") or a phone line ("Huawei Enjoy Max", "Vivo iQOO Neo"). Xiaomi alone sells hair dryers,
+// toothbrushes, power strips, scales and luggage, all filed as phones on its name (2026-11-10). A number that is a wattage, a size or
+// a count is not a model ("Xiaomi 20W Power Strip", "Xiaomi 65 inch", "Xiaomi 16-in-1 Ratchet Screwdriver").
+// "Vivo - V80 Lite 5G", "Oppo A6-S Pro": a dash may stand between the maker and the model, or inside the model.
+const PHONE_MODEL_AFTER_BRAND = new RegExp(
+  "\\b(xiaomi|redmi|poco|oppo|vivo|realme|huawei|nokia|motorola|oneplus)\\s*[-|:]?\\s+(mi\\s+|xiaomi\\s+|redmi\\s+|poco\\s+|honor\\s+|moto\\s+)?" +
+    "(([a-z]{0,3}\\d{1,4}[a-z]{0,3})(?!\\w|-in-1|-port|\\s*(w|watts?|inch(es)?|in-1|\"|mah|mm|l|ch|pcs|pack)\\b)" +
+    "|redmi (go|pro)|pocophone|shark|note|mix|civi|black shark|iqoo|ascend|x ?fold|x ?flip|p ?smart|enjoy|y ?max|nova|mate|pura|max|play|reno|find|nord|ace|narzo|clover|x\\b|edge|moto|razr|smart|honor|pocket|neo)",
+  "i",
+);
+
+/**
+ * Words that name what a product IS, never a phone (each checked against the 6,300 phone titles on 2026-11-10: in none of them).
+ * Xiaomi's range among the "phones" found that day.
+ */
+const NOT_A_PHONE_KINDS = [
+  "hair dryer", "dryer", "clipper", "toothbrush", "steam iron", "steamer", "luggage", "carry-on", "scale", "gel pen", "pen pro",
+  "lantern", "flashlight", "range extender", "repeater", "power strip", "charging combo", "hypercharge combo", "type a combo", "combo charging",
+  "screwdriver", "pressure washer", "induction cooker", "humidifier", "dehumidifier", "grooming kit", "reading light", "light bar",
+  "doorbell", "smart plug", "lightstrip", "led bulb", "diffuser", "audio glasses", "gopods", "water dispenser",
+];
+
 /**
  * "... for iPhone 17 Pro", "... for Galaxy S25": a product made for a phone, never the phone. Like
  * "for laptop" below, the phrasing marks an accessory. Without it a "Torras Ostand Q3 VegSkin for
@@ -49,6 +72,23 @@ const FOR_A_DEVICE = [
     "holder", "mount", "stabilizer", "stabiliser", "gimbal", "handle rig", "video rig", "selfie stick", "tripod",
     "microphone", "mic for", "button cell", "cell battery", "battery for", "lithium battery",
 ];
+
+// Not a phone, whatever phone maker or phone word the title names (2026-11-10: the phones' brand filter listed Audionic, Dell, HP,
+// Ronin and Zero, and Xiaomi's kettles, vacuums, fans and projectors were phones on "xiaomi" alone). Each word was checked against the
+// 6,300 phone titles: none is in a real phone's. Not "powerbank": AlfaMall's phones come "With Free XP05 Powerbank" (handled below).
+const NOT_A_PHONE = new RegExp(
+  [
+    "vacuum", "kettle", "projector", "heater", "lamp", "router", "soundbar", "speaker", "printer", "printing", "workstation",
+    "connector", "otg", "type[- ]?c to", "power bank", "norton", "antivirus", "breakout box", "magsafe battery", "wallet",
+    "watch", "(4[0-9]|3[89])\\s?mm", "galaxy active", "enco", "pad", "mediapad", "matepad", "brushbar", "brush", "drill",
+    "straightener", "trimmer", "shaver", "filter", "tower fan", "circulation fan", "mini fan", "desk fan", "sennheiser",
+    "(xiaomi|mi) smart (?!phone)",
+    ...NOT_A_PHONE_KINDS,
+  ].map((word) => `\\b${word}\\b`).join("|"),
+  "i",
+);
+const isNotAPhone = (text) =>
+  NOT_A_PHONE.test(text) || (/\bpower ?bank\b/.test(text) && !/\bfree\b[^|]{0,24}power ?bank/.test(text)); // a power bank, not one given with a phone
 
 const BRAND_CATEGORY = {
   iphone: "smartphone", apple: "smartphone", samsung: "smartphone",
@@ -131,6 +171,7 @@ const CATEGORIES = {
             "notebook",
             "macbook",
             "thinkpad",
+            "mobile workstation", // "Dell Precision 15 5520 Mobile Workstation" was a phone on "mobile" (2026-11-10)
             "ideapad",
             "thinkbook",
             "latitude",
@@ -288,6 +329,8 @@ const CATEGORIES = {
             "xiaomi pad",
             "redmi pad",
             "lenovo tab",
+            // Tablets that were phones on their maker's name (2026-11-10): "Oppo Pad 3", "Vivo Pad", "Xiaomi Poco Pad", "Huawei MediaPad".
+            "oppo pad", "vivo pad", "poco pad", "oneplus pad", "honor pad", "realme pad", "mediapad", "matepad",
         ],
         exclude: [
             "tablet case",
@@ -300,6 +343,7 @@ const CATEGORIES = {
             "lcd tablet",
             "writing tablet",
             "drawing",
+            "breakout box", // "RODE SC6 Smartphones And Tablets Breakout Box"
             // "Headset for iPhone/iPod/iPad", "Hub For iPhone IPAD": made for the device, not the device.
             ...FOR_A_PHONE,
             ...FOR_A_TABLET,
@@ -319,6 +363,8 @@ const CATEGORIES = {
             "xiaomi watch",
             "watch fit",
             "band",
+            "galaxy active", // "Samsung Galaxy Active 2 Aluminum (44mm)"
+            "huawei gt", // "Huawei GT6 Pro 46mm Titanium": no "watch" in the title (2026-11-10)
             "fitness tracker",
         ],
         exclude: [
@@ -397,6 +443,7 @@ const CATEGORIES = {
             "galaxy buds",
             "tws",
             "headset",
+            "oppo enco", // "Oppo Enco Air", "OPPO Enco Free 2"
         ],
         exclude: [
             "headphone case",
@@ -556,6 +603,7 @@ const CATEGORIES = {
             "oven",
             "dishwasher",
             "vacuum cleaner",
+            "robot vacuum", "wet dry vacuum", // Xiaomi's, that were phones (2026-11-10)
             // "Xiaomi Multifunctional Rice Cooker 4L" scored as a phone on "xiaomi" (2026-11-07).
             "rice cooker",
             "pressure cooker",
@@ -641,6 +689,7 @@ function detectCategory(title) {
         if (excluded && category !== "accessory") {
             continue;
         }
+        if (category === "smartphone" && isNotAPhone(text)) continue;
 
         for (const keyword of config.keywords) {
             // Some keywords are short/common enough to turn up as a
@@ -682,6 +731,9 @@ function detectCategory(title) {
                 }
             }
         }
+
+        // Only the maker's name said "phone" (1.5 points, nothing else matched): a phone's model must follow it.
+        if (category === "smartphone" && brandCounted && score === 1.5 && !PHONE_MODEL_AFTER_BRAND.test(text)) score = 0;
 
         if (score > bestScore) {
             bestScore = score;
