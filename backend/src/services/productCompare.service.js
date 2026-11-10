@@ -18,7 +18,7 @@ import { extractPtaStatus } from "./productAttributes.service.js";
 import { siteUrl } from "./productMatch.service.js";
 import { productPath } from "./productPath.js";
 import { buildProductView } from "./productView.service.js";
-import { loadSpecsEngine, mergeSpecSheets, rankSpecScore, scoreSpecSheet, withStatedCapacity } from "./specsEngine.service.js";
+import { loadSpecsEngine, mergeSpecSheets, rankSpecScore, scoreSpecSheet, withModelSpecs, withStatedCapacity } from "./specsEngine.service.js";
 
 export const COMPARE_LIMITS = Object.freeze({ min: 2, max: 4 });
 
@@ -73,8 +73,9 @@ async function scoredCategory(category, catalog) {
   if (hit && hit.generatedAt === generatedAt) return hit.entries;
   const entries = [];
   for (const group of groups) {
-    const { specs } = mergeSpecSheets(group.offers || []);
-    const scored = await scoreSpecSheet(withStatedCapacity(specs, group.bestDeal ?? group.offers?.[0]), category);
+    const lead = group.bestDeal ?? group.offers?.[0];
+    const { specs } = await withModelSpecs(mergeSpecSheets(group.offers || []).specs, [], lead);
+    const scored = await scoreSpecSheet(withStatedCapacity(specs, lead), category);
     if (!scored) continue;
     entries.push({
       id: idOf(group.bestDeal) ?? idOf(group.offers[0]),
@@ -104,8 +105,10 @@ export async function describeProduct(listing, { strategy = "ml", now = Date.now
   const best = selectedGroup?.bestDeal ?? selectedListing;
   const lowestPrice = lowestCurrentPrice(offers, now);
   const merged = mergeSpecSheets(offers, { preferId: id });
-  const specs = withStatedCapacity(merged.specs, selectedListing ?? listing);
-  const from = merged.from;
+  // The same model's other variants complete what this product's own stores' pages leave out (specsEngine withModelSpecs).
+  const modelled = await withModelSpecs(merged.specs, merged.from, selectedListing ?? listing);
+  const specs = withStatedCapacity(modelled.specs, selectedListing ?? listing);
+  const from = modelled.from;
   const specScore = await scoreSpecSheet(specs, category);
   const rank = specScore
     ? await rankInCategory(category, { id, category, score: specScore.score, price: lowestPrice ?? best.price }, { catalog, memberIds: new Set(offers.map(idOf)) })

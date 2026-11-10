@@ -86,3 +86,38 @@ describe("one vote per store when stores' pages disagree", () => {
     expect(merged.specs.chipset).toBe("Mediatek Dimensity 7300 Pro"); // one store each: the tie goes to the page's own listing
   });
 });
+
+describe("one model's specifications for all its variants (2026-11-10: three of four iPhones compared were nearly blank)", () => {
+  it("variants of one model share a key; a Pro and a Pro Max, or a 4G and a 5G phone, do not", async () => {
+    const { modelKeyOf } = await import("../src/services/specsEngine.service.js");
+    const key = (t) => modelKeyOf(t, "smartphone");
+    expect(key("Apple iPhone 17 Pro 256 GB PTA Approved")).toBe(key("APPLE IPHONE 17 PRO 512GB Cosmic Orange NON PTA"));
+    expect(key("Apple iPhone 17 Pro")).toBe(key("Apple iPhone 17 Pro 1TB"));
+    expect(key("Apple iPhone 17 Pro")).not.toBe(key("Apple iPhone 17 Pro Max 256GB"));
+    expect(key("Samsung Galaxy A17 5G 8GB RAM 256GB")).not.toBe(key("Samsung Galaxy A17 8GB 256GB"));
+    expect(key("Samsung Galaxy A17 8/256 | PTA Approved | Electronix Hub")).toBe(key("Samsung Galaxy A17 6GB RAM 128GB Storage PTA Approved"));
+  });
+
+  it("fills only what a variant's own sheet lacks, never its RAM or storage, and names the stores that added something", async () => {
+    const { withModelSpecs, clearModelIndex } = await import("../src/services/specsEngine.service.js");
+    clearModelIndex();
+    const rows = [
+      { title: "Apple iPhone 17 Pro", platform: "priceoye", productCategory: "smartphone", specSheet: { chipset: "Apple A19 Pro", chipsetTier: "flagship", batteryMah: 4252, ramGb: 12, storageGb: 256, displayInches: 6.3 } },
+      { title: "Apple iPhone 17 Pro Max 256GB", platform: "priceoye", productCategory: "smartphone", specSheet: { batteryMah: 4832 } },
+    ];
+    const model = { find: () => ({ lean: async () => rows }) };
+    const listing = { title: "Apple iPhone 17 Pro 512GB PTA Approved", productCategory: "smartphone" };
+    const { specs, from } = await withModelSpecs({ displayInches: 6.3, mainCameraMp: 48 }, ["shophive"], listing, { model });
+    expect(specs).toEqual({ displayInches: 6.3, mainCameraMp: 48, chipset: "Apple A19 Pro", chipsetTier: "flagship", batteryMah: 4252 }); // not the Pro Max's battery
+    expect(from).toEqual(["shophive", "priceoye"]);
+    clearModelIndex();
+  });
+
+  it("reads a thousands comma as part of the number, and a core count is no chip (the iPhone 17's '3,692 mAh', '6-core CPU')", () => {
+    expect(normalizeSpecs({ Battery: "3,692 mAh" }).batteryMah).toBe(3692);
+    expect(normalizeSpecs({ Processor: "6-core CPU" }).chipset).toBeUndefined();
+    expect(normalizeSpecs({ Processor: "Octa-Core" }).chipset).toBeUndefined();
+    expect(normalizeSpecs({ Processor: "6 Core Apple A18 Pro" })).toMatchObject({ chipset: "Apple A18 Pro", chipsetTier: "flagship" });
+    expect(normalizeSpecs({ Processor: "Helio G100 (6nm)" }).chipset).toBe("Helio G100");
+  });
+});

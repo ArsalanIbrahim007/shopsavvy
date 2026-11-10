@@ -14,7 +14,7 @@ import { compareProducts, parseCompareIds } from "../services/productCompare.ser
 import { LIMITS as MATCH_LIMITS, matchPage } from "../services/productMatch.service.js";
 import { dropChance } from "../services/dropChance.service.js";
 import { buildProductView } from "../services/productView.service.js";
-import { mergeSpecSheets, scoreSpecSheet, withStatedCapacity } from "../services/specsEngine.service.js";
+import { mergeSpecSheets, scoreSpecSheet, withModelSpecs, withStatedCapacity } from "../services/specsEngine.service.js";
 import { textParam } from "../services/queryParams.service.js";
 import { priceStats } from "./priceStats.js";
 import { resolveMatchStrategy } from "./matchStrategy.js";
@@ -171,8 +171,9 @@ export async function getListingDetails(req, res) {
   let specs = null;
   try {
     const merged = mergeSpecSheets(offers, { preferId: String(selectedListing._id) });
-    const sheet = withStatedCapacity(merged.specs, selectedListing);
-    if (merged.specs) specs = { sheet, from: merged.from, score: await scoreSpecSheet(sheet, selectedListing.productCategory) };
+    const modelled = await withModelSpecs(merged.specs, merged.from, selectedListing); // the same model's other variants too
+    const sheet = withStatedCapacity(modelled.specs, selectedListing);
+    if (modelled.specs) specs = { sheet, from: modelled.from, score: await scoreSpecSheet(sheet, selectedListing.productCategory) };
   } catch (error) {
     console.error("[specs] could not be merged:", error.message);
   }

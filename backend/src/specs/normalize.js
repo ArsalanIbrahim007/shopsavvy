@@ -11,8 +11,10 @@
 // (productAttributes) states its variant anyway. Nothing is guessed: a field the page does not state is left out.
 
 /** The numbers in a text before a unit ("50 MP + 12 MP" -> [50, 12]). */
+// A thousands comma is part of a number: read as a break, "3,692 mAh" gave an iPhone 17 a 692 mAh battery (2026-11-10).
 const numbersBefore = (text, unit) =>
-  [...String(text).matchAll(new RegExp(`(\\d+(?:\\.\\d+)?)\\s*(?:${unit})(?![a-z])`, "gi"))].map((m) => Number(m[1]));
+  [...String(text).matchAll(new RegExp(`(?<![\\d.,])(\\d{1,3}(?:,\\d{3})+|\\d+(?:\\.\\d+)?)\\s*(?:${unit})(?![a-z])`, "gi"))]
+    .map((m) => Number(m[1].replace(/,/g, "")));
 const isNotStated = (value) => /^\s*(n\/?a|-+|none|not available|unknown|tbd)\s*$/i.test(String(value));
 
 function parseBool(value) {
@@ -60,9 +62,14 @@ function chipsetName(value) {
     .replace(/[®™©]|\((?:r|tm)\)/gi, "")
     .split(/[(,]/)[0]
     .replace(/\bprocessor\b.*$/i, "")
+    .replace(/^\s*(\d+|octa|hexa|quad|deca|dual)[- ]?cores?\s+/i, "") // "6 Core Apple A18 Pro" -> "Apple A18 Pro"
     .replace(/\s+/g, " ")
     .trim();
-  return name.length >= 2 ? name.slice(0, 80) : null;
+  // A core count or a clock speed alone is not a chip: "Octa-Core", "6-core CPU" (Techroid's iPhone 17), "2.2GHz Octa core"; 227
+  // sheets said no more than that (2026-11-10). A chip's name has a family word or letters with a number ("Helio G100", "A19").
+  const vague = /^((\d+|octa|hexa|quad|deca|dual|single)[- ]?cores?|\d+(\.\d+)?\s*ghz)\b/i.test(name);
+  const named = /[a-z]{1,}\d|\d[a-z]|\b(apple|snapdragon|helio|dimensity|exynos|kirin|unisoc|tensor|bionic|core\s*(i\d|ultra)|ryzen)\b/i.test(name);
+  return !vague && named && name.length >= 2 ? name.slice(0, 80) : null;
 }
 
 /** The tier of a phone, tablet or laptop chip; null when it is not one we know. */
