@@ -30,7 +30,7 @@ import mongoose from "mongoose";
 import { isDoneToday, markDone, markFailed, tryStart } from "../jobs/scrapeState.js";
 import { CATALOGUE_STORES, coversHeldListings, refreshCatalogue } from "../services/catalogueRefresh.service.js";
 import { enrichFromPages } from "../services/pageEnrichment.service.js";
-import { buildScheduledQueryPlan, createQueryLog, onlyStores, RUN_BUDGET_MS, runScheduledScrape, withoutRefreshedStores } from "../services/scheduledScraping.service.js";
+import { buildScheduledQueryPlan, createQueryLog, NIGHTLY_SEARCHES_AT_ONCE, onlyStores, RUN_BUDGET_MS, runScheduledScrape, withoutRefreshedStores } from "../services/scheduledScraping.service.js";
 
 const minOffersArg = process.argv.find((a) => a.startsWith("--min-offers="));
 const minOffers = minOffersArg ? Number(minOffersArg.split("=")[1]) : 2;
@@ -115,6 +115,7 @@ try {
   console.log(`It stops starting new queries after ${RUN_BUDGET_MS / 60000} minutes; the rest wait for tomorrow.\n`);
 
   const summary = await runScheduledScrape({
+    concurrency: NIGHTLY_SEARCHES_AT_ONCE,
     queries: plan, // each with the stores to ask (smart routing: scheduledScraping.service.js refreshStores)
     queryLog,
     onProgress: ({ index, total, query, saved, error, budgetReached, skipped }) => {

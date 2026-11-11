@@ -23,7 +23,7 @@
 
 import cron from "node-cron";
 import { enrichFromPages } from "../services/pageEnrichment.service.js";
-import { runScheduledScrape } from "../services/scheduledScraping.service.js";
+import { NIGHTLY_SEARCHES_AT_ONCE, runScheduledScrape } from "../services/scheduledScraping.service.js";
 import { isDoneToday, markDone, markFailed, pktHour, tryStart } from "./scrapeState.js";
 import { quote } from "../config/logSafe.js";
 
@@ -53,6 +53,7 @@ async function maybeRunToday() {
 
   try {
     const summary = await runScheduledScrape({
+      concurrency: NIGHTLY_SEARCHES_AT_ONCE,
       onProgress: ({ index, total, query, saved, error, budgetReached, skipped }) => {
         if (budgetReached) console.warn("[priceHistoryJob] time budget reached after %s of %s queries: %s not run", index, total, skipped);
         else if (error) console.warn("[priceHistoryJob] (%s/%s) %s failed: %s", index, total, quote(query), error);

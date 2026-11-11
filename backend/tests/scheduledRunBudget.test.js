@@ -15,7 +15,7 @@ vi.mock("../src/services/scraper.service.js", () => ({ runScrapersAndSave: vi.fn
 import { runScrapersAndSave } from "../src/services/scraper.service.js";
 import { groupListings, getGroupingPool, closeGroupingPool } from "../src/services/grouping.service.js";
 import Listing from "../src/models/listing.model.js";
-import { createQueryLog, deriveQuery, RUN_BUDGET_MS, runScheduledScrape, SILENT_STORE_MIN_SEARCHES } from "../src/services/scheduledScraping.service.js";
+import { createQueryLog, deriveQuery, NIGHTLY_SEARCHES_AT_ONCE, RUN_BUDGET_MS, runScheduledScrape, SILENT_STORE_MIN_SEARCHES } from "../src/services/scheduledScraping.service.js";
 
 // A fake clock the stubbed scraper moves forward, so no test waits for real time.
 let clock;
@@ -175,5 +175,42 @@ describe("groupListings time limit", () => {
     expect(run.mock.calls[1][2].timeoutMs).toBeUndefined(); // the pool then uses its own 90 s
     run.mockRestore();
     await closeGroupingPool();
+  });
+});
+
+describe("two searches at once (2026-11-12: one at a time reached ~880 of ~5,200 products a night)", () => {
+  it("never runs more than two at once, runs each query once, and reaches twice as many in the same budget", async () => {
+    expect(NIGHTLY_SEARCHES_AT_ONCE).toBe(2);
+    let running = 0;
+    let most = 0;
+    const started = [];
+    // Real time here: each search takes 20 ms; the budget is counted on the fake clock, which moves one minute per search START.
+    vi.mocked(runScrapersAndSave).mockImplementation(async (query) => {
+      started.push(query);
+      clock += 60_000;
+      running += 1;
+      most = Math.max(most, running);
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      running -= 1;
+      return 1;
+    });
+    const many = Array.from({ length: 10 }, (_, i) => `q${i}`);
+    const progress = vi.fn();
+    const summary = await runScheduledScrape({ queries: many, delayMs: 0, budgetMs: 1e9, now, concurrency: 2, onProgress: progress });
+    expect(most).toBe(2);
+    expect([...started].sort()).toEqual([...many].sort());
+    expect(summary).toMatchObject({ totalQueries: 10, totalSaved: 10, skipped: 0 });
+    expect(progress.mock.calls.map(([p]) => p.index)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]); // counted as they finish
+  });
+
+  it("stops starting new searches at the budget and counts the rest as skipped, with the one in flight finishing", async () => {
+    vi.mocked(runScrapersAndSave).mockImplementation(async () => {
+      clock += 60_000;
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      return 1;
+    });
+    const summary = await runScheduledScrape({ queries: ["a", "b", "c", "d", "e", "f"], delayMs: 0, budgetMs: 150_000, now, concurrency: 2 });
+    expect(summary.totalSaved + summary.skipped).toBe(6);
+    expect(summary.skipped).toBeGreaterThan(0);
   });
 });

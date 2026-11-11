@@ -244,10 +244,17 @@ function sleep(ms) {
 }
 
 /**
- * Re-scrapes every derived query in sequence (never in parallel -- this is
- * a background job with no user waiting on it, and hammering four sites
- * concurrently is exactly the kind of load that gets a scraper blocked). A
- * delay between requests keeps it polite to the source sites.
+ * How many searches the nightly runs at once. One at a time, about 10 s each (7 s of store requests and a 3 s pause), it reached
+ * only ~880 of ~5,200 products in its 150 minutes (2026-11-10 and 11-11), so each was refreshed about every six nights. Two at a
+ * time asks a store at most two requests at once, still far from the load that gets a scraper blocked; the pages read in a browser
+ * (iShopping, Paklap) stay one at a time (playwrightFetch.js queues them).
+ */
+export const NIGHTLY_SEARCHES_AT_ONCE = 2;
+
+/**
+ * Re-scrapes every derived query, `concurrency` at a time (1 by default: a background job with no user waiting on it, and
+ * hammering the sites is exactly the kind of load that gets a scraper blocked; the nightly uses NIGHTLY_SEARCHES_AT_ONCE). A
+ * delay after each search keeps it polite to the source sites.
  *
  * Stops starting new queries once `budgetMs` has passed (RUN_BUDGET_MS by default) and says how many were left: `skipped`.
  *
@@ -257,10 +264,10 @@ function sleep(ms) {
  *
  * `queries` are plain queries (every store is asked) or plan entries {query, platforms} (only those stores: refreshStores).
  *
- * @param {{queries?: Array<string|{query: string, platforms?: string[]}>, delayMs?: number, budgetMs?: number, now?: () => number, queryLog?: ReturnType<typeof createQueryLog>, onProgress?: (info) => void}} [opts]
+ * @param {{queries?: Array<string|{query: string, platforms?: string[]}>, delayMs?: number, concurrency?: number, budgetMs?: number, now?: () => number, queryLog?: ReturnType<typeof createQueryLog>, onProgress?: (info) => void}} [opts]
  */
 export async function runScheduledScrape(opts = {}) {
-  const { delayMs = 3000, budgetMs = RUN_BUDGET_MS, now = Date.now, onProgress } = opts;
+  const { delayMs = 3000, budgetMs = RUN_BUDGET_MS, now = Date.now, onProgress, concurrency = 1 } = opts;
   const queryLog = opts.queryLog ?? (opts.queries ? null : createQueryLog());
   const entries = (opts.queries || (await buildScheduledQueryPlan({ lastQueried: queryLog.lastQueried })))
     .map((item) => (typeof item === "string" ? { query: item } : item));
@@ -277,27 +284,41 @@ export async function runScheduledScrape(opts = {}) {
     }
   };
 
-  for (let i = 0; i < queries.length; i++) {
-    if (now() - startedAt >= budgetMs) {
-      summary.skipped = queries.length - i;
-      onProgress?.({ index: i, total: queries.length, budgetReached: true, skipped: summary.skipped });
-      break;
-    }
-    const query = queries[i];
-    const { platforms } = entries[i];
-    try {
-      const saved = await runScrapersAndSave(query, platforms ? { platforms, onReport } : { onReport });
-      summary.totalSaved += saved;
-      onProgress?.({ index: i + 1, total: queries.length, query, saved });
-    } catch (err) {
-      summary.failures.push({ query, error: err.message });
-      onProgress?.({ index: i + 1, total: queries.length, query, error: err.message });
-    }
-    queryLog?.record(query);
-    if (queryLog && (i + 1) % QUERY_LOG_SAVE_EVERY === 0) queryLog.save();
+  // `concurrency` searches at a time, each followed by its own pause, so a store is asked at most that many requests at once.
+  let next = 0;
+  let done = 0;
+  let stopped = false;
+  const worker = async () => {
+    while (next < queries.length && !stopped) {
+      if (now() - startedAt >= budgetMs) {
+        if (!stopped) {
+          stopped = true;
+          summary.skipped = queries.length - next;
+          onProgress?.({ index: next, total: queries.length, budgetReached: true, skipped: summary.skipped });
+        }
+        return;
+      }
+      const i = next++;
+      const query = queries[i];
+      const { platforms } = entries[i];
+      // `done` is counted outside the onProgress?.() calls: optional chaining would skip the ++ when no onProgress is passed.
+      try {
+        const saved = await runScrapersAndSave(query, platforms ? { platforms, onReport } : { onReport });
+        summary.totalSaved += saved;
+        done += 1;
+        onProgress?.({ index: done, total: queries.length, query, saved });
+      } catch (err) {
+        summary.failures.push({ query, error: err.message });
+        done += 1;
+        onProgress?.({ index: done, total: queries.length, query, error: err.message });
+      }
+      queryLog?.record(query);
+      if (queryLog && done % QUERY_LOG_SAVE_EVERY === 0) queryLog.save();
 
-    if (i < queries.length - 1) await sleep(delayMs);
-  }
+      if (next < queries.length) await sleep(delayMs);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.max(1, Math.min(concurrency, queries.length || 1)) }, worker));
 
   queryLog?.save();
   summary.durationMs = now() - startedAt;
