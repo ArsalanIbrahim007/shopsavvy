@@ -3,7 +3,7 @@ import { isSimilarProduct, attributeConflict, tokenize, VARIANT_TOKENS } from ".
 import { calculateDealScores } from "../ranking/dealScore.js";
 import { SHARED_CODE_LENGTH, SHARED_CODE_PRICE_GAP, brandOf, prefixConflict, sameBrand, withoutStoreWording } from "./similarityModel.service.js";
 import { currentOffers } from "./offerFreshness.service.js";
-import { COLOURS, extractNetworkGeneration, extractPtaStatus, networkFamilyKey } from "./productAttributes.service.js";
+import { COLOURS, extractBrand, extractNetworkGeneration, extractPtaStatus, networkFamilyKey } from "./productAttributes.service.js";
 
 /**
  * How far a listing's price may sit from a group's prices before it is treated
@@ -156,19 +156,106 @@ const ptaPriceConflict = (a, b) => {
  */
 const SAME_STORE_PRICE_GAP = 0.05;
 
-// Not when either says PTA approved: then the cheaper page is most likely the non-PTA unit, and separateLikelyNonPta moves it out
-// and labels it as such for the shopper, which this rule (acting earlier) would prevent.
+// Not when one says PTA approved and the other does not say the same: then the cheaper page is most likely the non-PTA unit, and
+// separateLikelyNonPta moves it out and labels it as such for the shopper, which this rule (acting earlier) would prevent. When both
+// are approved the price gap cannot be the PTA status: PriceOye's bare "Infinix Note 60 Pro" (PKR 95,999) and its own "(8GB-256GB)"
+// (PKR 118,999), both approved, were one product, and the bare page became the 8/256's lowest price (audit, 2026-11-12).
+const ptaExplainsGap = (a, b) => ptaOf(a) !== ptaOf(b) && (ptaOf(a) === "pta_approved" || ptaOf(b) === "pta_approved");
 const sameStoreVariant = (a, b, titleA, titleB) =>
   a.platform === b.platform &&
-  ptaOf(a) !== "pta_approved" && ptaOf(b) !== "pta_approved" &&
+  !ptaExplainsGap(a, b) &&
   (extractStorage(titleA) === null) !== (extractStorage(titleB) === null) &&
   a.price > 0 && b.price > 0 &&
   Math.abs(a.price - b.price) / Math.min(a.price, b.price) > SAME_STORE_PRICE_GAP;
+
+/**
+ * Two makers' products are never one product (audit, 2026-11-12). AlfaMall sellers write one long text after every phone ("6GB 128GB
+ * Official Pta Approved 1Year Official Warranty_On Installment By Future Cell At 0% Markup"), and that shared text outweighed the
+ * model names: a "Samsung Galaxy A17" product held a Redmi 15C, a Tecno Spark 50 and an Infinix Hot 70, its lowest price the Redmi's
+ * (21 phone products, 158 offers; 7 laptop products mixed Dell, HP and Lenovo). Only when both titles name a maker we know.
+ * Huawei sold Honor phones under its own name ("Huawei Honor 9X"), so those two are one maker here.
+ */
+const ONE_MAKER = new Map([["honor", "huawei"]]);
+// Both are asked about the same titles thousands of times in one grouping run: read once per title.
+const perTitle = (read) => {
+  const cache = new Map();
+  return (title) => {
+    if (!cache.has(title)) {
+      if (cache.size > 50_000) cache.clear();
+      cache.set(title, read(title));
+    }
+    return cache.get(title);
+  };
+};
+const makerOf = perTitle((title) => {
+  const brand = extractBrand(title);
+  return brand ? ONE_MAKER.get(brand) ?? brand : null;
+});
+const makerConflict = (titleA, titleB) => {
+  const a = makerOf(titleA);
+  const b = makerOf(titleB);
+  return a !== null && b !== null && a !== b;
+};
+
+/**
+ * The numbers in the model part of a title: what comes before its capacity, specification or store wording, without a screen size
+ * or a network generation. "Redmi 15C 6GB 128GB ..." -> {15}; "DELL Latitude 5400 (Touchscreen) | Core i5 ..." -> {5400};
+ * "Tecno Spark Go 3 4GB 64GB" -> {3}; "HP Probook 640 G4 14\" Core I5" -> {640, 4}. Digits are compared, not words, so "A6-S" and
+ * "A6s", or "15-fd2100tu" and "15 FD2100TU", agree.
+ */
+const MODEL_PART_END =
+  /\b(\d+\s*(gb|tb)|\d{1,2}\s*\/\s*\d{2,4}|ram|rom|storage|pta|non[- ]?pta|official|core|intel|amd|ryzen|i[3579]|celeron|pentium|processor|with|dual|single|refurbished|used|like|warranty|price)\b|[|(,–—]|\s-\s/i;
+const modelNumbers = perTitle((title) => {
+  const text = String(title).toLowerCase();
+  const end = MODEL_PART_END.exec(text);
+  const part = (end ? text.slice(0, end.index) : text)
+    .replace(/\d+(\.\d+)?\s*(["”″]|''|-?\s*inch(es)?\b|-?\s*in\b)/g, " ") // a screen size
+    // Numbers that are not the model's (the recall samples' TV and headset pairs, 2026-11-12): a network generation, a brand with
+    // a digit ("A4tech"), a resolution ("4K", "1080p"), a year ("Smart TV 2025"), a rating ("120Hz", "45W", "5000mAh", "50MP"), a
+    // processor generation ("8th"), a channel count ("2.1ch").
+    .replace(/\b([2-5]g|a4tech|ps[45]|\d+k|\d{3,4}p|(19|20)\d\d|\d+(hz|w|mah|mp|th|st|nd|rd)|\d+(\.\d+)?\s*ch)\b/g, " ");
+  return new Set(part.match(/\d+/g) ?? []);
+});
+
+/**
+ * The same maker's different models (audit, 2026-11-12): "DELL Latitude 7400" held a Latitude 5400 and an E5490, "Tecno Spark Go
+ * 3" a Spark 50. When both titles' model parts carry numbers and they share none, the models differ. A title whose model part has
+ * no number ("TCL - Smart Google TV QLED 75 inch - P79L" ends at its first " - ") never vetoes.
+ */
+const modelNumberConflict = (titleA, titleB) => {
+  const a = modelNumbers(titleA);
+  const b = modelNumbers(titleB);
+  if (a.size === 0 || b.size === 0) return false;
+  for (const n of a) if (b.has(n)) return false;
+  return true;
+};
+
+/**
+ * How far below a capacity variant's cheapest offer that states the capacity a page that states none may be priced and still join
+ * it. A store's page without a capacity carries its cheapest variant's price: PriceOye's bare "Samsung Galaxy A37 5G" (PKR 122,495)
+ * joined the 8GB/256GB product (cheapest stated offer 133,499), "Nothing Phone 3a" (138,995) the 12GB/256GB (155,499), and each became
+ * that variant's lowest price (audit, 2026-11-12). The same variant across stores is within a few per cent: S25 at 3.5% below, iPhone
+ * 17 at 2%. A page further below is left out of the variant, in a product of its own.
+ */
+const BARE_BELOW_STATED = 0.05;
+const titleStatesCapacity = perTitle((title) => extractStorage(title) !== null);
+function belowStatedVariant(listing, group) {
+  // A phone page that does not say whether it is PTA approved, priced below approved ones, is more likely the non-PTA unit:
+  // separateLikelyNonPta moves it out later and labels it so for the shopper, which this check (acting earlier) would prevent.
+  if (PTA_SENSITIVE.has(listing.productCategory) && ptaOf(listing) === "unknown") return false;
+  let lowest = Infinity;
+  for (const offer of group.offers) {
+    if (offer.price > 0 && offer.price < lowest && titleStatesCapacity(offer.title || offer.normalizedTitle || "")) lowest = offer.price;
+  }
+  return lowest !== Infinity && listing.price < lowest * (1 - BARE_BELOW_STATED);
+}
 
 /** A hard reason the listing may not share a group with this member, whatever the titles' similarity says. */
 function conflictsWithMember(listing, rawTitle, member, networkFamilies) {
   const memberTitle = member.title || member.normalizedTitle || "";
   return (
+    makerConflict(rawTitle, memberTitle) ||
+    modelNumberConflict(rawTitle, memberTitle) ||
     ptaConflict(listing, member) ||
     ptaPriceConflict(listing, member) ||
     sameStoreVariant(listing, member, rawTitle, memberTitle) ||
@@ -192,6 +279,7 @@ function findMatchingGroup(listing, rawTitle, listingStorage, candidates, matchS
       group.storage !== listingStorage;
 
     if (capacityConflict) continue;
+    if (listingStorage === null && group.storage !== null && belowStatedVariant(listing, group)) continue;
 
     /*
      * The match strategy only compares against the group's representative
@@ -284,6 +372,10 @@ function mergeSameModelGroups(groups, sameModel, networkFamilies) {
         return group.offers.some((member) => conflictsWithMember(listing, title, member, networkFamilies));
       });
       if (clash) continue;
+      // Nor may a page without a capacity come in this way below the variant it would join (BARE_BELOW_STATED).
+      const [bare, stated] = group.storage === null ? [group, other] : [other, group];
+      if (bare.storage === null && stated.storage !== null && bare.offers.some((listing) =>
+        !titleStatesCapacity(listing.title || listing.normalizedTitle || "") && belowStatedVariant(listing, stated))) continue;
       for (const listing of other.offers) addOffer(group, listing);
       if (group.storage === null && other.storage !== null) {
         group.storage = other.storage;

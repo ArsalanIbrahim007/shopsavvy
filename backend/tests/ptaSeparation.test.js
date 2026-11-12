@@ -115,7 +115,8 @@ describe("PTA separation", () => {
     const groups = group([
       listing("mega", "Apple iPhone 17 256GB Storage PTA Approved", 369999),
       listing("shophive", "Apple iPhone 17 256GB PTA Approved", 389999),
-      listing("priceoye", "Apple Iphone 17", 250000, { ptaStatus: "pta_approved" }), // the store data says approved
+      // the store data says approved; priced like the 256GB (a bare page far below it is a cheaper variant: groupingAudit.test.js)
+      listing("priceoye", "Apple Iphone 17", 365000, { ptaStatus: "pta_approved" }),
     ]);
     expect(groups).toHaveLength(1);
     expect(groups[0].offers.find((o) => o.platform === "priceoye").ptaAssessment).toBeUndefined();
