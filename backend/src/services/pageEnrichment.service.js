@@ -12,6 +12,7 @@
 import { DISABLED_PLATFORMS } from "../config/platforms.js";
 import Listing from "../models/listing.model.js";
 import { extractColourOptions } from "./colourPage.service.js";
+import { extractConditionFromPage } from "./conditionPage.service.js";
 import { extractPtaFromPage } from "./ptaPage.service.js";
 import { extractJudgeMeRating, extractPriceOyeRating } from "./ratingPage.service.js";
 import { readSpecSheet, SPEC_CATEGORIES } from "./specsEngine.service.js";
@@ -32,6 +33,9 @@ export const RATING_READERS = new Map([
   // Shopify stores whose product pages show Judge.me reviews (checked 2026-11-09)
   ...["audionic", "zerolifestyle", "ronin", "baseus", "mistore", "mymart"].map((store) => [store, extractJudgeMeRating]),
 ]);
+// Stores whose pages are read for a used phone sold under a new phone's title (conditionPage.service.js). iShopping: its 19 iPhone
+// pages read 2026-11-12, the 10 used ones (5 or 6 signs each) and none of the 9 new ones. Another store joins after the same check.
+export const CONDITION_STORES = new Set(["ishopping"]);
 const USER_AGENT = "ShopSavvyBot/1.0 (student price-comparison project; reads product pages for PTA status and colours)";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -123,10 +127,13 @@ export async function enrichFromPages({
     let colours;
     let rated; // set below, or the listing is skipped by the catch
     let sheet = null;
+    let used = { condition: null, evidence: [] };
     try {
       const html = await fetchPage(listing);
       pta = extractPtaFromPage(html, { productName: listing.title });
       colours = extractColourOptions(html);
+      // A used phone sold under a new phone's title (iShopping, 2026-11-12): only its page says so (conditionPage.service.js).
+      if (PTA_CATEGORIES.includes(listing.productCategory) && CONDITION_STORES.has(String(listing.platform).toLowerCase())) used = extractConditionFromPage(html);
       rated = RATING_READERS.get(String(listing.platform).toLowerCase())?.(html) ?? null;
       // The Specs engine guards itself: a parser error is logged and gives null, never a failed page.
       if (SPEC_CATEGORIES.includes(listing.productCategory)) sheet = await readSpecs(listing.platform, html, { log });
@@ -150,8 +157,8 @@ export async function enrichFromPages({
     if (colours.length > 0) summary.withColours += 1;
     if (rated) summary.withRating += 1;
     if (sheet) summary.withSpecs += 1;
-    summary.results.push({ id: String(listing._id), platform: listing.platform, title: listing.title, status: ptaApplies ? pta.status : "n/a", evidence: pta.evidence, colours, rating: rated, specs: sheet });
-    log(`[pages] ${listing.platform} "${listing.title}": ${ptaApplies ? pta.status : "pta n/a"}${pta.evidence && ptaApplies ? ` (${pta.evidence})` : ""}; colours: ${colours.map((c) => c.colour).join(", ") || "none"}${rated ? `; rating: ${rated.rating} (${rated.reviewCount})` : ""}${sheet ? `; specs: ${Object.keys(sheet).length} fields` : ""}`);
+    summary.results.push({ id: String(listing._id), platform: listing.platform, title: listing.title, status: ptaApplies ? pta.status : "n/a", evidence: pta.evidence, colours, rating: rated, specs: sheet, condition: used.condition });
+    log(`[pages] ${listing.platform} "${listing.title}": ${ptaApplies ? pta.status : "pta n/a"}${pta.evidence && ptaApplies ? ` (${pta.evidence})` : ""}; colours: ${colours.map((c) => c.colour).join(", ") || "none"}${rated ? `; rating: ${rated.rating} (${rated.reviewCount})` : ""}${sheet ? `; specs: ${Object.keys(sheet).length} fields` : ""}${used.condition ? `; used (${used.evidence.join(", ")})` : ""}`);
 
     if (dry) continue;
     const set = { pageCheckedAt: new Date(now) };
@@ -162,6 +169,10 @@ export async function enrichFromPages({
     if (colours.length > 0) set.colourOptions = colours; // a page that says nothing leaves an earlier answer alone
     if (rated) Object.assign(set, rated);
     if (sheet) set.specSheet = sheet; // likewise: a page whose specifications could not be read keeps the earlier sheet
+    // The condition the page shows: a used phone becomes "used"; one the page earlier called used and now shows as new goes back.
+    // A condition the title itself states ("Used", "Refurbished") is never touched (conditionSource "title" or none).
+    if (used.condition && (listing.condition ?? "new") === "new") Object.assign(set, { condition: used.condition, conditionSource: "product_page" });
+    else if (!used.condition && listing.conditionSource === "product_page") Object.assign(set, { condition: "new", conditionSource: null });
     await model.updateOne({ _id: listing._id }, { $set: set });
   }
 

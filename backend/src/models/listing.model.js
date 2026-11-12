@@ -103,6 +103,8 @@ const listingSchema = new mongoose.Schema(
     colourOptions:   { type: [mongoose.Schema.Types.Mixed], default: [] }, // [{ colour: "Blue", image: "https://..." | null }]
     pageCheckedAt:   { type: Date, default: null },
     condition:       { type: String, default: "new", index: true },
+    // "product_page" when the store's page showed the condition the title did not (pageEnrichment, conditionPage.service.js)
+    conditionSource: { type: String, default: null },
     screenInches:    { type: Number, default: null },
     resolution: { type: String, default: null, index: true },
     // Optional fields a scraper may send (validated by scrapedExtras.service).

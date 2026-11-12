@@ -1,5 +1,9 @@
 import Listing from "../../models/listing.model.js";
 import PriceHistory from "../../models/priceHistory.model.js";
+import { DISABLED_PLATFORMS, VISIBLE_PLATFORMS_FILTER } from "../../config/platforms.js";
+
+// Only the stores the site shows (audit, 2026-11-12, finding 9): the switched-off ones (Daraz, Telemart; 468 listings) were counted.
+const VISIBLE_ONLY = { $match: VISIBLE_PLATFORMS_FILTER };
 
 const roundNumber = (value, decimals = 2) => {
   const numericValue = Number(value);
@@ -39,17 +43,19 @@ export async function getAnalyticsOverview() {
     discountStats,
     historyCount,
   ] = await Promise.all([
-    Listing.countDocuments(),
+    Listing.countDocuments(VISIBLE_PLATFORMS_FILTER),
 
     Listing.countDocuments({
+      ...VISIBLE_PLATFORMS_FILTER,
       isActive: true,
     }),
 
     Listing.countDocuments({
+      ...VISIBLE_PLATFORMS_FILTER,
       isActive: false,
     }),
 
-    Listing.aggregate([
+    Listing.aggregate([VISIBLE_ONLY,
       {
         $group: {
           _id: "$platform",
@@ -85,7 +91,7 @@ export async function getAnalyticsOverview() {
       },
     ]),
 
-    Listing.aggregate([
+    Listing.aggregate([VISIBLE_ONLY,
       {
         $group: {
           _id: "$category",
@@ -110,7 +116,7 @@ export async function getAnalyticsOverview() {
       },
     ]),
 
-    Listing.aggregate([
+    Listing.aggregate([VISIBLE_ONLY,
       {
         $match: {
           price: {
@@ -137,7 +143,7 @@ export async function getAnalyticsOverview() {
       },
     ]),
 
-    Listing.aggregate([
+    Listing.aggregate([VISIBLE_ONLY,
       {
         $group: {
           _id: null,
@@ -240,7 +246,7 @@ export async function getAnalyticsOverview() {
       },
     ]),
 
-    PriceHistory.countDocuments(),
+    PriceHistory.countDocuments(VISIBLE_PLATFORMS_FILTER),
   ]);
 
   const priceSummary =
@@ -397,9 +403,9 @@ export async function getAnalyticsOverview() {
 
 export async function getPlatformAnalytics() {
   const totalListings =
-    await Listing.countDocuments();
+    await Listing.countDocuments(VISIBLE_PLATFORMS_FILTER);
 
-  const platforms = await Listing.aggregate([
+  const platforms = await Listing.aggregate([VISIBLE_ONLY,
     {
       $group: {
         _id: "$platform",
@@ -553,13 +559,14 @@ export async function getPriceTrendAnalytics({
     recordedAt: {
       $gte: startDate,
     },
+    ...VISIBLE_PLATFORMS_FILTER,
   };
 
+  // An exact store name, not a pattern: the name went into a regular expression as given, so "(a+)+$" or ".*" made the database run
+  // an expensive or unintended match (audit, 2026-11-12). Store names are lower case; a switched-off store gives nothing.
   if (platform) {
-    matchStage.platform = {
-      $regex: `^${platform}$`,
-      $options: "i",
-    };
+    const name = String(platform).trim().toLowerCase();
+    matchStage.platform = DISABLED_PLATFORMS.includes(name) ? { $in: [] } : name;
   }
 
   if (listingId) {

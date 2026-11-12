@@ -5,6 +5,7 @@ import {
   platformAnalytics,
   priceTrendAnalytics,
 } from "../controllers/analytics.controller.js";
+import { analyticsLimiter } from "../middleware/rateLimit.middleware.js";
 
 const router = express.Router();
 
@@ -21,7 +22,7 @@ const router = express.Router();
  *         description: Aggregate overview.
  */
 router.get(
-  "/overview",
+  "/overview", analyticsLimiter,
   analyticsOverview
 );
 
@@ -38,7 +39,7 @@ router.get(
  *         description: Per-platform statistics.
  */
 router.get(
-  "/platforms",
+  "/platforms", analyticsLimiter,
   platformAnalytics
 );
 
@@ -55,7 +56,7 @@ router.get(
  *         description: Price trend data.
  */
 router.get(
-  "/price-trends",
+  "/price-trends", analyticsLimiter,
   priceTrendAnalytics
 );
 

@@ -78,6 +78,9 @@ export const readLimiter = createReadLimiter({ limit: 240 });
 // The health check pings the database. A monitor polls it every few seconds, so this is a ceiling against abuse, not a throttle:
 // 600 an hour-quarter is one every 1.5 seconds.
 export const healthLimiter = createReadLimiter({ limit: 600 });
+// The analytics endpoints aggregate the whole collection on every call (77,000 listings and their price records); they had no limit
+// at all (audit, 2026-11-12, finding 9). No page of the site calls them: 60 per quarter hour is ample for the API docs and reports.
+export const analyticsLimiter = createReadLimiter({ limit: 60 });
 // Writes that need the admin key: the limit is what stops the key being guessed.
 export function createAdminLimiter({ windowMs = 15 * 60 * 1000, limit = 30 } = {}) {
   return rateLimit({

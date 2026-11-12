@@ -122,6 +122,10 @@ function toListingDoc(scraped) {
   // "unknown" through the schema default.
   if (doc.ptaStatus === "unknown") delete doc.ptaStatus;
   else doc.ptaSource = "title";
+  // Likewise the condition: a title that says nothing ("new" is the default) must not undo a used phone the page showed
+  // (conditionPage.service.js, iShopping's used iPhones under new phones' titles). A new listing starts at "new" through the schema.
+  if (doc.condition === "new") delete doc.condition;
+  else doc.conditionSource = "title";
 
   return doc;
 }
