@@ -2,7 +2,7 @@ import { normalizeTitle, extractStorage, modelTokens, extractModelCodes, extract
 import { isSimilarProduct, attributeConflict, tokenize, VARIANT_TOKENS } from "./similarity.service.js";
 import { calculateDealScores } from "../ranking/dealScore.js";
 import { SHARED_CODE_LENGTH, SHARED_CODE_PRICE_GAP, brandOf, prefixConflict, sameBrand, withoutStoreWording } from "./similarityModel.service.js";
-import { headlineOffers } from "./offerFreshness.service.js";
+import { headlineOffers, isOutOfDate } from "./offerFreshness.service.js";
 import { COLOURS, extractBrand, extractNetworkGeneration, extractPtaStatus, networkFamilyKey } from "./productAttributes.service.js";
 
 /**
@@ -161,10 +161,15 @@ const SAME_STORE_PRICE_GAP = 0.05;
 // are approved the price gap cannot be the PTA status: PriceOye's bare "Infinix Note 60 Pro" (PKR 95,999) and its own "(8GB-256GB)"
 // (PKR 118,999), both approved, were one product, and the bare page became the 8/256's lowest price (audit, 2026-11-12).
 const ptaExplainsGap = (a, b) => ptaOf(a) !== ptaOf(b) && (ptaOf(a) === "pta_approved" || ptaOf(b) === "pta_approved");
+// A seller's "8/256" states the capacity too (ramStorageShorthand), though the title reader does not take it: read as a page without
+// one, AlfaMall's 69 "Xiaomi Redmi Note 15 8/256 | PTA Approved ..." offers were split from their product into one-store copies of
+// it beside AlfaMall's "8GB 256GB" offers (Fable's review, 2026-11-12). Not every marketplace offer is exempt: DigiMall's titles
+// never state the storage ("Samsung Galaxy A07 4GB RAM"), and this rule is what keeps its variants apart.
+const statesCapacityAnyway = (title) => extractStorage(title) !== null || ramStorageShorthand(title) !== null;
 const sameStoreVariant = (a, b, titleA, titleB) =>
   a.platform === b.platform &&
   !ptaExplainsGap(a, b) &&
-  (extractStorage(titleA) === null) !== (extractStorage(titleB) === null) &&
+  statesCapacityAnyway(titleA) !== statesCapacityAnyway(titleB) &&
   a.price > 0 && b.price > 0 &&
   Math.abs(a.price - b.price) / Math.min(a.price, b.price) > SAME_STORE_PRICE_GAP;
 
@@ -205,17 +210,28 @@ const makerConflict = (titleA, titleB) => {
  */
 const MODEL_PART_END =
   /\b(\d+\s*(gb|tb)|\d{1,2}\s*\/\s*\d{2,4}|ram|rom|storage|pta|non[- ]?pta|official|core|intel|amd|ryzen|i[3579]|celeron|pentium|processor|with|dual|single|refurbished|used|like|warranty|price)\b|[|(,–—]|\s-\s/i;
-const modelNumbers = perTitle((title) => {
+const modelPart = perTitle((title) => {
   const text = String(title).toLowerCase();
   const end = MODEL_PART_END.exec(text);
-  const part = (end ? text.slice(0, end.index) : text)
+  return (end ? text.slice(0, end.index) : text)
     .replace(/\d+(\.\d+)?\s*(["”″]|''|-?\s*inch(es)?\b|-?\s*in\b)/g, " ") // a screen size
     // Numbers that are not the model's (the recall samples' TV and headset pairs, 2026-11-12): a network generation, a brand with
     // a digit ("A4tech"), a resolution ("4K", "1080p"), a year ("Smart TV 2025"), a rating ("120Hz", "45W", "5000mAh", "50MP"), a
     // processor generation ("8th"), a channel count ("2.1ch").
     .replace(/\b([2-5]g|a4tech|ps[45]|\d+k|\d{3,4}p|(19|20)\d\d|\d+(hz|w|mah|mp|th|st|nd|rd)|\d+(\.\d+)?\s*ch)\b/g, " ");
-  return new Set(part.match(/\d+/g) ?? []);
 });
+const modelNumbers = perTitle((title) => new Set(modelPart(title).match(/\d+/g) ?? []));
+
+/**
+ * A maker's part number or model code that two stores both print: letters and digits, five characters or more ("MDHA4" for a
+ * MacBook Air, "55P6L" for a TCL TV). Not a capacity or rating, a processor ("1235u", "13420h") or a graphics chip ("rtx5060"):
+ * different laptops share those.
+ */
+const NOT_A_PART_NUMBER = /^(\d+(gb|tb|mah|hz|mp|w|nm|th)|\d{4,5}[a-z]{1,2}|(rtx|gtx|rx|lpddr|ddr|wifi|usb)\d+[a-z]*|\d+gen\d*)$/;
+const partNumbers = perTitle((title) => new Set(
+  (String(title).toLowerCase().match(/[a-z0-9]+/g) ?? [])
+    .filter((token) => token.length >= 5 && /[a-z]/.test(token) && /\d/.test(token) && !NOT_A_PART_NUMBER.test(token)),
+));
 
 /**
  * The same maker's different models (audit, 2026-11-12): "DELL Latitude 7400" held a Latitude 5400 and an E5490, "Tecno Spark Go
@@ -227,6 +243,11 @@ const modelNumberConflict = (titleA, titleB) => {
   const b = modelNumbers(titleB);
   if (a.size === 0 || b.size === 0) return false;
   for (const n of a) if (b.has(n)) return false;
+  // A part number both titles print names one product, however each title words its model (Fable's review, 2026-11-12): Paklap's
+  // "Apple MacBook Air 13 MDHA4 - Apple M5 Chip" ({13, 4}) and "Apple Macbook Air 13" M5 Chip 16GB ... (MDHA4)" ({5}) were split, and
+  // the cheapest store's offer left its product. Likewise TCL's "55P6L" TVs.
+  const codes = partNumbers(titleB);
+  for (const code of partNumbers(titleA)) if (codes.has(code)) return false;
   return true;
 };
 
@@ -243,19 +264,41 @@ function belowStatedVariant(listing, group) {
   // A phone page that does not say whether it is PTA approved, priced below approved ones, is more likely the non-PTA unit:
   // separateLikelyNonPta moves it out later and labels it so for the shopper, which this check (acting earlier) would prevent.
   if (PTA_SENSITIVE.has(listing.productCategory) && ptaOf(listing) === "unknown") return false;
-  let lowest = Infinity;
-  for (const offer of group.offers) {
-    if (offer.price > 0 && offer.price < lowest && titleStatesCapacity(offer.title || offer.normalizedTitle || "")) lowest = offer.price;
-  }
-  return lowest !== Infinity && listing.price < lowest * (1 - BARE_BELOW_STATED);
+  // A part number the group's offers print names the exact configuration: Paklap's "Apple MacBook Air 13 MDH74 ... 16-GB 512-GB SSD"
+  // (its capacity written in a way the title reader does not take) is the MDH74, 16GB/512GB, at PKR 399,000 (Fable's review).
+  if (sharesPartNumber(listing.title || listing.normalizedTitle || "", group.offers)) return false;
+  // The reference is the cheapest offer stating the capacity that a shopper could buy new today (Fable's review, 2026-11-12): an
+  // out-of-stock Shophive S25 12/512 at 274,999, 87 days old, let PriceOye's bare 265,499 in beside in-stock offers from 315,899;
+  // iShopping's used iPhone 15 did the same. Any stated offer when none is.
+  const stated = group.offers.filter((offer) => offer.price > 0 && titleStatesCapacity(offer.title || offer.normalizedTitle || ""));
+  const buyable = stated.filter((offer) => offer.inStock !== false && !PRE_OWNED_CONDITIONS.has(offer.condition) && !isOutOfDate(offer));
+  const reference = buyable.length ? buyable : stated;
+  if (reference.length === 0) return false;
+  return listing.price < Math.min(...reference.map((offer) => offer.price)) * (1 - BARE_BELOW_STATED);
 }
+const PRE_OWNED_CONDITIONS = new Set(["used", "refurbished", "open_box"]);
 
 /** A hard reason the listing may not share a group with this member, whatever the titles' similarity says. */
-function conflictsWithMember(listing, rawTitle, member, networkFamilies) {
+/**
+ * True when the title prints a part number that one of `offers` prints too (partNumbers). Then the model-number veto is not asked
+ * of the group's other offers: one that leaves the part number out ("Apple MacBook Air 13.6" M5 16GB 512GB SSD") kept Paklap's
+ * "Apple MacBook Air 13 MDH74 - Apple M5 Chip" out of the MDH74 product its part number names (Fable's review, 2026-11-12).
+ */
+function sharesPartNumber(title, offers) {
+  const mine = partNumbers(title);
+  if (mine.size === 0) return false;
+  return offers.some((offer) => {
+    const theirs = partNumbers(offer.title || offer.normalizedTitle || "");
+    for (const code of mine) if (theirs.has(code)) return true;
+    return false;
+  });
+}
+
+function conflictsWithMember(listing, rawTitle, member, networkFamilies, { codeShared = false } = {}) {
   const memberTitle = member.title || member.normalizedTitle || "";
   return (
     makerConflict(rawTitle, memberTitle) ||
-    modelNumberConflict(rawTitle, memberTitle) ||
+    (!codeShared && modelNumberConflict(rawTitle, memberTitle)) ||
     ptaConflict(listing, member) ||
     ptaPriceConflict(listing, member) ||
     sameStoreVariant(listing, member, rawTitle, memberTitle) ||
@@ -293,7 +336,9 @@ function findMatchingGroup(listing, rawTitle, listingStorage, candidates, matchS
      */
     if (
       matchStrategy(rawTitle, group, listing, listingStorage) &&
-      !group.offers.some((member) => conflictsWithMember(listing, rawTitle, member, networkFamilies))
+      ((codeShared) => !group.offers.some((member) => conflictsWithMember(listing, rawTitle, member, networkFamilies, { codeShared })))(
+        sharesPartNumber(rawTitle, group.offers),
+      )
     ) {
       // A listing that states its capacity has one variant to join: the first match, as before. So does one that matches a group
       // with no capacity either, unless it already matched a capacity variant.
@@ -369,7 +414,8 @@ function mergeSameModelGroups(groups, sameModel, networkFamilies) {
         !sameModel({ title: group.rawGroupKey, price: 1 }, { title: other.rawGroupKey, price: 1 })) continue;
       const clash = other.offers.some((listing) => {
         const title = listing.title || listing.normalizedTitle || "";
-        return group.offers.some((member) => conflictsWithMember(listing, title, member, networkFamilies));
+        const codeShared = sharesPartNumber(title, group.offers);
+        return group.offers.some((member) => conflictsWithMember(listing, title, member, networkFamilies, { codeShared }));
       });
       if (clash) continue;
       // Nor may a page without a capacity come in this way below the variant it would join (BARE_BELOW_STATED).
@@ -434,7 +480,8 @@ function mergeStoreWordedGroups(groups, samePlainTitles, networkFamilies) {
         // wording, and joined the A17 5G when tried.
         const clash = other.offers.some((listing) => {
           const title = listing.title || listing.normalizedTitle || "";
-          return group.offers.some((member) => conflictsWithMember(listing, title, member, networkFamilies) ||
+          const codeShared = sharesPartNumber(title, group.offers);
+          return group.offers.some((member) => conflictsWithMember(listing, title, member, networkFamilies, { codeShared }) ||
             isNetworkSplit(plainOf(listing), plainOf(member), networkFamilies));
         });
         if (clash) continue;
@@ -650,6 +697,9 @@ export function groupListingsByProduct(listings = [], { matchStrategy = ruleMatc
  * a few hundred thousand.
  */
 const PRICE_ERROR_RATIO = 3;
+// When one title states a screen size and the other does not, they may be different sizes of one series: only a far larger gap
+// counts ("Lenovo ThinkPad E16 Gen 3" at 3,099,999 is 10 times its model elsewhere).
+const UNSIZED_PRICE_ERROR_RATIO = 5;
 
 /**
  * Marks the offers of a one-store product priced over PRICE_ERROR_RATIO times the median price of the same model's other products
@@ -657,11 +707,24 @@ const PRICE_ERROR_RATIO = 3;
  * against other stores (pricePlausibility "suspect_high"): it stays listed, labelled, and is never a lowest or highest price.
  */
 function flagPriceErrors(groups) {
+  // The same model: the same maker and the same words in the model part, capacity included. Numbers alone matched "Samsung Galaxy
+  // Z Fold6" (527,000) with a PKR 49,999 Samsung "6", and flagged 73 real flagship offers (Fable's review, 2026-11-12).
   const keyOf = (group) => {
     const maker = makerOf(group.rawGroupKey);
-    const numbers = [...modelNumbers(group.rawGroupKey)].sort().join(",");
-    return maker && numbers ? `${group.offers[0]?.productCategory}|${maker}|${numbers}|${group.storage ?? ""}` : null;
+    const words = [...new Set(modelPart(group.rawGroupKey).match(/[a-z0-9]+/g) ?? [])].sort().join(" ");
+    // and the same network generation: a "Redmi Note 9 Pro 5G" is another phone than the Note 9 Pro
+    const generation = extractNetworkGeneration(group.rawGroupKey) ?? "";
+    return maker && /\d/.test(words) ? `${group.offers[0]?.productCategory}|${maker}|${words}|${generation}|${group.storage ?? ""}` : null;
   };
+  // And the same screen size where both titles state one: an EcoStar 55" of the 571 series is not the series' 32" (PKR 22,999), nor
+  // a MacBook Pro 16 a 13. A title that states none is compared with all ("Lenovo ThinkPad E16 Gen 3" at 3,099,999).
+  const screenOf = (group) =>
+    extractScreenInches(group.rawGroupKey) ??
+    (/\b(macbook|laptop|notebook)\b/i.test(group.rawGroupKey) ? Number(String(group.rawGroupKey).match(/\b(1[1-8](\.\d)?)\b/)?.[1]) || null : null);
+  // A title that states no size is compared with all, but then only a far larger gap counts (UNSIZED_PRICE_ERROR_RATIO): an LG 100"
+  // QNED86 (1,919,999) is 3.2 times an unsized QNED86 listing that is the 65".
+  const sameScreen = (a, b) => screenOf(a) === null || screenOf(b) === null || screenOf(a) === screenOf(b);
+  const bothSized = (a, b) => (screenOf(a) === null) === (screenOf(b) === null);
   const byKey = new Map();
   for (const group of groups) {
     const key = keyOf(group);
@@ -671,11 +734,12 @@ function flagPriceErrors(groups) {
   }
   for (const group of groups) {
     if (new Set(group.offers.map((offer) => offer.platform)).size !== 1) continue;
-    const others = (byKey.get(keyOf(group)) ?? []).filter((other) => other !== group).map((other) => other.lowestPrice).filter((p) => p > 0);
-    if (others.length === 0) continue;
-    const sorted = others.sort((a, b) => a - b);
+    const sameModel = (byKey.get(keyOf(group)) ?? []).filter((other) => other !== group && sameScreen(group, other) && other.lowestPrice > 0);
+    if (sameModel.length === 0) continue;
+    const sorted = sameModel.map((other) => other.lowestPrice).sort((a, b) => a - b);
     const reference = sorted[Math.floor(sorted.length / 2)];
-    if (!(group.lowestPrice > reference * PRICE_ERROR_RATIO)) continue;
+    const ratioNeeded = sameModel.every((other) => bothSized(group, other)) ? PRICE_ERROR_RATIO : UNSIZED_PRICE_ERROR_RATIO;
+    if (!(group.lowestPrice > reference * ratioNeeded)) continue;
     const ratio = group.lowestPrice / reference;
     group.offers = group.offers.map((offer) => ({
       ...offer,
@@ -683,7 +747,7 @@ function flagPriceErrors(groups) {
         status: "suspect_high",
         ratio: Number(ratio.toFixed(2)),
         referencePrice: reference,
-        comparators: others.length,
+        comparators: sameModel.length,
         reason: `This price is ${ratio.toFixed(1)} times what the same model costs elsewhere (PKR ${reference.toLocaleString()}), which is unusually high and may be a listing error.`,
       },
     }));

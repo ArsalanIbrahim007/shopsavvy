@@ -128,3 +128,53 @@ describe("headline offers: in stock before the PTA label (2026-11-12)", () => {
     expect(headlineOffers([...offers, { price: 139000, inStock: true, lastScrapedAt: fresh }], now).map((o) => o.price)).toEqual([139000]);
   });
 });
+
+// The side effects Fable's review found on the live catalogue (2026-11-12), as regression cases with the real titles and prices.
+describe("Fable's review: what the audit fixes broke stays fixed", () => {
+  const laptop = (platform, title, price) => listing(platform, title, price, { productCategory: "laptop", ptaStatus: "unknown" });
+
+  it("Paklap's MacBook joins the product its part number names, and is its lowest price", () => {
+    const groups = group([
+      laptop("paklap", "Apple MacBook Air 13 MDH74 - Apple M5 Chip 10-Core CPU 8-Core GPU 16-GB 512-GB SSD 13.6-Inch Liquid", 399000),
+      laptop("xcessorieshub", "Apple MacBook Air 13-inch M5 16GB RAM, 512GB SSD Midnight-MDH74", 424999),
+      laptop("alfamall", 'Apple MacBook Air 13.6" M5 16GB 512GB SSD (MDH74)', 435000),
+      laptop("digimall", 'Apple MacBook Air 13.6" M5 16GB 512GB SSD (MDH74)', 445000),
+    ]);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].lowestPrice).toBe(399000);
+  });
+
+  it("AlfaMall's '8/256' offers stay in their product beside AlfaMall's '8GB 256GB' ones", () => {
+    // the live product's makeup: stores' plain titles, and AlfaMall sellers writing the capacity three ways
+    const groups = group([
+      listing("shophive", "Xiaomi Redmi Note 15 8GB 256GB", 75499),
+      listing("eezepc", "Xiaomi Redmi Note 15 8GB – 256GB", 75290),
+      listing("ishopping", "Xiaomi Redmi Note 15 256GB 8GB RAM Black", 74970),
+      listing("alfamall", "Xiaomi Redmi Note 15 256GB - 8GB RAM - PTA Approved - 1 Year Official warranty - (HomeCart)", 76679),
+      listing("alfamall", "Xiaomi Redmi Note 15 8/256 | PTA Approved | With Official Warranty | On Installments By 3AZ Mart", 74739),
+      listing("alfamall", "Xiaomi Redmi Note 15 | (256GB - 8GB RAM) | PTA Approved | Official Warranty With Free SURPRISE GIFT | Electro Ease", 76759),
+    ]);
+    expect(groups).toHaveLength(1);
+  });
+
+  it("a flagship is not an 'unusual price' against another product that shares only its maker and a digit", () => {
+    const groups = group([
+      listing("digimall", "Samsung Galaxy Z Fold6 12GB RAM PTA Approved", 526899),
+      listing("priceoye", "Samsung Galaxy A06 4GB 64GB PTA Approved", 49999),
+      listing("mega", "Samsung Galaxy A06 4GB RAM 64GB Storage PTA Approved", 50999),
+    ]);
+    const fold = groups.find((g) => g.offers.some((o) => /Fold6/.test(o.title)));
+    expect(fold.offers.every((o) => o.priceCheck?.status !== "suspect_high")).toBe(true);
+  });
+
+  it("nor a 100-inch TV against an unsized listing of its series that is a smaller size", () => {
+    const tv = (platform, title, price) => listing(platform, title, price, { productCategory: "tv", ptaStatus: "unknown" });
+    const groups = group([
+      tv("shophive", "LG 100 inch QNED AI QNED86 4K Smart TV 2025 (100QNED86A6A)", 1919999),
+      tv("mega", "LG QNED86 4K Smart TV 2025", 599999),
+      tv("priceoye", "LG QNED86 4K Smart TV 2025 Official Warranty", 609999),
+    ]);
+    const big = groups.find((g) => g.offers.some((o) => o.price === 1919999));
+    expect(big.offers[0].priceCheck?.status).not.toBe("suspect_high");
+  });
+});

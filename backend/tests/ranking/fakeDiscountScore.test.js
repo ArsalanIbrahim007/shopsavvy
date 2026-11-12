@@ -106,3 +106,15 @@ describe("a price that never moved over a short time is not called fake (audit, 
     expect(result.classification).toBe("likely_fake");
   });
 });
+
+describe("a few rupees of jitter is still an unchanged price (Fable's review, 2026-11-12)", () => {
+  it("DigiMall's A07 at 39,699 (was 49,999), 3 records over 3 days moving by a few rupees: suspicious, not likely fake", () => {
+    const history = [
+      { price: 39699, recordedAt: "2026-11-09T10:00:00Z" },
+      { price: 39649, recordedAt: "2026-11-10T10:00:00Z" },
+      { price: 39699, recordedAt: "2026-11-12T12:00:00Z" },
+    ];
+    const result = calculateFakeDiscountScore({ currentPrice: 39699, originalPrice: 49999, priceHistory: history });
+    expect(result.classification).toBe("suspicious");
+  });
+});

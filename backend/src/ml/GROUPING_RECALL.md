@@ -270,6 +270,36 @@ UE reference or by a title stating no size (an S85F 55" and 65"). Laptops and mo
 Still apart: r243 (an offer of each group conflicts with the other group) and pairs worded too differently for the matcher (a
 Xiaomi soundbar, Audionic earbuds, a Zero watch).
 
+## An audit, and a review of its fixes (2026-11-12)
+
+An outside audit of the live catalogue found different makers' phones in one product (AlfaMall sellers' shared wording outweighed
+the model names: a Redmi 15C, a Tecno Spark 50 and an Infinix Hot 70 in a "Galaxy A17", 21 phone and 7 laptop products), one maker's
+different models together (Latitude 7400 / 5400 / E5490), and a store's page without a capacity as a variant's lowest price. The fixes
+(productGrouping.service.js): different makers, or model parts whose numbers share none, are never one product; a part number both
+titles print (MDHA4, 55P6L) overrides that; a page without a capacity joins a variant only within 5% of the cheapest offer stating it
+that is new, current and in stock; and a seller's "8/256" counts as stating a capacity.
+
+A review of the first fixes the same day found what they had broken, and each was fixed and measured again: Paklap's MacBooks split
+from the product their part number names (four, each the cheapest), AlfaMall's "8/256" offers split into one-store copies of their
+product (69), and the unusual-price check for one-store products matching unrelated products by maker and digits (73 real flagship
+offers flagged; now the same model's words, network generation, capacity and screen size).
+
+The numbers below are the same day's grouping before any of these changes and after all of them, on the same data (the catalogue had
+changed since 2026-11-09, so the "before" column differs from the table above).
+
+| Sample | Recall before | Recall after | Pair precision before | Pair precision after |
+|---|---:|---:|---:|---:|
+| Fresh (2026-11-09) | 82.0% | 81.9% | 96.9% | 96.9% |
+| First | 75.2% | 74.3% | 96.4% | 95.3% |
+
+- Fresh sample: r020, r287, r289 together as before; nothing changed but its weighting.
+- First sample: r121 came apart (iShopping's "Apple iPhone 17 - Mercantile Warranty" at PKR 352,499 is more than 5% below the cheapest
+  in-stock 256GB offer, so it is kept out of that variant), and r040 is together (iShopping's bare "Samsung Galaxy A07" at 36,295 in
+  the 4GB/64GB product with DigiMall's "4GB RAM" at 39,659, labelled a different variant; both are priced like the 64GB).
+- Merge precision on the labelled merges (09 against a snapshot of the morning's grouping): 51 of 53 kept, 96.2% (was 96.4%).
+- Known gap: the Galaxy S25 12GB/512GB still shows PriceOye's page without a capacity as its lowest price; the only offer stating 512GB
+  is out of stock and 87 days old, and DigiMall's titles state no storage, so there is nothing current to compare it with.
+
 ## What this does and does not measure
 
 Pair recall among candidate pairs: one product split into two groups of five offers each counts as 25 missed pairs, as is usual for this

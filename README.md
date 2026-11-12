@@ -37,8 +37,8 @@ what it does not measure.
 |---|---|---|
 | Merge precision, phones, laptops, TVs, tablets, watches, headphones (an offer placed under the right product) | 95.9% | [GROUPING_EVALUATION.md](backend/src/ml/GROUPING_EVALUATION.md) |
 | Merge precision, appliances and monitors | 97.7% | [GROUPING_EVALUATION_APPLIANCES.md](backend/src/ml/GROUPING_EVALUATION_APPLIANCES.md) |
-| Recall (two stores' offers of one product shown as one product) | 64.3% | [GROUPING_RECALL.md](backend/src/ml/GROUPING_RECALL.md) |
-| Pair precision on the recall sample | 98.8% | [GROUPING_RECALL.md](backend/src/ml/GROUPING_RECALL.md) |
+| Recall (two stores' offers of one product shown as one product), two hand-labelled samples, 2026-11-12 | 81.9% and 74.3% | [GROUPING_RECALL.md](backend/src/ml/GROUPING_RECALL.md) |
+| Pair precision on the recall samples, 2026-11-12 | 96.9% and 95.3% | [GROUPING_RECALL.md](backend/src/ml/GROUPING_RECALL.md) |
 | Trained matcher on held-out pairs (accuracy / precision) | 80.0% / 78.6% | [EVALUATION_REPORT.md](backend/src/ml/EVALUATION_REPORT.md) |
 | Fake-discount detector | see report | [discount/EVALUATION_REPORT.md](backend/src/ml/discount/EVALUATION_REPORT.md) |
 

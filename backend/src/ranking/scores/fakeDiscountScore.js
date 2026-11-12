@@ -38,6 +38,8 @@ const DEFAULT_CONFIG = Object.freeze({
   // (was 68,499) was "Fake discount" from 5 records over 13 days, all at that price; 126 of 150 laptop "Fake" verdicts rested on a
   // price that never changed.
   minimumFlatHistoryDaysForFake: 30,
+  // How much a price may move and still count as unchanged for the rule above.
+  flatPriceTolerance: 0.01,
 });
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -444,10 +446,14 @@ function calculateFakeDiscountScore(input = {}, customConfig = {}) {
 
   // Too little movement over too short a time to call it fake (minimumFlatHistoryDaysForFake).
   const spanDays = historySpanDays(input.priceHistory ?? input.history ?? []);
+  // "Has not moved" allows a few rupees of jitter (under 1%): DigiMall's "Samsung A07 4GB RAM" at 39,699 (was 49,999) moved by a few
+  // rupees in 3 days and was still called fake (Fable's review, 2026-11-12). The current price is included: a price raised before
+  // the "discount" is evidence.
+  const lowestSeen = Math.min(historicalLowest, currentPrice);
+  const highestSeen = Math.max(historicalHighest, currentPrice);
   if (
     classification === "likely_fake" &&
-    historicalHighest === historicalLowest &&
-    historicalLowest === currentPrice && // never moved, now included: a price raised before the "discount" is evidence
+    (highestSeen - lowestSeen) / lowestSeen < config.flatPriceTolerance &&
     (spanDays === null || spanDays < config.minimumFlatHistoryDaysForFake)
   ) {
     classification = "suspicious";
