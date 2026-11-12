@@ -429,7 +429,7 @@ describe("listing list and stats", () => {
     expect(JSON.stringify(pipeline)).toContain('"$ifNull":["$productCategory","other"]');
   });
 
-  it("paginates only when asked, and clamps the page size", async () => {
+  it("always paginates, 50 per page by default, and clamps the page size", async () => {
     const q = chain([row(1, "priceoye", 60000)]);
     vi.spyOn(Listing, "find").mockReturnValue(q);
     vi.spyOn(Listing, "countDocuments").mockResolvedValue(45);
@@ -446,9 +446,10 @@ describe("listing list and stats", () => {
 
     q.skip.mockClear();
     q.limit.mockClear();
-    const unpaged = await json("/api/listings");
-    expect(q.limit).not.toHaveBeenCalled();
-    expect(unpaged.body.total).toBeUndefined();
+    // No limit: one page of 50, never the whole collection (audit, 2026-11-12: 77,000 listings in one call).
+    const first = await json("/api/listings");
+    expect(q.limit).toHaveBeenCalledWith(50);
+    expect(first.body).toMatchObject({ total: 45, page: 1, limit: 50, totalPages: 1 });
   });
 });
 

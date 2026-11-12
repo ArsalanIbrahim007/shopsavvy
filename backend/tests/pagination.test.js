@@ -1,11 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { parsePagination, MAX_PAGE_SIZE } from "../src/services/pagination.service.js";
+import { parsePagination, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from "../src/services/pagination.service.js";
 
 describe("parsePagination", () => {
-  it("is off unless a limit is given, so existing callers get everything", () => {
-    expect(parsePagination({})).toBeNull();
-    expect(parsePagination({ page: "3" })).toBeNull();
-    expect(parsePagination({ limit: "" })).toBeNull();
+  it("pages even when no limit is given: never the whole collection (audit, 2026-11-12)", () => {
+    expect(DEFAULT_PAGE_SIZE).toBe(50);
+    expect(parsePagination({})).toEqual({ limit: 50, page: 1, skip: 0 });
+    expect(parsePagination({ page: "3" })).toEqual({ limit: 50, page: 3, skip: 100 });
+    expect(parsePagination({ limit: "" })).toEqual({ limit: 50, page: 1, skip: 0 });
   });
 
   it("turns page and limit into a skip", () => {

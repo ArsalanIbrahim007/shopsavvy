@@ -17,14 +17,24 @@ describe("generateRecommendation", () => {
     expect(result.action).toBe(RECOMMENDATION_ACTIONS.NO_HISTORY);
   });
 
-  it("forces WAIT when the discount is flagged fake or suspicious, overriding an otherwise excellent score", () => {
+  // The discount check's own labels (fakeDiscountScore.js). Until 2026-11-12 these rules tested "fake_discount", which it never gives.
+  it("forces WAIT when the discount is judged likely fake, overriding an otherwise excellent score", () => {
     const result = generateRecommendation({
       price: 900,
       dealScore: 95,
       priceHistory: [{ price: 1000 }, { price: 1000 }, { price: 1000 }],
-      discountAnalysis: { classification: "fake_discount" },
+      discountAnalysis: { classification: "likely_fake" },
     });
     expect(result.action).toBe(RECOMMENDATION_ACTIONS.WAIT);
+  });
+
+  it("a suspicious discount lowers the confidence and is named in the reason, but the price still decides", () => {
+    const input = { price: 900, dealScore: 75, priceHistory: [{ price: 1000 }, { price: 1000 }] };
+    const plain = generateRecommendation(input);
+    const doubted = generateRecommendation({ ...input, discountAnalysis: { classification: "suspicious" } });
+    expect(doubted.action).toBe(plain.action);
+    expect(doubted.confidence).toBeLessThan(plain.confidence);
+    expect(doubted.reason).toMatch(/discount looks exaggerated/);
   });
 
   it("recommends BUY_NOW only when score, recorded-low position, AND history depth all line up", () => {
@@ -67,7 +77,7 @@ describe("generateRecommendation", () => {
     const result = generateRecommendation({
       price: 1200,
       dealScore: 40,
-      priceHistory: [{ price: 1000 }, { price: 2000 }],
+      priceHistory: [{ price: 1000 }, { price: 1500 }, { price: 2000 }, { price: 1800 }, { price: 1200 }], // five records: a history
     });
     expect(result.action).toBe(RECOMMENDATION_ACTIONS.WAIT);
   });
@@ -125,5 +135,22 @@ describe("attachRecommendation / attachRecommendations", () => {
     expect(results).toHaveLength(2);
     expect(results[1].recommendation.action).toBe(RECOMMENDATION_ACTIONS.NO_HISTORY);
     expect(attachRecommendations(null)).toEqual([]);
+  });
+});
+
+describe("'Wait' needs a price history that says something (audit, 2026-11-12)", () => {
+  it("two records at the same price give no 'Wait': there is not enough history", () => {
+    const result = generateRecommendation({ price: 1000, dealScore: 40, priceHistory: [{ price: 1000 }, { price: 1000 }] });
+    expect(result.action).toBe(RECOMMENDATION_ACTIONS.NO_HISTORY);
+  });
+
+  it("five records at one unchanged price give no 'Wait' either; five that moved do", () => {
+    const flat = generateRecommendation({ price: 1000, dealScore: 40, priceHistory: Array(5).fill({ price: 1000 }) });
+    expect(flat.action).toBe(RECOMMENDATION_ACTIONS.NO_HISTORY);
+    const moved = generateRecommendation({
+      price: 1000, dealScore: 40,
+      priceHistory: [{ price: 900 }, { price: 950 }, { price: 1000 }, { price: 1050 }, { price: 1100 }],
+    });
+    expect(moved.action).toBe(RECOMMENDATION_ACTIONS.WAIT);
   });
 });

@@ -46,23 +46,17 @@ export async function createListing(req, res) {
 export async function getListings(req, res) {
   const paging = parsePagination(req.query);
 
-  let query = Listing.find(VISIBLE_PLATFORMS_FILTER).sort({ createdAt: -1 });
-  if (paging) query = query.skip(paging.skip).limit(paging.limit);
+  const query = Listing.find(VISIBLE_PLATFORMS_FILTER).sort({ createdAt: -1 }).skip(paging.skip).limit(paging.limit).lean();
 
-  const [listings, total] = await Promise.all([
-    query,
-    paging ? Listing.countDocuments(VISIBLE_PLATFORMS_FILTER) : null,
-  ]);
+  const [listings, total] = await Promise.all([query, Listing.countDocuments(VISIBLE_PLATFORMS_FILTER)]);
 
   res.json({
     success: true,
     count: listings.length,
-    ...(paging && {
-      total,
-      page: paging.page,
-      limit: paging.limit,
-      totalPages: Math.ceil(total / paging.limit),
-    }),
+    total,
+    page: paging.page,
+    limit: paging.limit,
+    totalPages: Math.ceil(total / paging.limit),
     data: listings,
   });
 }

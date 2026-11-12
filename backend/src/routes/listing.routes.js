@@ -65,7 +65,7 @@ router.post(
  * /api/listings:
  *   get:
  *     summary: List stored listings
- *     description: Returns stored listings, newest first. Without `limit` the whole collection is returned, as before. With `limit` the response is paginated and also carries total, page, limit and totalPages.
+ *     description: Returns stored listings, newest first. Always paginated, 50 per page unless `limit` says otherwise (at most 200); the response carries total, page, limit and totalPages.
  *     tags:
  *       - Listings
  *     parameters:
@@ -75,7 +75,7 @@ router.post(
  *           type: integer
  *           minimum: 1
  *           maximum: 200
- *         description: Page size. Enables pagination; values above 200 are clamped.
+ *         description: Page size, 50 when not given; values above 200 are clamped.
  *       - in: query
  *         name: page
  *         schema:

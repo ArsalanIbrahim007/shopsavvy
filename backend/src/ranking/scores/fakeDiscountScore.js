@@ -32,7 +32,25 @@ const DEFAULT_CONFIG = Object.freeze({
 
   // A claimed discount below 3% is treated as insignificant.
   minimumMeaningfulClaimedDiscount: 0.03,
+
+  // A price that has not moved in fewer days of tracking than this is never called "likely fake", only "suspicious" (audit,
+  // 2026-11-12): a sale that began before we started tracking looks exactly the same. AlfaMall's "Dell Latitude 7400" at PKR 56,999
+  // (was 68,499) was "Fake discount" from 5 records over 13 days, all at that price; 126 of 150 laptop "Fake" verdicts rested on a
+  // price that never changed.
+  minimumFlatHistoryDaysForFake: 30,
 });
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Days between the first and last dated history entry, or null when the entries carry no dates. */
+function historySpanDays(priceHistory = []) {
+  if (!Array.isArray(priceHistory)) return null;
+  const times = priceHistory
+    .map((entry) => (entry && typeof entry === "object" ? Date.parse(entry.recordedAt ?? entry.date ?? entry.createdAt ?? "") : NaN))
+    .filter(Number.isFinite);
+  if (times.length < 2) return null;
+  return (Math.max(...times) - Math.min(...times)) / DAY_MS;
+}
 
 /**
  * Converts a value into a valid positive number.
@@ -410,7 +428,7 @@ function calculateFakeDiscountScore(input = {}, customConfig = {}) {
     clamp(fakeDiscountRisk, 0, 100)
   );
 
-  const discountAuthenticityScore = roundToTwo(
+  let discountAuthenticityScore = roundToTwo(
     100 - fakeDiscountRisk
   );
 
@@ -422,6 +440,23 @@ function calculateFakeDiscountScore(input = {}, customConfig = {}) {
     classification = "suspicious";
   } else if (fakeDiscountRisk >= 25) {
     classification = "possibly_genuine";
+  }
+
+  // Too little movement over too short a time to call it fake (minimumFlatHistoryDaysForFake).
+  const spanDays = historySpanDays(input.priceHistory ?? input.history ?? []);
+  if (
+    classification === "likely_fake" &&
+    historicalHighest === historicalLowest &&
+    historicalLowest === currentPrice && // never moved, now included: a price raised before the "discount" is evidence
+    (spanDays === null || spanDays < config.minimumFlatHistoryDaysForFake)
+  ) {
+    classification = "suspicious";
+    fakeDiscountRisk = Math.min(fakeDiscountRisk, 69);
+    discountAuthenticityScore = roundToTwo(100 - fakeDiscountRisk);
+    const tracked = spanDays === null ? "" : ` in the ${Math.max(1, Math.round(spanDays))} days we have tracked it`;
+    reasons.push(
+      `The price has not changed${tracked}, so a sale that began before then would look the same: suspicious, not proven fake.`
+    );
   }
 
   const isFakeDiscount = fakeDiscountRisk >= 70;

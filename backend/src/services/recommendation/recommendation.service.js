@@ -5,6 +5,9 @@ const RECOMMENDATION_THRESHOLDS = {
   WAIT: 35,
 };
 
+// Records of an offer's price needed before advice about timing ("Buy now", "Wait") rests on its history.
+const MIN_HISTORY_FOR_TIMING = 5;
+
 const RECOMMENDATION_ACTIONS = {
   BUY_NOW: "BUY_NOW",
   GOOD_DEAL: "GOOD_DEAL",
@@ -187,12 +190,8 @@ const buildReason = ({
 
   let reason = reasons[action] || reasons.FAIR_PRICE;
 
-  if (
-    discountClassification === "fake_discount" ||
-    discountClassification === "suspicious_discount"
-  ) {
-    reason =
-      "The advertised discount appears suspicious, so the offer should be reviewed carefully before purchasing.";
+  if (isDoubtfulDiscount(discountClassification)) {
+    reason += " The advertised discount looks exaggerated against this product's price history, so judge it by the price, not the discount.";
   }
 
   if (discountClassification === "unverified_discount") {
@@ -201,6 +200,13 @@ const buildReason = ({
 
   return reason;
 };
+
+/**
+ * The labels the discount check gives (ranking/scores/fakeDiscountScore.js). Until the audit of 2026-11-12 these rules tested for
+ * "fake_discount" and "suspicious_discount", which the check never gives, so a discount judged fake never led to "Wait": 66 of 150
+ * laptop offers labelled "Fake discount" carried "Good deal" or "Buy now".
+ */
+const isDoubtfulDiscount = (classification) => classification === "likely_fake" || classification === "suspicious";
 
 const calculateConfidence = ({
   dealScore,
@@ -229,11 +235,10 @@ const calculateConfidence = ({
     confidence -= 10;
   }
 
-  if (
-    discountClassification === "fake_discount" ||
-    discountClassification === "suspicious_discount"
-  ) {
+  if (discountClassification === "likely_fake") {
     confidence -= 20;
+  } else if (discountClassification === "suspicious") {
+    confidence -= 10;
   }
 
   if (discountClassification === "unverified_discount") {
@@ -250,10 +255,9 @@ const determineRecommendationAction = ({
 }) => {
   const score = Number(dealScore);
 
-  if (
-    discountClassification === "fake_discount" ||
-    discountClassification === "suspicious_discount"
-  ) {
+  // Only a discount judged likely fake forces "Wait". A "suspicious" one (three in four claimed discounts) lowers the confidence and
+  // is named in the reason, but the price itself still decides.
+  if (discountClassification === "likely_fake") {
     return RECOMMENDATION_ACTIONS.WAIT;
   }
 
@@ -276,7 +280,7 @@ const determineRecommendationAction = ({
 if (
   score >= RECOMMENDATION_THRESHOLDS.BUY_NOW &&
   isNearLowestRecordedPrice &&
-  historySummary.historyCount >= 5
+  historySummary.historyCount >= MIN_HISTORY_FOR_TIMING
 ) {
   return RECOMMENDATION_ACTIONS.BUY_NOW;
 }
@@ -293,6 +297,13 @@ if (
     score >= RECOMMENDATION_THRESHOLDS.WAIT &&
     !isNearHighestRecordedPrice
   ) {
+    // "Wait" says the price is not attractive against its history, so it needs one, as "Buy now" does: at least
+    // MIN_HISTORY_FOR_TIMING records, and a price that has moved. An Infinix Note 60 Pro offer said "Wait, save 3,860" from two
+    // records at the same price; 213 phone "Wait" verdicts rested on three records or fewer (audit, 2026-11-12).
+    const hasMoved = historySummary.highestPrice > historySummary.lowestPrice;
+    if (historySummary.historyCount < MIN_HISTORY_FOR_TIMING || !hasMoved) {
+      return RECOMMENDATION_ACTIONS.NO_HISTORY;
+    }
     return RECOMMENDATION_ACTIONS.WAIT;
   }
 

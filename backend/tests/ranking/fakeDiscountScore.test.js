@@ -87,3 +87,22 @@ describe("calculateFakeDiscountScore", () => {
     expect(result.confidence).toBeLessThanOrEqual(95);
   });
 });
+
+describe("a price that never moved over a short time is not called fake (audit, 2026-11-12)", () => {
+  const day = (d) => `2026-10-${String(d).padStart(2, "0")}T12:00:00Z`;
+  const flat = (days, price) => Array.from({ length: 5 }, (_, i) => ({ price, recordedAt: day(1 + Math.round((i * days) / 4)) }));
+
+  it("13 days at the same price under a 'was' 20% higher: suspicious, with the reason, not likely fake", () => {
+    const result = calculateFakeDiscountScore({ currentPrice: 56999, originalPrice: 68499, priceHistory: flat(13, 56999) });
+    expect(result.classification).toBe("suspicious");
+    expect(result.isFakeDiscount).toBe(false);
+    expect(result.fakeDiscountRisk).toBeLessThan(70);
+    expect(result.discountAuthenticityScore).toBe(100 - result.fakeDiscountRisk);
+    expect(result.reason).toMatch(/has not changed in the 13 days/);
+  });
+
+  it("30 days or more at the same price is enough to call it likely fake", () => {
+    const result = calculateFakeDiscountScore({ currentPrice: 56999, originalPrice: 68499, priceHistory: flat(30, 56999) });
+    expect(result.classification).toBe("likely_fake");
+  });
+});
