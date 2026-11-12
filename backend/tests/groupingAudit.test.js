@@ -80,3 +80,51 @@ describe("a page without a capacity is not a variant's lowest price when it is p
     expect(close).toHaveLength(1);
   });
 });
+
+describe("a product's own numbers come from offers a shopper could buy (audit finding 11)", () => {
+  it("an out-of-stock offer is neither the lowest price nor the best deal while another store has it", () => {
+    const [product] = group([
+      listing("priceoye", "Samsung Galaxy A17 8GB 256GB PTA Approved", 70000, { inStock: false }),
+      listing("mega", "Samsung Galaxy A17 8GB RAM 256GB Storage PTA Approved", 74000),
+    ]);
+    expect(product.offers).toHaveLength(2);
+    expect(product.lowestPrice).toBe(74000);
+    expect(product.bestDeal.platform).toBe("mega");
+  });
+
+  it("when nothing is in stock, the out-of-stock prices are still used", () => {
+    const [product] = group([listing("priceoye", "Samsung Galaxy A17 8GB 256GB PTA Approved", 70000, { inStock: false })]);
+    expect(product.lowestPrice).toBe(70000);
+  });
+});
+
+describe("a placeholder price is flagged against the same model's other products (audit finding 7)", () => {
+  it("a one-store Xiaomi 15T Pro 12/512 at PKR 9,999,999 beside the same phone at about 200,000 is a probable listing error", () => {
+    const groups = group([
+      listing("alfamall", "Xiaomi 15T Pro 12GB 512GB Official Pta Approved 1Year Official Warranty On Installment By_Microtel", 9999999),
+      listing("priceoye", "Xiaomi 15T Pro 12GB 512GB PTA Approved", 199999),
+      listing("mega", "Xiaomi 15T Pro 12GB RAM 512GB Storage PTA Approved", 204999),
+    ]);
+    const placeholder = groups.find((g) => g.offers.some((o) => o.price === 9999999));
+    expect(placeholder.offers).toHaveLength(1);
+    expect(placeholder.offers[0].priceCheck.status).toBe("suspect_high");
+    expect(placeholder.offers[0].priceCheck.reason).toMatch(/same model costs elsewhere/);
+    const real = groups.find((g) => g.offers.some((o) => o.price === 199999));
+    expect(real.offers.every((o) => o.priceCheck.status !== "suspect_high")).toBe(true);
+  });
+});
+
+describe("headline offers: in stock before the PTA label (2026-11-12)", () => {
+  it("an in-stock offer that does not state PTA is the lowest before an out-of-stock approved one; a likely non-PTA one never is", async () => {
+    const { headlineOffers } = await import("../src/services/offerFreshness.service.js");
+    const now = Date.now();
+    const fresh = new Date(now).toISOString();
+    const offers = [
+      { price: 123000, inStock: false, lastScrapedAt: fresh },
+      { price: 141801, inStock: true, ptaAssessment: "not_stated", lastScrapedAt: fresh },
+      { price: 99000, inStock: true, ptaAssessment: "likely_non_pta", lastScrapedAt: fresh },
+    ];
+    expect(headlineOffers(offers, now).map((o) => o.price)).toEqual([141801]);
+    expect(headlineOffers([...offers, { price: 139000, inStock: true, lastScrapedAt: fresh }], now).map((o) => o.price)).toEqual([139000]);
+  });
+});

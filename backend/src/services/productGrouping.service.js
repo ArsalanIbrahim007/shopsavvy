@@ -2,7 +2,7 @@ import { normalizeTitle, extractStorage, modelTokens, extractModelCodes, extract
 import { isSimilarProduct, attributeConflict, tokenize, VARIANT_TOKENS } from "./similarity.service.js";
 import { calculateDealScores } from "../ranking/dealScore.js";
 import { SHARED_CODE_LENGTH, SHARED_CODE_PRICE_GAP, brandOf, prefixConflict, sameBrand, withoutStoreWording } from "./similarityModel.service.js";
-import { currentOffers } from "./offerFreshness.service.js";
+import { headlineOffers } from "./offerFreshness.service.js";
 import { COLOURS, extractBrand, extractNetworkGeneration, extractPtaStatus, networkFamilyKey } from "./productAttributes.service.js";
 
 /**
@@ -617,24 +617,76 @@ export function groupListingsByProduct(listings = [], { matchStrategy = ruleMatc
   if (matchStrategy.samePlainTitles) groups = mergeStoreWordedGroups(groups, matchStrategy.samePlainTitles, networkFamilies);
   groups = separateLikelyNonPta(groups, matchStrategy, networkFamilies);
 
-  return groups
+  return flagPriceErrors(groups
     .map((group) => {
       const rankedOffers = calculateDealScores(group.offers);
 
       // Where a PTA-approved offer exists, the best deal is one of those: an offer that does not say it is
       // approved cannot be told apart from a non-PTA unit, which is why the deals feed applies the same rule.
-      // The unstated offers stay in the list, labelled. An offer whose price has not been checked for two weeks is not the best deal
-      // either (offerFreshness.service.js): it stays in the list, labelled.
-      const candidates = currentOffers(rankedOffers);
+      // The unstated offers stay in the list, labelled. The best deal, the lowest and the highest price come from the offers the
+      // site's pages would use (offerFreshness.service.js headlineOffers: new, current, believable, in stock); the rest stay in the
+      // list, labelled. The prices used while grouping were every offer's, as they must be to compare offers.
+      const candidates = headlineOffers(rankedOffers);
       const bestDeal = group.ptaStatus === "pta_approved"
         ? candidates.find((offer) => ptaOf(offer) === "pta_approved") ?? candidates[0]
         : candidates[0];
+      const prices = candidates.map((offer) => Number(offer.price)).filter((price) => price > 0);
 
       return {
         ...group,
+        ...(prices.length && { lowestPrice: Math.min(...prices), highestPrice: Math.max(...prices) }),
         bestDeal: bestDeal || null,
         offers: rankedOffers,
       };
     })
-    .sort((a, b) => b.offerCount - a.offerCount);
+    .sort((a, b) => b.offerCount - a.offerCount));
+}
+
+/**
+ * How many times the same model's usual price a product sold by one store may cost before its price is called a listing error.
+ * AlfaMall's "Xiaomi 15T Pro 12GB 512GB" at PKR 9,999,999 and "Lenovo ThinkPad E16 Gen 3" at 3,099,999 were each a product of their
+ * own (too far from the same model's other offers to join them), so the price check had no other store to compare with and
+ * abstained, and they topped the dearest end of their categories (audit, 2026-11-12, finding 7). The same model at other stores is
+ * a few hundred thousand.
+ */
+const PRICE_ERROR_RATIO = 3;
+
+/**
+ * Marks the offers of a one-store product priced over PRICE_ERROR_RATIO times the median price of the same model's other products
+ * (same maker, model numbers and capacity: makerOf, modelNumbers) as a probable listing error, the way the price check marks one
+ * against other stores (pricePlausibility "suspect_high"): it stays listed, labelled, and is never a lowest or highest price.
+ */
+function flagPriceErrors(groups) {
+  const keyOf = (group) => {
+    const maker = makerOf(group.rawGroupKey);
+    const numbers = [...modelNumbers(group.rawGroupKey)].sort().join(",");
+    return maker && numbers ? `${group.offers[0]?.productCategory}|${maker}|${numbers}|${group.storage ?? ""}` : null;
+  };
+  const byKey = new Map();
+  for (const group of groups) {
+    const key = keyOf(group);
+    if (!key) continue;
+    if (!byKey.has(key)) byKey.set(key, []);
+    byKey.get(key).push(group);
+  }
+  for (const group of groups) {
+    if (new Set(group.offers.map((offer) => offer.platform)).size !== 1) continue;
+    const others = (byKey.get(keyOf(group)) ?? []).filter((other) => other !== group).map((other) => other.lowestPrice).filter((p) => p > 0);
+    if (others.length === 0) continue;
+    const sorted = others.sort((a, b) => a - b);
+    const reference = sorted[Math.floor(sorted.length / 2)];
+    if (!(group.lowestPrice > reference * PRICE_ERROR_RATIO)) continue;
+    const ratio = group.lowestPrice / reference;
+    group.offers = group.offers.map((offer) => ({
+      ...offer,
+      priceCheck: {
+        status: "suspect_high",
+        ratio: Number(ratio.toFixed(2)),
+        referencePrice: reference,
+        comparators: others.length,
+        reason: `This price is ${ratio.toFixed(1)} times what the same model costs elsewhere (PKR ${reference.toLocaleString()}), which is unusually high and may be a listing error.`,
+      },
+    }));
+  }
+  return groups;
 }

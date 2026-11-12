@@ -29,3 +29,31 @@ export function currentOffers(offers, now = Date.now()) {
   const current = list.filter((offer) => !isOutOfDate(offer, now));
   return current.length > 0 ? current : list;
 }
+
+const PRE_OWNED = new Set(["used", "refurbished", "open_box"]);
+const isSuspect = (offer) => String(offer?.priceCheck?.status ?? "").startsWith("suspect");
+
+/**
+ * The offers a product's headline numbers come from (its lowest and highest price, its best deal): the rule the site's pages apply
+ * (frontend/src/lib/summary.js summarizeOffers), so the server's numbers agree with what a shopper sees. New ones when there are
+ * any (lib/condition.js), current ones (above), not a probable listing error (pricePlausibility), not one priced like a non-PTA unit
+ * (productGrouping ptaAssessment), and in stock; each step only when something is left after it.
+ * Before this the server's lowestPrice and bestDeal took every offer: in 58 phone products the lowest price, and in 39 the best deal,
+ * was an offer out of stock while another store had it, and the Compare page, the extension and share previews read those (audit,
+ * 2026-11-12).
+ */
+export function headlineOffers(offers, now = Date.now()) {
+  const all = Array.isArray(offers) ? offers : [];
+  const fresh = all.filter((offer) => !PRE_OWNED.has(offer?.condition));
+  const current = currentOffers(fresh.length > 0 ? fresh : all, now);
+  const believable = current.filter((offer) => !isSuspect(offer));
+  // Never one priced like a non-PTA unit while there is another; then in stock before out of stock, and among those, one that says
+  // PTA approved before one that does not say ("not_stated"). Stock comes first: a Galaxy A56 12/256's lowest price was PKR 123,000,
+  // out of stock, because the in-stock offers (from 139,999) did not state PTA approval.
+  const notNonPta = believable.filter((offer) => offer.ptaAssessment !== "likely_non_pta");
+  const base = notNonPta.length ? notNonPta : believable.length ? believable : current;
+  const inStock = base.filter((offer) => offer.inStock !== false);
+  const stocked = inStock.length ? inStock : base;
+  const stated = stocked.filter((offer) => !offer.ptaAssessment);
+  return stated.length ? stated : stocked;
+}

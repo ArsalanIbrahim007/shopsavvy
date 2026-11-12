@@ -92,11 +92,16 @@ export function summarizeOffers(allOffers) {
   // neither is one that does not say whether a phone is PTA approved while being priced like a non-PTA unit
   // (see lib/pta.js): it would make the PTA-approved offers look expensive. They stay in the list, labelled.
   const believable = offers.filter((offer) => !suspect(offer));
-  const comparable = believable.filter((offer) => !offer.ptaAssessment);
   // A price the shopper cannot buy at is not "the lowest price": offers in stock come first, and the rest are used only
-  // when nothing is in stock (they stay in the table, marked out of stock).
-  const buyable = comparable.filter((offer) => offer.inStock !== false);
-  const pool = buyable.length ? buyable : comparable.length ? comparable : believable.length ? believable : offers;
+  // when nothing is in stock (they stay in the table, marked out of stock). Stock before the PTA label (2026-11-12): an
+  // out-of-stock PTA-approved offer was shown as the lowest beside in-stock ones that did not say. The server applies the
+  // same order (backend offerFreshness.service.js headlineOffers).
+  const notNonPta = believable.filter((offer) => offer.ptaAssessment !== "likely_non_pta");
+  const base = notNonPta.length ? notNonPta : believable.length ? believable : offers;
+  const inStock = base.filter((offer) => offer.inStock !== false);
+  const stocked = inStock.length ? inStock : base;
+  const stated = stocked.filter((offer) => !offer.ptaAssessment);
+  const pool = stated.length ? stated : stocked;
 
   const lowest = pool.reduce((a, b) => (b.price < a.price ? b : a));
   const bestDeal = [...pool].sort((a, b) => (b.dealScore || 0) - (a.dealScore || 0))[0] || lowest;

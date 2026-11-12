@@ -12,8 +12,7 @@ import { isCatalogCategory, peekCatalogGroups } from "./catalogFeed.service.js";
 // The rank among products priced alike uses the category as already grouped, never groups it on the spot: grouping a category from
 // cold takes a minute or more, and a comparison waited for it after every restart (2026-11-09). Until it is ready the rank is left out.
 const cachedCatalog = (category) => peekCatalogGroups(category) ?? { groups: [], generatedAt: null };
-import { currentOffers, isOutOfDate } from "./offerFreshness.service.js";
-import { isSuspectPrice } from "./pricePlausibility.service.js";
+import { headlineOffers, isOutOfDate } from "./offerFreshness.service.js";
 import { extractPtaStatus } from "./productAttributes.service.js";
 import { siteUrl } from "./productMatch.service.js";
 import { productPath } from "./productPath.js";
@@ -55,8 +54,9 @@ const offerSummary = (offer, now) => offer && {
 };
 
 /** The lowest price a shopper can rely on: current offers, implausible prices left out (as the product page's summary). */
+// The rule the product page applies (headlineOffers): an out-of-stock or pre-owned offer is not the lowest price while another is.
 const lowestCurrentPrice = (offers, now) => {
-  const prices = currentOffers(offers.filter((o) => !isSuspectPrice(o)), now).map((o) => Number(o.price)).filter((p) => p > 0);
+  const prices = headlineOffers(offers, now).map((o) => Number(o.price)).filter((p) => p > 0);
   return prices.length ? Math.min(...prices) : null;
 };
 

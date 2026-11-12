@@ -304,3 +304,51 @@ describe("only phones in the phones (2026-11-10: the phones' brand filter listed
     else expect(category).toBe(expected);
   });
 });
+
+describe("the cheap ends of phones, laptops and tablets hold devices (audit finding 7, 2026-11-12)", () => {
+  it.each([
+    ["The One Device: The Secret History of the iPhone Book", "!smartphone"],
+    ["Shop Zone IPhone Cigarette Lighter Refillable Gas", "!smartphone"],
+    ["Planet X iPhone Walkie Talkie (SS-9022)", "!smartphone"],
+    ["YOUKSH iPhone 18 Pro Privacy Glass", "!smartphone"],
+    ["Samsung Galaxy SmartTag 2", "!smartphone"],
+    ["Boya Lightning to 3.5mm Headphone Jack Audio Adapter (IPHONE TO 3.5MM)", "accessory"],
+    ["226-2181 LEARN TO WRITE 4 IN 1 NOTEBOOK", "!laptop"],
+    ["OZUKO LAPTOP BACK PACK 18 INCH 8925M", "!laptop"],
+    ["Super Asia ASPIRE AC Inverter Fan", "!laptop"],
+    ["Amaze A535 Aluminum Alloy Foldable Laptop & Tablet Riser", "!tablet"],
+    ["ESR Apple iPad 9th Gen 2021 Ascend Hard Shell Case – Clear", "accessory"],
+    ["Apple Magic Keyboard iPad Pro 13\" (MWR53)", "accessory"],
+    ["KK2711-1 MUSICAL HELLO KITTY IPAD A.I", "!tablet"],
+    // and the devices stay devices
+    ["APPLE IPHONE 17 PRO MAX (Free Original Apple USB-C 20W Power Adapter)", "smartphone"],
+    ["Acer Aspire 7 Core i5 16GB 512GB", "laptop"],
+    ["Redmi Pad 2 Wifi 8GB 256GB ( With Free cover)", "tablet"],
+    ["Samsung Galaxy Tab S10 Ultra (X920) Wifi With Keyboard", "tablet"],
+    ["Xiaomi Pad 8 With Keyboard", "tablet"],
+  ])("%s -> %s", (title, expected) => {
+    const { category } = detectCategory(title);
+    if (expected.startsWith("!")) expect(category).not.toBe(expected.slice(1));
+    else expect(category).toBe(expected);
+  });
+});
+
+describe("the last accessories at the cheap end (2026-11-12)", () => {
+  it.each([
+    ["MyEshop IPhone 11 Pro Max Battery", "!smartphone"],
+    ["Apple iPhone USB-C 20W Power Adapter - Installments (Pak Mobiles)", "!smartphone"],
+    ["IPAD 11 Pro 2024 With Pen Slot Back Cover - Black (Pak Mobiles)", "!tablet"],
+    ["UGREEN 90915 USB C Fast Charging Smart Stylus Pen for Apple iPad (White, NEW)", "!tablet"],
+    ["Samsung Galaxy Tab S9 Ultra/Tab S9+/Tab S9 S Pen Beige", "!tablet"],
+    ["XP-Pen Deco Fun S 6.3″ X 4″ Graphic Tablet Classic Black", "!tablet"],
+    // devices
+    ["APPLE IPHONE 17 PRO MAX (Free Original Apple USB-C 20W Power Adapter)", "smartphone"],
+    ["Samsung Galaxy S25 FE 8GB RAM 256GB Storage | 50MP Triple Camera | 4900 mAh Battery", "smartphone"],
+    ["Samsung Galaxy Tab S9 FE With S Pen 8GB 256GB", "tablet"],
+    ["Lenovo Tab M8", "tablet"],
+  ])("%s -> %s", (title, expected) => {
+    const { category } = detectCategory(title);
+    if (expected.startsWith("!")) expect(category).not.toBe(expected.slice(1));
+    else expect(category).toBe(expected);
+  });
+});

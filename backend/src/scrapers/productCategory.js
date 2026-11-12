@@ -40,7 +40,31 @@ const NOT_A_PHONE_KINDS = [
   "lantern", "flashlight", "range extender", "repeater", "power strip", "charging combo", "hypercharge combo", "type a combo", "combo charging",
   "screwdriver", "pressure washer", "induction cooker", "humidifier", "dehumidifier", "grooming kit", "reading light", "light bar",
   "doorbell", "smart plug", "lightstrip", "led bulb", "diffuser", "audio glasses", "gopods", "water dispenser",
+  // The cheapest "phones" (audit, 2026-11-12, finding 7): a book about the iPhone (PKR 900), an "iPhone" cigarette lighter, a walkie
+  // talkie, screen glass, a phone's display panel, Boya's Lightning adapters, a Galaxy SmartTag. Not "power adapter" (iPhones come
+  // "Free Original Apple USB-C 20W Power Adapter") nor "battery" (Daraz phone titles end with it).
+  "book", "lighter", "walkie", "privacy glass", "clear glass", "anti ?static", "glas\\.tr", "screen shield", "pathfinder", "uag",
+  "boya", "handfree", "pd adapter", "audio adapter", "lightning", "display panel", "smart ?tag",
 ];
+
+/**
+ * Not a laptop, whatever laptop word the title names (finding 7): a child's writing notebook (PKR 361) on "notebook", backpacks and a
+ * riser on "laptop", a MacBook shell, an HP battery (VI04), Super Asia's "Aspire" ceiling fans on Acer's "aspire". Each word was
+ * checked against the laptop titles: in no laptop's.
+ */
+const NOT_A_LAPTOP = /\b(back ?pack|learn to write|riser|crystal shield|ikevlar|inverter fan|ceiling fan|super asia|laptop back|vi04)\b/;
+
+/**
+ * A tablet's accessory (finding 7: covers, cases, a camera lens protector, a bag, a stand, a musical toy "iPad"). Only when the title
+ * states no storage capacity: tablets come "With Free cover" or with a case ("Redmi Pad 2 Wifi 8GB 256GB ( With Free cover)").
+ */
+// Also styluses ("UGREEN 90915 ... Smart Stylus Pen for Apple iPad", "Galaxy Tab S9 ... S Pen") and a drawing tablet ("XP-Pen Deco
+// Fun S Graphic Tablet").
+const TABLET_ACCESSORY = /\b(cover|case|camera lens|protector|bag|stand|riser|charger|musical|hard shell|keyboard|stylus|s pen|graphic tablet)\b/;
+// A tablet sold with one is a tablet: "Samsung Galaxy Tab S10 Ultra (X920) Wifi With Keyboard" (PKR 285,999), "Xiaomi Pad 8 With Keyboard".
+// Not "With Pen Slot": that is a cover ("IPAD 11 Pro 2024 With Pen Slot Back Cover").
+const SOLD_WITH = /\bwith (free )?(magnetic |smart )?(keyboard|cover|case|s pen|pen(?! slot))\b/;
+const STATES_CAPACITY = /\d\s*(gb|tb)\b/;
 
 /**
  * "... for iPhone 17 Pro", "... for Galaxy S25": a product made for a phone, never the phone. Like
@@ -88,7 +112,13 @@ const NOT_A_PHONE = new RegExp(
   "i",
 );
 const isNotAPhone = (text) =>
-  NOT_A_PHONE.test(text) || (/\bpower ?bank\b/.test(text) && !/\bfree\b[^|]{0,24}power ?bank/.test(text)); // a power bank, not one given with a phone
+  NOT_A_PHONE.test(text) ||
+  (/\bpower ?bank\b/.test(text) && !/\bfree\b[^|]{0,24}power ?bank/.test(text)) || // a power bank, not one given with a phone
+  // A power adapter, not one given with a phone ("Apple iPhone USB-C 20W Power Adapter", PKR 6,694; but "APPLE IPHONE 17 PRO MAX (Free
+  // Original Apple USB-C 20W Power Adapter)"), and a replacement battery ("MyEshop IPhone 11 Pro Max Battery": a title ending in
+  // "battery" with no capacity; Daraz's phone titles end with "5000 mAh Battery" and state their storage). 2026-11-12.
+  (/\bpower adapter\b/.test(text) && !/\bfree\b[^|)]{0,40}power adapter/.test(text)) ||
+  (/\bbattery\s*$/.test(text) && !/\d\s*(gb|tb)\b/.test(text));
 
 const BRAND_CATEGORY = {
   iphone: "smartphone", apple: "smartphone", samsung: "smartphone",
@@ -450,6 +480,7 @@ const CATEGORIES = {
             "earphone case",
             "earbuds case",
             "replacement ear pads",
+            "audio adapter", // "Boya Lightning to 3.5mm Headphone Jack Audio Adapter" (2026-11-12)
             "ear pads",
         ],
     },
@@ -690,6 +721,8 @@ function detectCategory(title) {
             continue;
         }
         if (category === "smartphone" && isNotAPhone(text)) continue;
+        if (category === "laptop" && NOT_A_LAPTOP.test(text)) continue;
+        if (category === "tablet" && TABLET_ACCESSORY.test(text) && !STATES_CAPACITY.test(text) && !SOLD_WITH.test(text)) continue;
 
         for (const keyword of config.keywords) {
             // Some keywords are short/common enough to turn up as a

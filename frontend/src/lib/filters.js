@@ -187,10 +187,24 @@ export function filterGroups(groups, keptOffers) {
     .filter((group) => group.offers.length > 0);
 }
 
-/** Group order follows the sort mode, so "Lowest price" really surfaces the cheapest products first. */
+/**
+ * The offers whose price can be believed, for sorting and the price slider: not flagged as a probable listing error (the server's
+ * priceCheck), and in stock when any is. An empty list when every price is flagged. A book about the iPhone at PKR 900, an
+ * out-of-stock offer, or a "Xiaomi 15T Pro" at PKR 9,999,999 stretched the ends of a category (audit, 2026-11-12, finding 7).
+ */
+export function believableOffers(offers = []) {
+  const unflagged = offers.filter((o) => !String(o?.priceCheck?.status ?? "").startsWith("suspect") && Number.isFinite(o?.price) && o.price > 0);
+  const inStock = unflagged.filter((o) => o.inStock !== false);
+  return inStock.length ? inStock : unflagged;
+}
+
+/** Group order follows the sort mode, so "Lowest price" really surfaces the cheapest products first (by prices that can be believed). */
 export function sortGroups(groups, sort) {
   const sorted = [...groups];
-  const cheapest = (g) => Math.min(...g.offers.map((o) => o.price));
+  const cheapest = (g) => {
+    const prices = believableOffers(g.offers).map((o) => o.price);
+    return prices.length ? Math.min(...prices) : Infinity; // a product with no believable price goes last
+  };
   const bestScore = (g) => Math.max(...g.offers.map((o) => o.dealScore || 0));
   const bestDiscount = (g) => Math.max(...g.offers.map(verifiedDiscount));
 
@@ -277,7 +291,7 @@ export function platformOptions(offers) {
 
 /** Lowest and highest price in a set of offers, for the price slider. */
 export function priceBounds(offers) {
-  const prices = offers.map((o) => o.price).filter((p) => Number.isFinite(p));
+  const prices = believableOffers(offers).map((o) => o.price);
   return prices.length ? { min: Math.min(...prices), max: Math.max(...prices) } : { min: 0, max: 0 };
 }
 
