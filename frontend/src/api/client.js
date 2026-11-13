@@ -10,6 +10,18 @@ import { ApiError, CLIENT_CODES } from "./errors.js";
 // the Express server on port 5000.
 export const BASE_URL = (import.meta.env?.VITE_API_URL || "http://localhost:5000/api").replace(/\/+$/, "");
 
+// The API served from the developer's PC through an ngrok tunnel (deploy/README-pc.md): ngrok's free plan answers a browser's first
+// request with a warning page unless the request carries this header, which would break every call the site makes.
+const THROUGH_NGROK = /\.ngrok(-free)?\.(app|dev|io)\b/i.test(BASE_URL);
+
+/** The headers for a request: JSON when there is a body, and ngrok's skip header when the API is reached through it. */
+export function requestHeaders(body, viaNgrok = THROUGH_NGROK) {
+  const headers = {};
+  if (body !== undefined) headers["Content-Type"] = "application/json";
+  if (viaNgrok) headers["ngrok-skip-browser-warning"] = "1";
+  return Object.keys(headers).length ? headers : undefined;
+}
+
 const DEFAULT_TIMEOUT_MS = 15000;
 
 function buildUrl(path, params) {
@@ -49,7 +61,7 @@ export async function request(path, { method = "GET", params, body, signal, time
   try {
     response = await fetch(buildUrl(path, params), {
       method,
-      headers: body === undefined ? undefined : { "Content-Type": "application/json" },
+      headers: requestHeaders(body),
       body: body === undefined ? undefined : JSON.stringify(body),
       signal: controller.signal,
     });

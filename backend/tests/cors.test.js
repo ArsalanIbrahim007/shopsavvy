@@ -144,7 +144,7 @@ describe("the running app", () => {
     expect(res.status).toBe(204);
     expect(res.headers.get("access-control-allow-origin")).toBe("https://shop.example.com");
     expect(res.headers.get("access-control-allow-methods")).toBe("GET,POST,DELETE,OPTIONS");
-    expect(res.headers.get("access-control-allow-headers").toLowerCase()).toBe("content-type,x-admin-key,x-request-id");
+    expect(res.headers.get("access-control-allow-headers").toLowerCase()).toBe("content-type,x-admin-key,x-request-id,ngrok-skip-browser-warning") // the last: the API served through ngrok;
     expect(res.headers.get("access-control-max-age")).toBe("600");
     expect(res.headers.get("access-control-allow-credentials")).toBeNull(); // no cookies are used
   });

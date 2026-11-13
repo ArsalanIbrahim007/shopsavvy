@@ -55,3 +55,4 @@ backend/e2e-results/
 frontend/dist-e2e/
 # computed feeds kept across restarts (src/services/snapshot.service.js)
 backend/.cache/
+deploy/ngrok-domain.txt

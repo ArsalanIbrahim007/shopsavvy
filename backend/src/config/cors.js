@@ -73,7 +73,7 @@ export function buildCorsOptions(env = process.env) {
       return callback(null, isAllowedOrigin(origin, policy));
     },
     methods: ["GET", "POST", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "x-admin-key", "x-request-id"],
+    allowedHeaders: ["Content-Type", "x-admin-key", "x-request-id", "ngrok-skip-browser-warning"], // the last for the API served through ngrok (deploy/README-pc.md)
     // Lets the frontend read the reference id to quote in a bug report, and when to retry.
     exposedHeaders: ["x-request-id", "Retry-After", "RateLimit-Limit", "RateLimit-Remaining", "RateLimit-Reset"],
     maxAge: 600,

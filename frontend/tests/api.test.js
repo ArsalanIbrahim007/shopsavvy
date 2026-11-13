@@ -375,3 +375,12 @@ describe("prefetchListing", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });
+
+describe("the API reached through an ngrok tunnel (deploy/README-pc.md)", () => {
+  it("sends ngrok's skip header only then, and the JSON type only with a body", async () => {
+    const { requestHeaders } = await import("../src/api/client.js");
+    expect(requestHeaders(undefined, false)).toBeUndefined();
+    expect(requestHeaders({ a: 1 }, false)).toEqual({ "Content-Type": "application/json" });
+    expect(requestHeaders(undefined, true)).toEqual({ "ngrok-skip-browser-warning": "1" });
+  });
+});
