@@ -40,6 +40,8 @@ const DEFAULT_CONFIG = Object.freeze({
   minimumFlatHistoryDaysForFake: 30,
   // How much a price may move and still count as unchanged for the rule above.
   flatPriceTolerance: 0.01,
+  // Days of tracked prices needed before any discount is called "likely fake", however the prices moved.
+  minimumHistoryDaysForFake: 14,
 });
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -462,6 +464,15 @@ function calculateFakeDiscountScore(input = {}, customConfig = {}) {
     const tracked = spanDays === null ? "" : ` in the ${Math.max(1, Math.round(spanDays))} days we have tracked it`;
     reasons.push(
       `The price has not changed${tracked}, so a sale that began before then would look the same: suspicious, not proven fake.`
+    );
+  } else if (classification === "likely_fake" && spanDays !== null && spanDays < config.minimumHistoryDaysForFake) {
+    // And whatever the prices did, too few days of them to call a discount fake: DigiMall's A07 at 39,699 (was 49,999) was "fake"
+    // from 3 prices over 3 days that moved by more than 1% (Fable's final check, 2026-11-12; 23 phone and 19 laptop verdicts).
+    classification = "suspicious";
+    fakeDiscountRisk = Math.min(fakeDiscountRisk, 69);
+    discountAuthenticityScore = roundToTwo(100 - fakeDiscountRisk);
+    reasons.push(
+      `We have tracked this price for only ${Math.max(1, Math.round(spanDays))} days, too few to call the discount fake: suspicious, not proven fake.`
     );
   }
 

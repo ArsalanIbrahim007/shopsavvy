@@ -51,7 +51,13 @@ function diskCatalog(category) {
 }
 
 /** Most offers first (the products people compare most), then the cheaper one. */
-const mostCompared = (a, b) => b.offerCount - a.offerCount || a.lowestPrice - b.lowestPrice;
+// Compared means across stores: by how many stores sell it, then how many distinct offers (a store's same title at the same price
+// once), then the cheaper. By raw offer count, one AlfaMall seller's laptop listed many times led "Most compared laptops" as "1 offer
+// from 1 store" (Fable's final check, 2026-11-12).
+const storeCount = (group) => new Set((group.offers ?? []).map((offer) => offer.platform)).size;
+const distinctOffers = (group) => new Set((group.offers ?? []).map((offer) => `${offer.platform}|${offer.title}|${offer.price}`)).size;
+const mostCompared = (a, b) =>
+  storeCount(b) - storeCount(a) || distinctOffers(b) - distinctOffers(a) || a.lowestPrice - b.lowestPrice;
 
 // The cards do not need each offer's price history (the product page loads it), and leaving it
 // out keeps the response small.
@@ -111,6 +117,27 @@ async function categoryCatalog(category, now) {
 export function peekCatalogGroups(category) {
   const entry = cache.get(category);
   return entry ? { groups: entry.groups, generatedAt: entry.generatedAt } : null;
+}
+
+// listing id -> its group, per computed catalog (built on first use)
+const groupByListing = new WeakMap();
+
+/**
+ * The product a listing belongs to in the category's catalog as last computed, or null when the catalog has not been computed or
+ * does not hold it. Never starts a computation. For the product page, Compare and the extension, so that what opens from a card is
+ * the product the card showed: they regrouped up to 300 nearby listings around the opened one, and "26 offers from 9 stores" on the
+ * card became "4 offers from 1 store" on its page (Fable's review, 2026-11-12: 21 of the top 24 phone cards).
+ */
+export function peekCatalogGroupOf(category, listingId) {
+  const entry = cache.get(category);
+  if (!entry || listingId == null) return null;
+  let index = groupByListing.get(entry);
+  if (!index) {
+    index = new Map();
+    for (const group of entry.groups) for (const offer of group.offers ?? []) index.set(String(offer._id), group);
+    groupByListing.set(entry, index);
+  }
+  return index.get(String(listingId)) ?? null;
 }
 
 /** Every grouped product of a category, from the cache (computed first if needed). For reports that count across all of them. */

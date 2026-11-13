@@ -227,7 +227,10 @@ const modelNumbers = perTitle((title) => new Set(modelPart(title).match(/\d+/g) 
  * MacBook Air, "55P6L" for a TCL TV). Not a capacity or rating, a processor ("1235u", "13420h") or a graphics chip ("rtx5060"):
  * different laptops share those.
  */
-const NOT_A_PART_NUMBER = /^(\d+(gb|tb|mah|hz|mp|w|nm|th)|\d{4,5}[a-z]{1,2}|(rtx|gtx|rx|lpddr|ddr|wifi|usb)\d+[a-z]*|\d+gen\d*)$/;
+// Nor a warranty, a count or a store's own reference: "1year" and "6months" joined an Oppo A6s with a Reno 15 (224 phone titles say
+// "1year"), "10core" a ThinkBook 16 with a ThinkPad E14, the seller code "ue005" two Dawlance TVs (Fable's final check, 2026-11-12).
+const NOT_A_PART_NUMBER =
+  /^(\d+(gb|tb|mah|hz|mp|w|nm|th|st|nd|rd)|\d{4,5}[a-z]{1,2}|(rtx|gtx|rx|lpddr|ddr|wifi|usb)\d+[a-z]*|\d+gen\d*|\d+(years?|yrs?|months?|days?|cores?|ports?|pcs|pack|in1|way|ch)|(ue|ispk|sns|ns)\d+)$/;
 const partNumbers = perTitle((title) => new Set(
   (String(title).toLowerCase().match(/[a-z0-9]+/g) ?? [])
     .filter((token) => token.length >= 5 && /[a-z]/.test(token) && /\d/.test(token) && !NOT_A_PART_NUMBER.test(token)),

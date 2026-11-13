@@ -703,6 +703,9 @@ const SELLER_NAMES = ["electronix hub", "urban hub"];
 
 function detectCategory(title) {
     const text = SELLER_NAMES.reduce((t, name) => t.split(name).join(" "), title.toLowerCase()).trim();
+    // A store's test listing is no product ("Testing COD - Dawlance - Smart LED TV Canvas Series 55 Inch" at PKR 300,000, AlfaMall,
+    // in a TV product; Fable's final check, 2026-11-12).
+    if (/^(test|testing|dummy)\b/.test(text)) return { category: "other", confidence: 0 };
 
     let bestCategory = "other";
     let bestScore = 0;

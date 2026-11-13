@@ -12,6 +12,7 @@
 //     comparing stores is the point of the site.
 // The page that shows these says what the rules are; nothing here is a prediction.
 
+import { pagePriceMismatch } from "./pagePrice.service.js";
 import { DEAL_CATEGORIES } from "./dealsFeed.service.js";
 import { dailyPrices, karachiDay } from "./priceOutlook.service.js";
 import Listing from "../models/listing.model.js";
@@ -75,12 +76,13 @@ export async function computePriceDrops({ category, limit = 24, now = Date.now()
   const urls = [...new Set(histories.filter((history) => drops.has(keyOf(history))).map((history) => history.sourceUrl))];
   const listings = await listingModel
     .find({ sourceUrl: { $in: urls }, isActive: true, productCategory: { $in: categories } })
-    .select("title platform price imageUrl productUrl sourceUrl productCategory condition ptaStatus storageGb lastScrapedAt")
+    .select("title platform price imageUrl productUrl sourceUrl productCategory condition ptaStatus storageGb lastScrapedAt pagePrice pagePriceAt")
     .lean();
 
   return listings
     .filter((listing) => drops.has(keyOf(listing)))
     .filter((listing) => !PRE_OWNED.has(listing.condition) && listing.price === drops.get(keyOf(listing)).price) // still at the new price
+    .filter((listing) => !pagePriceMismatch(listing, now)) // not a price the store's own page does not charge (pagePrice.service.js)
     .map((listing) => ({ ...listing, _id: String(listing._id), drop: drops.get(keyOf(listing)) }))
     .sort((a, b) => b.drop.percent - a.drop.percent || b.drop.rupees - a.drop.rupees)
     .slice(0, limit);

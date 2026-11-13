@@ -105,6 +105,9 @@ const listingSchema = new mongoose.Schema(
     condition:       { type: String, default: "new", index: true },
     // "product_page" when the store's page showed the condition the title did not (pageEnrichment, conditionPage.service.js)
     conditionSource: { type: String, default: null },
+    // The price the store's own product page charges, and when it was read (pagePrice.service.js; iShopping)
+    pagePrice: { type: Number, default: null },
+    pagePriceAt: { type: Date, default: null },
     screenInches:    { type: Number, default: null },
     resolution: { type: String, default: null, index: true },
     // Optional fields a scraper may send (validated by scrapedExtras.service).

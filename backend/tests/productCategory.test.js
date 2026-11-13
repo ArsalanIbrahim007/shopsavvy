@@ -352,3 +352,10 @@ describe("the last accessories at the cheap end (2026-11-12)", () => {
     else expect(category).toBe(expected);
   });
 });
+
+describe("a store's test listing is no product (2026-11-12)", () => {
+  it("'Testing COD - Dawlance - Smart LED TV ...' is other; a real 'Test' word later in a title is not affected", () => {
+    expect(detectCategory("Testing COD - Dawlance - Smart LED TV Canvas Series 55 Inch - G3A - 55G3A").category).toBe("other");
+    expect(detectCategory("Samsung 55 Inch Crystal UHD 4K Smart TV (Tested Picture Quality)").category).toBe("tv");
+  });
+});

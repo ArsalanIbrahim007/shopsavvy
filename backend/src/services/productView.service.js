@@ -10,6 +10,7 @@ import { selectCandidates } from "./candidateSelection.service.js";
 import { groupListings } from "./grouping.service.js";
 import { attachPriceHistory } from "./historyEnrichment.service.js";
 import { attachRecommendation, attachRecommendations } from "./recommendation/recommendation.service.js";
+import { peekCatalogGroupOf } from "./catalogFeed.service.js";
 
 const idOf = (offer) => offer?._id?.toString();
 
@@ -23,7 +24,18 @@ const idOf = (offer) => offer?._id?.toString();
  *   grouped (selectCandidates' default when omitted); `load` replaces the database read in tests
  * @returns {Promise<{selectedListing: object, selectedGroup: object|null, offers: object[]}>}
  */
-export async function buildProductView(listing, { strategy = "ml", cap, load } = {}) {
+export async function buildProductView(listing, { strategy = "ml", cap, load, catalogGroupOf = peekCatalogGroupOf } = {}) {
+  // The product as the catalog shows it, when the catalog is computed and holds this listing (the catalog groups with the trained
+  // matcher, so only for that strategy; a page the database has never seen is never in it). Its offers carry their recommendations;
+  // their price history, left out of the catalog to keep it small, is read again.
+  const fromCatalog = strategy === "ml" && !load && listing.productCategory ? catalogGroupOf(listing.productCategory, idOf(listing)) : null;
+  if (fromCatalog) {
+    const offers = await attachPriceHistory(fromCatalog.offers);
+    const selectedGroup = { ...fromCatalog, offers };
+    const selectedListing = offers.find((offer) => idOf(offer) === idOf(listing)) || attachRecommendation(listing);
+    return { selectedListing, selectedGroup, offers };
+  }
+
   /*
    * Candidates for "the same product elsewhere": listings in the same
    * product category whose titles overlap this one, not every listing that

@@ -19,7 +19,7 @@ import { existsSync } from "node:fs";
 
 import { FILLER_WORDS } from "../ml/fillerWords.js";
 import Listing from "../models/listing.model.js";
-import { modelTokens } from "./normalizeTitle.service.js";
+import { modelTokens, ramStorageShorthand } from "./normalizeTitle.service.js";
 import { extractNetworkGeneration } from "./productAttributes.service.js";
 import { tokenize } from "./similarity.service.js";
 import { withoutStoreWording } from "./similarityModel.service.js";
@@ -143,6 +143,12 @@ export function withStatedCapacity(specs, listing) {
   const stated = {};
   if (Number(listing?.ramGb) > 0) stated.ramGb = Number(listing.ramGb);
   if (Number(listing?.storageGb) > 0) stated.storageGb = Number(listing.storageGb);
+  // A seller's "8/256" states both, though the title reader takes neither: the Compare page showed dashes for them (Fable, 2026-11-12).
+  const shorthand = !stated.ramGb || !stated.storageGb ? ramStorageShorthand(listing?.title ?? "") : null;
+  if (shorthand) {
+    stated.ramGb ??= shorthand[0];
+    stated.storageGb ??= shorthand[1];
+  }
   return sanitizeSpecSheet({ ...(specs ?? {}), ...stated });
 }
 

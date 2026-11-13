@@ -67,9 +67,16 @@ function chipsetName(value) {
     .trim();
   // A core count or a clock speed alone is not a chip: "Octa-Core", "6-core CPU" (Techroid's iPhone 17), "2.2GHz Octa core"; 227
   // sheets said no more than that (2026-11-10). A chip's name has a family word or letters with a number ("Helio G100", "A19").
-  const vague = /^((\d+|octa|hexa|quad|deca|dual|single)[- ]?cores?|\d+(\.\d+)?\s*ghz)\b/i.test(name);
-  const named = /[a-z]{1,}\d|\d[a-z]|\b(apple|snapdragon|helio|dimensity|exynos|kirin|unisoc|tensor|bionic|core\s*(i\d|ultra)|ryzen)\b/i.test(name);
-  return !vague && named && name.length >= 2 ? name.slice(0, 80) : null;
+  const isVague = (text) => /^((\d+|octa|hexa|quad|deca|dual|single)[- ]?cores?|\d+(\.\d+)?\s*ghz)\b/i.test(text) || /^\d+(\.\d+)?$/.test(text);
+  const isNamed = (text) => /[a-z]{1,}\d|\d[a-z]|\b(apple|snapdragon|helio|dimensity|exynos|kirin|unisoc|tensor|bionic|core\s*(i\d|ultra)|ryzen)\b/i.test(text);
+  // Two chips in one value is a page covering several variants, not this phone's chip ("MediaTek Helio G99 Ultimate / Dimensity
+  // 7020" on a DigiMall page, shown on the Compare page; Fable, 2026-11-12). One chip with its clock or core count after a "/"
+  // ("Intel Celeron N3450 / 1.1 GHz", "MediaTek Helio G81 / Octa-Core") is that chip.
+  const parts = name.split(/\s+\/\s+/).map((part) => part.trim());
+  const chips = parts.filter((part) => isNamed(part) && !isVague(part) && !/\bghz\b/i.test(part));
+  if (chips.length !== 1 && parts.length > 1) return null;
+  const chip = parts.length > 1 ? chips[0].replace(/\s+\d+(\.\d+)?$/, "") : name;
+  return !isVague(chip) && isNamed(chip) && chip.length >= 2 ? chip.slice(0, 80) : null;
 }
 
 /** The tier of a phone, tablet or laptop chip; null when it is not one we know. */
@@ -93,6 +100,12 @@ export function chipsetTier(name) {
  * Each rule: the labels it reads (by meaning) and how it reads a value into fields. Rules are tried in order; a field is set by the
  * first label that gives it, so a store's dedicated row ("Refresh Rate") wins over a value that mentions it in passing.
  */
+// An operating system's name, or "OS" ("DOS", "FreeDOS", "iOS26", "iPad OS", "Mac OSX", "Window 10 Home"), and not a chip's or an
+// engine's ("Snapdragon 7s Gen 4 5G", "Exynos 7870 Octa", "M3 chip", "Tidal & Aurora Engine" were stored as one).
+const OS_NAME = /(android|ios|ipad\s*os|watchos|wear\s*os|harmony|hyperos|miui|one\s*ui|color\s*os|funtouch|origin\s*os|\bxos\b|\bhios\b|realme\s*ui|oxygen|magic\s*os|nothing\s*os|\bwindows?\b|mac\s*os|\bosx\b|chrome\s*os|tizen|webos|linux|kai\s*os|dos\b|\bos\b)/i;
+const NOT_AN_OS = /(snapdragon|exynos|dimensity|helio|kryo|tensor|bionic|\bchip\b|engine)/i;
+const OPERATING_SYSTEM = { test: (value) => OS_NAME.test(value) && !NOT_AN_OS.test(value) };
+
 const RULES = [
   { label: /^(chipset|processor|processor (name|type)|cpu|soc|platform)$/i, read: (v) => ({ chipset: chipsetName(v) }) },
   { label: /^(installed\s*)?ram(\s*memory)?$|^memory\s*\(ram\)$/i, read: (v) => ({ ramGb: singleCapacityGb(v) }) },
@@ -115,7 +128,8 @@ const RULES = [
   // only from 5 MP up.
   { label: /^cameras?$/i, read: (v) => ({ mainCameraMp: Math.max(...numbersBefore(v, "mp|megapixels?").filter((mp) => mp >= 5), 0) || null }) },
   { label: /^(front|selfie)\s*camera(\s*pixel)?$/i, read: (v) => ({ frontCameraMp: Math.max(...numbersBefore(v, "mp|megapixels?"), 0) || (/^\s*\d+(\.\d+)?\s*$/.test(v) ? Number(v) : null) }) },
-  { label: /^(operating\s*system|os)(\s*\(primary\))?$/i, read: (v) => ({ os: String(v).trim().slice(0, 80) || null }) },
+  // Only a value that names an operating system: a store's "OS" row once held "Snapdragon 7s Gen 4 5G" (Fable, 2026-11-12).
+  { label: /^(operating\s*system|os)(\s*\(primary\))?$/i, read: (v) => ({ os: OPERATING_SYSTEM.test(String(v)) ? String(v).trim().slice(0, 80) : null }) },
   { label: /^5g$/i, read: (v) => ({ has5g: parseBool(v) }) },
   { label: /^network(\s*technology)?$/i, read: (v) => (/\b5g\b/i.test(v) ? { has5g: true } : {}) },
   { label: /^nfc$/i, read: (v) => ({ nfc: parseBool(v) }) },

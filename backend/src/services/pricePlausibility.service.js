@@ -18,6 +18,8 @@
 // Like the discount checks, it abstains rather than guesses: with fewer than two
 // other offers, or when those offers disagree with each other, it says so.
 
+import { pagePriceMismatch } from "./pagePrice.service.js";
+
 export const LOW_RATIO = 0.5;
 export const HIGH_RATIO = 2.0;
 export const MIN_COMPARATORS = 2;
@@ -56,6 +58,17 @@ export function analyzePricePlausibility(offer, groupOffers = []) {
   });
 
   if (!Number.isFinite(price) || price <= 0) return abstain("This offer has no valid price to check.");
+  // The store's own product page charges another price than its listings show (pagePrice.service.js): a listing error at the store.
+  const mismatch = pagePriceMismatch(offer);
+  if (mismatch) {
+    return {
+      status: "suspect_page",
+      ratio: Number((price / mismatch.pagePrice).toFixed(2)),
+      referencePrice: mismatch.pagePrice,
+      comparators: others.length,
+      reason: `The store's own product page shows PKR ${mismatch.pagePrice.toLocaleString()}, not the PKR ${price.toLocaleString()} its listings show, so this price may not be what it charges.`,
+    };
+  }
   if (others.length < MIN_COMPARATORS) {
     return abstain(`Needs at least ${MIN_COMPARATORS} other stores selling this product to check the price.`);
   }

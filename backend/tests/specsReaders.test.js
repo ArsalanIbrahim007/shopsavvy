@@ -121,3 +121,21 @@ describe("one model's specifications for all its variants (2026-11-10: three of 
     expect(normalizeSpecs({ Processor: "Helio G100 (6nm)" }).chipset).toBe("Helio G100");
   });
 });
+
+describe("a value that is not one chip or one operating system (Fable's final check, 2026-11-12)", () => {
+  it("two chips in one value give no chipset; a chip with its clock or core count after a '/' is that chip", () => {
+    expect(normalizeSpecs({ Processor: "MediaTek Helio G99 Ultimate / Dimensity 7020" }).chipset).toBeUndefined();
+    expect(normalizeSpecs({ Processor: "Intel Celeron N3450 / 1.1 GHz" }).chipset).toBe("Intel Celeron N3450");
+    expect(normalizeSpecs({ Processor: "MediaTek Helio G81 / Octa-Core" }).chipset).toBe("MediaTek Helio G81");
+  });
+
+  it("an OS row that names a chip is no OS; DOS, iOS26 and Mac OSX are", () => {
+    expect(normalizeSpecs({ OS: "Snapdragon 7s Gen 4 5G" }).os).toBeUndefined();
+    expect(normalizeSpecs({ OS: "Tidal & Aurora Engine (Flagship Find Series)" }).os).toBeUndefined();
+    for (const os of ["DOS", "FreeDOS 3.0", "iOS26", "Mac OSX", "Android 15, One UI 7", "Window 10 Home"]) expect(normalizeSpecs({ OS: os }).os).toBe(os);
+  });
+
+  it("a seller's '8/256' gives the variant's RAM and storage for its sheet", () => {
+    expect(withStatedCapacity({ chipset: "Dimensity 7300" }, { title: "Xiaomi Redmi Note 15 8/256 | PTA Approved" })).toMatchObject({ ramGb: 8, storageGb: 256 });
+  });
+});

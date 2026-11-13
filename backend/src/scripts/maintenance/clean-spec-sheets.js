@@ -40,6 +40,13 @@ try {
         changed = true;
       }
     }
+    // 2026-11-12: an operating system must name one ("Snapdragon 7s Gen 4 5G" was stored as one); a chipset listing two chips is gone
+    // through the chipset re-read above.
+    if (sheet.os && !normalizeSpecs({ OS: sheet.os }).os) {
+      delete sheet.os;
+      tally.osRemoved = (tally.osRemoved ?? 0) + 1;
+      changed = true;
+    }
     if (HANDHELD.has(row.productCategory) && Number(sheet.batteryMah) < 1500) {
       delete sheet.batteryMah;
       tally.batteryRemoved += 1;
@@ -47,7 +54,7 @@ try {
     }
     if (changed) ops.push({ updateOne: { filter: { _id: row._id }, update: { $set: { specSheet: Object.keys(sheet).length ? sheet : null } } } });
   }
-  console.log(`${rows.length} sheets read: ${ops.length} to correct (chipset renamed ${tally.chipsetRenamed}, chipset removed ${tally.chipsetRemoved}, battery removed ${tally.batteryRemoved}).`);
+  console.log(`${rows.length} sheets read: ${ops.length} to correct (chipset renamed ${tally.chipsetRenamed}, chipset removed ${tally.chipsetRemoved}, battery removed ${tally.batteryRemoved}, os removed ${tally.osRemoved ?? 0}).`);
   if (apply && ops.length) {
     const result = await Listing.bulkWrite(ops, { ordered: false });
     console.log(`Written: ${result.modifiedCount} listings.`);

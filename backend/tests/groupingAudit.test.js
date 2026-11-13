@@ -178,3 +178,13 @@ describe("Fable's review: what the audit fixes broke stays fixed", () => {
     expect(big.offers[0].priceCheck?.status).not.toBe("suspect_high");
   });
 });
+
+describe("a warranty, a core count or a store's reference is not a part number (Fable's final check, 2026-11-12)", () => {
+  it("an Oppo A6s and a Reno 15 that both say '1Year Official Warranty' stay apart", () => {
+    const groups = group([
+      listing("alfamall", "Oppo A6s 8GB 256GB Official Pta Approved 1Year Official Warranty On Installment By_Microtel", 95998),
+      listing("alfamall", "Oppo Reno 15 5G 8GB 256GB Official Pta Approved 1Year Official Warranty On Installment By_Microtel", 170498),
+    ]);
+    expect(groups).toHaveLength(2);
+  });
+});

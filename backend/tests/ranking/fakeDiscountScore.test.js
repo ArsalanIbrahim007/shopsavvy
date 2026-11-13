@@ -118,3 +118,15 @@ describe("a few rupees of jitter is still an unchanged price (Fable's review, 20
     expect(result.classification).toBe("suspicious");
   });
 });
+
+describe("too few days of prices to call a discount fake (Fable's final check, 2026-11-12)", () => {
+  it("3 days of prices that moved by 2%: suspicious, with the reason; 20 days of the same: likely fake", () => {
+    const at = (day) => `2026-11-${String(day).padStart(2, "0")}T12:00:00Z`;
+    const short = [{ price: 39699, recordedAt: at(9) }, { price: 40499, recordedAt: at(10) }, { price: 39699, recordedAt: at(12) }];
+    const result = calculateFakeDiscountScore({ currentPrice: 39699, originalPrice: 49999, priceHistory: short });
+    expect(result.classification).toBe("suspicious");
+    expect(result.reason).toMatch(/only 3 days/);
+    const long = [{ price: 39699, recordedAt: "2026-10-20T12:00:00Z" }, { price: 40499, recordedAt: "2026-10-30T12:00:00Z" }, { price: 39699, recordedAt: at(9) }];
+    expect(calculateFakeDiscountScore({ currentPrice: 39699, originalPrice: 49999, priceHistory: long }).classification).toBe("likely_fake");
+  });
+});

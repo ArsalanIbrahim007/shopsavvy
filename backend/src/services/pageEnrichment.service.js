@@ -13,6 +13,7 @@ import { DISABLED_PLATFORMS } from "../config/platforms.js";
 import Listing from "../models/listing.model.js";
 import { extractColourOptions } from "./colourPage.service.js";
 import { extractConditionFromPage } from "./conditionPage.service.js";
+import { extractPagePrice } from "./pagePrice.service.js";
 import { extractPtaFromPage } from "./ptaPage.service.js";
 import { extractJudgeMeRating, extractPriceOyeRating } from "./ratingPage.service.js";
 import { readSpecSheet, SPEC_CATEGORIES } from "./specsEngine.service.js";
@@ -110,6 +111,7 @@ export async function enrichFromPages({
   if (ids?.length) {
     filter._id = { $in: ids };
     delete filter.$or;
+    delete filter.productCategory; // a page asked for by id is read whatever its category (an appliance's price, pagePrice.service.js)
   }
 
   const found = await model.find(filter).sort({ pageCheckedAt: 1, lastScrapedAt: -1 }).limit(Math.max(limit, 0)).lean();
@@ -128,10 +130,12 @@ export async function enrichFromPages({
     let rated; // set below, or the listing is skipped by the catch
     let sheet = null;
     let used = { condition: null, evidence: [] };
+    let pagePrice; // set below, or the listing is skipped by the catch
     try {
       const html = await fetchPage(listing);
       pta = extractPtaFromPage(html, { productName: listing.title });
       colours = extractColourOptions(html);
+      pagePrice = extractPagePrice(listing.platform, html);
       // A used phone sold under a new phone's title (iShopping, 2026-11-12): only its page says so (conditionPage.service.js).
       if (PTA_CATEGORIES.includes(listing.productCategory) && CONDITION_STORES.has(String(listing.platform).toLowerCase())) used = extractConditionFromPage(html);
       rated = RATING_READERS.get(String(listing.platform).toLowerCase())?.(html) ?? null;
@@ -158,7 +162,7 @@ export async function enrichFromPages({
     if (rated) summary.withRating += 1;
     if (sheet) summary.withSpecs += 1;
     summary.results.push({ id: String(listing._id), platform: listing.platform, title: listing.title, status: ptaApplies ? pta.status : "n/a", evidence: pta.evidence, colours, rating: rated, specs: sheet, condition: used.condition });
-    log(`[pages] ${listing.platform} "${listing.title}": ${ptaApplies ? pta.status : "pta n/a"}${pta.evidence && ptaApplies ? ` (${pta.evidence})` : ""}; colours: ${colours.map((c) => c.colour).join(", ") || "none"}${rated ? `; rating: ${rated.rating} (${rated.reviewCount})` : ""}${sheet ? `; specs: ${Object.keys(sheet).length} fields` : ""}${used.condition ? `; used (${used.evidence.join(", ")})` : ""}`);
+    log(`[pages] ${listing.platform} "${listing.title}": ${ptaApplies ? pta.status : "pta n/a"}${pta.evidence && ptaApplies ? ` (${pta.evidence})` : ""}; colours: ${colours.map((c) => c.colour).join(", ") || "none"}${rated ? `; rating: ${rated.rating} (${rated.reviewCount})` : ""}${sheet ? `; specs: ${Object.keys(sheet).length} fields` : ""}${used.condition ? `; used (${used.evidence.join(", ")})` : ""}${pagePrice ? `; page price ${pagePrice}${pagePrice !== listing.price ? ` (listed ${listing.price})` : ""}` : ""}`);
 
     if (dry) continue;
     const set = { pageCheckedAt: new Date(now) };
@@ -171,6 +175,7 @@ export async function enrichFromPages({
     if (sheet) set.specSheet = sheet; // likewise: a page whose specifications could not be read keeps the earlier sheet
     // The condition the page shows: a used phone becomes "used"; one the page earlier called used and now shows as new goes back.
     // A condition the title itself states ("Used", "Refurbished") is never touched (conditionSource "title" or none).
+    if (pagePrice) Object.assign(set, { pagePrice, pagePriceAt: new Date(now) });
     if (used.condition && (listing.condition ?? "new") === "new") Object.assign(set, { condition: used.condition, conditionSource: "product_page" });
     else if (!used.condition && listing.conditionSource === "product_page") Object.assign(set, { condition: "new", conditionSource: null });
     await model.updateOne({ _id: listing._id }, { $set: set });
