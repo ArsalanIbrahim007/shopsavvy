@@ -131,13 +131,29 @@ const groupByListing = new WeakMap();
 export function peekCatalogGroupOf(category, listingId) {
   const entry = cache.get(category);
   if (!entry || listingId == null) return null;
+  return groupIn(entry, listingId);
+}
+
+function groupIn(entry, listingId) {
   let index = groupByListing.get(entry);
   if (!index) {
     index = new Map();
-    for (const group of entry.groups) for (const offer of group.offers ?? []) index.set(String(offer._id), group);
+    for (const group of entry.groups ?? []) for (const offer of group.offers ?? []) index.set(String(offer._id), group);
     groupByListing.set(entry, index);
   }
   return index.get(String(listingId)) ?? null;
+}
+
+/**
+ * peekCatalogGroupOf, and while the category is not yet computed (the first minute or two after a start), the saved first page the
+ * cards are served from: so a card opened then still opens its own product (Fable's last check, 2026-11-12: 18 of the top 24 phone
+ * cards differed from their pages in that window). Never starts a computation.
+ */
+export async function catalogGroupOf(category, listingId) {
+  const computed = peekCatalogGroupOf(category, listingId);
+  if (computed || cache.has(category) || listingId == null || !isCatalogCategory(category)) return computed;
+  const saved = await diskCatalog(category);
+  return saved ? groupIn(saved, listingId) : null;
 }
 
 /** Every grouped product of a category, from the cache (computed first if needed). For reports that count across all of them. */

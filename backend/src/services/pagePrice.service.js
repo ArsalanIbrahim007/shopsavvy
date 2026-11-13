@@ -13,24 +13,58 @@ export const PAGE_PRICE_TOLERANCE = 0.05;
 export const PAGE_PRICE_MAX_AGE_DAYS = 30;
 const DAY_MS = 24 * 3600 * 1000;
 
-/** The product's own price on a store's product page (Magento's finalPrice amount on iShopping), or null. */
-export function extractPagePrice(platform, html) {
+/**
+ * The prices a store's product page charges: its own price (the first finalPrice; related products' prices come later) and, for a
+ * product sold in colours or capacities, each option's (Magento's "optionPrices"). A page opens on one option, and its script can show
+ * that option's price instead of the base one (Fable's last check, 2026-11-12: the fridge's raw page says 82,720, the shown price
+ * 90,445), so a listed price is believed when it matches any of them. Null when the page states none.
+ * @returns {{price: number, prices: number[]}|null}
+ */
+export function extractPagePrices(platform, html) {
   if (!PAGE_PRICE_STORES.has(String(platform).toLowerCase())) return null;
-  // The first finalPrice is the product's; related products' prices come later in the page.
-  for (const tag of String(html ?? "").match(/<[^>]*data-price-type=["']finalPrice["'][^>]*>/gi) ?? []) {
+  const text = String(html ?? "");
+  let price = null;
+  for (const tag of text.match(/<[^>]*data-price-type=["']finalPrice["'][^>]*>/gi) ?? []) {
     const amount = Number(tag.match(/data-price-amount=["']([\d.]+)["']/i)?.[1]);
-    if (Number.isFinite(amount) && amount >= 100) return Math.round(amount);
+    if (Number.isFinite(amount) && amount >= 100) { price = Math.round(amount); break; }
   }
-  return null;
+  const options = balancedObjectAfter(text, '"optionPrices"');
+  const optionPrices = [...options.matchAll(/"finalPrice"\s*:\s*\{\s*"amount"\s*:\s*([\d.]+)/g)].map((m) => Math.round(Number(m[1]))).filter((n) => n >= 100);
+  if (price === null && optionPrices.length === 0) return null;
+  const prices = [...new Set([...(price === null ? [] : [price]), ...optionPrices])];
+  return { price: price ?? prices[0], prices };
 }
 
-/** {pagePrice, gap} when the offer's listed price is more than PAGE_PRICE_TOLERANCE from a recent page price; otherwise null. */
+/** The text of the JSON object that follows `key` in `text` (up to its matching closing brace), or "". */
+function balancedObjectAfter(text, key) {
+  const at = text.indexOf(key);
+  if (at < 0) return "";
+  const start = text.indexOf("{", at + key.length);
+  if (start < 0) return "";
+  let depth = 0;
+  for (let i = start; i < text.length && i < start + 50_000; i++) {
+    if (text[i] === "{") depth += 1;
+    else if (text[i] === "}" && --depth === 0) return text.slice(start, i + 1);
+  }
+  return "";
+}
+
+/** The page's own price alone (extractPagePrices), or null. */
+export const extractPagePrice = (platform, html) => extractPagePrices(platform, html)?.price ?? null;
+
+/**
+ * {pagePrice, gap} when the offer's listed price is more than PAGE_PRICE_TOLERANCE from every price its page was found to charge;
+ * otherwise null. Only from a page read in the last PAGE_PRICE_MAX_AGE_DAYS while the listing showed the price it shows now
+ * (`pagePriceListed`): a genuine price change after the page was read is not called a listing error (Fable's last check).
+ */
 export function pagePriceMismatch(offer, now = Date.now()) {
   const page = Number(offer?.pagePrice);
   const price = Number(offer?.price);
   if (!(page > 0) || !(price > 0)) return null;
   const at = Date.parse(offer.pagePriceAt ?? "");
   if (!Number.isFinite(at) || now - at > PAGE_PRICE_MAX_AGE_DAYS * DAY_MS) return null;
-  const gap = Math.abs(price - page) / page;
-  return gap > PAGE_PRICE_TOLERANCE ? { pagePrice: page, gap } : null;
+  if (Number(offer.pagePriceListed) !== price) return null;
+  const known = [page, ...(Array.isArray(offer.pagePrices) ? offer.pagePrices.map(Number) : [])].filter((p) => p > 0);
+  if (known.some((p) => Math.abs(price - p) / p <= PAGE_PRICE_TOLERANCE)) return null;
+  return { pagePrice: page, gap: Math.abs(price - page) / page };
 }

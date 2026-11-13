@@ -108,6 +108,8 @@ const listingSchema = new mongoose.Schema(
     // The price the store's own product page charges, and when it was read (pagePrice.service.js; iShopping)
     pagePrice: { type: Number, default: null },
     pagePriceAt: { type: Date, default: null },
+    pagePrices: { type: [Number], default: undefined }, // every option's price on that page (colours, capacities)
+    pagePriceListed: { type: Number, default: null }, // the listing's price when the page was read
     screenInches:    { type: Number, default: null },
     resolution: { type: String, default: null, index: true },
     // Optional fields a scraper may send (validated by scrapedExtras.service).

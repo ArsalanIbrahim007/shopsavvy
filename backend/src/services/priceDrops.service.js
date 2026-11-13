@@ -76,7 +76,7 @@ export async function computePriceDrops({ category, limit = 24, now = Date.now()
   const urls = [...new Set(histories.filter((history) => drops.has(keyOf(history))).map((history) => history.sourceUrl))];
   const listings = await listingModel
     .find({ sourceUrl: { $in: urls }, isActive: true, productCategory: { $in: categories } })
-    .select("title platform price imageUrl productUrl sourceUrl productCategory condition ptaStatus storageGb lastScrapedAt pagePrice pagePriceAt")
+    .select("title platform price imageUrl productUrl sourceUrl productCategory condition ptaStatus storageGb lastScrapedAt pagePrice pagePriceAt pagePrices pagePriceListed")
     .lean();
 
   return listings
