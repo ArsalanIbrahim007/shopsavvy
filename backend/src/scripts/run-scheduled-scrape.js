@@ -30,6 +30,7 @@ import mongoose from "mongoose";
 import { isDoneToday, markDone, markFailed, tryStart } from "../jobs/scrapeState.js";
 import { CATALOGUE_STORES, coversHeldListings, refreshCatalogue } from "../services/catalogueRefresh.service.js";
 import { enrichFromPages } from "../services/pageEnrichment.service.js";
+import { backupDatabase, DEFAULT_BACKUP_DIR } from "../services/backup.service.js";
 import { buildScheduledQueryPlan, createQueryLog, NIGHTLY_SEARCHES_AT_ONCE, onlyStores, RUN_BUDGET_MS, runScheduledScrape, withoutRefreshedStores } from "../services/scheduledScraping.service.js";
 
 const minOffersArg = process.argv.find((a) => a.startsWith("--min-offers="));
@@ -143,6 +144,18 @@ try {
       console.log(`Page check: ${pages.checked} pages read, PTA ${pages.approved} approved / ${pages.nonPta} non-PTA, ${pages.withColours} with colours, ${pages.withRating} with a rating, ${pages.withSpecs} with specifications, ${pages.failed} unreadable.`);
     } catch (err) {
       console.warn("Page check failed:", err.message);
+    }
+  }
+
+  // Last, a backup of the whole database with the night's prices, the newest 7 kept (services/backup.service.js; deploy/BACKUP.md).
+  // A failure is only logged: the scrape is done.
+  if (!process.argv.includes("--no-backup")) {
+    try {
+      const backup = await backupDatabase(mongoose.connection.db, { target: process.env.BACKUP_DIR || DEFAULT_BACKUP_DIR, keep: 7 });
+      const counts = Object.entries(backup.collections).map(([name, n]) => `${name} ${n}`).join(", ");
+      console.log(`Backup: ${backup.folder} (${counts})${backup.removed.length ? `; removed ${backup.removed.length} older` : ""}.`);
+    } catch (err) {
+      console.warn("Backup failed:", err.message);
     }
   }
 } catch (err) {
