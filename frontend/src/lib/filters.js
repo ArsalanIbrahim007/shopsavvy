@@ -9,6 +9,7 @@
 import { canonicalPlatform, platformName } from "./platforms.js";
 import { DEFAULT_FACETS, FACETS_BY_CATEGORY, RESOLUTION_ORDER } from "./categories.js";
 import { formatBrand, formatCapacity, formatCondition, formatPta, formatScreen } from "./format.js";
+import { isOutOfDate } from "./freshness.js";
 
 export const SORTS = [
   { id: "recommended", label: "Best deal", hint: "Recommended" },
@@ -167,7 +168,8 @@ export function sortOffers(offers, sort) {
   else if (sort === "highestDiscount") {
     sorted.sort((a, b) => verifiedDiscount(b) - verifiedDiscount(a) || a.price - b.price);
   }
-  return sorted;
+  // Out-of-date offers (not checked for a week) go below every current one, whatever the sort (2026-11-18). The sort is stable.
+  return sorted.sort((a, b) => Number(isOutOfDate(a)) - Number(isOutOfDate(b)));
 }
 
 // ---------------------------------------------------------------- groups
@@ -212,7 +214,9 @@ export function sortGroups(groups, sort) {
   else if (sort === "bestScore") sorted.sort((a, b) => bestScore(b) - bestScore(a));
   else if (sort === "highestDiscount") sorted.sort((a, b) => bestDiscount(b) - bestDiscount(a) || cheapest(a) - cheapest(b));
   else sorted.sort((a, b) => b.offers.length - a.offers.length);
-  return sorted;
+  // A product none of whose offers is current goes below every product with one, whatever the sort (2026-11-18).
+  const allOld = (g) => g.offers.length > 0 && g.offers.every((o) => isOutOfDate(o));
+  return sorted.sort((a, b) => Number(allOld(a)) - Number(allOld(b)));
 }
 
 // ---------------------------------------------------------------- what to offer as filters
@@ -277,10 +281,16 @@ export function buildFacets(offers, category, filters = null) {
     .filter((facet) => facet.options.length >= 2);
 }
 
-/** Stores present in the results, with how many offers each has. */
-export function platformOptions(offers) {
+/**
+ * Stores present in the results, with how many offers each has. With `filters`, the count is of the offers that pass every other
+ * filter (as the facets above count), so it agrees with the products shown: under 256 GB and 512 GB, AlfaMall said 13 beside four
+ * products (2026-11-18). Every store stays listed, at 0 when none of its offers match.
+ */
+export function platformOptions(offers, filters = null) {
   const counts = new Map();
-  for (const offer of offers) {
+  for (const offer of offers) counts.set(canonicalPlatform(offer.platform), 0);
+  const counted = filters ? applyFilters(offers, { ...filters, platforms: null }) : offers;
+  for (const offer of counted) {
     const id = canonicalPlatform(offer.platform);
     counts.set(id, (counts.get(id) || 0) + 1);
   }

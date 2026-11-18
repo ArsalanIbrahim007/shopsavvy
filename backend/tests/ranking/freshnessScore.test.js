@@ -28,8 +28,8 @@ describe("calculateFreshnessScore", () => {
     expect(calculateFreshnessScore(hoursAgo(100), 10)).toBe(5);
   });
 
-  it("gives 25% beyond a week", () => {
-    expect(calculateFreshnessScore(hoursAgo(24 * 30), 10)).toBe(2.5);
+  it("gives nothing beyond a week (out of date, 2026-11-18)", () => {
+    expect(calculateFreshnessScore(hoursAgo(24 * 30), 10)).toBe(0);
   });
 
   it("gives a neutral 50% when the scrape timestamp is missing entirely", () => {

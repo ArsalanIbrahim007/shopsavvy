@@ -15,7 +15,7 @@ import { ptaFlag } from "../lib/pta.js";
 import { scoreOf } from "../lib/score.js";
 import { StoreMark } from "./StoreLogo.jsx";
 import { cardBadges } from "../lib/verdicts.js";
-import { summarizeOffers } from "../lib/summary.js";
+import { offerCountText, summarizeOffers } from "../lib/summary.js";
 import { ColourStrip } from "./ColourPicker.jsx";
 import ProductImage from "./ProductImage.jsx";
 import ProductRating from "./ProductRating.jsx";
@@ -69,7 +69,7 @@ export default function ProductCard({ group }) {
       <ProductRating offers={offers} />
 
       <p className="small muted">
-        {summary.count} {summary.count === 1 ? "offer" : "offers"} from {summary.platformCount} {summary.platformCount === 1 ? "store" : "stores"}
+        {offerCountText(summary)}
       </p>
       {/* Meta as quiet text, not more pills: the deal score, and when the price shown was last read from the store. The badges
           above are left for verdicts (unslop audit, 2026-11-08: six pills per card). */}

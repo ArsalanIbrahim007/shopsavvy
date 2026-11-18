@@ -7,6 +7,7 @@ import { analyzeDiscountAnomaly } from "../services/discountAnomaly.service.js";
 import { analyzePricePlausibility } from "../services/pricePlausibility.service.js";
 import { fairPriceOf, fairPriceScore } from "../services/fairPrice.service.js";
 import { SCORE_WEIGHTS } from "./scoreWeights.js";
+import { isOutOfDate } from "../services/offerFreshness.service.js";
 
 /**
  * Extracts price-history entries from an offer.
@@ -143,7 +144,10 @@ export function calculateDealScores(offers = []) {
       const againstFair = fairPriceScore(plainOffer.price, fairPrice);
       const againstStores = calculatePriceScore(plainOffer.price, minPrice, maxPrice, 1);
       const priceShare = againstFair === null ? againstStores : minPrice === maxPrice ? againstFair : (againstStores + againstFair) / 2;
-      const priceScore = priceCheck.status === "suspect_low" ? 0 : Number((priceShare * SCORE_WEIGHTS.price).toFixed(2));
+      // An out-of-date price (not checked for a week, 2026-11-18) is not known to be the price today: no price credit either, so it
+      // scores lowest and is ranked below every current offer.
+      const outOfDate = isOutOfDate(plainOffer);
+      const priceScore = priceCheck.status === "suspect_low" || outOfDate ? 0 : Number((priceShare * SCORE_WEIGHTS.price).toFixed(2));
 
       const trustScore = calculateTrustScore(plainOffer.platform, SCORE_WEIGHTS.trust, {
         rating: plainOffer.rating,
@@ -205,9 +209,12 @@ export function calculateDealScores(offers = []) {
         priceCheck,
 
         fairPrice,
+
+        outOfDate,
       };
     })
-    .sort((a, b) => b.dealScore - a.dealScore);
+    // current offers first, then by score (an out-of-date offer is never ranked above a current one)
+    .sort((a, b) => Number(a.outOfDate) - Number(b.outOfDate) || b.dealScore - a.dealScore);
 }
 
 /**

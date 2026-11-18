@@ -17,6 +17,14 @@ if errorlevel 1 (
   exit /b 1
 )
 
+REM Run again while it is running, this restarts it on the newest code: the old API and tunnel are stopped first (a second API
+REM could not start beside the first, which holds port 5000). A scrape or other script that is running is left alone.
+echo Stopping a ShopSavvy that is already running, so this one runs the newest code...
+taskkill /fi "WINDOWTITLE eq ShopSavvy API*" /t /f >nul 2>nul
+powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter \"Name='node.exe'\" | Where-Object { $_.CommandLine -match 'src[\\/]app\.js' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }"
+taskkill /im ngrok.exe /f >nul 2>nul
+timeout /t 3 >nul
+
 echo Starting the API in its own window...
 start "ShopSavvy API" cmd /k node src/app.js
 timeout /t 10 >nul

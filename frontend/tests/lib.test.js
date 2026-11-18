@@ -184,3 +184,53 @@ describe("PTA approved by the store's own category (2026-11-18)", () => {
     expect(flag.reason).toMatch(/PTA-approved phones/);
   });
 });
+
+describe("out-of-date offers and products sort last (2026-11-18)", () => {
+  const ago = (d) => new Date(Date.now() - d * 864e5).toISOString();
+  it("puts an offer not checked for a week below current ones, under every sort", async () => {
+    const { sortOffers } = await import("../src/lib/filters.js");
+    const offers = [{ _id: "old", price: 100, dealScore: 90, lastScrapedAt: ago(9) }, { _id: "new", price: 200, dealScore: 50, lastScrapedAt: ago(0) }];
+    for (const sort of ["recommended", "lowestPrice", "bestScore", "highestDiscount"]) expect(sortOffers(offers, sort).map((o) => o._id)).toEqual(["new", "old"]);
+  });
+  it("puts a product with no current offer below the others", async () => {
+    const { sortGroups } = await import("../src/lib/filters.js");
+    const groups = [
+      { productName: "old", offers: [{ price: 100, dealScore: 90, lastScrapedAt: ago(9) }, { price: 110, dealScore: 80, lastScrapedAt: ago(10) }] },
+      { productName: "new", offers: [{ price: 200, dealScore: 50, lastScrapedAt: ago(0) }] },
+    ];
+    for (const sort of ["recommended", "lowestPrice", "bestScore"]) expect(sortGroups(groups, sort).map((g) => g.productName)).toEqual(["new", "old"]);
+  });
+});
+
+describe("counts under filters (2026-11-18, iPhone 15 Pro Max at 256 and 512 GB)", () => {
+  it("counts each store's offers that pass the other filters, and keeps every store listed", async () => {
+    const { platformOptions, emptyFilters } = await import("../src/lib/filters.js");
+    const offers = [
+      { platform: "alfamall", storageGb: 256, price: 1 }, { platform: "alfamall", storageGb: 128, price: 1 },
+      { platform: "digimall", storageGb: null, price: 1 },
+    ];
+    const filters = { ...emptyFilters(), storage: [256, 512] };
+    expect(platformOptions(offers, filters)).toEqual([
+      { id: "alfamall", name: "AlfaMall", count: 1 },
+      { id: "digimall", name: "DigiMall", count: 0 },
+    ]);
+    expect(platformOptions(offers).find((o) => o.id === "alfamall").count).toBe(2);
+  });
+
+  it("says what a card's count leaves out", async () => {
+    const { offerCountText } = await import("../src/lib/summary.js");
+    expect(offerCountText({ count: 1, platformCount: 1, excluded: 1, outOfDate: 0 })).toBe("1 offer from 1 store (and 1 used or open box)");
+    expect(offerCountText({ count: 2, platformCount: 2, excluded: 0, outOfDate: 0 })).toBe("2 offers from 2 stores");
+  });
+});
+
+describe("a pasted Pakistani store's link (audit 2026-11-18)", () => {
+  it("is not told its price is in another currency", async () => {
+    const { isPakistaniHost } = await import("../src/lib/productLink.js");
+    expect(isPakistaniHost("ishopping.pk")).toBe(true);
+    expect(isPakistaniHost("www.daraz.pk")).toBe(true);
+    expect(isPakistaniHost("alfamall.com")).toBe(true);
+    expect(isPakistaniHost("amazon.com")).toBe(false);
+    expect(isPakistaniHost(null)).toBe(false);
+  });
+});

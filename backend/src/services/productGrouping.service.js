@@ -560,6 +560,40 @@ const NON_PTA_PRICE_RATIO = 1 - PRICE_PROXIMITY;
  * groups: `ptaAssessment` is "likely_non_pta" for a moved offer and "not_stated" for one that stays without
  * saying. Order does not matter: it runs once the groups are formed.
  */
+/**
+ * New, used, refurbished and open-box units are different products. The matcher's veto reads the condition from the titles only, so
+ * an offer whose condition came from the store's page (conditionPage.service.js: iShopping's used iPhones listed under new phones'
+ * titles) joined the new phone's group: "Apple iPhone 15 Pro Max 256GB" held Techroid's new one and iShopping's used one, and its
+ * card said "1 offer from 1 store" beside a table of two (2026-11-18). Each condition other than the group's first offer's moves to a
+ * group of its own, next to it.
+ */
+export function separateByCondition(groups) {
+  const out = [];
+  for (const group of groups) {
+    const conditionOf = (o) => (PRE_OWNED_CONDITIONS.has(o.condition) ? o.condition : "new");
+    const kinds = [...new Set(group.offers.map(conditionOf))];
+    if (kinds.length < 2) {
+      out.push(group);
+      continue;
+    }
+    // the group keeps the condition most of its offers have (new on a tie), the others become groups of their own
+    const count = (k) => group.offers.filter((o) => conditionOf(o) === k).length;
+    const keep = kinds.sort((a, b) => count(b) - count(a) || (a === "new" ? -1 : b === "new" ? 1 : 0))[0];
+    const moved = group.offers.filter((o) => conditionOf(o) !== keep);
+    group.offers = group.offers.filter((o) => conditionOf(o) === keep);
+    recount(group);
+    out.push(group);
+    for (const kind of kinds.filter((k) => k !== keep)) {
+      const offers = moved.filter((o) => conditionOf(o) === kind);
+      const rawTitle = offers[0].title || offers[0].normalizedTitle || "";
+      const split = newGroup(offers[0], rawTitle, extractStorage(rawTitle) ?? group.storage);
+      for (const o of offers) addOffer(split, o);
+      out.push(split);
+    }
+  }
+  return out;
+}
+
 function separateLikelyNonPta(groups, matchStrategy, networkFamilies) {
   const moved = [];
 
@@ -685,6 +719,8 @@ export function groupListingsByProduct(listings = [], { matchStrategy = ruleMatc
 
   if (sameModel) groups = mergeSameModelGroups(groups, sameModel, networkFamilies);
   if (matchStrategy.samePlainTitles) groups = mergeStoreWordedGroups(groups, matchStrategy.samePlainTitles, networkFamilies);
+  // before the non-PTA check: a used unit's lower price is not a sign that it is non-PTA
+  groups = separateByCondition(groups);
   groups = separateLikelyNonPta(groups, matchStrategy, networkFamilies);
 
   return flagPriceErrors(groups

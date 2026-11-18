@@ -114,6 +114,15 @@ export function parseProductLink(text) {
   return { kind: "link", query: query.slice(0, 100), capacities, store, host };
 }
 
+/**
+ * A Pakistani store's host (ishopping.pk, daraz.pk, alfamall.com, digimall.faysalbank.com): its price is in rupees like ours, so the
+ * "another currency" note written for Amazon and AliExpress was wrong for it (audit, 2026-11-18).
+ */
+export const isPakistaniHost = (host) => {
+  const h = String(host ?? "").toLowerCase();
+  return /(^|\.)[a-z0-9-]+\.pk$/.test(h) || /(^|\.)(alfamall\.com|faysalbank\.com)$/.test(h);
+};
+
 /** The store's name for a host shown on the results page (from=amazon.com), or null for one we do not know. */
 export const linkStoreName = (host) => storeOf(String(host ?? "").replace(/^www\./, "").toLowerCase());
 

@@ -129,7 +129,7 @@ function ResultsView({ groups, total, refreshing = false, narrowed = null, spell
   const onlyBrandOrNothing = !filters.minPrice && !filters.maxPrice && !filters.platforms?.length && FACET_KEYS_FOR_RESET.every((key) => key === "brand" || !filters[key]?.length);
   const counted = buildFacets(allOffers, category, filters);
   const facets = browseCategory && brands?.length && onlyBrandOrNothing ? withCategoryBrands(counted, brands) : counted;
-  const stores = platformOptions(allOffers);
+  const stores = platformOptions(allOffers, filters);
   const categories = categoryCounts(allOffers);
   const bounds = priceBounds(allOffers);
 
@@ -184,6 +184,7 @@ function ResultsView({ groups, total, refreshing = false, narrowed = null, spell
             {allOffers.length === 0
               ? "No products found."
               : `${formatNumber(allOffers.length)} ${allOffers.length === 1 ? "offer" : "offers"} across ${platformCount} ${platformCount === 1 ? "store" : "stores"}, grouped into ${formatNumber(groups.length)} ${groups.length === 1 ? "product" : "products"}`}
+            {allOffers.length > 0 && filtered ? `. Your filters leave ${formatNumber(keptOffers.length)} ${keptOffers.length === 1 ? "offer" : "offers"} in ${formatNumber(shown.length)} ${shown.length === 1 ? "product" : "products"}` : ""}
             {!query && total > groups.length ? `. Showing the ${groups.length} most compared of ${formatNumber(total)}; filters apply to these` : ""}
           </p>
           {query && spelling && (
@@ -204,7 +205,7 @@ function ResultsView({ groups, total, refreshing = false, narrowed = null, spell
         </div>
       </header>
 
-      {linkHost && query && <LinkNotice store={linkStore} query={query} capacity={linkCapacity} />}
+      {linkHost && query && <LinkNotice store={linkStore} query={query} capacity={linkCapacity} host={linkHost} />}
 
       {allOffers.length > 0 && (
         <SummaryCards summary={summary} main={main} mainCategory={mixed ? categoryName(category) : null} saving={saving} platforms={[...new Set(keptOffers.map((offer) => offer.platform))]} />

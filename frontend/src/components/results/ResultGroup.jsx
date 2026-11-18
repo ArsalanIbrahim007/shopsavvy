@@ -12,7 +12,7 @@ import { freshnessNotice, outOfDateFlag } from "../../lib/freshness.js";
 import { formatPrice } from "../../lib/format.js";
 import { platformName } from "../../lib/platforms.js";
 import { ptaFlag, ptaNotice } from "../../lib/pta.js";
-import { possibleSaving, summarizeOffers } from "../../lib/summary.js";
+import { offerCountText, possibleSaving, summarizeOffers } from "../../lib/summary.js";
 import { cardBadges } from "../../lib/verdicts.js";
 import ColourPicker from "../ColourPicker.jsx";
 import ProductRating from "../ProductRating.jsx";
@@ -63,7 +63,7 @@ export default function ResultGroup({ group, currentId, colour = null, onColour 
           </div>
           <h1 className="result-group__name">{group.productName}</h1>
           <p className="small muted">
-            {summary.count} {summary.count === 1 ? "offer" : "offers"} from {summary.platformCount} {summary.platformCount === 1 ? "store" : "stores"}
+            {offerCountText(summary)}
             {saving > 0 ? ` · you can save up to ${formatPrice(saving)}` : ""}
           </p>
           <ProductRating offers={allOffers} />

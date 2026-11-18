@@ -119,3 +119,16 @@ export function summarizeOffers(allOffers) {
     preOwnedOnly: allPreOwned(offers),
   };
 }
+
+/**
+ * "1 offer from 1 store", and what the count leaves out, so it agrees with the table underneath: "1 offer from 1 store (and 1 used,
+ * 1 out of date)" (2026-11-18: a card said "1 offer from 1 store" above a table of two, the second used).
+ */
+export function offerCountText(summary) {
+  const base = `${summary.count} ${summary.count === 1 ? "offer" : "offers"} from ${summary.platformCount} ${summary.platformCount === 1 ? "store" : "stores"}`;
+  const extra = [
+    summary.excluded > 0 && `${summary.excluded} used or open box`,
+    summary.outOfDate > 0 && `${summary.outOfDate} out of date`,
+  ].filter(Boolean);
+  return extra.length ? `${base} (and ${extra.join(", ")})` : base;
+}
