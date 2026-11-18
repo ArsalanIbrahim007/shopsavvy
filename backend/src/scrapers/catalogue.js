@@ -333,3 +333,72 @@ export function parseMegaCategoryHtml(html) {
     });
   }, "mega");
 }
+
+// Product pages (Paklap, W11Stop, 2026-11-19): stores whose search and category paging their robots.txt forbids (Paklap any address
+// with "?", W11Stop "?search=" and "?page="), and whose sitemaps answer 403. Their product pages are allowed, so the listings we hold
+// there are refreshed one page at a time, the ones checked longest ago first, at most PAGES_PER_NIGHT a night. A page that refuses
+// (their firewall answers 403 or 520 now and then) is skipped and comes round again.
+export const PAGES_PER_NIGHT = 300;
+const PAGE_GAP_MS = 3000;
+
+/** {price, inStock} from a product page's own schema.org data, else its product:price meta tag; null when it states no price. */
+export function pagePriceAndStock(html) {
+  const text = String(html ?? "");
+  for (const block of text.matchAll(/<script[^>]+application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) {
+    let data;
+    try {
+      data = JSON.parse(block[1]);
+    } catch {
+      continue;
+    }
+    const queue = [data];
+    while (queue.length) {
+      const node = queue.shift();
+      if (!node || typeof node !== "object") continue;
+      if (Array.isArray(node)) {
+        queue.push(...node);
+        continue;
+      }
+      for (const offer of [].concat(node.offers ?? [])) {
+        const price = parsePrice(offer?.price ?? offer?.lowPrice);
+        if (price > 0) return { price, inStock: !/OutOfStock|SoldOut|Discontinued/i.test(String(offer.availability ?? "")) };
+      }
+      queue.push(...Object.values(node));
+    }
+  }
+  const meta = text.match(/<meta[^>]+(?:property|name)=["']product:price:amount["'][^>]+content=["']([\d.,]+)["']/i);
+  if (meta && parsePrice(meta[1]) > 0) {
+    const stock = text.match(/<meta[^>]+(?:property|name)=["']product:availability["'][^>]+content=["']([^"']+)["']/i)?.[1] ?? "";
+    return { price: parsePrice(meta[1]), inStock: !/out of stock|oos|sold out/i.test(stock) };
+  }
+  return null;
+}
+
+/**
+ * The held listings' pages, oldest checked first, as listings (their own address and title, the page's price and stock).
+ * @param {{platform: string}} store
+ * @param {{_id?: any, sourceUrl: string, title: string, lastScrapedAt?: Date}[]} held
+ */
+// onGone(urls): pages the store answered 404 or 410 for: products it deleted (W11Stop's oldest listings, 2026-11-19), marked gone by
+// the refresh. A refusal (403, 520) says nothing about the product and is only skipped.
+export async function* productPagesCatalogue(store, held, { fetchText = politeFetchText, onError, onGone, perNight = PAGES_PER_NIGHT, gapMs = PAGE_GAP_MS } = {}) {
+  const due = [...held].filter((l) => /^https?:\/\//.test(l.sourceUrl ?? "") && !String(l.sourceUrl).includes("?"))
+    .sort((a, b) => new Date(a.lastScrapedAt ?? 0) - new Date(b.lastScrapedAt ?? 0)).slice(0, perNight);
+  let failed = 0;
+  const gone = [];
+  for (const listing of due) {
+    try {
+      const found = pagePriceAndStock(await fetchText(listing.sourceUrl));
+      if (found) yield [makeListing({ platform: store.platform, sourceUrl: listing.sourceUrl, title: listing.title, price: found.price, inStock: found.inStock })];
+    } catch (error) {
+      if (/HTTP (404|410)(?!\d)/.test(error.message)) gone.push(listing.sourceUrl);
+      else {
+        failed += 1;
+        onError?.({ error: new Error(`${listing.sourceUrl}: ${error.message}`) });
+      }
+    }
+    if (gapMs) await new Promise((resolve) => setTimeout(resolve, gapMs));
+  }
+  if (gone.length) onGone?.(gone);
+  if (due.length > 0 && failed === due.length) throw new Error(`${store.platform}: every page refused`);
+}

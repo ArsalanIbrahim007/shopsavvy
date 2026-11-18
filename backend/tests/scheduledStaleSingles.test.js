@@ -175,8 +175,8 @@ describe("buildScheduledQueryList also re-queries products only one store sells,
     const plan = await buildScheduledQueryPlan({ now: NOW });
     // Each asks its own stores plus the general ones (smart routing, refreshStores).
     expect(plan).toEqual([
-      { query: deriveQuery("Acer Aspire Go 15 AG15 Laptop"), category: "tablet", lastScrapedAt: NOW - 9 * 86400000, kind: "stale-single", platforms: ["alfamall", "digimall", "mega", "paklap", "priceoye"] },
-      { query: deriveQuery(dell), category: "laptop", lastScrapedAt: NOW - 2 * 86400000, kind: "compared", platforms: ["alfamall", "digimall", "mega", "paklap", "priceoye"] },
+      { query: deriveQuery("Acer Aspire Go 15 AG15 Laptop"), category: "tablet", lastScrapedAt: NOW - 9 * 86400000, kind: "stale-single", platforms: ["alfamall", "digimall", "mega", "paklap"] },
+      { query: deriveQuery(dell), category: "laptop", lastScrapedAt: NOW - 2 * 86400000, kind: "compared", platforms: ["alfamall", "digimall", "mega", "paklap"] },
     ]);
   });
 
@@ -197,7 +197,7 @@ describe("buildScheduledQueryList also re-queries products only one store sells,
       listing("shophive", fridge, daysAgo(3), { productCategory: "refrigerator" }), listing("japanelectronics", fridge, daysAgo(4), { productCategory: "refrigerator" }),
     ] });
     const [entry] = await buildScheduledQueryPlan({ now: NOW });
-    expect(entry.platforms).toEqual(["alfamall", "digimall", "japanelectronics", "mega", "priceoye", "shophive"]);
+    expect(entry.platforms).toEqual(["alfamall", "digimall", "japanelectronics", "mega", "shophive"]); // PriceOye no longer searched (2026-11-19)
     expect(entry.platforms).not.toContain("paklap");
     expect(refreshStores(["mega", "w11stop"])).toEqual([...GENERAL_STORES, "w11stop"].sort());
   });

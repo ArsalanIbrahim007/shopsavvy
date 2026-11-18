@@ -56,10 +56,10 @@ beforeEach(() => {
 describe("scrapeAllPlatforms — withReport:true", () => {
   it("status ok when scraper returns listings", async () => {
     silenceAll();
-    scrapePriceOyeSearch.mockResolvedValue([stub("priceoye"), stub("priceoye")]);
+    scrapeMegaSearch.mockResolvedValue([stub("mega"), stub("mega")]);
 
     const { report } = await scrapeAllPlatforms("samsung s24", { withReport: true });
-    const po = report.find((r) => r.platform === "priceoye");
+    const po = report.find((r) => r.platform === "mega");
 
     expect(po.status).toBe("ok");
     expect(po.fetched).toBe(2);
@@ -71,7 +71,7 @@ describe("scrapeAllPlatforms — withReport:true", () => {
     silenceAll(); // all return []
 
     const { report } = await scrapeAllPlatforms("nonexistent xyz", { withReport: true });
-    const po = report.find((r) => r.platform === "priceoye");
+    const po = report.find((r) => r.platform === "mega");
 
     expect(po.status).toBe("empty");
     expect(po.fetched).toBe(0);
@@ -79,10 +79,10 @@ describe("scrapeAllPlatforms — withReport:true", () => {
 
   it("status error when scraper throws", async () => {
     silenceAll();
-    scrapePriceOyeSearch.mockRejectedValue(new Error("network timeout"));
+    scrapeMegaSearch.mockRejectedValue(new Error("network timeout"));
 
     const { listings, report } = await scrapeAllPlatforms("iphone 17", { withReport: true });
-    const po = report.find((r) => r.platform === "priceoye");
+    const po = report.find((r) => r.platform === "mega");
 
     expect(po.status).toBe("error");
     expect(po.error).toMatch(/network timeout/i);
@@ -92,29 +92,29 @@ describe("scrapeAllPlatforms — withReport:true", () => {
 
   it("status blocked on HTTP 403", async () => {
     silenceAll();
-    scrapePriceOyeSearch.mockRejectedValue(new Error("HTTP 403 Forbidden"));
+    scrapeMegaSearch.mockRejectedValue(new Error("HTTP 403 Forbidden"));
 
     const { report } = await scrapeAllPlatforms("iphone", { withReport: true });
-    const po = report.find((r) => r.platform === "priceoye");
+    const po = report.find((r) => r.platform === "mega");
 
     expect(po.status).toBe("blocked");
   });
 
   it("status paused when storeBreaker.allow returns false", async () => {
     silenceAll();
-    storeBreaker.allow.mockImplementation((p) => p !== "priceoye");
+    storeBreaker.allow.mockImplementation((p) => p !== "mega");
 
     const { report } = await scrapeAllPlatforms("iphone", { withReport: true });
-    const po = report.find((r) => r.platform === "priceoye");
+    const po = report.find((r) => r.platform === "mega");
 
     expect(po.status).toBe("paused");
     // paused store must NOT have been called
-    expect(scrapePriceOyeSearch).not.toHaveBeenCalled();
+    expect(scrapeMegaSearch).not.toHaveBeenCalled();
   });
 
   it("default call (no withReport) returns plain array, not object", async () => {
     silenceAll();
-    scrapePriceOyeSearch.mockResolvedValue([stub("priceoye")]);
+    scrapeMegaSearch.mockResolvedValue([stub("mega")]);
 
     const result = await scrapeAllPlatforms("samsung");
 
@@ -128,72 +128,73 @@ describe("scrapeAllPlatforms — withReport:true", () => {
     const { report } = await scrapeAllPlatforms("laptop", { withReport: true });
     const platforms = report.map((r) => r.platform);
 
-    expect(platforms).toContain("priceoye");
+    // PriceOye, Paklap and W11Stop are no longer searched (robots.txt, 2026-11-19): read through pages it allows instead.
+    expect(platforms).not.toContain("priceoye");
     expect(platforms).toContain("mega");
     expect(platforms).toContain("shophive");
-    expect(platforms).toContain("w11stop");
+    expect(platforms).not.toContain("w11stop");
     expect(platforms).not.toContain("telemart"); // switched off on 2026-10-25: telex.pk forbids collecting prices
     expect(platforms).toContain("ishopping");
-    expect(platforms).toContain("paklap");
+    expect(platforms).not.toContain("paklap");
   });
 
   // FIX 6a: 429 error must be counted as "blocked", not "error"
   it("status blocked on HTTP 429 error", async () => {
-    vi.mocked(scrapePriceOyeSearch).mockRejectedValueOnce(
+    vi.mocked(scrapeMegaSearch).mockRejectedValueOnce(
       new Error("fetchHtml failed: HTTP 429 Too Many Requests")
     );
     const { report } = await scrapeAllPlatforms("laptop", { withReport: true });
-    const r = report.find((x) => x.platform === "priceoye");
+    const r = report.find((x) => x.platform === "mega");
     expect(r.status).toBe("blocked");
   });
 
   // FIX 6b: relevance filter must actually drop irrelevant listings
   // (assert relevant < fetched when one listing does not match)
   it("relevant count reflects filtered results, not raw count", async () => {
-    vi.mocked(scrapePriceOyeSearch).mockResolvedValueOnce([
-      { title: "Samsung Galaxy S24 Ultra 256GB", price: 250000, platform: "priceoye", sourceUrl: "https://priceoye.pk/s24", inStock: true, scrapedAt: new Date() },
-      { title: "Targus Laptop Bag Carry Case Accessory", price: 5000, platform: "priceoye", sourceUrl: "https://priceoye.pk/bag", inStock: true, scrapedAt: new Date() },
+    vi.mocked(scrapeMegaSearch).mockResolvedValueOnce([
+      { title: "Samsung Galaxy S24 Ultra 256GB", price: 250000, platform: "mega", sourceUrl: "https://mega.pk/s24", inStock: true, scrapedAt: new Date() },
+      { title: "Targus Laptop Bag Carry Case Accessory", price: 5000, platform: "mega", sourceUrl: "https://mega.pk/bag", inStock: true, scrapedAt: new Date() },
     ]);
     // query "samsung galaxy s24" — the laptop bag should be filtered out
     const { report } = await scrapeAllPlatforms("samsung galaxy s24", { withReport: true });
-    const r = report.find((x) => x.platform === "priceoye");
+    const r = report.find((x) => x.platform === "mega");
     expect(r.fetched).toBe(2);
     expect(r.relevant).toBe(1);  // bag dropped
   });
 
   // FIX 6c: durationMs must be > 0 for a slow store
   it("durationMs is greater than zero for a store that takes time", async () => {
-    vi.mocked(scrapePriceOyeSearch).mockImplementationOnce(
+    vi.mocked(scrapeMegaSearch).mockImplementationOnce(
       () => new Promise((resolve) =>
-        setTimeout(() => resolve([{ title: "iPhone 17 Pro", price: 380000, platform: "priceoye", sourceUrl: "https://priceoye.pk/iphone17", inStock: true, scrapedAt: new Date() }]), 20)
+        setTimeout(() => resolve([{ title: "iPhone 17 Pro", price: 380000, platform: "mega", sourceUrl: "https://mega.pk/iphone17", inStock: true, scrapedAt: new Date() }]), 20)
       )
     );
     const { report } = await scrapeAllPlatforms("iphone 17 pro", { withReport: true });
-    const r = report.find((x) => x.platform === "priceoye");
+    const r = report.find((x) => x.platform === "mega");
     expect(r.durationMs).toBeGreaterThan(0);
   });
 
   // FIX 6d: durationMs is also recorded for a store that fails (not 0)
   it("durationMs is greater than zero for a store that fails after a delay", async () => {
-    vi.mocked(scrapePriceOyeSearch).mockImplementationOnce(
+    vi.mocked(scrapeMegaSearch).mockImplementationOnce(
       () => new Promise((_, reject) =>
         setTimeout(() => reject(new Error("timeout after 20ms")), 20)
       )
     );
     const { report } = await scrapeAllPlatforms("iphone", { withReport: true });
-    const r = report.find((x) => x.platform === "priceoye");
+    const r = report.find((x) => x.platform === "mega");
     expect(r.status).toBe("error");
     expect(r.durationMs).toBeGreaterThan(0);
   });
 
   it("until field appears in paused report entry when storeBreaker.paused returns it", async () => {
     const until = Date.now() + 60_000;
-    vi.mocked(storeBreaker.allow).mockImplementation((p) => p !== "priceoye");
+    vi.mocked(storeBreaker.allow).mockImplementation((p) => p !== "mega");
     vi.mocked(storeBreaker.paused).mockReturnValueOnce([
-      { platform: "priceoye", failures: 5, until },
+      { platform: "mega", failures: 5, until },
     ]);
     const { report } = await scrapeAllPlatforms("iphone", { withReport: true });
-    const r = report.find((x) => x.platform === "priceoye");
+    const r = report.find((x) => x.platform === "mega");
     expect(r.status).toBe("paused");
     expect(r.until).toBe(until);
   });

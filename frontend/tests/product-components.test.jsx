@@ -78,19 +78,19 @@ describe("StoreLogo", () => {
   });
 
   it("uses a monogram badge in the store's colour for a store without a logo file", () => {
-    const { container } = render(<StoreLogo platform="ishopping" />);
-    expect(screen.getByText("iShopping")).toBeInTheDocument();
+    const { container } = render(<StoreLogo platform="daraz" />);
+    expect(screen.getByText("Daraz")).toBeInTheDocument();
     expect(container.querySelector("img")).toBeNull();
     const mark = container.querySelector(".store-mark");
-    expect(mark).toHaveTextContent("I");
+    expect(mark).toHaveTextContent("D");
     expect(mark).toHaveAttribute("aria-hidden", "true");
     expect(mark.style.background).not.toBe("");
   });
 
   it("gives different stores different badges, and an unknown store a neutral one", () => {
-    const { container } = render(<><StoreMark platform="ishopping" /><StoreMark platform="brand new store" /></>);
+    const { container } = render(<><StoreMark platform="daraz" /><StoreMark platform="brand new store" /></>);
     const marks = [...container.querySelectorAll(".store-mark")];
-    expect(marks.map((m) => m.textContent)).toEqual(["I", "B"]);
+    expect(marks.map((m) => m.textContent)).toEqual(["D", "B"]);
     expect(marks[0].style.background).not.toBe(marks[1].style.background);
   });
 

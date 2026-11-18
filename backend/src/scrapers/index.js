@@ -1,11 +1,12 @@
 import { config } from "dotenv";
 config({ path: new URL("../../.env", import.meta.url).pathname.replace(/^\/([A-Z]:)/, "$1") });
 
-import { scrapePriceOyeSearch } from "./priceoye.scraper.js";
+// Searches switched off 2026-11-19 (robots.txt; the stores are read through pages it allows: services/catalogueRefresh.service.js).
+// import { scrapePriceOyeSearch } from "./priceoye.scraper.js";
 import { scrapeMegaSearch } from "./mega.scraper.js";
 import { scrapeShophiveSearch } from "./shophive.scraper.js";
-import { scrapePaklapSearch } from "./paklap.scraper.js";
-import { scrapeW11StopSearch } from "./w11stop.scraper.js";
+// import { scrapePaklapSearch } from "./paklap.scraper.js";
+// import { scrapeW11StopSearch } from "./w11stop.scraper.js";
 // Telemart is switched off (see the disabled task in scrapeFixedPlatforms below and config/platforms.js).
 // import { scrapeTelemartSearch } from "./telemart.scraper.js";
 import { scrapeIShoppingSearch } from "./ishopping.scraper.js";
@@ -76,10 +77,12 @@ async function scrapeFixedPlatforms(query, opts = {}) {
   const { withReport = false, only } = opts;
   const encoded = encodeURIComponent(query);
   const tasks = [
-    {
-      platform: "priceoye",
-      fn: () => scrapePriceOyeSearch(`https://priceoye.pk/search?q=${encoded}`),
-    },
+    // DISABLED 2026-11-19: PriceOye's robots.txt forbids /search?q= to crawlers it does not name. Every PriceOye listing is read
+    // nightly from its section and brand pages, which it allows (catalogueRefresh.service.js, priceoye.scraper.js priceOyeSection).
+    // {
+    //   platform: "priceoye",
+    //   fn: () => scrapePriceOyeSearch(`https://priceoye.pk/search?q=${encoded}`),
+    // },
     {
       platform: "mega",
       fn: () =>
@@ -94,18 +97,10 @@ async function scrapeFixedPlatforms(query, opts = {}) {
           `https://www.shophive.com/catalogsearch/result/?q=${encoded}`
         ),
     },
-    {
-      platform: "paklap",
-      fn: () =>
-        scrapePaklapSearch(
-          `https://www.paklap.pk/catalogsearch/result/index/?cat=0&q=${encoded}`
-        ),
-    },
-    {
-      platform: "w11stop",
-      fn: () =>
-        scrapeW11StopSearch(`https://w11stop.com/search?search=${encoded}`),
-    },
+    // DISABLED 2026-11-19: Paklap's robots.txt forbids every address with "?" (its search too), W11Stop's "?search=". The listings
+    // we hold there are refreshed from their product pages, which both allow (catalogue.js productPagesCatalogue).
+    // { platform: "paklap", fn: () => scrapePaklapSearch(`https://www.paklap.pk/catalogsearch/result/index/?cat=0&q=${encoded}`) },
+    // { platform: "w11stop", fn: () => scrapeW11StopSearch(`https://w11stop.com/search?search=${encoded}`) },
     // DISABLED 2026-10-25: Telemart (now telex.pk) forbids scraping in its terms; see config/platforms.js.
     // The scraper file is kept intact. Re-enable by uncommenting this block and the import above.
     // {

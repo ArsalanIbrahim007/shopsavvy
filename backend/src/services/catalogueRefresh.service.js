@@ -10,7 +10,7 @@
 
 import Listing from "../models/listing.model.js";
 import PriceHistory from "../models/priceHistory.model.js";
-import { categoryCatalogue, megaCategories, megaCategoryUrl, parseMegaCategoryHtml, magentoCatalogue, shopifyCatalogue, storefrontCatalogue, wooCatalogue } from "../scrapers/catalogue.js";
+import { categoryCatalogue, productPagesCatalogue, megaCategories, megaCategoryUrl, parseMegaCategoryHtml, magentoCatalogue, shopifyCatalogue, storefrontCatalogue, wooCatalogue } from "../scrapers/catalogue.js";
 import { parseIShoppingHtml } from "../scrapers/ishopping.scraper.js";
 import { STORES as ADAPTER_STORES } from "../scrapers/stores.js";
 import { priceOyeSection } from "../scrapers/priceoye.scraper.js";
@@ -57,6 +57,10 @@ export const CATALOGUE_ONLY_STORES = Object.freeze([
   },
   // Mega.pk (2026-11-18): its category pages, read for the categories our listings come from (catalogue.js megaCategories).
   { platform: "mega", type: "category", baseUrl: "https://www.mega.pk", parse: parseMegaCategoryHtml, pageUrl: megaCategoryUrl, categories: megaCategories },
+  // Paklap and W11Stop (2026-11-19): their robots.txt forbids their search and category paging; the listings we hold are
+  // refreshed from their product pages, which it allows (catalogue.js productPagesCatalogue).
+  { platform: "paklap", type: "pages", baseUrl: "https://www.paklap.pk" },
+  { platform: "w11stop", type: "pages", baseUrl: "https://w11stop.com" },
 ]);
 export const CATALOGUE_STORES = [
   ...ADAPTER_STORES.filter((store) => ["shopify", "woocommerce", "storefront"].includes(store.type)),
@@ -89,7 +93,8 @@ export async function storefrontTerms(platform, { listing = Listing } = {}) {
     .map(([word]) => word);
 }
 
-function pagesOf(store, { fetchJson, terms, known, onError, onTermRead }) {
+function pagesOf(store, { fetchJson, terms, known, held = [], onError, onTermRead, onGone }) {
+  if (store.type === "pages") return productPagesCatalogue(store, held, { onError, onGone });
   const options = { ...(fetchJson ? { fetchJson } : {}), onError, onTermRead };
   if (store.type === "shopify") return shopifyCatalogue(store, options);
   if (store.type === "woocommerce") {
@@ -137,7 +142,7 @@ async function* priceOyeCatalogue(known, { fetchHtml, onError } = {}) {
  */
 export async function refreshCatalogue(store, { fetchJson, terms, dryRun = false, onPage, deadline = null, listing = Listing, priceHistory = PriceHistory, now = () => new Date() } = {}) {
   const startedAt = Date.now();
-  const held = await listing.find({ platform: store.platform }, { sourceUrl: 1, title: 1 }).lean();
+  const held = await listing.find({ platform: store.platform }, { sourceUrl: 1, title: 1, lastScrapedAt: 1 }).lean();
   const known = new Set(held.map((row) => row.sourceUrl));
   const completeTerms = new Set(); // a marketplace's brand words read in full (storefrontCatalogue onTermRead)
   const searchTerms = store.type === "storefront" ? terms ?? (await storefrontTerms(store.platform, { listing })) : undefined;
@@ -166,7 +171,8 @@ export async function refreshCatalogue(store, { fetchJson, terms, dryRun = false
     stats.historyAppended += history.appended;
   }
 
-  for await (const page of pagesOf(store, { fetchJson, terms: searchTerms, known, onError, onTermRead: ({ term, complete }) => complete && completeTerms.add(term) })) {
+  const pagesGone = []; // product pages the store answered 404 or 410 for (productPagesCatalogue)
+  for await (const page of pagesOf(store, { fetchJson, terms: searchTerms, known, held, onGone: (urls) => pagesGone.push(...urls), onError, onTermRead: ({ term, complete }) => complete && completeTerms.add(term) })) {
     // The run's time limit: what was read is kept, nothing is marked gone (a read stopped early is not the whole store). AlfaMall's
     // read by brand takes over two hours with its retries; past the searches' budget it kept the nightly running until Task
     // Scheduler ended it, before its page check, with nothing logged (2026-11-10).
@@ -195,6 +201,13 @@ export async function refreshCatalogue(store, { fetchJson, terms, dryRun = false
   await flush();
 
   stats.gone = 0;
+  // A product page the store answered 404 or 410 for: the product was deleted (W11Stop, 2026-11-19). Gone as below, never by dry run.
+  if (pagesGone.length) {
+    stats.gone += pagesGone.length;
+    if (!dryRun) {
+      await listing.updateMany({ platform: store.platform, sourceUrl: { $in: pagesGone }, notInCatalogueSince: null }, { $set: { inStock: false, notInCatalogueSince: now() } });
+    }
+  }
   // Only a read of the whole store: not a marketplace read by brand, not chosen collections (Al-Fatah, 2026-11-08: its three
   // collections found 1,259 of our 2,444 listings, and the other 1,185, accessories and the like, were marked gone though still sold),
   // and not one a reader stopped early (an error, or a page limit reached: catalogue.js reports both through onError).
@@ -222,7 +235,7 @@ export async function refreshCatalogue(store, { fetchJson, terms, dryRun = false
     }
   }
   // Category pages (iShopping, Mega) cover the categories read, not the store: refreshed, never marked gone by this rule.
-  const wholeStore = store.type !== "storefront" && store.type !== "category" && !store.collections?.length;
+  const wholeStore = store.type !== "storefront" && store.type !== "category" && store.type !== "pages" && !store.collections?.length;
   const complete = wholeStore && !stats.stoppedAtDeadline && stats.errors === 0 && stats.known > 0 && stats.matched / stats.known >= MIN_FOUND_SHARE;
   if (complete) {
     const gone = [...known].filter((url) => !seen.has(url));

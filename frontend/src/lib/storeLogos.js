@@ -6,8 +6,8 @@
 // The files are each store's own public icon, downloaded once with Arsalan's permission (first six on 2026-09-30, the
 // six stores added on 2026-10-01 the day after). Mi Store's is the "mi" icon cut out of the vector logo on its own site (an
 // SVG, so it is sharp at any size). Mymart publishes nothing larger than its 32 px icon, which looks a little soft at 28 px.
-// iShopping has none: its site refuses scripted downloads and has no favicon at the usual address, so it
-// keeps the monogram. Telemart's site now redirects to telex.pk, and its icon is the Telex one.
+// iShopping's is its yellow smile mark, cut on 2026-11-19 (Arsalan asked for the original) from the logo its homepage shows
+// (media/logo/stores/1/logo_1__1.png, 210x40), the black "shopping" left out: its favicon is only 16 px. Telemart's site now redirects to telex.pk, and its icon is the Telex one.
 // The eleven stores added on 2026-10-22 were downloaded the same day, again with Arsalan's permission: each store's own icon as its
 // homepage names it, checked to be a real image. The Shopify stores' icons were asked for at 128 px (Zero Lifestyle has none larger
 // than 51 px); AlfaMall publishes only its favicon.ico.
@@ -18,6 +18,7 @@ export const STORE_LOGO_FILES = {
   priceoye: "priceoye.ico",
   mega: "mega.png",
   shophive: "shophive.ico",
+  ishopping: "ishopping.png",
   w11stop: "w11stop.png",
   telemart: "telemart.png",
   paklap: "paklap.png",

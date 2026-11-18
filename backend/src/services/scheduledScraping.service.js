@@ -78,7 +78,8 @@ export const RUN_BUDGET_MS = 150 * 60 * 1000;
  * starts selling a product is still found. A slow specialist store that starts selling it is found by the next shopper's search,
  * which still asks every store.
  */
-export const GENERAL_STORES = Object.freeze(["priceoye", "mega", "alfamall", "digimall"]);
+// PriceOye left out since 2026-11-19: its search is switched off (robots.txt); its whole catalogue is read nightly instead.
+export const GENERAL_STORES = Object.freeze(["mega", "alfamall", "digimall"]);
 
 /** The stores to ask for a product sold by `stores`: those and GENERAL_STORES, in a stable order. */
 export function refreshStores(stores = []) {

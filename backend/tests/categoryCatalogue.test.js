@@ -45,3 +45,48 @@ describe("the catalogue stores", () => {
     expect(CATALOGUE_STORES.filter((s) => s.type === "category").map((s) => s.platform)).toEqual(["ishopping", "mega"]);
   });
 });
+
+describe("product pages (Paklap, W11Stop, 2026-11-19)", () => {
+  it("reads the price and stock from a page's own product data, else its price meta tag", async () => {
+    const { pagePriceAndStock } = await import("../src/scrapers/catalogue.js");
+    const ld = `<script type="application/ld+json">{"@type":"Product","offers":{"@type":"Offer","price":"185,000.00","availability":"https://schema.org/InStock"}}</script>`;
+    expect(pagePriceAndStock(ld)).toEqual({ price: 185000, inStock: true });
+    expect(pagePriceAndStock(ld.replace("InStock", "OutOfStock"))).toEqual({ price: 185000, inStock: false });
+    expect(pagePriceAndStock('<meta property="product:price:amount" content="7640.00">')).toEqual({ price: 7640, inStock: true });
+    expect(pagePriceAndStock("<html>no price</html>")).toBe(null);
+  });
+
+  it("reads the pages checked longest ago first, skips one that refuses, and fails only when every page refuses", async () => {
+    const { productPagesCatalogue } = await import("../src/scrapers/catalogue.js");
+    const held = [
+      { sourceUrl: "https://s.pk/new.html", title: "New", lastScrapedAt: new Date("2026-11-18") },
+      { sourceUrl: "https://s.pk/old.html", title: "Old", lastScrapedAt: new Date("2026-11-01") },
+      { sourceUrl: "https://s.pk/refuses.html", title: "Refuses", lastScrapedAt: new Date("2026-11-05") },
+    ];
+    const asked = [];
+    const fetchText = async (url) => { asked.push(url); if (url.includes("refuses")) throw new Error("HTTP 403"); return '<meta property="product:price:amount" content="1000">'; };
+    const read = [];
+    for await (const page of productPagesCatalogue({ platform: "s" }, held, { fetchText, gapMs: 0, perNight: 2 })) read.push(...page.map((l) => l.title));
+    expect(asked).toEqual(["https://s.pk/old.html", "https://s.pk/refuses.html"]); // oldest first, two a night
+    expect(read).toEqual(["Old"]);
+    const allRefuse = productPagesCatalogue({ platform: "s" }, held, { fetchText: async () => { throw new Error("HTTP 403"); }, gapMs: 0 });
+    await expect((async () => { for await (const _p of allRefuse) { /* read */ } })()).rejects.toThrow(/every page refused/);
+  });
+});
+
+describe("a product page the store deleted (W11Stop, 2026-11-19)", () => {
+  it("is reported gone on 404 or 410, and a refusal is only skipped", async () => {
+    const { productPagesCatalogue } = await import("../src/scrapers/catalogue.js");
+    const held = ["deleted", "refused", "fine"].map((n, i) => ({ sourceUrl: `https://s.pk/${n}.html`, title: n, lastScrapedAt: new Date(2026, 10, i + 1) }));
+    const fetchText = async (url) => {
+      if (url.includes("deleted")) throw new Error("HTTP 404");
+      if (url.includes("refused")) throw new Error("HTTP 520");
+      return '<meta property="product:price:amount" content="1000">';
+    };
+    let gone = null;
+    const errors = [];
+    for await (const _p of productPagesCatalogue({ platform: "s" }, held, { fetchText, gapMs: 0, onGone: (urls) => { gone = urls; }, onError: ({ error }) => errors.push(error.message) })) { /* read */ }
+    expect(gone).toEqual(["https://s.pk/deleted.html"]);
+    expect(errors).toEqual(["https://s.pk/refused.html: HTTP 520"]);
+  });
+});
