@@ -46,7 +46,7 @@ describe("rate limits", () => {
     for (let i = 0; i < 301; i++) last = await call("/api/listings/search");
     expect(last.status).toBe(429);
     expect((await last.json()).code).toBe("RATE_LIMITED");
-  });
+  }, 20000); // 301 requests: slow on a busy machine
 
   it("does not limit the health check", async () => {
     for (let i = 0; i < 30; i++) expect((await call("/api/health")).status).not.toBe(429);

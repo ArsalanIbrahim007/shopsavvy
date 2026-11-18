@@ -234,3 +234,33 @@ describe("a pasted Pakistani store's link (audit 2026-11-18)", () => {
     expect(isPakistaniHost(null)).toBe(false);
   });
 });
+
+describe("storage not stated is an option of its own (audit S-014, 2026-11-19)", () => {
+  it("lists it last and keeps offers without storage when it is chosen", async () => {
+    const { buildFacets, applyFilters, emptyFilters } = await import("../src/lib/filters.js");
+    const offers = [
+      { productCategory: "smartphone", storageGb: 256, price: 1 }, { productCategory: "smartphone", storageGb: 128, price: 1 },
+      { productCategory: "smartphone", storageGb: null, price: 1 },
+    ];
+    const storage = buildFacets(offers, "smartphone").find((f) => f.key === "storage");
+    expect(storage.options.map((o) => o.label)).toEqual(["128 GB", "256 GB", "Storage not stated"]);
+    expect(applyFilters(offers, { ...emptyFilters(), storage: [256, 0] })).toHaveLength(2);
+  });
+});
+
+describe("a store whose listings do not state stock (audit S-008)", () => {
+  it("says 'Stock not confirmed' for Mega, 'In stock' elsewhere, and why it cannot be bought when it cannot", async () => {
+    const { stockLabelOf } = await import("../src/lib/verdicts.js");
+    expect(stockLabelOf({ platform: "mega", inStock: true })).toMatchObject({ label: "Stock not confirmed", known: false });
+    expect(stockLabelOf({ platform: "priceoye", inStock: true })).toMatchObject({ label: "In stock", known: true });
+    expect(stockLabelOf({ platform: "mega", inStock: false, availability: "coming_soon" })).toMatchObject({ label: "Coming soon" });
+  });
+});
+
+describe("a price far below the specs price (audit S-016, 2026-11-19)", () => {
+  it("is not called a bargain: the model prices the specs, not the year", async () => {
+    const { fairPriceGap } = await import("../src/lib/fairPrice.js");
+    expect(fairPriceGap(258825, { price: 369519 })).toMatchObject({ tone: "neutral", text: expect.stringMatching(/^30% below it: priced from the specs/) });
+    expect(fairPriceGap(92000, { price: 100000 })).toEqual({ tone: "good", text: "8% below it" });
+  });
+});

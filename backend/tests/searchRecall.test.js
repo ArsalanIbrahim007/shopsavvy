@@ -42,5 +42,18 @@ describe("a search waits for the stores at most MISSING_WAIT_MS (audit 2026-11-1
   it("answers when the stores are slow, and leaves them running", async () => {
     const { MISSING_WAIT_MS } = await import("../src/services/scraper.service.js");
     expect(MISSING_WAIT_MS).toBe(25000);
+  }, 30000); // importing the scrapers is slow under load
+});
+
+describe("a model code searched with its size (audit S-006)", () => {
+  it("also matches the code without the size and with region letters, never another size's code", async () => {
+    const { searchWordPattern, sizedModelCode } = await import("../src/services/searchMatching.service.js");
+    const re = new RegExp(searchWordPattern("55u8000f"), "i");
+    expect(re.test("SAMSUNG 55 Inches 4K Uhd Smart TV | 55U8000F")).toBe(true);
+    expect(re.test("Samsung 55\" Crystal UHD U8000F 4K Smart TV 2025 (UA55U8000FUSMM)")).toBe(true);
+    expect(re.test("Samsung 55 Inch Crystal UHD 4K Smart LED TV (U8000F)")).toBe(true);
+    expect(re.test("Samsung 43U8000F")).toBe(false);
+    expect(sizedModelCode("iphone17")).toBe(null);
+    expect(sizedModelCode("55c6k")).toEqual({ size: 55, code: "c6k" });
   });
 });

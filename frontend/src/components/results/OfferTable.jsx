@@ -16,7 +16,7 @@ import { platformName } from "../../lib/platforms.js";
 import { offerLink } from "../../lib/safeLink.js";
 import { ptaFlag } from "../../lib/pta.js";
 import { bestDealOffer } from "../../lib/score.js";
-import { availabilityOf, offerFlags, offerVerdict } from "../../lib/verdicts.js";
+import { offerFlags, offerVerdict, stockLabelOf } from "../../lib/verdicts.js";
 import { summarizeOffers } from "../../lib/summary.js";
 import { Swatch } from "../ColourPicker.jsx";
 import StoreLogo from "../StoreLogo.jsx";
@@ -132,7 +132,7 @@ export default function OfferTable({ offers, name, currentId, colour = null }) {
                 <td><ScoreCell offer={offer} /></td>
                 <td><VerdictCell offer={offer} lowestPrice={lowest?.price ?? null} /></td>
                 <td className="small">
-                  {offer.inStock === false ? <span className="muted">{availabilityOf(offer).label}</span> : "In stock"}
+                  {((stock) => (stock.known && offer.inStock !== false ? stock.label : <span className="muted" title={stock.reason}>{stock.label}</span>))(stockLabelOf(offer))}
                   {offer.lastScrapedAt && <span className="offer-table__age muted">Price checked {timeAgo(offer.lastScrapedAt)}</span>}
                 </td>
                 <td>

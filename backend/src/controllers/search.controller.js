@@ -10,7 +10,7 @@ import { detectQueryCategory } from "../scrapers/productCategory.js";
 import { hasAdminKey } from "../middleware/adminKey.middleware.js";
 import { groupListings } from "../services/grouping.service.js";
 import { attachPriceHistory } from "../services/historyEnrichment.service.js";
-import { normalizeTitle } from "../services/normalizeTitle.service.js";
+import { extractScreenInches, normalizeTitle } from "../services/normalizeTitle.service.js";
 import { currentOffers } from "../services/offerFreshness.service.js";
 import { lowestBadge } from "../services/priceOutlook.service.js";
 import { textParam, numberParam } from "../services/queryParams.service.js";
@@ -18,7 +18,7 @@ import { searchableText } from "../services/coreTitle.service.js";
 import { attachRecommendation } from "../services/recommendation/recommendation.service.js";
 import { fetchAndRefreshListings } from "../services/scraper.service.js";
 import { resultsState } from "../services/searchFreshness.js";
-import { escapeRegex, buildWholeWordPattern, fuzzyMatchIds, joinedWordPattern, splitCategoryWords } from "../services/searchMatching.service.js";
+import { buildWholeWordPattern, fuzzyMatchIds, joinedWordPattern, searchWordPattern, sizedModelCode, splitCategoryWords } from "../services/searchMatching.service.js";
 import { isSearchable, selectSearchListings, worthAskingStores } from "../services/searchRanking.service.js";
 import { getSuggestions } from "../services/suggestions.service.js";
 import { priceStats } from "./priceStats.js";
@@ -124,13 +124,15 @@ async function findSearchListings(trimmedQuery, searchFilter) {
       ...searchFilter,
       ...categoryFloor,
       // Whole words, a plural allowed: "tea" matched inside "steamer", "steam iron" and "teal" (464 of the 500 shown, 2026-11-07).
-      $and: queryTokens.map((token) => ({
-        title: { $regex: `(?<![A-Za-z0-9])${escapeRegex(token)}(?:e?s)?(?![A-Za-z0-9])`, $options: "i" },
-      })),
+      // A sized model code also matches its other spellings ("55U8000F", "U8000F", "UA55U8000FUSMM"; searchWordPattern).
+      $and: queryTokens.map((token) => ({ title: { $regex: searchWordPattern(token), $options: "i" } })),
     };
     delete tokenFilter.$or;
 
-    const byWords = await Listing.find(tokenFilter).sort({ price: 1, createdAt: -1 });
+    // ...and a title that states another screen size is another TV ("Samsung 43" Crystal UHD (U8000F)" for "55U8000F").
+    const sizes = queryTokens.map(sizedModelCode).filter(Boolean).map((s) => s.size);
+    const sameSize = (listing) => sizes.length === 0 || [null, ...sizes].includes(extractScreenInches(listing.title ?? "") === null ? null : Math.round(extractScreenInches(listing.title)));
+    const byWords = (await Listing.find(tokenFilter).sort({ price: 1, createdAt: -1 })).filter(sameSize);
     const seen = new Set(listings.map((listing) => String(listing._id)));
     const added = byWords.filter((listing) => !seen.has(String(listing._id)));
     if (added.length) {

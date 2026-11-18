@@ -53,6 +53,19 @@ export function availabilityOf(offer) {
   return AVAILABILITY[offer.availability] ?? AVAILABILITY.out_of_stock;
 }
 
+// Stores whose listings never state stock: Mega.pk's search and category cards show a price whether or not it can be bought, and
+// only its product page says "out of stock" (audit S-008: an Apple Watch shown in stock that Mega had sold out). Not "In stock".
+const STOCK_UNSTATED_STORES = new Set(["mega"]);
+
+/** The offers table's stock words: "In stock", "Stock not confirmed" (a store that does not say), or why it cannot be bought. */
+export function stockLabelOf(offer) {
+  if (offer?.inStock === false) return { label: availabilityOf(offer).label, known: true };
+  if (STOCK_UNSTATED_STORES.has(String(offer?.platform ?? "").toLowerCase())) {
+    return { label: "Stock not confirmed", known: false, reason: "This store's listings do not say whether it is in stock. Check its page before you buy." };
+  }
+  return { label: "In stock", known: true };
+}
+
 /** Recommendation for an offer, with a safe fallback. */
 export function recommendationOf(offer) {
   return RECOMMENDATIONS[offer?.recommendation?.action] || RECOMMENDATIONS.NO_HISTORY;

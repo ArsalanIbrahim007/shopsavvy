@@ -26,7 +26,9 @@ export const FACET_DEFS = {
   // Not "Nothing" as an option: the phone maker's name read as "no brand" in the phones' brand filter, and Arsalan asked for it to go
   // (2026-11-10). Its phones are still listed and found by search ("nothing phone").
   brand: { title: "Brand", field: "brand", order: "count", format: formatBrand, normalize: (v) => String(v).trim().toLowerCase(), exclude: ["nothing"] },
-  storage: { title: "Storage", field: "storageGb", numeric: true, order: "value", format: formatCapacity },
+  // A title that states no storage is an option of its own, "Storage not stated" (0): DigiMall and PriceOye titles rarely state it,
+  // and choosing 256 GB used to hide them without a word (audit S-014, 2026-11-19).
+  storage: { title: "Storage", field: "storageGb", numeric: true, order: "value", format: (gb) => (gb === UNSTATED ? "Storage not stated" : formatCapacity(gb)), unstated: true },
   ram: { title: "RAM", field: "ramGb", numeric: true, order: "value", format: formatCapacity },
   screen: { title: "Screen size", field: "screenInches", numeric: true, order: "value", format: formatScreen },
   resolution: { title: "Resolution", field: "resolution", order: "resolution" },
@@ -135,8 +137,10 @@ export function inCategory(offers, category) {
 }
 
 /** An offer's value for a facet, normalised where the facet says so (a brand in one case). */
+const UNSTATED = 0;
+
 function facetValue(offer, def) {
-  const value = offer[def.field];
+  const value = def.unstated && (offer[def.field] === null || offer[def.field] === undefined) ? UNSTATED : offer[def.field];
   return def.normalize && value !== null && value !== undefined && value !== "" ? def.normalize(value) : value;
 }
 
@@ -272,7 +276,7 @@ export function buildFacets(offers, category, filters = null) {
         label: def.format ? def.format(value) : String(value),
       }));
 
-      if (def.order === "value") options.sort((a, b) => a.value - b.value);
+      if (def.order === "value") options.sort((a, b) => (a.value === UNSTATED) - (b.value === UNSTATED) || a.value - b.value); // "not stated" last
       else if (def.order === "resolution") options.sort((a, b) => (RESOLUTION_ORDER[a.value] ?? 99) - (RESOLUTION_ORDER[b.value] ?? 99));
       else options.sort((a, b) => b.total - a.total);
 

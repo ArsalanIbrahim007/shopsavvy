@@ -76,6 +76,23 @@ export function joinedWordPattern(word) {
   return `(?<![A-Za-z0-9])${chars.join("[\\s-]?")}(?![A-Za-z0-9])`;
 }
 
+/**
+ * A screen size followed by a model code ("55u8000f", "65q7f", "55c6k"): its size and the code apart, or null. Stores write the same
+ * TV "55U8000F", "U8000F" (with 55" elsewhere) or "UA55U8000FUSMM", and a search for "Samsung 55U8000F" found two stores of
+ * five (audit S-006, 2026-11-18).
+ */
+export function sizedModelCode(word) {
+  const match = String(word).toLowerCase().match(/^(\d{2,3})([a-z]{1,3}\d{1,5}[a-z]{0,3})$/);
+  return match && Number(match[1]) >= 24 && Number(match[1]) <= 115 ? { size: Number(match[1]), code: match[2] } : null;
+}
+
+/** The pattern for a search word: the word as a whole word (a plural allowed), or for a sized model code also its other spellings. */
+export function searchWordPattern(word) {
+  const sized = sizedModelCode(word);
+  if (!sized) return `(?<![A-Za-z0-9])${escapeRegex(word)}(?:e?s)?(?![A-Za-z0-9])`;
+  return `(?<![A-Za-z0-9])(?:[a-z]{0,2}${sized.size})?${escapeRegex(sized.code)}[a-z]{0,4}(?![A-Za-z0-9])`;
+}
+
 /** True when `short` (3 letters) is `long` with one letter left out ("gre" for "gree", "del" for "dell"). */
 function missesOneLetter(short, long) {
   if (long.length !== short.length + 1) return false;

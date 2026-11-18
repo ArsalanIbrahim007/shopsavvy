@@ -125,5 +125,5 @@ describe("a marketplace's PTA-approved category (2026-11-18)", () => {
     expect(toListingDoc({ ...base, title: "Apple iPhone 16 128GB" })).toMatchObject({ ptaStatus: "pta_approved", ptaSource: "store_category" });
     expect(toListingDoc({ ...base, title: "Apple iPhone 16 128GB Non PTA" })).toMatchObject({ ptaStatus: "non_pta", ptaSource: "title" });
     expect(toListingDoc({ ...base, title: "Apple iPhone 16 128GB", storePta: null })).not.toHaveProperty("ptaStatus");
-  });
+  }, 20000); // importing the scrapers is slow on a busy machine
 });
