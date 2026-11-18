@@ -76,7 +76,7 @@ export function biggestSaving(groups) {
  * Used, refurbished and open-box offers are left out of every number here whenever there is a new offer to compare
  * (see lib/condition.js): their prices are shown in their own section, never as "the lowest price". `excluded` says how
  * many were left out, and `preOwnedOnly` that all that is left is pre-owned (a search for refurbished laptops).
- * An offer whose price has not been checked for two weeks is left out the same way (lib/freshness.js) while a current one exists;
+ * An offer whose price has not been checked for a week is left out the same way (lib/freshness.js) while a current one exists;
  * `outOfDate` says how many were left out for that.
  * @returns {{count:number, platformCount:number, lowest:object|null, average:number|null,
  *            bestDeal:object|null, flagged:number, updatedAt:Date|null, excluded:number, outOfDate:number, preOwnedOnly:boolean}}

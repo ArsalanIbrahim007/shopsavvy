@@ -97,3 +97,18 @@ describe("scraping does not undo what a product page said", () => {
     expect(toListingDoc(scraped("Samsung Galaxy A17 NON PTA"))).toMatchObject({ ptaStatus: "non_pta", ptaSource: "title" });
   });
 });
+
+describe("a store's short list (techroid, 2026-11-18)", () => {
+  const list = (items) => `<html><body><ul class="wd-list">${items.map((i) => `<li><span class="wd-list-content">${i}</span></li>`).join("")}</ul></body></html>`;
+
+  it("reads a list item that states PTA", () => {
+    expect(extractPtaFromPage(list(["Warranty 1 year", "PTA Approved"]))).toMatchObject({ status: "pta_approved", source: "store's list" });
+    expect(extractPtaFromPage(list(["Warranty 1 year", "Non PTA"]))).toMatchObject({ status: "non_pta" });
+  });
+
+  it("ignores menu links and long sentences", () => {
+    const menu = `<html><body><nav><ul><li>PTA Approved</li></ul></nav><ul><li><a href="/pta">PTA Approved Phones</a></li>
+      <li>Every phone we sell is checked by our team and PTA approved unless stated otherwise</li></ul></body></html>`;
+    expect(extractPtaFromPage(menu).status).toBe("unknown");
+  });
+});

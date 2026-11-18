@@ -109,3 +109,21 @@ describe("scrapeStorefrontSearch", () => {
     await expect(scrapeStorefrontSearch(ALFAMALL, "a17", { fetchJson: async () => { throw new Error("be.alfamall.com: HTTP 503"); } })).rejects.toThrow("HTTP 503");
   });
 });
+
+describe("a marketplace's PTA-approved category (2026-11-18)", () => {
+  it("is read from the result's categories, and only ever confirms approval", async () => {
+    const { storePtaOf } = await import("../src/scrapers/storefront.scraper.js");
+    expect(storePtaOf({ category: [{ handle: "pta-approval" }, { handle: "pta-approval/iphone" }] })).toBe("pta_approved");
+    expect(storePtaOf({ category: [{ handle: "electronics/smart-phones/pta-approval" }] })).toBe("pta_approved");
+    expect(storePtaOf({ category: [{ handle: "b2b" }] })).toBe(null);
+    expect(storePtaOf({})).toBe(null);
+  });
+
+  it("is saved when the title says nothing, and never over what the title says", async () => {
+    const { toListingDoc } = await import("../src/services/scraper.service.js");
+    const base = { platform: "alfamall", price: 300000, sourceUrl: "https://alfamall.com/iphone-16", storePta: "pta_approved" };
+    expect(toListingDoc({ ...base, title: "Apple iPhone 16 128GB" })).toMatchObject({ ptaStatus: "pta_approved", ptaSource: "store_category" });
+    expect(toListingDoc({ ...base, title: "Apple iPhone 16 128GB Non PTA" })).toMatchObject({ ptaStatus: "non_pta", ptaSource: "title" });
+    expect(toListingDoc({ ...base, title: "Apple iPhone 16 128GB", storePta: null })).not.toHaveProperty("ptaStatus");
+  });
+});

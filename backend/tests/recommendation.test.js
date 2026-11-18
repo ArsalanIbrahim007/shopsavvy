@@ -154,3 +154,25 @@ describe("'Wait' needs a price history that says something (audit, 2026-11-12)",
     expect(moved.action).toBe(RECOMMENDATION_ACTIONS.WAIT);
   });
 });
+
+describe("the reason says which kind of suspicious discount it is (2026-11-18)", () => {
+  const offer = (suspicionKind) => generateRecommendation({
+    price: 1000, originalPrice: 1100, dealScore: 70, priceHistory: Array(5).fill({ price: 1000 }),
+    discountAnalysis: { classification: "suspicious", suspicionKind },
+  });
+
+  it("an unconfirmed one is not called exaggerated", () => {
+    expect(offer("unconfirmed").reason).toMatch(/under two weeks/);
+    expect(offer("unconfirmed").reason).not.toMatch(/exaggerated/);
+  });
+
+  it("a never-charged one says the store never charged its 'was' price", () => {
+    expect(offer("never_charged").reason).toMatch(/never charged its "was" price/);
+  });
+
+  it("the rest keep the old sentence, and the action and confidence do not depend on the kind", () => {
+    expect(offer(null).reason).toMatch(/exaggerated/);
+    expect(new Set(["unconfirmed", "never_charged", null].map((k) => offer(k).action)).size).toBe(1);
+    expect(new Set(["unconfirmed", "never_charged", null].map((k) => offer(k).confidence)).size).toBe(1);
+  });
+});

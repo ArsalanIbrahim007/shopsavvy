@@ -9,7 +9,7 @@
     "activeTab"
   ],
   "host_permissions": [
-    "https://shopsavvy-api.duckdns.org/*",
+    "https://cranium-espresso-sway.ngrok-free.dev/*",
     "http://localhost:5000/*",
     "http://127.0.0.1:5000/*"
   ],

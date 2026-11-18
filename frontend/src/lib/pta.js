@@ -28,6 +28,15 @@ export function ptaFlag(offer) {
   if (offer?.ptaAssessment === "likely_non_pta") return LIKELY_NON_PTA;
   if (offer?.ptaAssessment === "not_stated") return NOT_STATED;
   // A status read from the store's product page (the title said nothing) says so, so the shopper knows where it comes from.
+  // Taken as approved by its maker (backend productGrouping byBrand, 2026-11-18): the store says nothing, and only imported makers'
+  // phones (Apple, Samsung, Google, OnePlus...) are sold here both ways.
+  if (offer?.ptaSource === "brand" && offer?.ptaStatus === "pta_approved") {
+    return { ...APPROVED, reason: "The store does not say, but phones of this maker are sold in Pakistan PTA approved; only imported makers such as Apple and Samsung are also sold non-PTA." };
+  }
+  // A marketplace that files the phone under its own "PTA Approval" category (AlfaMall, DigiMall; backend storePtaOf).
+  if (offer?.ptaSource === "store_category" && offer?.ptaStatus === "pta_approved") {
+    return { ...APPROVED, reason: "The store lists this phone in its PTA-approved phones." };
+  }
   const fromPage = offer?.ptaSource === "product_page";
   if (offer?.ptaStatus === "pta_approved") return fromPage ? { ...APPROVED, reason: "The store's product page says this phone is PTA approved." } : APPROVED;
   if (offer?.ptaStatus === "non_pta") return fromPage ? { ...NON_PTA, reason: NON_PTA.reason.replace("The store says", "The store's product page says") } : NON_PTA;

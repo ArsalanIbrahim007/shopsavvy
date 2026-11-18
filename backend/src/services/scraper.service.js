@@ -109,9 +109,11 @@ function toListingDoc(scraped) {
     brand:           extractBrand(scraped.title, scraped.brand), // one lower-case key, read from the title when the store states none
     category:        "Electronics",
     inStock:         scraped.inStock !== false,
+    availability:    scraped.availability ?? null, // coming soon / discontinued / out of stock, when the store says (2026-11-18)
     isActive:        true,
     lastScrapedAt:   new Date(),
     notInCatalogueSince: null, // seen at the store again (catalogueRefresh.service.js marks one its whole catalogue no longer lists)
+    supersededAt:    null, // found again under this address: current, not an old copy (supersededListings.service.js)
     scrapedAt:       scraped.scrapedAt ? new Date(scraped.scrapedAt) : new Date(),
     ...extractAttributes(scraped.title),
     ...extractExtras(scraped),
@@ -120,7 +122,9 @@ function toListingDoc(scraped) {
   // A title that says nothing about PTA must not undo what the store's product page said on an earlier day
   // (pageEnrichment.service.js): only a status the title itself states is written. A new listing still starts at
   // "unknown" through the schema default.
-  if (doc.ptaStatus === "unknown") delete doc.ptaStatus;
+  // A marketplace's own PTA-approved category (storefront.scraper.js storePtaOf) counts when the title says nothing.
+  if (doc.ptaStatus === "unknown" && scraped.storePta === "pta_approved") Object.assign(doc, { ptaStatus: "pta_approved", ptaSource: "store_category" });
+  else if (doc.ptaStatus === "unknown") delete doc.ptaStatus;
   else doc.ptaSource = "title";
   // Likewise the condition: a title that says nothing ("new" is the default) must not undo a used phone the page showed
   // (conditionPage.service.js, iShopping's used iPhones under new phones' titles). A new listing starts at "new" through the schema.

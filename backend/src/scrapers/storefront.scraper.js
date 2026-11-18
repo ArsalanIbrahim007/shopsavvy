@@ -64,6 +64,16 @@ export async function scrapeStorefrontSearch({ platform, baseUrl, apiUrl, params
 }
 
 /** One search result as a listing, or null when it is not a product at a price (also used by the catalogue refresh, catalogue.js). */
+/**
+ * "pta_approved" when the marketplace files the product under its PTA-approved phones (AlfaMall "pta-approval/iphone", DigiMall
+ * "electronics/smart-phones/pta-approval"), else null. There is no non-PTA category, so this only ever confirms approval
+ * (2026-11-18: 25 of AlfaMall's first 240 iPhone results and 30 of DigiMall's 90).
+ */
+export function storePtaOf(item) {
+  const handles = Array.isArray(item?.category) ? item.category.map((c) => String(c?.handle ?? "")) : [];
+  return handles.some((h) => /(^|\/)pta-approv/i.test(h)) ? "pta_approved" : null;
+}
+
 export function storefrontListing({ platform, baseUrl, productPath }, item) {
   const title = cleanText(item.title);
   const handle = String(item.handle ?? "").trim();
@@ -82,6 +92,7 @@ export function storefrontListing({ platform, baseUrl, productPath }, item) {
     originalPrice: was > price ? was : null,
     imageUrl: image ?? null,
     inStock: item.sold_out !== true,
+    storePta: storePtaOf(item),
     // which of the marketplace's sellers sells it, and its delivery (the seller's phone number in the same answer is not kept)
     seller: typeof item.vendor?.name === "string" ? item.vendor.name : null,
     delivery: { window: typeof item.delivery_date === "string" ? item.delivery_date : null, express: item.express_delivery === true, freeShipping: item.free_shipping === true },

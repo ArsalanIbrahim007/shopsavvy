@@ -10,13 +10,13 @@ const DAY = 86400000;
 const daysAgo = (n) => new Date(NOW - n * DAY).toISOString();
 
 describe("isOutOfDate", () => {
-  it("says an offer is out of date once its price was last checked more than 14 days ago", () => {
-    expect(STALE_AFTER_DAYS).toBe(14);
-    expect(isOutOfDate({ lastScrapedAt: daysAgo(14) }, NOW)).toBe(false); // exactly 14 days: not yet
-    expect(isOutOfDate({ lastScrapedAt: new Date(NOW - 14 * DAY - 1000).toISOString() }, NOW)).toBe(true);
+  it("says an offer is out of date once its price was last checked more than 7 days ago", () => {
+    expect(STALE_AFTER_DAYS).toBe(7);
+    expect(isOutOfDate({ lastScrapedAt: daysAgo(7) }, NOW)).toBe(false); // exactly 7 days: not yet
+    expect(isOutOfDate({ lastScrapedAt: new Date(NOW - 7 * DAY - 1000).toISOString() }, NOW)).toBe(true);
     expect(isOutOfDate({ lastScrapedAt: daysAgo(51) }, NOW)).toBe(true);
     expect(isOutOfDate({ lastScrapedAt: daysAgo(0) }, NOW)).toBe(false);
-    expect(isOutOfDate({ lastScrapedAt: daysAgo(13) }, NOW)).toBe(false);
+    expect(isOutOfDate({ lastScrapedAt: daysAgo(6) }, NOW)).toBe(false);
   });
 
   it("does not call an offer out of date when it has no usable check date: not knowing is not the same as knowing it is old", () => {

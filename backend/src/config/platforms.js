@@ -10,5 +10,8 @@
 //           requests (Shopify's Web Bot Auth) from servers; it had answered our searches with 429 for weeks anyway.
 export const DISABLED_PLATFORMS = ["daraz", "telemart"];
 
-// Mongo filter fragment that excludes them.
-export const VISIBLE_PLATFORMS_FILTER = { platform: { $nin: DISABLED_PLATFORMS } };
+// Mongo filter fragment that excludes them; listings retired because the same store lists the product again under its variants' own
+// addresses (services/supersededListings.service.js); and listings the store no longer has (catalogueRefresh.service.js: gone from its
+// whole catalogue, or a marketplace seller's listing taken down), whose "View deal" led nowhere. A missing field counts as null, so
+// every other listing stays visible; a listing found again is shown again (scraper.service.js toListingDoc clears both).
+export const VISIBLE_PLATFORMS_FILTER = { platform: { $nin: DISABLED_PLATFORMS }, supersededAt: null, notInCatalogueSince: null };

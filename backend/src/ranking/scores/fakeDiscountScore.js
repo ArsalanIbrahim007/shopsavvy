@@ -490,9 +490,29 @@ function calculateFakeDiscountScore(input = {}, customConfig = {}) {
     )
   );
 
+  // Which kind of "suspicious" this is (2026-11-18). Of the 22,021 suspicious claims in the catalogue, the store's own history never
+  // reached its "was" price in 93.9%, and 43% had under 14 days of it. "Never charged" (14 days or more, never at the "was" price) is
+  // evidence of a permanent "sale"; "unconfirmed" (fewer days) only says we have not watched long enough. The verdict is the same;
+  // the label tells the shopper which it is.
+  const originalPriceSeen = highestSeen >= originalPrice * (1 - config.flatPriceTolerance);
+  const trackedDays = spanDays === null ? null : Math.round(spanDays);
+  let suspicionKind = null;
+  if (classification === "suspicious") {
+    if (trackedDays === null || trackedDays < config.minimumHistoryDaysForFake) suspicionKind = "unconfirmed";
+    else if (!originalPriceSeen) suspicionKind = "never_charged";
+  }
+  const was = `PKR ${Math.round(originalPrice).toLocaleString("en-US")}`;
+  const days = (n) => `${Math.max(1, n)} ${Math.max(1, n) === 1 ? "day" : "days"}`;
+  if (suspicionKind === "unconfirmed") {
+    reasons.unshift(`We have tracked this price for ${trackedDays === null ? "a short time" : `only ${days(trackedDays)}`} and have not yet seen the store charge its "was" price (${was}): too early to say.`);
+  } else if (suspicionKind === "never_charged") {
+    reasons.unshift(`In the ${days(trackedDays)} we have tracked it, the store has never charged its "was" price (${was}).`);
+  }
+
   return {
     isFakeDiscount,
     classification,
+    suspicionKind,
     discountAuthenticityScore,
     fakeDiscountRisk,
     confidence,
@@ -505,6 +525,7 @@ function calculateFakeDiscountScore(input = {}, customConfig = {}) {
       hasSufficientHistory: true,
       originalPriceInflated,
       currentPriceBelowHistoricalReference,
+      originalPriceSeen,
     },
     metrics: {
       currentPrice,
@@ -520,6 +541,7 @@ function calculateFakeDiscountScore(input = {}, customConfig = {}) {
         originalPriceInflationRatio * 100
       ),
       historyCount: historicalPrices.length,
+      trackedDays,
     },
   };
 }

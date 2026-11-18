@@ -26,6 +26,33 @@ export const DISCOUNT_VERDICTS = {
   no_claimed_discount: null,
 };
 
+// A "suspicious" discount says what it rests on (backend fakeDiscountScore.js suspicionKind, 2026-11-18): under two weeks of the
+// store's history without its "was" price seen yet is unconfirmed, not suspicious; two weeks and more without the store ever charging
+// it is a standing "sale". The rest keep the plain verdict.
+const SUSPICION_KINDS = {
+  unconfirmed: { label: "Unconfirmed discount", tone: "neutral" },
+  never_charged: { label: "Never sold at \"was\" price", tone: "caution" },
+};
+
+/** The discount verdict to show for an offer's discountAnalysis, or null when it claims no discount. */
+export function discountVerdictOf(analysis) {
+  if (analysis?.classification === "suspicious" && SUSPICION_KINDS[analysis.suspicionKind]) return SUSPICION_KINDS[analysis.suspicionKind];
+  return DISCOUNT_VERDICTS[analysis?.classification] ?? null;
+}
+
+// Why an offer cannot be bought, when the store says (backend listing.availability, 2026-11-18).
+const AVAILABILITY = {
+  coming_soon: { label: "Coming soon", reason: "Not on sale yet: the store shows an expected price and no way to buy it." },
+  discontinued: { label: "Discontinued", reason: "The store no longer sells it; this is its last price." },
+  out_of_stock: { label: "Out of stock", reason: "The store shows it out of stock." },
+};
+
+/** {label, reason} when the offer cannot be bought (coming soon, discontinued, out of stock), otherwise null. */
+export function availabilityOf(offer) {
+  if (offer?.inStock !== false) return null;
+  return AVAILABILITY[offer.availability] ?? AVAILABILITY.out_of_stock;
+}
+
 /** Recommendation for an offer, with a safe fallback. */
 export function recommendationOf(offer) {
   return RECOMMENDATIONS[offer?.recommendation?.action] || RECOMMENDATIONS.NO_HISTORY;
@@ -45,6 +72,9 @@ export const GOOD_DEAL_MARGIN = 0.05;
 export function offerVerdict(offer, { lowestPrice = null } = {}) {
   const recommendation = recommendationOf(offer);
   const reason = offer?.recommendation?.reason || "";
+  // An offer that cannot be bought is never "Buy now" or "Good deal" (2026-11-18: a coming-soon TCL TV said "Buy now").
+  const unavailable = availabilityOf(offer);
+  if (unavailable && recommendation.tone === "good") return { label: unavailable.label, tone: "neutral", reason: unavailable.reason };
   const price = Number(offer?.price);
   if (recommendation.tone === "good" && lowestPrice > 0 && price > lowestPrice * (1 + GOOD_DEAL_MARGIN)) {
     return {
@@ -76,7 +106,7 @@ export function briefReason(reason = "") {
 export function offerFlags(offer) {
   const flags = [];
 
-  const verdict = DISCOUNT_VERDICTS[offer?.discountAnalysis?.classification];
+  const verdict = discountVerdictOf(offer?.discountAnalysis);
   if (verdict) {
     flags.push({ id: "discount", tone: verdict.tone, label: verdict.label, reason: offer.discountAnalysis.reason || "" });
   }

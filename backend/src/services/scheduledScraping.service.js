@@ -230,8 +230,27 @@ export async function buildScheduledQueryPlan({
       plan.push({ query, category, lastScrapedAt, kind: "stale-single", platforms: refreshStores([platform]) });
     }
   }
-  const lastRun = (entry) => lastQueried.get(entry.query) ?? 0; // never run: first
-  return plan.sort((a, b) => lastRun(a) - lastRun(b) || a.lastScrapedAt - b.lastScrapedAt); // stable: still equal keeps the order above
+  // How long each query has waited since it last ran (never run: since 1970, so first), counted at its category's weight
+  // (PLAN_CATEGORY_WEIGHT): within one category this is the order by last run, as before.
+  const waited = (entry) => (now - (lastQueried.get(entry.query) ?? 0)) * planWeight(entry.category);
+  return plan.sort((a, b) => waited(b) - waited(a) || a.lastScrapedAt - b.lastScrapedAt); // stable: still equal keeps the order above
+}
+
+/**
+ * How fast a category's queries come round, against the site's ten main categories (1). A night fits about 1,100 of the plan's
+ * ~5,400 searches (2026-11-10 to 11-14: 850 to 1,193), and on 2026-11-18 the first ten to run were iShopping accessories ("fs couture
+ * afro pattern", "g mart toyota yaris" key covers): accessories were 1,068 of the 5,444. Weighting the wait keeps every query in the
+ * plan (none goes stale for ever) but brings an accessory round about a quarter as often as a phone, and other electronics (cameras,
+ * printers, consoles, small appliances) half as often.
+ */
+export const PLAN_CATEGORY_WEIGHT = Object.freeze({ main: 1, accessory: 0.25, otherElectronics: 0.5 });
+const MAIN_CATEGORIES = new Set([
+  "smartphone", "laptop", "tv", "tablet", "smartwatch", "headphones", "air_conditioner", "refrigerator", "washing_machine", "monitor",
+]);
+export function planWeight(category) {
+  if (MAIN_CATEGORIES.has(category)) return PLAN_CATEGORY_WEIGHT.main;
+  if (category === "accessory") return PLAN_CATEGORY_WEIGHT.accessory;
+  return PLAN_CATEGORY_WEIGHT.otherElectronics;
 }
 
 /** The queries of buildScheduledQueryPlan, stalest first. */

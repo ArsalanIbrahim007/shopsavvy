@@ -17,6 +17,8 @@
  * @property {string|null} imageUrl   - main product image
  * @property {string|null} brand      - if extractable from title/page
  * @property {boolean} inStock        - availability if determinable, default true
+ * @property {string|null} availability - why it cannot be bought, when the store says: "coming_soon", "discontinued" or
+ *                                        "out_of_stock" (inStock is then false); null when it can, or the store does not say
  * @property {number|null} rating     - average rating on a 0-5 scale, null if the store shows none
  *                                      (never 0: 0 would read as "rated zero stars")
  * @property {number|null} reviewCount - number of reviews/ratings, null if not shown
@@ -27,6 +29,8 @@
  *                                      picture of it, when the store gives them in structured form (WooCommerce
  *                                      variations). null when it does not: a product page is then read instead.
  * @property {string} scrapedAt       - ISO timestamp of when this was scraped
+ *
+ * storePta: "pta_approved" when the store files the product under its own PTA-approved category (AlfaMall, DigiMall).
  *
  * rating, reviewCount, specs and colourOptions are optional. The backend validates them
  * (services/scrapedExtras.service.js): out-of-range or malformed values are
@@ -42,6 +46,7 @@ function makeListing({
   imageUrl = null,
   brand = null,
   inStock = true,
+  availability = null,
   rating = null,
   reviewCount = null,
   specs = null,
@@ -61,6 +66,7 @@ function makeListing({
     imageUrl,
     brand,
     inStock,
+    availability,
     rating,
     reviewCount,
     specs,

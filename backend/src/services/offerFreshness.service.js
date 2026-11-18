@@ -10,9 +10,9 @@
 //
 // An offer with no check date is not called out of date: not knowing is not the same as knowing it is old.
 //
-// frontend/src/lib/freshness.js applies the same rule with the same number; tests on both sides pin it to 14.
+// frontend/src/lib/freshness.js applies the same rule with the same number; tests on both sides pin it to 7.
 
-export const STALE_AFTER_DAYS = 14;
+export const STALE_AFTER_DAYS = 7; // was 14 until 2026-11-18: with the catalogues read nightly, a week-old price is no longer "the lowest price"
 
 const DAY_MS = 24 * 3600 * 1000;
 

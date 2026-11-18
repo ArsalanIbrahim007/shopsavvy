@@ -150,6 +150,10 @@ function unnumberedGeneration(textA, textB) {
   const [numbered, numberedText] = a.length === 0 ? [b, textB] : b.length === 0 ? [a, textA] : [null, null];
   if (!numbered || numbered.length !== 1) return false;
   const [word, number] = numbered[0];
+  // The "unnumbered" title may carry the same number glued to the word: "Galaxy Buds3 FE" is the "Galaxy Buds 3 FE", not a first
+  // generation (a same-product pair this check kept apart; found 2026-11-18 on the labelled training pairs).
+  const otherText = numberedText === textA ? textB : textA;
+  if (tokenize(modelTokens(otherText)).includes(`${word}${number}`)) return false;
   const tokens = tokenize(modelTokens(numberedText));
   return VARIANT_TOKENS.has(tokens[tokens.indexOf(number, tokens.indexOf(word)) + 1]);
 }
@@ -213,8 +217,13 @@ export function applianceConflict(textA, textB) {
   return false;
 }
 
+// A line word inside these phrases describes the box, not the model: a watch "With Green Sport Band", a "3 Pin Power Adapter" (the same
+// Samsung charger another store calls a "Travel Adapter"). Four same-product pairs of the labelled training set were split by them
+// (2026-11-18).
+const NOT_A_LINE = /\bsports?\s+(band|loop|strap)s?\b|\bpower\s+(adapter|supply|delivery)\b/gi;
+
 function lineWordsUncached(text = "") {
-  return new Set(tokenize(modelTokens(text)).filter((t) => LINE_WORDS.has(t)));
+  return new Set(tokenize(modelTokens(String(text).replace(NOT_A_LINE, " "))).filter((t) => LINE_WORDS.has(t)));
 }
 
 // A trailing letter that is a unit or a connectivity/resolution marker, not part of

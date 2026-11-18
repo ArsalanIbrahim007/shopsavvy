@@ -51,7 +51,7 @@ function DataBar({ value, tone = "brand" }) {
 }
 
 // Each row's colour carries its meaning (supported green, unknown grey, doubtful orange, contradicted red), the same in the bar and the table.
-const ROW_COLOURS = { genuine: "good", likelyGenuine: "good-soft", unverified: "neutral", suspicious: "caution", likelyFake: "bad", approved: "good", nonPta: "brand", notStated: "neutral", movedOut: "caution" };
+const ROW_COLOURS = { genuine: "good", likelyGenuine: "good-soft", unverified: "neutral", unconfirmed: "accent", neverCharged: "caution", suspicious: "caution", likelyFake: "bad", approved: "good", approvedByBrand: "good-soft", nonPta: "brand", notStated: "neutral", movedOut: "caution" };
 const colourOf = (row) => ROW_COLOURS[row.id] ?? "neutral";
 
 /** A table behind its chart: folded away (still read by screen readers) until "Show the numbers". */

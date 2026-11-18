@@ -12,7 +12,8 @@ Started by Abuzar (`abuzar/Z4-extension`: the first manifest, popup layout and i
    `extension/` folder.
 2. Open a product page, for example `https://www.ishopping.pk/tcl-55-qled-tv-p79k-price-in-pakistan`.
 
-It asks the deployed API (`https://shopsavvy-api.duckdns.org`). For development against your own copy, start it
+It asks the deployed API (`https://cranium-espresso-sway.ngrok-free.dev`, the tunnel to the team's PC: `deploy/README-pc.md`; it
+answers only while that PC runs `Run ShopSavvy Online.cmd`). For development against your own copy, start it
 (`cd backend && npm run dev`) and set `http://localhost:5000` in the popup's *Settings*.
 
 After changing a file: press the extension's reload button on `chrome://extensions`, then reload the store's tab.

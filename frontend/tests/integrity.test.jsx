@@ -47,13 +47,13 @@ describe("formatting", () => {
 });
 
 describe("rows", () => {
-  it("lists the five discount results in a fixed order with their shares, even when some are zero", () => {
-    const rows = discountRows({ claims: 200, verdicts: { genuine: 20, unverified: 100, likelyFake: 2 } });
-    expect(rows.map((r) => r.id)).toEqual(["genuine", "likelyGenuine", "unverified", "suspicious", "likelyFake"]);
-    expect(rows.map((r) => r.count)).toEqual([20, 0, 100, 0, 2]);
-    expect(rows.map((r) => r.share)).toEqual([10, 0, 50, 0, 1]);
+  it("lists the seven discount results in a fixed order with their shares, even when some are zero", () => {
+    const rows = discountRows({ claims: 200, verdicts: { genuine: 20, unverified: 100, unconfirmed: 40, neverCharged: 30, likelyFake: 2 } });
+    expect(rows.map((r) => r.id)).toEqual(["genuine", "likelyGenuine", "unverified", "unconfirmed", "neverCharged", "suspicious", "likelyFake"]);
+    expect(rows.map((r) => r.count)).toEqual([20, 0, 100, 40, 30, 0, 2]);
+    expect(rows.map((r) => r.share)).toEqual([10, 0, 50, 20, 15, 0, 1]);
     expect(rows.every((r) => r.hint.length > 15)).toBe(true);
-    expect(discountRows(undefined).map((r) => r.count)).toEqual([0, 0, 0, 0, 0]);
+    expect(discountRows(undefined).map((r) => r.count)).toEqual([0, 0, 0, 0, 0, 0, 0]);
     expect(discountRows(undefined)[0].share).toBeNull();
   });
 
@@ -64,9 +64,15 @@ describe("rows", () => {
     expect(hints.likelyFake).toMatch(/history/i);
   });
 
+  it("says what a \"suspicious\" claim rests on: too early, or never charged in two weeks and more", () => {
+    const hints = Object.fromEntries(discountRows({ claims: 1, verdicts: {} }).map((r) => [r.id, r.hint]));
+    expect(hints.unconfirmed).toMatch(/under two weeks/i);
+    expect(hints.neverCharged).toMatch(/two weeks or more/i);
+  });
+
   it("lists the PTA figures with their shares of the phone and tablet offers", () => {
     const rows = ptaRows({ offers: 1000, approved: 400, nonPta: 30, notStated: 100, movedOut: 5 });
-    expect(rows.map((r) => [r.id, r.count, r.share])).toEqual([["approved", 400, 40], ["nonPta", 30, 3], ["notStated", 100, 10], ["movedOut", 5, 0.5]]);
+    expect(rows.map((r) => [r.id, r.count, r.share])).toEqual([["approved", 400, 40], ["approvedByBrand", 0, 0], ["nonPta", 30, 3], ["notStated", 100, 10], ["movedOut", 5, 0.5]]);
     expect(ptaRows(undefined).every((r) => r.count === 0 && r.share === null)).toBe(true);
   });
 

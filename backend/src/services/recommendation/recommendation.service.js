@@ -159,6 +159,7 @@ const buildReason = ({
   action,
   historySummary,
   discountClassification,
+  suspicionKind = null,
   estimatedSavings,
 }) => {
   const isLowestRecordedPrice =
@@ -190,7 +191,13 @@ const buildReason = ({
 
   let reason = reasons[action] || reasons.FAIR_PRICE;
 
-  if (isDoubtfulDiscount(discountClassification)) {
+  // A "suspicious" discount says which kind it is (fakeDiscountScore.js suspicionKind, 2026-11-18): an unconfirmed one is not called
+  // exaggerated, as we have not watched it long enough to say so.
+  if (discountClassification === "suspicious" && suspicionKind === "unconfirmed") {
+    reason += " We have tracked this price for under two weeks and have not yet seen the store charge its \"was\" price, so the discount is unconfirmed: judge it by the price, not the discount.";
+  } else if (discountClassification === "suspicious" && suspicionKind === "never_charged") {
+    reason += " In the weeks we have tracked it, the store has never charged its \"was\" price, so judge it by the price, not the discount.";
+  } else if (isDoubtfulDiscount(discountClassification)) {
     reason += " The advertised discount looks exaggerated against this product's price history, so judge it by the price, not the discount.";
   }
 
@@ -361,6 +368,7 @@ export const generateRecommendation = (listing = {}) => {
     action,
     historySummary,
     discountClassification,
+    suspicionKind: discountAnalysis?.suspicionKind ?? null,
     estimatedSavings,
   });
 

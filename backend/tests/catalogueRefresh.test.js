@@ -326,3 +326,54 @@ describe("onlyStores", () => {
     ]);
   });
 });
+
+describe("priceOyeSections (2026-11-18)", () => {
+  it("lists the section/brand lists of the PriceOye addresses we hold, largest first", async () => {
+    const { priceOyeSections } = await import("../src/services/catalogueRefresh.service.js");
+    expect(priceOyeSections(new Set([
+      "https://priceoye.pk/mobiles/samsung/a17", "https://priceoye.pk/mobiles/samsung/a07", "https://priceoye.pk/ac/haier/x", "https://priceoye.pk/mobiles", "not a url",
+    ]))).toEqual(["mobiles/samsung", "ac/haier"]);
+  });
+});
+
+describe("refreshCatalogue on a marketplace read by brand (2026-11-18)", () => {
+  const STORE = { platform: "alfamall", type: "storefront", baseUrl: "https://alfamall.com", apiUrl: "https://api.example/search", params: {}, productPath: "/" };
+  const item = (handle, title) => ({ handle, title, variant_detail: { discounted_price: "150000" }, vendor: { name: "Seller" } });
+  const held = [
+    ["samsung-tv-1", "Samsung 55 Inch TV seller one"], ["samsung-tv-2", "Samsung 55 Inch TV seller two"], ["samsung-tv-gone", "SAMSUNG 55 Inch TV taken down"],
+    ["haier-ac-1", "Haier 1.5 Ton AC"], ["haier-ac-2", "Haier 1 Ton AC"],
+  ];
+  const models = () => ({
+    listing: {
+      find: vi.fn(() => ({ lean: async () => held.map(([h, title]) => ({ sourceUrl: `https://alfamall.com/${h}`, title })) })),
+      bulkWrite: vi.fn(async () => ({})),
+      updateMany: vi.fn(async () => ({})),
+    },
+    priceHistory: { recordPrices: vi.fn(async (items) => ({ appended: items.length, created: 0 })) },
+  });
+  const answers = (q) => {
+    if (q === "samsung") return { count: 2, results: [item("samsung-tv-1", "Samsung 55 Inch TV seller one"), item("samsung-tv-2", "Samsung 55 Inch TV seller two")] };
+    throw new Error("HTTP 403 (a refusal: not asked again)");
+  };
+  const fetchJson = async (url) => answers(new URL(url).searchParams.get("q"));
+
+  it("marks gone a seller's listing that a brand read in full no longer returns, and nothing of a brand whose read failed", async () => {
+    const m = models();
+    const stats = await refreshCatalogue(STORE, { fetchJson, terms: ["samsung", "haier"], ...m });
+    expect(stats.gone).toBe(1);
+    const [filter, update] = m.listing.updateMany.mock.calls[0];
+    expect(filter.sourceUrl.$in).toEqual(["https://alfamall.com/samsung-tv-gone"]);
+    expect(update.$set).toMatchObject({ inStock: false });
+    expect(update.$set.notInCatalogueSince).toBeInstanceOf(Date);
+  });
+
+  it("marks nothing when the read found under half of our listings of that brand, or stopped at the time limit", async () => {
+    const m = models();
+    const sparse = async (url) => (new URL(url).searchParams.get("q") === "samsung" ? { count: 0, results: [] } : answers("x"));
+    expect((await refreshCatalogue(STORE, { fetchJson: sparse, terms: ["samsung"], ...m })).gone).toBe(0);
+    expect(m.listing.updateMany).not.toHaveBeenCalled();
+    const late = models();
+    expect((await refreshCatalogue(STORE, { fetchJson, terms: ["samsung"], deadline: Date.now() - 1, ...late })).gone ?? 0).toBe(0);
+    expect(late.listing.updateMany).not.toHaveBeenCalled();
+  });
+});

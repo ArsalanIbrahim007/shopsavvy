@@ -26,6 +26,8 @@ const DISCOUNT_VERDICTS = [
   ["Verified discount", "good", "The store's own price history shows it really sold at the \"was\" price."],
   ["Likely genuine", "good", "Its own history mostly supports the claim."],
   ["Unverified discount", "neutral", "We have too little of the store's own history to clear it, and nothing else shows it inflated."],
+  ["Unconfirmed discount", "neutral", "We have watched the price for under two weeks and not yet seen the store charge its \"was\" price. Too early to say."],
+  ["Never sold at \"was\" price", "caution", "We have watched the price for two weeks or more, and the store never once charged its \"was\" price: a standing \"sale\"."],
   ["Suspicious discount", "caution", "The \"was\" price is higher than the history supports, or above what products with these specs usually cost."],
   ["Fake discount", "bad", "The history strongly contradicts it: the store never sold at that \"was\" price while we watched."],
 ];
@@ -64,7 +66,7 @@ export default function Help() {
         <h2 id="results-h">2. Compare the stores</h2>
         <p>Results are grouped by product: every store's offer for the same model sits in one table, so you compare like with like.</p>
         <ul>
-          <li><strong>The cheapest store</strong> is marked in each table. A price we have not checked for two weeks is labelled and is
+          <li><strong>The cheapest store</strong> is marked in each table. A price we have not checked for a week is labelled and is
             never shown as the lowest.</li>
           <li><strong>Deal score</strong> (out of 100) weighs more than price: price against the other stores and the fair price for its
             specs (60), store trust and the product's rating (20), how recently we checked the price (10) and whether it is in stock (10).

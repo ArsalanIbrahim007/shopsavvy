@@ -42,8 +42,11 @@ TRUST_PROXY=1
 ## 4. Going online
 
 1. Make sure nothing else uses port 5000 (stop `npm run dev` if it is running).
-2. Double-click `Run ShopSavvy Online.cmd` in the project folder. Two windows open: the API, and ngrok showing the address.
-3. Wait a minute or two after starting: the API groups the catalogue first (until then the first pages come from the last saved copy).
+2. Double-click `Run ShopSavvy Online.cmd` in the project folder. Two windows stay open: the API, and ngrok showing the address. A
+   third, "ShopSavvy warm-up", opens every main page once and closes itself a minute after it prints "every page is ready".
+3. Wait for that line before showing the site. It takes a few seconds when `backend\.cache` holds the last run's copy, and about
+   4 to 5 minutes on an empty one (after a reinstall or on a new machine). Measured 2026-11-18 on an empty cache: without the warm-up
+   the first home page took up to 79 s and Honest prices 89 s; after it, every page answered within 2.1 s.
 4. Open your Cloudflare Pages address on a phone to check, then send it to the testers.
 
 The nightly scrape (Task Scheduler, 10 PM) runs as before; it does not need the tunnel.

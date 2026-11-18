@@ -130,3 +130,47 @@ describe("too few days of prices to call a discount fake (Fable's final check, 2
     expect(calculateFakeDiscountScore({ currentPrice: 39699, originalPrice: 49999, priceHistory: long }).classification).toBe("likely_fake");
   });
 });
+
+describe("a suspicious discount says what it rests on (2026-11-18)", () => {
+  const day = (d) => new Date(Date.parse("2026-10-01T12:00:00Z") + d * 864e5).toISOString();
+  const hist = (prices, days) => prices.map((price, i) => ({ price, recordedAt: day(Math.round((i * days) / (prices.length - 1))) }));
+
+  it("under two weeks of history: unconfirmed, with the days tracked and the 'was' price not seen", () => {
+    const r = calculateFakeDiscountScore({ currentPrice: 56999, originalPrice: 68499, priceHistory: hist([56999, 56999, 56999, 56999, 56999], 13) });
+    expect(r.classification).toBe("suspicious");
+    expect(r.suspicionKind).toBe("unconfirmed");
+    expect(r.metrics.trackedDays).toBe(13);
+    expect(r.signals.originalPriceSeen).toBe(false);
+  });
+
+  it("two weeks and more without the store ever charging its 'was' price: never charged", () => {
+    const r = calculateFakeDiscountScore({ currentPrice: 100000, originalPrice: 105000, priceHistory: hist([100000, 100000, 100000, 100000, 100000], 20) });
+    expect(r.classification).toBe("suspicious");
+    expect(r.suspicionKind).toBe("never_charged");
+  });
+
+  it("a 'was' price the store did charge keeps the plain verdict", () => {
+    const r = calculateFakeDiscountScore({ currentPrice: 100000, originalPrice: 115000, priceHistory: hist([115000, 100000, 100000, 100000, 100000], 20) });
+    expect(r.classification).toBe("suspicious");
+    expect(r.signals.originalPriceSeen).toBe(true);
+    expect(r.suspicionKind).toBe(null);
+  });
+
+  it("only a suspicious verdict gets a kind", () => {
+    const r = calculateFakeDiscountScore({ currentPrice: 56999, originalPrice: 68499, priceHistory: hist([56999, 56999, 56999, 56999, 56999], 30) });
+    expect(r.classification).toBe("likely_fake");
+    expect(r.suspicionKind).toBe(null);
+  });
+});
+
+describe("the reason of a suspicious discount starts with what it rests on (2026-11-18)", () => {
+  const day = (d) => new Date(Date.parse("2026-10-01T12:00:00Z") + d * 864e5).toISOString();
+  const hist = (prices, days) => prices.map((price, i) => ({ price, recordedAt: day(Math.round((i * days) / (prices.length - 1))) }));
+
+  it("says how long it was tracked and that the 'was' price was not seen", () => {
+    const r = calculateFakeDiscountScore({ currentPrice: 56999, originalPrice: 68499, priceHistory: hist([56999, 56999, 56999, 56999, 56999], 13) });
+    expect(r.reason).toMatch(/^We have tracked this price for only 13 days and have not yet seen the store charge its "was" price \(PKR 68,499\)/);
+    const n = calculateFakeDiscountScore({ currentPrice: 100000, originalPrice: 105000, priceHistory: hist([100000, 100000, 100000, 100000, 100000], 20) });
+    expect(n.reason).toMatch(/^In the 20 days we have tracked it, the store has never charged its "was" price \(PKR 105,000\)\./);
+  });
+});

@@ -11,7 +11,9 @@
 //   2. a store's attribute list that names PTA ("PTA Status" with its options, as Magento stores embed it);
 //   3. PriceOye's summary badge (summaryAttributes.approved);
 //   4. the page's own title, heading, description and structured data;
-//   5. the product's own gallery image titles, only where they name this product ("iShopping - Samsung Galaxy A17-Black-PTA Approved-128GB").
+//   5. the product's own gallery image titles, only where they name this product ("iShopping - Samsung Galaxy A17-Black-PTA Approved-128GB");
+//   6. a product badge image: a picture the store marks as this product's label or badge, read by its alt text or file name
+//      (eezepc: <img class="product-label-image-desktop" alt="pta-approved" src=".../PTA-Approved-EEZEPC.png">, 2026-11-18).
 // When the evidence disagrees (a store that sells the same page in both PTA and non-PTA versions), the answer is
 // "unknown": better to say "not stated" than to pick one.
 
@@ -112,6 +114,36 @@ function galleryTitles($, productName) {
   return found;
 }
 
+/** Product label or badge images (by their class), read by their alt text or file name: "pta-approved", "PTA-Approved-EEZEPC.png". */
+function badgeImages($) {
+  const found = [];
+  $("img").each((_, el) => {
+    if (!/label|badge|sticker/i.test($(el).attr("class") || "")) return;
+    const file = String($(el).attr("src") || "").split(/[?#]/)[0].split("/").pop();
+    for (const raw of [$(el).attr("alt"), file]) {
+      const text = String(raw || "").replace(/\.(png|jpe?g|webp|svg|gif)$/i, "").replace(/[-_]+/g, " ").replace(/\s+/g, " ").trim();
+      if (/\bpta\b/i.test(text)) found.push({ status: classify(text), text: text.slice(0, 160) });
+    }
+  });
+  return found;
+}
+
+/**
+ * Short list items that state PTA and nothing else, outside menus, headers and footers: techroid lists "Warranty 1 year",
+ * "PTA Approved" beside the delivery options on its phone pages (not on its earphones'). A link such as a menu's "PTA Approved
+ * Phones" is not one.
+ */
+function featureList($) {
+  const found = [];
+  $("li").each((_, el) => {
+    const li = $(el);
+    if (li.find("a").length || li.closest("nav, header, footer, [class*=menu], [class*=Menu]").length) return;
+    const text = li.text().replace(/\s+/g, " ").trim();
+    if (text.length <= 30 && /\bpta\b/i.test(text)) found.push({ status: classify(text), text });
+  });
+  return found;
+}
+
 /**
  * @param {string} html  a store's product page
  * @param {object} [options]
@@ -129,6 +161,8 @@ export function extractPtaFromPage(html, { productName } = {}) {
     ["summary badge", priceOyeBadge(page)],
     ["page title or description", ownTitles($)],
     ["product images", galleryTitles($, productName)],
+    ["product badge", badgeImages($)],
+    ["store's list", featureList($)],
   ];
 
   for (const [source, items] of layers) {

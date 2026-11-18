@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { parsePrice, validatePricePair, politeDelay, HOST_DELAY_MS } from "../src/scrapers/scraper.utils.js";
+import { describe, it, expect } from "vitest";
+import { parsePrice, validatePricePair, politeDelay } from "../src/scrapers/scraper.utils.js";
 import { parseIShoppingHtml } from "../src/scrapers/ishopping.scraper.js";
 
 // ─── parsePrice ───────────────────────────────────────────────────────────────
@@ -125,9 +125,6 @@ describe("politeDelay", () => {
   // sequence and spacing of sleeps.
 
   it("lets the first request to a host go immediately (no wait)", async () => {
-    const sleeps = [];
-    const start = Date.now();
-
     // Use a unique host per test to avoid state from other tests
     const url = `https://host-first-${Date.now()}.test/page`;
 

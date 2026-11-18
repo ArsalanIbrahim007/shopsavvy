@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
 import { formatPrice, formatCapacity, formatPercent, timeAgo, formatCondition, formatPta } from "../src/lib/format.js";
 import { safeExternalUrl, offerLink } from "../src/lib/safeLink.js";
 import { canonicalPlatform, platformName } from "../src/lib/platforms.js";
-import { offerFlags, marketVerdict, recommendationOf, RECOMMENDATIONS } from "../src/lib/verdicts.js";
+import { cardBadges, offerFlags, marketVerdict, recommendationOf, RECOMMENDATIONS } from "../src/lib/verdicts.js";
 import { summarizeOffers, newestScrape } from "../src/lib/summary.js";
 
 describe("format", () => {
@@ -84,6 +84,20 @@ describe("verdicts", () => {
     expect(flags[2].label).toBe("Unusual price");
   });
 
+  it("says which kind of suspicious discount it is, and an unconfirmed one does not hide a good deal", () => {
+    const unconfirmed = offerFlags({ discountAnalysis: { classification: "suspicious", suspicionKind: "unconfirmed", reason: "r" } });
+    expect(unconfirmed[0]).toMatchObject({ tone: "neutral", label: "Unconfirmed discount" });
+    const never = offerFlags({ discountAnalysis: { classification: "suspicious", suspicionKind: "never_charged", reason: "r" } });
+    expect(never[0]).toMatchObject({ tone: "caution", label: 'Never sold at "was" price' });
+    const plain = offerFlags({ discountAnalysis: { classification: "suspicious", suspicionKind: null, reason: "r" } });
+    expect(plain[0]).toMatchObject({ tone: "caution", label: "Suspicious discount" });
+    const good = { recommendation: { action: "GOOD_DEAL", reason: "cheap" }, price: 100 };
+    expect(cardBadges({ ...good, discountAnalysis: { classification: "suspicious", suspicionKind: "unconfirmed" } }).map((b) => b.label))
+      .toEqual(["Good deal", "Unconfirmed discount"]);
+    expect(cardBadges({ ...good, discountAnalysis: { classification: "suspicious", suspicionKind: "never_charged" } }).map((b) => b.label))
+      .toEqual(['Never sold at "was" price']);
+  });
+
   it("says nothing for an ordinary offer", () => {
     expect(offerFlags({ discountAnalysis: { classification: "no_claimed_discount" }, priceCheck: { status: "plausible" } })).toEqual([]);
     expect(offerFlags({})).toEqual([]);
@@ -137,5 +151,36 @@ describe("summarizeOffers", () => {
   it("counts flagged discounts and copes with no offers", () => {
     expect(summarizeOffers([{ _id: "x", platform: "a", price: 1, discountAnalysis: { isFakeDiscount: true } }]).flagged).toBe(1);
     expect(summarizeOffers([])).toMatchObject({ count: 0, lowest: null, bestDeal: null, updatedAt: null });
+  });
+});
+
+describe("an offer that cannot be bought (2026-11-18)", () => {
+  it("is never 'Buy now' or 'Good deal', and says why", async () => {
+    const { offerVerdict, availabilityOf } = await import("../src/lib/verdicts.js");
+    const soon = { inStock: false, availability: "coming_soon", recommendation: { action: "BUY_NOW", reason: "lowest" }, price: 47900 };
+    expect(offerVerdict(soon)).toMatchObject({ label: "Coming soon", tone: "neutral" });
+    expect(offerVerdict({ ...soon, availability: "discontinued" }).label).toBe("Discontinued");
+    expect(offerVerdict({ ...soon, availability: null }).label).toBe("Out of stock");
+    expect(offerVerdict({ ...soon, inStock: true }).label).toBe("Buy now");
+    expect(offerVerdict({ ...soon, recommendation: { action: "WAIT" } }).label).toBe("Wait");
+    expect(availabilityOf({ inStock: true })).toBe(null);
+  });
+});
+
+describe("PTA approved by maker (2026-11-18)", () => {
+  it("shows approved, and says it comes from the maker, not the store", async () => {
+    const { ptaFlag } = await import("../src/lib/pta.js");
+    const flag = ptaFlag({ ptaStatus: "pta_approved", ptaSource: "brand" });
+    expect(flag).toMatchObject({ label: "PTA approved", tone: "good" });
+    expect(flag.reason).toMatch(/does not say/);
+  });
+});
+
+describe("PTA approved by the store's own category (2026-11-18)", () => {
+  it("shows approved and says where it comes from", async () => {
+    const { ptaFlag } = await import("../src/lib/pta.js");
+    const flag = ptaFlag({ ptaStatus: "pta_approved", ptaSource: "store_category" });
+    expect(flag).toMatchObject({ label: "PTA approved", tone: "good" });
+    expect(flag.reason).toMatch(/PTA-approved phones/);
   });
 });

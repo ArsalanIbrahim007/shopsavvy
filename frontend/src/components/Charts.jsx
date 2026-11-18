@@ -8,7 +8,7 @@ import "./Charts.css";
 const clamp = (value) => Math.max(0, Math.min(100, Number(value) || 0));
 
 /**
- * A ring split by share. `parts`: [{ id, value, tone }], `tone` naming a colour class (good, good-soft, neutral, caution, bad, brand).
+ * A ring split by share. `parts`: [{ id, value, tone }], `tone` naming a colour class (good, good-soft, neutral, caution, bad, brand, accent).
  * The centre holds `children` (a figure and its label).
  */
 export function Donut({ parts, size = 180, children }) {

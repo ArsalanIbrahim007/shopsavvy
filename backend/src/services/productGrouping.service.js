@@ -120,7 +120,24 @@ function isNetworkSplit(titleA, titleB, families) {
  */
 const ptaOf = (listing) => {
   const stated = extractPtaStatus(listing.title || listing.normalizedTitle || "");
-  return stated !== "unknown" ? stated : listing.ptaStatus ?? "unknown";
+  if (stated !== "unknown") return stated;
+  const stored = listing.ptaStatus ?? "unknown";
+  if (stored !== "unknown") return stored;
+  return byBrand(listing) ? "pta_approved" : "unknown";
+};
+
+/**
+ * Makers whose phones are sold in Pakistan both PTA-approved and not: imported units of these come in without the tax paid (iPhones,
+ * Samsung flagships, Pixels, OnePlus). Every other maker's phones are sold here through official distributors, PTA approved
+ * (Infinix, Tecno, itel, Xiaomi, Vivo, Oppo, Realme, Honor...): asked 2026-11-18, the owner put non-PTA units of them at about 1 in
+ * 100. So a phone of another maker whose title and page say nothing is taken as approved, and labelled so (ptaSource "brand"),
+ * where it showed "PTA not stated": techroid's Infinix Note 60 Pro, whose page shows approval only in a picture.
+ */
+export const NON_PTA_RISK_BRANDS = new Set(["apple", "samsung", "google", "oneplus", "sony", "motorola", "asus", "lg"]);
+const byBrand = (listing) => {
+  if (!PTA_SENSITIVE.has(listing.productCategory)) return false;
+  const brand = extractBrand(listing.title || listing.normalizedTitle || "", listing.brand);
+  return Boolean(brand) && !NON_PTA_RISK_BRANDS.has(brand);
 };
 
 /**
@@ -581,6 +598,9 @@ function separateLikelyNonPta(groups, matchStrategy, networkFamilies) {
     const hasApproved = group.offers.some((o) => ptaOf(o) === "pta_approved");
     group.offers = group.offers.map((o) => {
       const label = likelyNonPta.has(o) ? "likely_non_pta" : hasApproved && ptaOf(o) === "unknown" ? "not_stated" : null;
+      // Approved by its maker's rule only (byBrand): says so, so the page can tell the shopper where it comes from.
+      const assumed = !label && (o.ptaStatus ?? "unknown") === "unknown" && extractPtaStatus(o.title || o.normalizedTitle || "") === "unknown" && byBrand(o);
+      if (assumed) return { ...(o.toObject ? o.toObject() : o), ptaStatus: "pta_approved", ptaSource: "brand" };
       return label ? { ...(o.toObject ? o.toObject() : o), ptaAssessment: label } : o;
     });
     group.ptaStatus = group.offers.every((o) => o.ptaAssessment === "likely_non_pta") ? "likely_non_pta"

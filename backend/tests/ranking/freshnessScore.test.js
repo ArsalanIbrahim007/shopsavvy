@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { calculateFreshnessScore } from "../../src/ranking/scores/freshnessScore.js";
 
 function hoursAgo(hours) {
@@ -6,6 +6,15 @@ function hoursAgo(hours) {
 }
 
 describe("calculateFreshnessScore", () => {
+  // The score reads the clock itself: with a real clock, "exactly 24 hours ago" became 24 h + 1 ms on a slow run and scored 7.5.
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-11-18T12:00:00Z"));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("gives full marks within 24 hours", () => {
     expect(calculateFreshnessScore(hoursAgo(1), 10)).toBe(10);
     expect(calculateFreshnessScore(hoursAgo(24), 10)).toBe(10);

@@ -203,10 +203,14 @@ async function answeredPage(store, url, { fetchJson, retryWaitMs }) {
   return { error };
 }
 
-export async function* storefrontCatalogue(store, terms, { fetchJson = politeFetchJson, onError, retryWaitMs = STOREFRONT_RETRY_WAIT_MS } = {}) {
+// onTermRead({ term, complete }): after each brand. Complete means every page answered and the store's count was under its cap, so
+// the read holds every product the search has for that word (catalogueRefresh.service.js marks ours it did not return as gone).
+export async function* storefrontCatalogue(store, terms, { fetchJson = politeFetchJson, onError, onTermRead, retryWaitMs = STOREFRONT_RETRY_WAIT_MS } = {}) {
   let failedTerms = 0;
   for (const term of terms) {
     let total = null; // the count the store reported, once a page has answered
+    let skipped = false; // a page that failed was skipped
+    let capped = false; // the store found more than one search can show
     for (let page = 1; page <= MAX_PAGES; page++) {
       const search = new URLSearchParams({ ...store.params, q: term, page: String(page), limit: String(STOREFRONT_PER_PAGE) });
       const { body, error } = await answeredPage(store, `${store.apiUrl}?${search}`, { fetchJson, retryWaitMs });
@@ -218,6 +222,7 @@ export async function* storefrontCatalogue(store, terms, { fetchJson = politeFet
         }
         // A page that still fails is skipped, not the rest of the brand (2026-11-09: one AlfaMall timeout ended a brand's read, and
         // with it Kenwood's 1,720 results stopped at 766; 39% of our AlfaMall listings went unrefreshed).
+        skipped = true;
         if (page * STOREFRONT_PER_PAGE >= total) break;
         continue;
       }
@@ -225,9 +230,11 @@ export async function* storefrontCatalogue(store, terms, { fetchJson = politeFet
       yield safeMap(body.results, (item) => storefrontListing(store, item), store.platform);
       // Stop at the count the store reports, not at a short page: AlfaMall often answers 37 to 39 of 40 (2026-11-08: stopping at
       // the first short page read two pages of most brands, and found 21% of our AlfaMall listings).
+      capped = (Number(body.count) || 0) > STOREFRONT_MAX_RESULTS;
       total = Math.min(Number(body.count) || 0, STOREFRONT_MAX_RESULTS);
       if (page * STOREFRONT_PER_PAGE >= total) break;
     }
+    onTermRead?.({ term, complete: total !== null && !skipped && !capped });
   }
   if (terms.length > 0 && failedTerms === terms.length) throw new Error(`${store.platform}: every search failed`);
 }

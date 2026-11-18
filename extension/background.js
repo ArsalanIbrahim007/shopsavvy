@@ -8,9 +8,14 @@
 
 importScripts("format.js"); // ShopSavvyFormat.badgeSaving
 
-// The deployed API (deploy/README.md); the popup's settings can point it at a local one (http://localhost:5000) for development.
-const DEFAULT_API = "https://shopsavvy-api.duckdns.org";
+// The deployed API: since 2026-11-13 it runs on the team's PC behind an ngrok tunnel (deploy/README-pc.md, deploy/ngrok-domain.txt).
+// The popup's settings can point it at a local one (http://localhost:5000) for development.
+const DEFAULT_API = "https://cranium-espresso-sway.ngrok-free.dev";
 const BADGE = { save: "#d97706", best: "#059669" };
+
+// ngrok's free tunnel answers a browser's request with an HTML warning page unless it carries this header (checked 2026-11-18: text/html
+// without it, the API's JSON with it). The website sends it too (frontend/src/api/client.js).
+const apiHeaders = (base) => (/\.ngrok(-free)?\.(app|dev|io)\b/i.test(base) ? { "ngrok-skip-browser-warning": "1" } : undefined);
 
 async function apiBase() {
   const { apiBase: saved } = await chrome.storage.sync.get("apiBase");
@@ -34,7 +39,7 @@ async function lookup(product) {
   const searchUrl = `${site}/results?q=${encodeURIComponent(query)}`;
   if (!query) return { found: false, lookup: true, searchUrl };
   try {
-    const res = await fetch(`${base}/api/listings/search?q=${encodeURIComponent(query)}`, { signal: AbortSignal.timeout(20000) });
+    const res = await fetch(`${base}/api/listings/search?q=${encodeURIComponent(query)}`, { headers: apiHeaders(base), signal: AbortSignal.timeout(20000) });
     if (res.status === 429) return { error: "busy" };
     if (!res.ok) return { error: "failed", status: res.status };
     const body = await res.json();
@@ -62,7 +67,7 @@ async function match(product) {
   if (product.title) params.set("title", product.title);
   if (product.price) params.set("price", String(product.price));
   try {
-    const res = await fetch(`${base}/api/listings/match?${params}`, { signal: AbortSignal.timeout(20000) });
+    const res = await fetch(`${base}/api/listings/match?${params}`, { headers: apiHeaders(base), signal: AbortSignal.timeout(20000) });
     if (res.status === 429) return { error: "busy" };
     if (!res.ok) return { error: "failed", status: res.status };
     return await res.json();

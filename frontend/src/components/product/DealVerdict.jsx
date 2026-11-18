@@ -5,7 +5,7 @@
 // Whether to buy now or wait is "Wait or buy?" above (PriceOutlook), for the product at every store; the first card
 // here is only about this store's price, and is named so the page does not ask "should you buy?" twice.
 
-import { DISCOUNT_VERDICTS, marketVerdict, offerVerdict, reasonPoints } from "../../lib/verdicts.js";
+import { discountVerdictOf, marketVerdict, offerVerdict, reasonPoints } from "../../lib/verdicts.js";
 import VerdictBadge from "../VerdictBadge.jsx";
 import "./product.css";
 
@@ -46,7 +46,7 @@ function Card({ title, badge, children }) {
 
 export default function DealVerdict({ listing, lowestPrice = null }) {
   const rec = offerVerdict(listing, { lowestPrice });
-  const discount = DISCOUNT_VERDICTS[listing.discountAnalysis?.classification];
+  const discount = discountVerdictOf(listing.discountAnalysis);
   const market = marketVerdict(listing);
   const recReason = rec.reason || "There is not enough price history yet to judge this price.";
 

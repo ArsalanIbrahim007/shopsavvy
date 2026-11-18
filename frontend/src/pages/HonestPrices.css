@@ -23,6 +23,7 @@
 .split-good-soft { background: var(--good-line); }
 .split-brand { background: var(--brand); }
 .split-caution { background: var(--caution); }
+.split-accent { background: var(--accent); }
 .split-bad { background: var(--bad); }
 .split-neutral { background: var(--neutral-fill); }
 

@@ -177,7 +177,14 @@ describe("summarizeGroups", () => {
       claim("genuine_discount"), claim("possibly_genuine"), claim("possibly_genuine"), claim("suspicious"), claim("likely_fake"), claim("unverified_discount"), claim(undefined),
       offer("b", 100, { originalPrice: 100 }), offer("c", 100), offer("d", 100, { originalPrice: 90 }), claim("suspicious", { discountAnomaly: { isAnomalous: true } }),
     ])], { now: NOW });
-    expect(out.discounts).toEqual({ claims: 8, verdicts: { genuine: 1, likelyGenuine: 2, suspicious: 2, likelyFake: 1, unverified: 2 }, aboveMarket: 1 });
+    expect(out.discounts).toEqual({ claims: 8, verdicts: { genuine: 1, likelyGenuine: 2, unconfirmed: 0, neverCharged: 0, suspicious: 2, likelyFake: 1, unverified: 2 }, aboveMarket: 1 });
+  });
+
+  it("splits suspicious claims by what they rest on: too early, never charged, or other evidence", () => {
+    const claim = (suspicionKind) => offer("a", 100, { originalPrice: 150, discountAnalysis: { classification: "suspicious", suspicionKind } });
+    const out = summarizeGroups([group([claim("unconfirmed"), claim("unconfirmed"), claim("never_charged"), claim(null), claim(undefined)])], { now: NOW });
+    expect(out.discounts.verdicts).toMatchObject({ unconfirmed: 2, neverCharged: 1, suspicious: 2 });
+    expect(out.discounts.claims).toBe(5);
   });
 
   it("counts how PTA was handled, for phones and tablets only", () => {
@@ -188,7 +195,7 @@ describe("summarizeGroups", () => {
       group([phone({ ptaStatus: "non_pta" })], { ptaStatus: "non_pta" }),
       group([offer("a", 100, { productCategory: "laptop", ptaStatus: "pta_approved" })]),
     ], { now: NOW });
-    expect(out.pta).toEqual({ offers: 6, approved: 2, nonPta: 2, notStated: 1, movedOut: 1, readFromProductPage: 1, productsKeptApart: 2 });
+    expect(out.pta).toEqual({ offers: 6, approved: 2, approvedByBrand: 0, nonPta: 2, notStated: 1, movedOut: 1, readFromProductPage: 1, productsKeptApart: 2 });
   });
 
   it("counts tablets as well as phones, because both are sold with or without PTA approval", () => {
@@ -207,13 +214,13 @@ describe("summarizeGroups", () => {
 
   it("counts how fresh the prices are, and finds the newest scrape", () => {
     const out = summarizeGroups([group([offer("a", 1, { lastScrapedAt: hoursAgo(2) }), offer("b", 1, { lastScrapedAt: hoursAgo(30) }), offer("c", 1, { lastScrapedAt: hoursAgo(100) }), offer("d", 1, { lastScrapedAt: undefined })])], { now: NOW });
-    expect(out.freshness).toEqual({ within24h: 1, within72h: 2, outOfDate: 0, outOfDateAfterDays: 14, newestAt: hoursAgo(2) });
+    expect(out.freshness).toEqual({ within24h: 1, within72h: 2, outOfDate: 0, outOfDateAfterDays: 7, newestAt: hoursAgo(2) });
   });
 
-  it("counts the offers whose price was last checked more than 14 days ago, and not the ones with no date", () => {
-    const out = summarizeGroups([group([offer("a", 1, { lastScrapedAt: hoursAgo(14 * 24) }), offer("b", 1, { lastScrapedAt: hoursAgo(14 * 24 + 1) }), offer("c", 1, { lastScrapedAt: hoursAgo(60 * 24) }), offer("d", 1, { lastScrapedAt: undefined })])], { now: NOW });
+  it("counts the offers whose price was last checked more than 7 days ago, and not the ones with no date", () => {
+    const out = summarizeGroups([group([offer("a", 1, { lastScrapedAt: hoursAgo(7 * 24) }), offer("b", 1, { lastScrapedAt: hoursAgo(7 * 24 + 1) }), offer("c", 1, { lastScrapedAt: hoursAgo(60 * 24) }), offer("d", 1, { lastScrapedAt: undefined })])], { now: NOW });
     expect(out.freshness.outOfDate).toBe(2);
-    expect(out.freshness.outOfDateAfterDays).toBe(14);
+    expect(out.freshness.outOfDateAfterDays).toBe(7);
   });
 
   it("includes an offer checked exactly 24 or 72 hours ago, and leaves out one checked a little earlier than that", () => {
@@ -310,5 +317,14 @@ describe("GET /api/integrity", () => {
     const body = await response.json();
     expect(body.success).toBe(false);
     expect(JSON.stringify(body)).not.toMatch(/boom|at .*\.js/);
+  });
+});
+
+describe("PTA approved by maker is counted apart (2026-11-18)", () => {
+  it("does not count it as a store saying so", async () => {
+    const { summarizeGroups } = await import("../src/services/integrity.service.js");
+    const phone = (over) => ({ _id: Math.random().toString(36), platform: "x", price: 1, productCategory: "smartphone", lastScrapedAt: new Date(), ...over });
+    const out = summarizeGroups([{ offers: [phone({ ptaStatus: "pta_approved", ptaSource: "brand" }), phone({ ptaStatus: "pta_approved", ptaSource: "title" })] }], { now: Date.now() });
+    expect(out.pta).toMatchObject({ approved: 1, approvedByBrand: 1 });
   });
 });

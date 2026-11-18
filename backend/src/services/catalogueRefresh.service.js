@@ -12,6 +12,7 @@ import Listing from "../models/listing.model.js";
 import PriceHistory from "../models/priceHistory.model.js";
 import { magentoCatalogue, shopifyCatalogue, storefrontCatalogue, wooCatalogue } from "../scrapers/catalogue.js";
 import { STORES as ADAPTER_STORES } from "../scrapers/stores.js";
+import { priceOyeSection } from "../scrapers/priceoye.scraper.js";
 import { sanitizePrices } from "./priceSanity.service.js";
 import { canonicalSourceUrl, toListingDoc } from "./scraper.service.js";
 
@@ -33,25 +34,35 @@ export const MAX_TERMS = 200;
 /** The stores whose catalogue can be read: the Shopify, WooCommerce and storefront ones (scrapers/stores.js). */
 // Stores whose catalogue is read but whose searches have a scraper of their own (scrapers/index.js), so they are not in stores.js.
 // Shophive (2026-11-09): its Magento GraphQL API lists all 7,920 products in 80 requests; searching kept it 51% fresh within a day.
-export const CATALOGUE_ONLY_STORES = Object.freeze([{ platform: "shophive", type: "magento", baseUrl: "https://www.shophive.com" }]);
+// PriceOye (2026-11-18): read section by section and brand by brand ("mobiles/apple", "ac/haier": the first two parts of the addresses
+// we hold there), where searching had kept 47% of its 7,300 listings checked within a day. A whole section ("mobiles") lists only its
+// first 13 pages (376 of our 1,580 phones there, not even the iPhone 17 Pro); a brand's list holds all its current products. Its
+// robots.txt allows "?page=" for every crawler.
+export const CATALOGUE_ONLY_STORES = Object.freeze([
+  { platform: "shophive", type: "magento", baseUrl: "https://www.shophive.com" },
+  { platform: "priceoye", type: "priceoye", baseUrl: "https://priceoye.pk" },
+]);
 export const CATALOGUE_STORES = [
   ...ADAPTER_STORES.filter((store) => ["shopify", "woocommerce", "storefront"].includes(store.type)),
   ...CATALOGUE_ONLY_STORES,
 ];
+
+/** The word a marketplace listing is read by: the first word of its title. */
+export const storefrontTerm = (title) => String(title ?? "").toLowerCase().match(/[a-z][a-z0-9&+-]{1,}/)?.[0] ?? null;
 
 /** The words to read a storefront marketplace by: the first word of the titles we hold for it, the most common first. */
 export async function storefrontTerms(platform, { listing = Listing } = {}) {
   const rows = await listing.find({ platform }, { title: 1 }).lean();
   const counts = new Map();
   for (const { title } of rows) {
-    const word = String(title ?? "").toLowerCase().match(/[a-z][a-z0-9&+-]{1,}/)?.[0];
+    const word = storefrontTerm(title);
     if (word) counts.set(word, (counts.get(word) ?? 0) + 1);
   }
   return [...counts].filter(([, n]) => n >= MIN_TERM_LISTINGS).sort((a, b) => b[1] - a[1]).slice(0, MAX_TERMS).map(([word]) => word);
 }
 
-function pagesOf(store, { fetchJson, terms, known, onError }) {
-  const options = { ...(fetchJson ? { fetchJson } : {}), onError };
+function pagesOf(store, { fetchJson, terms, known, onError, onTermRead }) {
+  const options = { ...(fetchJson ? { fetchJson } : {}), onError, onTermRead };
   if (store.type === "shopify") return shopifyCatalogue(store, options);
   if (store.type === "woocommerce") {
     // the variable products we hold variations of (their addresses carry the variation: "<permalink>?attribute_...")
@@ -60,7 +71,26 @@ function pagesOf(store, { fetchJson, terms, known, onError }) {
   }
   if (store.type === "storefront") return storefrontCatalogue(store, terms, options);
   if (store.type === "magento") return magentoCatalogue(store, options);
+  if (store.type === "priceoye") return priceOyeCatalogue(known, options);
   throw new Error(`${store.platform}: no catalogue reader for type ${store.type}`);
+}
+
+/** The section/brand lists of the PriceOye listings we hold (the first two parts of each address: "mobiles/apple"), largest first. */
+export function priceOyeSections(known) {
+  const counts = new Map();
+  for (const url of known) {
+    try {
+      const [, section, brand, product] = new URL(url).pathname.split("/");
+      if (section && brand && product) counts.set(`${section}/${brand}`, (counts.get(`${section}/${brand}`) ?? 0) + 1);
+    } catch {
+      // not an address
+    }
+  }
+  return [...counts].sort((a, b) => b[1] - a[1]).map(([section]) => section);
+}
+
+async function* priceOyeCatalogue(known, { fetchHtml, onError } = {}) {
+  for (const section of priceOyeSections(known)) yield* priceOyeSection(section, { ...(fetchHtml ? { fetch: fetchHtml } : {}), onError });
 }
 
 /**
@@ -75,7 +105,9 @@ function pagesOf(store, { fetchJson, terms, known, onError }) {
  */
 export async function refreshCatalogue(store, { fetchJson, terms, dryRun = false, onPage, deadline = null, listing = Listing, priceHistory = PriceHistory, now = () => new Date() } = {}) {
   const startedAt = Date.now();
-  const known = new Set((await listing.find({ platform: store.platform }, { sourceUrl: 1 }).lean()).map((row) => row.sourceUrl));
+  const held = await listing.find({ platform: store.platform }, { sourceUrl: 1, title: 1 }).lean();
+  const known = new Set(held.map((row) => row.sourceUrl));
+  const completeTerms = new Set(); // a marketplace's brand words read in full (storefrontCatalogue onTermRead)
   const searchTerms = store.type === "storefront" ? terms ?? (await storefrontTerms(store.platform, { listing })) : undefined;
   const stats = { platform: store.platform, known: known.size, terms: searchTerms?.length, pages: 0, items: 0, matched: 0, updated: 0, skippedPrice: 0, historyAppended: 0, errors: 0 };
   const onError = ({ error }) => {
@@ -102,7 +134,7 @@ export async function refreshCatalogue(store, { fetchJson, terms, dryRun = false
     stats.historyAppended += history.appended;
   }
 
-  for await (const page of pagesOf(store, { fetchJson, terms: searchTerms, known, onError })) {
+  for await (const page of pagesOf(store, { fetchJson, terms: searchTerms, known, onError, onTermRead: ({ term, complete }) => complete && completeTerms.add(term) })) {
     // The run's time limit: what was read is kept, nothing is marked gone (a read stopped early is not the whole store). AlfaMall's
     // read by brand takes over two hours with its retries; past the searches' budget it kept the nightly running until Task
     // Scheduler ended it, before its page check, with nothing logged (2026-11-10).
@@ -134,6 +166,29 @@ export async function refreshCatalogue(store, { fetchJson, terms, dryRun = false
   // Only a read of the whole store: not a marketplace read by brand, not chosen collections (Al-Fatah, 2026-11-08: its three
   // collections found 1,259 of our 2,444 listings, and the other 1,185, accessories and the like, were marked gone though still sold),
   // and not one a reader stopped early (an error, or a page limit reached: catalogue.js reports both through onError).
+  // A marketplace (AlfaMall, DigiMall), read brand word by brand word: our listing of a word read in full that the read did not return
+  // has been taken down by its seller (2026-11-18: of our 54 AlfaMall listings of the Samsung 55U8000F, many unseen for days, and the
+  // "Afzal Corporation" offer shown as the lowest price led to a page that no longer existed). Only for a word whose read also found at
+  // least MIN_FOUND_SHARE of our listings of it, so a search that answers oddly cannot take a brand down; never after the time limit.
+  if (store.type === "storefront" && !stats.stoppedAtDeadline) {
+    const byTerm = new Map();
+    for (const row of held) {
+      const word = storefrontTerm(row.title);
+      if (!word || !completeTerms.has(word)) continue;
+      if (!byTerm.has(word)) byTerm.set(word, []);
+      byTerm.get(word).push(row.sourceUrl);
+    }
+    const gone = [];
+    for (const urls of byTerm.values()) {
+      const found = urls.filter((url) => seen.has(url)).length;
+      if (found / urls.length >= MIN_FOUND_SHARE) gone.push(...urls.filter((url) => !seen.has(url)));
+    }
+    stats.gone = gone.length;
+    stats.termsComplete = completeTerms.size;
+    if (gone.length && !dryRun) {
+      await listing.updateMany({ platform: store.platform, sourceUrl: { $in: gone }, notInCatalogueSince: null }, { $set: { inStock: false, notInCatalogueSince: now() } });
+    }
+  }
   const wholeStore = store.type !== "storefront" && !store.collections?.length;
   const complete = wholeStore && !stats.stoppedAtDeadline && stats.errors === 0 && stats.known > 0 && stats.matched / stats.known >= MIN_FOUND_SHARE;
   if (complete) {

@@ -73,6 +73,13 @@ const listingSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    // Why it cannot be bought, when the store says so (scrapers/scraper.schema.js): "coming_soon" (not on sale yet: the price is the
+    // expected one), "discontinued" (its last price) or "out_of_stock". Null when it can be bought or the store does not say.
+    availability: {
+      type: String,
+      enum: ["coming_soon", "discontinued", "out_of_stock", null],
+      default: null,
+    },
     isActive: {
       type: Boolean,
       default: true,
@@ -120,6 +127,9 @@ const listingSchema = new mongoose.Schema(
     seller:      { type: String, default: null }, // the seller's name as the store shows it
     // set when the store's whole catalogue no longer lists it (catalogueRefresh.service.js); cleared when it is scraped again
     notInCatalogueSince: { type: Date, default: null },
+    // Retired: the store now lists this product under its variants' own addresses, so this plain one is an old copy
+    // (services/supersededListings.service.js). Hidden everywhere through VISIBLE_PLATFORMS_FILTER; its history is kept.
+    supersededAt: { type: Date, default: null },
     delivery:    { type: mongoose.Schema.Types.Mixed, default: null }, // { window: "10 Nov - 11 Nov, 2026", express: bool, freeShipping: bool }
     // Flat label -> value strings from the store's specification table.
     specs:       { type: mongoose.Schema.Types.Mixed, default: null },

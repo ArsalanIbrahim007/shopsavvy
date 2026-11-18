@@ -18,7 +18,7 @@ Karachi.
   - A claimed "was" price is checked against the listing's own history and against what other stores charge.
   - A price far out of line is flagged as unusual, and never shown as the lowest price or counted as a saving.
   - PTA-approved and non-PTA phones are never compared.
-  - A price not checked for 14 days is labelled and left out of the comparison.
+  - A price not checked for 7 days is labelled and left out of the comparison.
 - **Price history and advice.** Every offer's price is recorded nightly. The product page shows the history, says whether
   to buy now or wait, and marks the lowest price recorded. A price-drops page lists recent falls.
 - **Price alerts** by email (no account: double opt-in, a cancel link in every email).

@@ -30,6 +30,7 @@ import mongoose from "mongoose";
 import { isDoneToday, markDone, markFailed, tryStart } from "../jobs/scrapeState.js";
 import { CATALOGUE_STORES, coversHeldListings, refreshCatalogue } from "../services/catalogueRefresh.service.js";
 import { enrichFromPages } from "../services/pageEnrichment.service.js";
+import { retireSupersededListings } from "../services/supersededListings.service.js";
 import { backupDatabase, DEFAULT_BACKUP_DIR } from "../services/backup.service.js";
 import { buildScheduledQueryPlan, createQueryLog, NIGHTLY_SEARCHES_AT_ONCE, onlyStores, RUN_BUDGET_MS, runScheduledScrape, withoutRefreshedStores } from "../services/scheduledScraping.service.js";
 
@@ -126,6 +127,13 @@ try {
     },
   });
   await catalogues;
+  // A store's old plain-address copies of products the catalogues now read by variant (2026-11-18: 83 of them).
+  try {
+    const retired = await retireSupersededListings();
+    if (retired.retired) console.log(`[${stamp()}] retired ${retired.retired} old plain-address copies of listings now read by variant: ${JSON.stringify(retired.byStore)}`);
+  } catch (err) {
+    console.warn(`[${stamp()}] retiring old copies failed: ${err.message}`);
+  }
 
   // Only a whole run is the day's scrape. A forced run of some stores, or without the catalogues, is a catch-up: recorded as the
   // day's, it made that evening's nightly stop with "already run" (2026-11-09: a PriceOye-only run at 04:17 skipped the 22:00 one).

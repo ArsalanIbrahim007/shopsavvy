@@ -24,10 +24,10 @@ const fresh = new Date().toISOString();
 const ago = (n) => new Date(Date.now() - n * DAY).toISOString();
 
 describe("isOutOfDate", () => {
-  it("is true once a price was last checked more than 14 days ago, and not before", () => {
-    expect(STALE_AFTER_DAYS).toBe(14);
-    expect(isOutOfDate({ lastScrapedAt: daysAgo(14) }, NOW)).toBe(false);
-    expect(isOutOfDate({ lastScrapedAt: new Date(NOW - 14 * DAY - 1000).toISOString() }, NOW)).toBe(true);
+  it("is true once a price was last checked more than 7 days ago, and not before", () => {
+    expect(STALE_AFTER_DAYS).toBe(7);
+    expect(isOutOfDate({ lastScrapedAt: daysAgo(7) }, NOW)).toBe(false);
+    expect(isOutOfDate({ lastScrapedAt: new Date(NOW - 7 * DAY - 1000).toISOString() }, NOW)).toBe(true);
     expect(isOutOfDate({ lastScrapedAt: daysAgo(51) }, NOW)).toBe(true);
     expect(isOutOfDate({ lastScrapedAt: daysAgo(0) }, NOW)).toBe(false);
   });
@@ -84,14 +84,14 @@ describe("freshnessNotice", () => {
 
   it("names the stores and says what the old prices are left out of", () => {
     expect(freshnessNotice([o("mega", 1), o("shophive", 51)], NOW)).toBe(
-      "1 price has not been checked for over 14 days (Shophive). It is labelled below and left out of the lowest price, the best deal and what you can save."
+      "1 price has not been checked for over 7 days (Shophive). It is labelled below and left out of the lowest price, the best deal and what you can save."
     );
-    expect(freshnessNotice([o("mega", 1), o("shophive", 51), o("priceoye", 45)], NOW)).toMatch(/^2 prices have not been checked for over 14 days \(Shophive, PriceOye\)\. They are labelled below/);
+    expect(freshnessNotice([o("mega", 1), o("shophive", 51), o("priceoye", 45)], NOW)).toMatch(/^2 prices have not been checked for over 7 days \(Shophive, PriceOye\)\. They are labelled below/);
   });
 
   it("when none is current, says how old the newest is and does not claim anything was left out", () => {
     const text = freshnessNotice([o("shophive", 51), o("priceoye", 45)], NOW);
-    expect(text).toBe("None of these prices has been checked for over 14 days (the newest is 45 days old), so they may be out of date. Check the store before you buy.");
+    expect(text).toBe("None of these prices has been checked for over 7 days (the newest is 45 days old), so they may be out of date. Check the store before you buy.");
     expect(text).not.toMatch(/left out/);
   });
 });
@@ -162,7 +162,7 @@ describe("Product page: out-of-date prices", () => {
     const card = await screen.findByRole("article");
     expect(card).toHaveTextContent("Lowest at PriceOye");
     expect(card).toHaveTextContent("you can save up to PKR 5,000"); // 335,000 - 330,000, not 335,000 - 300,000
-    expect(card).toHaveTextContent(/1 price has not been checked for over 14 days \(Shophive\)\. It is labelled below and left out of the lowest price/);
+    expect(card).toHaveTextContent(/1 price has not been checked for over 7 days \(Shophive\)\. It is labelled below and left out of the lowest price/);
 
     const old = rowsOf().find((row) => row.textContent.includes("PKR 300,000"));
     expect(within(old).getByText("May be out of date")).toBeInTheDocument();
@@ -184,7 +184,7 @@ describe("Product page: out-of-date prices", () => {
     const card = await screen.findByRole("article");
     expect(card).toHaveTextContent("Lowest at Shophive");
     expect(within(card).getAllByText("May be out of date").length).toBeGreaterThanOrEqual(3); // header and each row
-    expect(card).toHaveTextContent(/None of these prices has been checked for over 14 days \(the newest is 45 days old\)/);
+    expect(card).toHaveTextContent(/None of these prices has been checked for over 7 days \(the newest is 45 days old\)/);
   });
 
   it("shows no label or notice when every price is current", async () => {

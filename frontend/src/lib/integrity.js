@@ -19,11 +19,15 @@ const VERDICTS = [
   { id: "genuine", label: "Verified", tone: "good", hint: "The price history supports the claimed discount" },
   { id: "likelyGenuine", label: "Likely genuine", tone: "good", hint: "Mostly supported by the store's own price history" },
   { id: "unverified", label: "Unverified", tone: "neutral", hint: "Too little of the store's own price history to clear it, and nothing else shows it inflated" },
-  { id: "suspicious", label: "Suspicious", tone: "caution", hint: "Larger than the price history supports, or a \"was\" price above what such specs usually cost" },
+  // "Suspicious" split by what it rests on (backend fakeDiscountScore.js suspicionKind, 2026-11-18): in 94% of them the store's own
+  // history never reached its "was" price, and 43% had under two weeks of it.
+  { id: "unconfirmed", label: "Not yet confirmed", tone: "caution", hint: "Watched for under two weeks, and the store has not charged its \"was\" price yet: too early to say" },
+  { id: "neverCharged", label: "Never sold at the \"was\" price", tone: "caution", hint: "Watched for two weeks or more, and the store never once charged its \"was\" price: a standing \"sale\"" },
+  { id: "suspicious", label: "Suspicious", tone: "caution", hint: "Other evidence of an inflated \"was\" price: the product's history at every store, or what such specs usually cost" },
   { id: "likelyFake", label: "Likely fake", tone: "bad", hint: "The price history strongly contradicts the claimed discount" },
 ];
 
-/** One row per discount verdict: its count and its share of all the claims. Always the same five rows, in this order. */
+/** One row per discount verdict: its count and its share of all the claims. Always the same seven rows, in this order. */
 export function discountRows(discounts) {
   const claims = discounts?.claims ?? 0;
   return VERDICTS.map((verdict) => {
@@ -38,6 +42,7 @@ export function ptaRows(pta) {
   const row = (id, label, count, hint) => ({ id, label, count: count ?? 0, share: share(count ?? 0, offers), hint });
   return [
     row("approved", "State PTA approved", pta?.approved, "The title or the store's own page says so"),
+    row("approvedByBrand", "Approved by maker", pta?.approvedByBrand, "The store does not say; only imported makers (Apple, Samsung...) are sold here non-PTA"),
     row("nonPta", "State non-PTA", pta?.nonPta, "Kept apart from approved phones, never compared with them"),
     row("notStated", "Do not say, priced like the rest", pta?.notStated, "Shown, labelled, and never the best deal of a PTA-approved phone"),
     row("movedOut", "Do not say, priced far below", pta?.movedOut, "Taken out of the PTA-approved product: may be non-PTA"),

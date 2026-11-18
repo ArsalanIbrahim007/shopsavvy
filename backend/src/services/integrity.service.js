@@ -29,8 +29,8 @@ export function summarizeGroups(groups, { now = Date.now() } = {}) {
   const out = {
     offers: 0, stores: 0, products: groups.length, productsCompared: 0,
     unusualPrices: { count: 0, examples: [] },
-    discounts: { claims: 0, verdicts: { genuine: 0, likelyGenuine: 0, suspicious: 0, likelyFake: 0, unverified: 0 }, aboveMarket: 0 },
-    pta: { offers: 0, approved: 0, nonPta: 0, notStated: 0, movedOut: 0, readFromProductPage: 0, productsKeptApart: 0 },
+    discounts: { claims: 0, verdicts: { genuine: 0, likelyGenuine: 0, unconfirmed: 0, neverCharged: 0, suspicious: 0, likelyFake: 0, unverified: 0 }, aboveMarket: 0 },
+    pta: { offers: 0, approved: 0, approvedByBrand: 0, nonPta: 0, notStated: 0, movedOut: 0, readFromProductPage: 0, productsKeptApart: 0 },
     freshness: { within24h: 0, within72h: 0, outOfDate: 0, outOfDateAfterDays: STALE_AFTER_DAYS, newestAt: null },
   };
 
@@ -60,6 +60,10 @@ export function summarizeGroups(groups, { now = Date.now() } = {}) {
         const verdict = offer.discountAnalysis?.classification;
         if (verdict === "genuine_discount") out.discounts.verdicts.genuine += 1;
         else if (verdict === "possibly_genuine") out.discounts.verdicts.likelyGenuine += 1;
+        // "Suspicious" is split by what it rests on (fakeDiscountScore.js suspicionKind): under two weeks of history and the "was" price
+        // not seen yet, or two weeks and more without the store ever charging it; the rest is other evidence of inflation.
+        else if (verdict === "suspicious" && offer.discountAnalysis?.suspicionKind === "unconfirmed") out.discounts.verdicts.unconfirmed += 1;
+        else if (verdict === "suspicious" && offer.discountAnalysis?.suspicionKind === "never_charged") out.discounts.verdicts.neverCharged += 1;
         else if (verdict === "suspicious") out.discounts.verdicts.suspicious += 1;
         else if (verdict === "likely_fake") out.discounts.verdicts.likelyFake += 1;
         else out.discounts.verdicts.unverified += 1;
@@ -68,7 +72,9 @@ export function summarizeGroups(groups, { now = Date.now() } = {}) {
 
       if (PTA_CATEGORIES.has(offer.productCategory)) {
         out.pta.offers += 1;
-        if (offer.ptaStatus === "pta_approved") out.pta.approved += 1;
+        // approved by its maker's rule (productGrouping byBrand) is counted apart from a store that says so
+        if (offer.ptaStatus === "pta_approved" && offer.ptaSource === "brand") out.pta.approvedByBrand += 1;
+        else if (offer.ptaStatus === "pta_approved") out.pta.approved += 1;
         else if (offer.ptaStatus === "non_pta") out.pta.nonPta += 1;
         if (offer.ptaAssessment === "not_stated") out.pta.notStated += 1;
         if (offer.ptaAssessment === "likely_non_pta") out.pta.movedOut += 1;
