@@ -42,6 +42,8 @@
     const stores = new Set((result.offers ?? []).map((o) => o.platform)).size;
     let tone = "info";
     let headline = `Also sold by ${stores} other ${stores === 1 ? "store" : "stores"}`;
+    // No other store sells it (Mega's Galaxy Z Fold 7, 2026-11-19: the panel used to stay away, and the shopper saw nothing).
+    if (others === 0) headline = "No other store we compare sells this";
     if (result.cheapest?.cheaperThanThisPage) {
       tone = "save";
       headline = `${rupees(result.cheapest.price)} at ${storeName(result.cheapest.platform)}: save ${rupees(result.cheapest.saving)}`;

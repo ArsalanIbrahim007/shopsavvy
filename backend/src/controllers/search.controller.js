@@ -117,7 +117,12 @@ async function findSearchListings(trimmedQuery, searchFilter) {
   // Every word, in any order, is asked even when the phrase found something: "samsung s25 ultra" found only cases and screen
   // protectors that say it word for word, while the phones say "Samsung Galaxy S25 Ultra" (2026-11-07). Both are kept.
   // A category word ("phone", "fridge", "ac") sets the category and is not looked for in titles (searchMatching.service.js).
-  const { words: queryTokens, category: namedCategory } = splitCategoryWords(trimmedQuery.split(/[^a-zA-Z0-9]+/).filter((t) => t.length >= 2));
+  // A maker's series letters hyphenated to a model code ("KDL-32R300") are not looked for on their own: stores write the Sony
+  // "32R300E" without them (audit re-test, 2026-11-19: "Sony KDL-32R300" found nothing, two stored).
+  const codePrefixes = new Set([...trimmedQuery.toLowerCase().matchAll(/(?<![a-z0-9])([a-z]{2,4})-(?=\d)/g)].map((m) => m[1]));
+  const allTokens = trimmedQuery.split(/[^a-zA-Z0-9]+/).filter((t) => t.length >= 2);
+  const withoutPrefixes = allTokens.filter((t) => !codePrefixes.has(t.toLowerCase()));
+  const { words: queryTokens, category: namedCategory } = splitCategoryWords(withoutPrefixes.length ? withoutPrefixes : allTokens);
   const categoryFloor = namedCategory && !searchFilter.productCategory ? { productCategory: namedCategory } : fallbackCategoryFloor;
   if (queryTokens.length > 0) {
     const tokenFilter = {
@@ -146,6 +151,16 @@ async function findSearchListings(trimmedQuery, searchFilter) {
     const joinedFilter = { ...searchFilter, ...categoryFloor, $and: queryTokens.map((token) => ({ title: { $regex: joinedWordPattern(token), $options: "i" } })) };
     delete joinedFilter.$or;
     listings = await Listing.find(joinedFilter).sort({ price: 1, createdAt: -1 });
+    if (listings.length) matchedBy = "words";
+  }
+
+  // A brand joined to a number ("haier398"): also the two words apart, each whole ("Haier … HRF-398"). Only a word of four letters
+  // or more before the digits, so "iphone17" style codes, which match above, and short codes are not split.
+  const splitTokens = queryTokens.flatMap((token) => (/^[a-z]{4,}\d{2,}$/i.test(token) ? token.match(/^([a-z]+)(\d+)$/i).slice(1) : [token]));
+  if (listings.length === 0 && splitTokens.length > queryTokens.length) {
+    const splitFilter = { ...searchFilter, ...categoryFloor, $and: splitTokens.map((token) => ({ title: { $regex: searchWordPattern(token), $options: "i" } })) };
+    delete splitFilter.$or;
+    listings = await Listing.find(splitFilter).sort({ price: 1, createdAt: -1 });
     if (listings.length) matchedBy = "words";
   }
 

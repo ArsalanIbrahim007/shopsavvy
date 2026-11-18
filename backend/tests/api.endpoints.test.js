@@ -267,6 +267,19 @@ describe("GET /api/listings/search", () => {
     expect(words.productCategory).toEqual({ $ne: "accessory" }); // products without a category of their own are found too
   });
 
+  // Audit re-test 2026-11-19: "Sony KDL-32R300" and "haier398" found nothing; the stores write "32R300E" and "Haier … HRF-398".
+  it("leaves out a series prefix hyphenated to a code, and tries a brand joined to a number as two words", async () => {
+    const find = vi.spyOn(Listing, "find").mockImplementation(() => chain([]));
+    await json("/api/listings/search?q=Sony%20KDL-32R300");
+    const sony = find.mock.calls.map(([f]) => f).find((f) => f.$and);
+    expect(sony.$and).toHaveLength(2); // sony, 32r300: not kdl
+    expect(new RegExp(sony.$and[1].title.$regex, "i").test("Sony 32 Inch LED TV (32R300E)")).toBe(true);
+    find.mockClear();
+    await json("/api/listings/search?q=haier398");
+    const split = find.mock.calls.map(([f]) => f).filter((f) => f.$and).at(-1);
+    expect(split.$and.map((c) => new RegExp(c.title.$regex, "i").test("Haier - Inverter Refrigerator - HRF-398"))).toEqual([true, true]);
+  });
+
   // 2026-11-07: "tea" matched inside "steamer", "steam iron" and "teal": 464 of the 500 products shown.
   it("asks for every word as a whole word, a plural allowed", async () => {
     const find = vi.spyOn(Listing, "find").mockImplementation(() => chain([]));

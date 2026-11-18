@@ -20,8 +20,9 @@ After changing a file: press the extension's reload button on `chrome://extensio
 
 ## What it shows
 
-- **A panel** in the corner of the store's page, only when another store sells the product: "PKR 143,999 at Shophive: save
-  PKR 6,521" with a link to that store and to the full comparison on ShopSavvy, or "This is the lowest price we found". Below
+- **A panel** in the corner of the store's page, whenever ShopSavvy holds the product: "PKR 143,999 at Shophive: save
+  PKR 6,521" with a link to that store and to the full comparison on ShopSavvy, "This is the lowest price we found", or "No other
+  store we compare sells this" with a link to its price history (since 2026-11-19; it used to stay away then). Below
   it, the warnings that apply: a discount that looks fake or doubtful, a price that looks like a listing error, the lowest
   price we have recorded, and "check it is the same model" when the page was matched by name and price rather than by address.
 - **The toolbar badge**: the saving ("-7k", "-1.5L") when another store is cheaper, a tick when this page is the cheapest.

@@ -99,7 +99,8 @@
     if (deal) links.append(el("a", { class: "primary", href: deal, target: "_blank", rel: "noopener noreferrer" }, `Go to ${storeName(result.cheapest.platform)}`));
     const compare = safeLink(result.productUrl);
     const offerCount = (result.offers?.length ?? 0) + (result.lookup ? 0 : 1); // a looked-up page is not one of the offers
-    if (compare) links.append(el("a", { class: result.lookup ? "primary" : "ghost", href: compare, target: "_blank", rel: "noopener noreferrer" }, result.lookup ? `See ${offerCount} offers in Pakistan` : `Compare ${offerCount} offers`));
+    const compareText = result.lookup ? `See ${offerCount} offers in Pakistan` : offerCount > 1 ? `Compare ${offerCount} offers` : "See its price history";
+    if (compare) links.append(el("a", { class: result.lookup ? "primary" : "ghost", href: compare, target: "_blank", rel: "noopener noreferrer" }, compareText));
     body.append(links);
 
     panel.append(top, body);
@@ -128,7 +129,8 @@
     const answer = await chrome.runtime.sendMessage({ type: abroad ? "LOOKUP" : "MATCH", product }).catch(() => null);
     const result = answer?.result;
     const { showPanel: wanted } = await chrome.storage.sync.get("showPanel");
-    if (result?.found && result.offers?.length && wanted !== false) showPanel(result);
+    // Also when no other store sells it: the shopper learns that, and what our checks say about this page's price.
+    if (result?.found && wanted !== false && (result.offers?.length || !result.lookup)) showPanel(result);
     else removePanel();
   }
 

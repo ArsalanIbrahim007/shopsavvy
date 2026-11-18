@@ -309,19 +309,21 @@ matcher is tuned to avoid it, which is why recall is the lower of the two.
 
 ## Rechecked 2026-11-19, after the shopper audit
 
-Both samples, the same labels (`12-recheck-recall.js`; the recheck files now hold this run):
+Both samples, the same labels (`12-recheck-recall.js`; the recheck files now hold this run). "Before" is the last recheck, committed
+on 2026-11-09 (93907ae).
 
-| Sample | Recall 9 Nov | Recall 19 Nov | Pair precision 9 Nov | Pair precision 19 Nov |
-|---|---:|---:|---:|---:|
-| Fresh (2026-11-09) | 77.9% | **84.5%** | 96.9% | **95.6%** |
-| First | 75.2% | **67.1%** | 99.0% | **100.0%** |
+| Sample | Recall 9 Nov | Recall 19 Nov | Pair precision 9 Nov | Pair precision 19 Nov | Same-product pairs together, of those still listed | Pairs no longer listed |
+|---|---:|---:|---:|---:|---|---:|
+| Fresh (2026-11-09) | 84.6% | **84.5%** | 97.1% | **95.6%** | 43 of 47 -> **27 of 29** | 0 -> 96 |
+| First | 75.2% | **67.1%** | 100.0% | **100.0%** | 48 of 50 -> **33 of 36** | 4 -> 42 |
 
-The same recheck run with the code from before the audit's grouping changes, on the same day's data, gives exactly the same four
-numbers: the changes of 18-19 November (condition split, appliance codes, seller tags, code prefixes) touch no pair in these six
-categories, as the regrouping showed (0 products changed in phones, laptops, TVs, tablets, watches; headphones 2, both seller copies
-joined). What moved the numbers since 9 November is the data: the night's full catalogue reads, listings unchecked for 15 days or
-gone from their store hidden (96 and 42 sample pairs lost an offer and are left out), and the recategorisation. Of the first sample's
-12 same-product pairs now apart, 4 are not phones at all (a Xiaomi charger, a vacuum cleaner, two soundbars that the October rules
-filed as smartphones and that now sit in their own categories); 3 are kept apart by the storage veto (one title states no storage);
-5 are split by the greedy, order-dependent grouping on a changed catalogue. The appliance changes are measured in
-GROUPING_EVALUATION_APPLIANCES-style counts in the audit instead: Haier washing machines mixing two model codes 8 -> 0.
+- **No change from the code.** The same recheck with the code from before the audit's grouping changes, on the same day's data,
+  gives exactly the same four numbers; the regrouping found no product changed in these six categories bar two headphone seller
+  copies joined. The audit's grouping changes act on appliances (Haier washing machines mixing two model codes: 8 -> 0).
+- **The samples are wearing out.** Listings unchecked for 15 days, gone from their store, or retired copies are no longer listed,
+  and a pair with such an offer leaves the estimate: 96 of the fresh sample's pairs and 42 of the first's. The estimate is scaled
+  stratum by stratum, so with fewer pairs a single pair in the large "apart" strata moves it by several points: the first sample's
+  fall to 67.1% is that, while among its same-product pairs still listed, 33 of 36 are together (7 pairs that were apart are now
+  together, 1 is split: r121, iShopping's "Apple iPhone 17 - Mercantile Warranty", no storage stated, alone).
+- **Next:** a fresh sample of today's catalogue (10-sample-recall-pairs.js, then labels) to measure recall on what the site holds now.
+  (The "now split" lists the script prints also name pairs that are no longer listed; those are left out of the estimate.)
