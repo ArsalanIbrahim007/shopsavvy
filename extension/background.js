@@ -17,9 +17,18 @@ const BADGE = { save: "#d97706", best: "#059669" };
 // without it, the API's JSON with it). The website sends it too (frontend/src/api/client.js).
 const apiHeaders = (base) => (/\.ngrok(-free)?\.(app|dev|io)\b/i.test(base) ? { "ngrok-skip-browser-warning": "1" } : undefined);
 
+// The website's own address is not the API (2026-11-19: "https://shopsavvy.pages.dev" saved in Settings, and every page said
+// "Cannot reach ShopSavvy"): a saved website address means the deployed API.
+const WEBSITE_HOSTS = /(^|\.)(shopsavvy\.pages\.dev|pages\.dev)$/i;
 async function apiBase() {
   const { apiBase: saved } = await chrome.storage.sync.get("apiBase");
-  return String(saved || DEFAULT_API).replace(/\/+$/, "");
+  const base = String(saved || DEFAULT_API).replace(/\/+$/, "");
+  try {
+    if (WEBSITE_HOSTS.test(new URL(base).hostname)) return DEFAULT_API;
+  } catch {
+    return DEFAULT_API;
+  }
+  return base;
 }
 
 // The website the answers link to: the deployed one, or the local one beside a local API (the Vite dev server's port).

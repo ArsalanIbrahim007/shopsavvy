@@ -105,7 +105,8 @@
   const panelInput = document.getElementById("panel");
   const status = document.getElementById("settings-status");
   const saved = await chrome.storage.sync.get(["apiBase", "showPanel"]);
-  apiInput.value = saved.apiBase || "https://cranium-espresso-sway.ngrok-free.dev"; // background.js DEFAULT_API
+  // a website address saved earlier is shown as the API address the extension really uses (background.js apiBase)
+  apiInput.value = saved.apiBase && !/\.pages\.dev(\/|$)/i.test(saved.apiBase) ? saved.apiBase : "https://cranium-espresso-sway.ngrok-free.dev"; // background.js DEFAULT_API
   panelInput.checked = saved.showPanel !== false;
 
   form.addEventListener("submit", async (event) => {
@@ -115,7 +116,15 @@
       status.textContent = "Enter an address starting with http:// or https://";
       return;
     }
-    const origin = new URL(base).origin;
+    let origin = new URL(base).origin;
+    // The website's address is not the API's: saving it broke every page ("Cannot reach ShopSavvy", 2026-11-19).
+    if (/(^|\.)pages\.dev$/i.test(new URL(base).hostname)) {
+      origin = "https://cranium-espresso-sway.ngrok-free.dev"; // background.js DEFAULT_API
+      apiInput.value = origin;
+      await chrome.storage.sync.set({ apiBase: origin, showPanel: panelInput.checked });
+      status.textContent = "That is the website's address; the extension needs the API's, so the API address was saved instead.";
+      return;
+    }
     // A new address needs the shopper's permission to be called (the manifest grants only the local server).
     const granted = await chrome.permissions.request({ origins: [`${origin}/*`] }).catch(() => false);
     if (!granted) {

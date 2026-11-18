@@ -311,6 +311,10 @@ if (
     if (historySummary.historyCount < MIN_HISTORY_FOR_TIMING || !hasMoved) {
       return RECOMMENDATION_ACTIONS.NO_HISTORY;
     }
+    // At its lowest recorded price (within 5% of the recorded range), waiting is not what its history says: Mega's Galaxy Z Fold 7 at PKR 404,499, the
+    // lowest of 15 records, said "Wait: the current price is not especially attractive compared with its history" beside "The
+    // lowest price we have recorded" (2026-11-19). Its middling score comes from elsewhere (one store, the fair price): fair price.
+    if (historySummary.currentPricePosition !== null && historySummary.currentPricePosition <= 5) return RECOMMENDATION_ACTIONS.FAIR_PRICE;
     return RECOMMENDATION_ACTIONS.WAIT;
   }
 

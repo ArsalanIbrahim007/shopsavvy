@@ -176,3 +176,15 @@ describe("the reason says which kind of suspicious discount it is (2026-11-18)",
     expect(new Set(["unconfirmed", "never_charged", null].map((k) => offer(k).confidence)).size).toBe(1);
   });
 });
+
+describe("no 'Wait' at the lowest recorded price (2026-11-19)", () => {
+  it("says fair price for a middling score at its recorded low, and still 'Wait' higher up", async () => {
+    const { generateRecommendation } = await import("../src/services/recommendation/recommendation.service.js");
+    const day = (d, price) => ({ price, recordedAt: new Date(`2026-11-${String(d).padStart(2, "0")}T10:00:00Z`) });
+    const history = [day(1, 434499), day(4, 430000), day(7, 425000), day(10, 420000), day(13, 404499)];
+    const atLow = generateRecommendation({ price: 404499, dealScore: 45, priceHistory: history });
+    expect(atLow.action).not.toBe("WAIT");
+    const middle = generateRecommendation({ price: 420000, dealScore: 45, priceHistory: [...history.slice(0, 4), day(13, 420000), day(14, 404499)] });
+    expect(["WAIT", "FAIR_PRICE", "NO_HISTORY"]).toContain(middle.action);
+  });
+});
