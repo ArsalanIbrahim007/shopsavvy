@@ -377,3 +377,16 @@ describe("refreshCatalogue on a marketplace read by brand (2026-11-18)", () => {
     expect(late.listing.updateMany).not.toHaveBeenCalled();
   });
 });
+
+describe("storefrontTerms order (2026-11-18: AlfaMall's read is longer than the night)", () => {
+  it("puts the brand checked longest ago first, so each night carries on where the last stopped", async () => {
+    const at = (d) => new Date(`2026-11-${d}T00:00:00Z`);
+    const rows = [
+      ...Array.from({ length: 5 }, () => ({ title: "Samsung TV", lastScrapedAt: at(18) })),
+      ...Array.from({ length: 3 }, () => ({ title: "Kenwood AC", lastScrapedAt: at(12) })),
+      ...Array.from({ length: 4 }, () => ({ title: "Haier AC", lastScrapedAt: at(18) })),
+    ];
+    const listing = { find: () => ({ lean: async () => rows }) };
+    expect(await storefrontTerms("alfamall", { listing })).toEqual(["kenwood", "samsung", "haier"]);
+  });
+});

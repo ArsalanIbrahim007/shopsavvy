@@ -10,7 +10,8 @@
 
 import Listing from "../models/listing.model.js";
 import PriceHistory from "../models/priceHistory.model.js";
-import { magentoCatalogue, shopifyCatalogue, storefrontCatalogue, wooCatalogue } from "../scrapers/catalogue.js";
+import { categoryCatalogue, megaCategories, megaCategoryUrl, parseMegaCategoryHtml, magentoCatalogue, shopifyCatalogue, storefrontCatalogue, wooCatalogue } from "../scrapers/catalogue.js";
+import { parseIShoppingHtml } from "../scrapers/ishopping.scraper.js";
 import { STORES as ADAPTER_STORES } from "../scrapers/stores.js";
 import { priceOyeSection } from "../scrapers/priceoye.scraper.js";
 import { sanitizePrices } from "./priceSanity.service.js";
@@ -41,6 +42,21 @@ export const MAX_TERMS = 200;
 export const CATALOGUE_ONLY_STORES = Object.freeze([
   { platform: "shophive", type: "magento", baseUrl: "https://www.shophive.com" },
   { platform: "priceoye", type: "priceoye", baseUrl: "https://priceoye.pk" },
+  // iShopping (2026-11-18): its category pages, 150 products a page, parsed by its search scraper's parser (scrapers/catalogue.js
+  // categoryCatalogue). Searching had kept 575 of its 4,516 listings checked within a day.
+  {
+    platform: "ishopping", type: "category", baseUrl: "https://www.ishopping.pk", parse: parseIShoppingHtml,
+    // The top categories, and the sub-categories whose products a top page does not all show (the iPhone 18 Pro was only under
+    // "mobiles/iphone-18-series"); TVs, watches and headphones sit in their own trees ("tv-s-and-entertainment", from a TV's breadcrumb).
+    categories: [
+      "mobiles", "mobiles/apple-iphone", "mobiles/iphone-18-series", "mobiles/iphone-17-series", "mobiles/android-smartphones", "mobiles/tablets",
+      "mobiles/feature-phones", "mobiles/accessories", "laptops", "laptops/macbooks", "computers", "computers/accessories/monitors",
+      "tv-s-and-entertainment", "smart-watches", "electronics", "electronics/bluetooth-earbuds", "home-living/large-appliances",
+      "home-living/home-appliances",
+    ],
+  },
+  // Mega.pk (2026-11-18): its category pages, read for the categories our listings come from (catalogue.js megaCategories).
+  { platform: "mega", type: "category", baseUrl: "https://www.mega.pk", parse: parseMegaCategoryHtml, pageUrl: megaCategoryUrl, categories: megaCategories },
 ]);
 export const CATALOGUE_STORES = [
   ...ADAPTER_STORES.filter((store) => ["shopify", "woocommerce", "storefront"].includes(store.type)),
@@ -51,14 +67,26 @@ export const CATALOGUE_STORES = [
 export const storefrontTerm = (title) => String(title ?? "").toLowerCase().match(/[a-z][a-z0-9&+-]{1,}/)?.[0] ?? null;
 
 /** The words to read a storefront marketplace by: the first word of the titles we hold for it, the most common first. */
+// Stalest first (2026-11-18): AlfaMall's read takes longer than the night (1,170 pages in 150 minutes reached 63% of our listings), and
+// most-listings-first read the same brands every night while the rest were never reached. A brand whose listings were checked
+// longest ago now goes first, so each night carries on where the last stopped; the count breaks ties.
 export async function storefrontTerms(platform, { listing = Listing } = {}) {
-  const rows = await listing.find({ platform }, { title: 1 }).lean();
+  const rows = await listing.find({ platform }, { title: 1, lastScrapedAt: 1 }).lean();
   const counts = new Map();
-  for (const { title } of rows) {
+  const oldest = new Map();
+  for (const { title, lastScrapedAt } of rows) {
     const word = storefrontTerm(title);
-    if (word) counts.set(word, (counts.get(word) ?? 0) + 1);
+    if (!word) continue;
+    counts.set(word, (counts.get(word) ?? 0) + 1);
+    const at = new Date(lastScrapedAt ?? 0).getTime() || 0;
+    if (!oldest.has(word) || at < oldest.get(word)) oldest.set(word, at);
   }
-  return [...counts].filter(([, n]) => n >= MIN_TERM_LISTINGS).sort((a, b) => b[1] - a[1]).slice(0, MAX_TERMS).map(([word]) => word);
+  return [...counts]
+    .filter(([, n]) => n >= MIN_TERM_LISTINGS)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, MAX_TERMS)
+    .sort((a, b) => oldest.get(a[0]) - oldest.get(b[0]) || b[1] - a[1])
+    .map(([word]) => word);
 }
 
 function pagesOf(store, { fetchJson, terms, known, onError, onTermRead }) {
@@ -72,6 +100,10 @@ function pagesOf(store, { fetchJson, terms, known, onError, onTermRead }) {
   if (store.type === "storefront") return storefrontCatalogue(store, terms, options);
   if (store.type === "magento") return magentoCatalogue(store, options);
   if (store.type === "priceoye") return priceOyeCatalogue(known, options);
+  if (store.type === "category") {
+    const categories = typeof store.categories === "function" ? store.categories(known) : store.categories;
+    return categoryCatalogue({ ...store, categories }, { onError });
+  }
   throw new Error(`${store.platform}: no catalogue reader for type ${store.type}`);
 }
 
@@ -189,7 +221,8 @@ export async function refreshCatalogue(store, { fetchJson, terms, dryRun = false
       await listing.updateMany({ platform: store.platform, sourceUrl: { $in: gone }, notInCatalogueSince: null }, { $set: { inStock: false, notInCatalogueSince: now() } });
     }
   }
-  const wholeStore = store.type !== "storefront" && !store.collections?.length;
+  // Category pages (iShopping, Mega) cover the categories read, not the store: refreshed, never marked gone by this rule.
+  const wholeStore = store.type !== "storefront" && store.type !== "category" && !store.collections?.length;
   const complete = wholeStore && !stats.stoppedAtDeadline && stats.errors === 0 && stats.known > 0 && stats.matched / stats.known >= MIN_FOUND_SHARE;
   if (complete) {
     const gone = [...known].filter((url) => !seen.has(url));

@@ -92,7 +92,8 @@ try {
   // its own store, so the run takes as long as its longest part. A store read only in part (Al-Fatah, by collections) is searched too.
   const catalogueStores = process.argv.includes("--no-catalogue") ? [] : CATALOGUE_STORES;
   const catalogueDeadline = Date.now() + RUN_BUDGET_MS;
-  const readWhole = new Set(catalogueStores.filter((store) => !store.collections?.length).map((store) => store.platform));
+  // Read by category pages (iShopping, Mega, 2026-11-18): only the categories read, so they are searched too, for the rest.
+  const readWhole = new Set(catalogueStores.filter((store) => !store.collections?.length && store.type !== "category").map((store) => store.platform));
   catalogues = Promise.all(
     catalogueStores.map(async (store) => {
       try {

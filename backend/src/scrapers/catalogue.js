@@ -13,6 +13,8 @@
 // listing we hold instead of adding a second one. Every request goes through politeJson (one request per store every 1.5 s, no
 // retry of a refusal).
 
+import * as cheerio from "cheerio";
+
 import { makeListing } from "./scraper.schema.js";
 import { cleanText, parsePrice, safeMap } from "./scraper.utils.js";
 import { fetchJson as politeFetchJson } from "./politeJson.js";
@@ -237,4 +239,97 @@ export async function* storefrontCatalogue(store, terms, { fetchJson = politeFet
     onTermRead?.({ term, complete: total !== null && !skipped && !capped });
   }
   if (terms.length > 0 && failedTerms === terms.length) throw new Error(`${store.platform}: every search failed`);
+}
+
+// Category pages (iShopping, 2026-11-18): a store with no catalogue API of its own is read through the category pages its shoppers
+// browse ("/mobiles", "/laptops", "/home-living/large-appliances"), page by page ("?p=2"), each page parsed by the store's own search
+// parser (the cards are the same). Searching had kept 575 of our 4,516 iShopping listings checked within a day. Its robots.txt allows
+// every page; its GraphQL API answers "Internal server error" to every product query. A category ends at the first page that adds
+// nothing new (the store repeats its last page past the end); a product listed under two categories is yielded once.
+export const CATEGORY_MAX_PAGES = 60;
+export const CATEGORY_USER_AGENT = "ShopSavvyBot/1.0 (student price-comparison project; reads a store's public category pages)";
+const CATEGORY_GAP_MS = 2000;
+const CATEGORY_TIMEOUT_MS = 45000;
+
+let lastCategoryRequest = 0;
+export async function politeFetchText(url) {
+  const wait = lastCategoryRequest + CATEGORY_GAP_MS - Date.now();
+  if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
+  lastCategoryRequest = Date.now();
+  const response = await fetch(url, { headers: { "User-Agent": CATEGORY_USER_AGENT, Accept: "text/html" }, redirect: "follow", signal: AbortSignal.timeout(CATEGORY_TIMEOUT_MS) });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return response.text();
+}
+
+/**
+ * @param {{platform: string, baseUrl: string, categories: string[], parse: (html: string) => object[], pageUrl?: (category: string, page: number) => string}} store
+ * @param {{fetchText?: Function, onError?: Function, maxPages?: number}} [options]
+ */
+export async function* categoryCatalogue(store, { fetchText = politeFetchText, onError, maxPages = CATEGORY_MAX_PAGES } = {}) {
+  const seen = new Set();
+  let failed = 0;
+  for (const category of store.categories) {
+    const inCategory = new Set();
+    for (let page = 1; page <= maxPages; page++) {
+      const url = store.pageUrl ? store.pageUrl(category, page) : `${store.baseUrl}/${category}${page > 1 ? `?p=${page}` : ""}`;
+      let listings;
+      try {
+        listings = store.parse(await fetchText(url));
+      } catch (error) {
+        onError?.({ error: new Error(`${url}: ${error.message}`) });
+        if (page === 1) failed += 1;
+        break;
+      }
+      const fresh = listings.filter((l) => !inCategory.has(l.sourceUrl));
+      if (fresh.length === 0) break;
+      fresh.forEach((l) => inCategory.add(l.sourceUrl));
+      const unseen = fresh.filter((l) => !seen.has(l.sourceUrl));
+      unseen.forEach((l) => seen.add(l.sourceUrl));
+      if (unseen.length) yield unseen;
+      if (page === maxPages) onError?.({ error: new Error(`${category}: stopped at ${maxPages} pages`) });
+    }
+  }
+  if (store.categories.length > 0 && failed === store.categories.length) throw new Error(`${store.platform}: every category failed`);
+}
+
+// Mega.pk (2026-11-18): its category pages ("/mobiles/", then "/mobiles/2/"), 32 products each; robots.txt allows them. A product's
+// address names its category ("/laptop_products/26912/..."), so the categories read are the ones our listings come from. The cards
+// are the ones its search scraper reads (scrapers/mega.scraper.js): li[data-brand], the name in #lap_name_div, the price in .cat_price
+// with the "was" price in .was.
+export const megaCategoryUrl = (category, page) => `https://www.mega.pk/${category}/${page > 1 ? `${page}/` : ""}`;
+
+/** The Mega categories of the listings we hold there ("laptop" from "/laptop_products/..."), largest first. */
+export function megaCategories(known) {
+  const counts = new Map();
+  for (const url of known) {
+    const match = String(url).match(/mega\.pk\/([a-z0-9]+)_products\//i);
+    if (match) counts.set(match[1].toLowerCase(), (counts.get(match[1].toLowerCase()) ?? 0) + 1);
+  }
+  return [...counts].sort((a, b) => b[1] - a[1]).map(([category]) => category);
+}
+
+/** The products on one Mega category page, as its search scraper makes them. */
+export function parseMegaCategoryHtml(html) {
+  const $ = cheerio.load(String(html ?? ""));
+  return safeMap($("li[data-brand]").toArray(), (el) => {
+    const card = $(el);
+    const link = card.find("#lap_name_div h3 a").first();
+    const title = cleanText(link.text());
+    const href = link.attr("href");
+    if (!title || !href) return null;
+    const box = card.find(".cat_price").first().clone();
+    const was = parsePrice(box.find(".was").text());
+    box.find(".was").remove();
+    const price = parsePrice(box.text());
+    if (!(price > 0)) return null;
+    return makeListing({
+      platform: "mega",
+      sourceUrl: href.startsWith("http") ? href : `https://www.mega.pk${href}`,
+      title,
+      price,
+      originalPrice: was > price ? was : null,
+      imageUrl: card.find(".image img").attr("src") || null,
+      inStock: !/out of stock/i.test(card.text()),
+    });
+  }, "mega");
 }

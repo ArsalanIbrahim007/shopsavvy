@@ -59,6 +59,20 @@ export function interleaveByStore(listings) {
   return out;
 }
 
+// Stores whose product pages are an empty app shell for any reader (the product is drawn by their script): nothing to check there.
+const SHELL_PAGE_STORES = new Set(["alfamall", "digimall"]);
+
+/**
+ * True when `html` is a product page: it has an add-to-cart control, a product type or a price. On 2026-11-18 techroid now and
+ * then answered with a 12 KB page of its menus only (its page cache; a browser got the 800 KB page a minute later), and the
+ * page check recorded those as "the page says nothing about PTA", not to be read again for 14 days. A page that is not one is now
+ * a failed read, tried again in two days.
+ */
+export function looksLikeProductPage(html, platform = "") {
+  if (SHELL_PAGE_STORES.has(String(platform).toLowerCase())) return true;
+  return /add[-_ ]to[-_ ]cart|og:type["']?\s+content=["']product|"@type"\s*:\s*"Product"|itemprop=["']price|product:price:amount/i.test(String(html ?? ""));
+}
+
 /** Downloads a product page: a plain request, or the headless browser for the stores that refuse one. */
 export async function defaultFetchPage(listing) {
   const url = listing.productUrl || listing.sourceUrl;
@@ -71,7 +85,9 @@ export async function defaultFetchPage(listing) {
 
   const response = await fetch(url, { headers: { "User-Agent": USER_AGENT, Accept: "text/html" }, redirect: "follow", signal: AbortSignal.timeout(20000) });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  return response.text();
+  const html = await response.text();
+  if (!looksLikeProductPage(html, listing.platform)) throw new Error(`not a product page (${html.length} bytes): cut short or refused`);
+  return html;
 }
 
 /**

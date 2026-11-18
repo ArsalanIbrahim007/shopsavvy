@@ -112,3 +112,12 @@ describe("a store's short list (techroid, 2026-11-18)", () => {
     expect(extractPtaFromPage(menu).status).toBe("unknown");
   });
 });
+
+describe("a page that is not a product page (techroid's 12 KB menu-only answers, 2026-11-18)", () => {
+  it("is told apart from a product page that says nothing", async () => {
+    const { looksLikeProductPage } = await import("../src/services/pageEnrichment.service.js");
+    expect(looksLikeProductPage('<html><nav>Apple iPhone iPad</nav></html>', "techroid")).toBe(false);
+    expect(looksLikeProductPage('<meta property="og:type" content="product"><button>Add to cart</button>', "techroid")).toBe(true);
+    expect(looksLikeProductPage('<div id="root"></div>', "alfamall")).toBe(true);
+  });
+});
