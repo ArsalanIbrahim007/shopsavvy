@@ -584,6 +584,12 @@ export function separateByCondition(groups) {
     const moved = group.offers.filter((o) => conditionOf(o) !== keep);
     group.offers = group.offers.filter((o) => conditionOf(o) === keep);
     recount(group);
+    // The name goes with the offers that stay: Techroid's new iPhone 15 Pro Max kept the moved iShopping offer's title, "…PTA
+    // Approved", above an offer that does not say so (audit S-012, 2026-11-18).
+    if (!group.offers.some((o) => (o.title || o.normalizedTitle) === group.productName)) {
+      const own = group.offers[0].title || group.offers[0].normalizedTitle || group.productName;
+      Object.assign(group, { productName: own, rawGroupKey: own, normalizedGroupKey: normalizeTitle(own) });
+    }
     out.push(group);
     for (const kind of kinds.filter((k) => k !== keep)) {
       const offers = moved.filter((o) => conditionOf(o) === kind);
