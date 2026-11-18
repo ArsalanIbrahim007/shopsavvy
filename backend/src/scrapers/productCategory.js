@@ -708,18 +708,36 @@ const SELLER_NAMES = ["electronix hub", "urban hub"];
 const MADE_FOR = /\b(case|cases|cover|covers|protector|protectors|skin|skins|pouch|sleeve|strap|straps|band|bands|holder|stand|mount|charger|cable|adapter|tray)\s+(for|compatible with)\b/;
 const ACCESSORY_THING = /\b(glass|screen|lens|camera) protector\b|\block case\b|\bmagnetic lid\b|\bstorage tray\b|\bfridge (organizer|mat|cover)\b/;
 const NOT_A_FRIDGE = /\bwater dispenser\b/;
+// Makers of accessories only (cases, protectors, straps): "Spigen Apple AirPods Pro Case Rugged Armor", "ESR AirPods Pro 3 Pulse
+// FlickLock Magnetic Case", "UAG AirPods Pro 2" were headphones on the live site (review, 2026-11-18).
+const ACCESSORY_MAKER = /^(spigen|esr|uniq|uag|ringke|otterbox|nillkin|torras|pitaka|zagg|mous)\b/;
+// A described case is the accessory; Apple's "with MagSafe Charging Case" is part of the AirPods.
+const DESCRIBED_CASE = /\b(rugged|armou?r|leather|silicone|magnetic|protective|clear|hard|soft|shockproof|flicklock|flip)\b[^|]*\bcase\b|\bcase\b[^|]*\b(rugged|armou?r)\b/;
+// "AirPods" used for any earbuds: "A9 Pro Airpods", "Lunar Airpods Pro Wireless Earbuds", "Shoppingway Airpods Pro With Display" at
+// Rs 1,649-2,999 set the "lowest price" of a search for AirPods Pro 2. Apple's are named Apple, or "AirPods Pro 3" with nothing else.
+// A known maker's own earbuds that say "Airpods" ("Login True wireless Airpods", "WiWU Airbuds Pro 2") stay headphones.
+const EARBUD_MAKER = /^(login|wiwu|audionic|ronin|zero|faster|anker|soundcore|baseus|joyroom|lenovo|xiaomi|redmi|qcy|haylou|realme|oneplus|samsung|jbl|sony|huawei|oppo|vivo|infinix|tecno|itel|awei|remax|mi)\b/;
+const GENERIC_AIRPODS = (text) => /\bairpods?\b/.test(text) && !/\bapple\b/.test(text) && !EARBUD_MAKER.test(text)
+    && /\b(wireless|bluetooth|tws|anc|enc|earbuds|earphones?|with display|touch screen|a9)\b/.test(text);
 // Replicas sold under the real product's name ("Apple AirPods Pro 2 Anc Hengxuan Wireless…" at Rs 3,300, 17 AlfaMall listings, the
 // first product for "AirPods Pro 2"; "Airpods Pro 2 With Slicon Pouch TWS Wireless Earbuds"): not the brand's product, so not in its
 // category; "other" keeps them findable by their own words but out of device results and best deals.
 const REPLICA = /\b(hengxuan|master copy|first copy|1st copy|high copy|copy master|replica|clone)\b|\bairpods?\b.*\btws\b|\btws\b.*\bairpods?\b/;
 
+// A free gift is not the product: "HP EliteBook 840 G3 Laptop … (Like New) Free Airpods & Bag" was filed as headphones and shown
+// for "AirPods Pro 2" (review, 2026-11-18). "Free …" up to the next bracket, bar or comma is left out before scoring.
+// Only a free gift item: "Free Standing Refrigerator", "Soundpeats Free Dot Earbuds" and "Free Delivery Dawlance 9193 Refrigerator"
+// keep their words.
+const FREE_GIFT = /\b(?:with\s+)?free\s+(?:gift\s+)?(?:air ?buds|airpods?|earbuds|ear ?phones?|handsfree|headphones?|(?:laptop\s+)?bag|backpack|cover|case|charger|cable|mouse|stand|pipe|power ?bank|smart ?watch|surprise gift|gifts?)\b[^|(),]*/g;
+
 function detectCategory(title) {
-    const text = SELLER_NAMES.reduce((t, name) => t.split(name).join(" "), title.toLowerCase()).trim();
+    const text = SELLER_NAMES.reduce((t, name) => t.split(name).join(" "), title.toLowerCase()).replace(FREE_GIFT, " ").trim();
     // A store's test listing is no product ("Testing COD - Dawlance - Smart LED TV Canvas Series 55 Inch" at PKR 300,000, AlfaMall,
     // in a TV product; Fable's final check, 2026-11-12).
     if (/^(test|testing|dummy)\b/.test(text)) return { category: "other", confidence: 0 };
-    if (REPLICA.test(text)) return { category: "other", confidence: 0 };
-    if (MADE_FOR.test(text) || ACCESSORY_THING.test(text)) return { category: "accessory", confidence: 1 };
+    if (REPLICA.test(text) || GENERIC_AIRPODS(text)) return { category: "other", confidence: 0 };
+    if (MADE_FOR.test(text) || ACCESSORY_THING.test(text) || ACCESSORY_MAKER.test(text)
+        || (DESCRIBED_CASE.test(text) && !/\bcharging case\b/.test(text))) return { category: "accessory", confidence: 1 };
     // "Samsung 635L SBS Refrigerator with Water Dispenser" is a fridge that has one; "PEL Water Dispenser (Without Ref)" is not a fridge.
     if (NOT_A_FRIDGE.test(text) && !/\b(with|and|plus|\+) water dispenser\b/.test(text)) return { category: "appliance", confidence: 1 };
 

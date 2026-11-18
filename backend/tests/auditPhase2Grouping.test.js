@@ -44,3 +44,42 @@ describe("one machine, one product (audit S-004, S-005)", () => {
     expect(attributeConflict("Haier HWM-80-1217 Washing Machine-By TechHouse336", "Haier HWM-80-1217 Washing Machine-By Tech House316")).toBe(false);
   });
 });
+
+describe("the live review of 'AirPods Pro 2' (2026-11-18)", () => {
+  it("files nameless 'Airpods' as other, keeps a maker's own earbuds and Apple's", () => {
+    expect(cat("A9 Pro Airpods")).toBe("other");
+    expect(cat("Lunar Airpods Pro Wireless Earbuds")).toBe("other");
+    expect(cat("Login True wireless Airpods (LT-WB2)")).toBe("headphones");
+    expect(cat("AirPods Pro 3")).toBe("headphones");
+    expect(cat("Apple AirPods Pro 2 with MagSafe Charging Case (USB-C)")).toBe("headphones");
+  });
+
+  it("makes an accessory maker's product and a described case accessories", () => {
+    expect(cat("Spigen Apple AirPods Pro Case Rugged Armor ASD00540 Matte Black")).toBe("accessory");
+    expect(cat("ESR AirPods Pro 3 Pulse FlickLock Magnetic Case Dark Blue")).toBe("accessory");
+    expect(cat("UAG AirPods Pro 2")).toBe("accessory");
+    expect(cat("AirPods Pro Leather Case")).toBe("accessory");
+  });
+});
+
+describe("a free gift is not the product (live review, 2026-11-18)", () => {
+  it("files the product, not its gift", () => {
+    expect(cat("HP EliteBook 840 G3 Laptop Intel Core i5-6300U, 8GB, (Like New) Free Airpods & Bag (1Month Warranty)")).toBe("laptop");
+    expect(cat("Apple iPhone 14 128GB NON PTA Blue- Free Charger and Cover")).toBe("smartphone");
+    expect(cat("Dawlance 80085 Semi Automatic Washing Machine (with free gift air buds)")).toBe("washing_machine");
+  });
+
+  it("keeps 'free' that is not a gift", () => {
+    expect(cat("Haier HRF-276-EPR Free Standing Refrigerator")).toBe("refrigerator");
+    expect(cat("Soundpeats Free Dot Earbuds")).toBe("headphones");
+    expect(cat("Free Delivery Dawlance 9193 Refrigerator")).toBe("refrigerator");
+  });
+});
+
+describe("two prefixes on the same numbers are two models (review, 2026-11-18)", () => {
+  it("does not merge PEL's PDIN 70-100 with its PDF-70-100, and still merges Haier's HWM 80-1217E with HWM-80-1217", () => {
+    expect(sharedApplianceCode("PEL Deep Freezer (PDIN70-100) Arctic Inverter On", "PEL | 10 CUFT | PDF-70-100 | Arctic On | Single Door")).toBe(null);
+    expect(sharedApplianceCode("Haier HWM 80-1217E 8KG Single Tub", "Haier HWM-80-1217 Top Load Semi Auto")).toBe("80-1217");
+    expect(sharedApplianceCode("Haier 80-1217E 8KG Single Tub", "Haier HWM 80-1217 8 kg")).toBe("80-1217"); // one states no prefix
+  });
+});

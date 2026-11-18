@@ -505,7 +505,23 @@ export function applianceCodeKeys(title) {
 export function sharedApplianceCode(titleA, titleB) {
   const keysB = applianceCodeKeys(titleB);
   const shared = [...applianceCodeKeys(titleA)].find((key) => keysB.has(key));
-  return shared && !applianceConflict(titleA, titleB) ? shared : null;
+  if (!shared || applianceConflict(titleA, titleB)) return null;
+  // The maker's prefix is dropped to compare, but two different prefixes on the same numbers are two models: PEL's "PDIN 70-100"
+  // (inverter) and "PDF-70-100" were merged (review, 2026-11-18). Haier's "HWM 80-1217E" and "HWM-80-1217" share theirs.
+  const prefixesA = codePrefixes(titleA, shared);
+  const prefixesB = codePrefixes(titleB, shared);
+  if (prefixesA.size > 0 && prefixesB.size > 0 && ![...prefixesA].some((p) => prefixesB.has(p))) return null;
+  return shared;
+}
+
+/** The letter prefixes a title writes before a code ("pdin" in "PDIN70-100", "hwm" in "HWM 80-1217E"). */
+function codePrefixes(title, key) {
+  const [first] = key.split("-");
+  const prefixes = new Set();
+  const pattern = new RegExp(`(?<![a-z])([a-z]{2,5})[\\s-]?${first}-`, "g");
+  const maker = String(title).toLowerCase().match(/[a-z]+/)?.[0]; // "Haier 80-1217E": the maker's name, not a prefix
+  for (const [, prefix] of String(title).toLowerCase().matchAll(pattern)) if (!NOT_A_CODE_PREFIX.has(prefix) && prefix !== maker) prefixes.add(prefix);
+  return prefixes;
 }
 
 // A seller's name at the end of a marketplace title, often with a running number: AlfaMall's "Tech House" ends each listing
