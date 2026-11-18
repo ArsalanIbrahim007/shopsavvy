@@ -306,3 +306,22 @@ Pair recall among candidate pairs: one product split into two groups of five off
 measure. Together with merge precision (GROUPING_EVALUATION.md) it describes both mistakes a comparison can make: showing two products as
 one (precision) and one product as two (recall). The first is the costlier, since it shows a shopper another product's price, and the
 matcher is tuned to avoid it, which is why recall is the lower of the two.
+
+## Rechecked 2026-11-19, after the shopper audit
+
+Both samples, the same labels (`12-recheck-recall.js`; the recheck files now hold this run):
+
+| Sample | Recall 9 Nov | Recall 19 Nov | Pair precision 9 Nov | Pair precision 19 Nov |
+|---|---:|---:|---:|---:|
+| Fresh (2026-11-09) | 77.9% | **84.5%** | 96.9% | **95.6%** |
+| First | 75.2% | **67.1%** | 99.0% | **100.0%** |
+
+The same recheck run with the code from before the audit's grouping changes, on the same day's data, gives exactly the same four
+numbers: the changes of 18-19 November (condition split, appliance codes, seller tags, code prefixes) touch no pair in these six
+categories, as the regrouping showed (0 products changed in phones, laptops, TVs, tablets, watches; headphones 2, both seller copies
+joined). What moved the numbers since 9 November is the data: the night's full catalogue reads, listings unchecked for 15 days or
+gone from their store hidden (96 and 42 sample pairs lost an offer and are left out), and the recategorisation. Of the first sample's
+12 same-product pairs now apart, 4 are not phones at all (a Xiaomi charger, a vacuum cleaner, two soundbars that the October rules
+filed as smartphones and that now sit in their own categories); 3 are kept apart by the storage veto (one title states no storage);
+5 are split by the greedy, order-dependent grouping on a changed catalogue. The appliance changes are measured in
+GROUPING_EVALUATION_APPLIANCES-style counts in the audit instead: Haier washing machines mixing two model codes 8 -> 0.
