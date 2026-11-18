@@ -182,7 +182,9 @@ function ResultsView({ groups, total, refreshing = false, narrowed = null, spell
           <h1 className="results-title">{heading}</h1>
           <p className="muted" role="status">
             {allOffers.length === 0
-              ? "No products found."
+              ? refreshing
+                ? "Nothing stored for this yet. The stores are still being asked: anything they have appears here by itself."
+                : "No products found."
               : `${formatNumber(allOffers.length)} ${allOffers.length === 1 ? "offer" : "offers"} across ${platformCount} ${platformCount === 1 ? "store" : "stores"}, grouped into ${formatNumber(groups.length)} ${groups.length === 1 ? "product" : "products"}`}
             {allOffers.length > 0 && filtered ? `. Your filters leave ${formatNumber(keptOffers.length)} ${keptOffers.length === 1 ? "offer" : "offers"} in ${formatNumber(shown.length)} ${shown.length === 1 ? "product" : "products"}` : ""}
             {!query && total > groups.length ? `. Showing the ${groups.length} most compared of ${formatNumber(total)}; filters apply to these` : ""}

@@ -265,6 +265,9 @@ function startOrJoinScrape(query, { dynamic }) {
  * @param {"fresh"|"stale"|"missing"} [opts.state] - what the caller already knows it holds (resultsState); else storedDataState
  * @returns {Promise<{scraped: boolean, refreshing?: boolean, saved?: number, reason: string, done?: Promise<number>}>}
  */
+export const MISSING_WAIT_MS = 25 * 1000;
+const TIMED_OUT = Symbol("timed out");
+
 async function fetchAndRefreshListings(query, opts = {}) {
   const { force = false, dynamic = false, background = false } = opts;
 
@@ -283,7 +286,14 @@ async function fetchAndRefreshListings(query, opts = {}) {
   }
 
   if (joined) console.log("[scraperService] Scrape already in flight for %s, joining it", quote(query));
-  const saved = await promise;
+  // At most MISSING_WAIT_MS (audit 2026-11-18: searches for models no store sells waited 21-306 s, "HP 22f" five minutes, for one
+  // slow store). After that the shopper is answered and the stores go on in the background; the page asks again (refreshing).
+  const waited = await Promise.race([promise, new Promise((resolve) => setTimeout(() => resolve(TIMED_OUT), opts.maxWaitMs ?? MISSING_WAIT_MS))]);
+  if (waited === TIMED_OUT) {
+    console.log("[scraperService] Stores still answering for %s after %d s: answering now, the rest in the background", quote(query), (opts.maxWaitMs ?? MISSING_WAIT_MS) / 1000);
+    return { scraped: false, refreshing: true, reason: "stores_slow", done: promise };
+  }
+  const saved = waited;
   const reason = joined ? "joined_in_flight" : force && state === "fresh" ? "force_refresh" : "stale_or_missing";
   return { scraped: true, saved, reason };
 }

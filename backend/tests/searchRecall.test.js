@@ -37,3 +37,10 @@ describe("which searches are worth asking every store about (audit S-013)", () =
     expect(worthAskingStores("x ".repeat(50))).toBe(false);
   });
 });
+
+describe("a search waits for the stores at most MISSING_WAIT_MS (audit 2026-11-18: 'HP 22f' waited 306 s)", () => {
+  it("answers when the stores are slow, and leaves them running", async () => {
+    const { MISSING_WAIT_MS } = await import("../src/services/scraper.service.js");
+    expect(MISSING_WAIT_MS).toBe(25000);
+  });
+});
