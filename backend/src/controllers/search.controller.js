@@ -18,8 +18,8 @@ import { searchableText } from "../services/coreTitle.service.js";
 import { attachRecommendation } from "../services/recommendation/recommendation.service.js";
 import { fetchAndRefreshListings } from "../services/scraper.service.js";
 import { resultsState } from "../services/searchFreshness.js";
-import { escapeRegex, buildWholeWordPattern, fuzzyMatchIds } from "../services/searchMatching.service.js";
-import { isSearchable, selectSearchListings } from "../services/searchRanking.service.js";
+import { escapeRegex, buildWholeWordPattern, fuzzyMatchIds, joinedWordPattern, splitCategoryWords } from "../services/searchMatching.service.js";
+import { isSearchable, selectSearchListings, worthAskingStores } from "../services/searchRanking.service.js";
 import { getSuggestions } from "../services/suggestions.service.js";
 import { priceStats } from "./priceStats.js";
 import { resolveMatchStrategy } from "./matchStrategy.js";
@@ -116,11 +116,13 @@ async function findSearchListings(trimmedQuery, searchFilter) {
 
   // Every word, in any order, is asked even when the phrase found something: "samsung s25 ultra" found only cases and screen
   // protectors that say it word for word, while the phones say "Samsung Galaxy S25 Ultra" (2026-11-07). Both are kept.
-  const queryTokens = trimmedQuery.split(/[^a-zA-Z0-9]+/).filter((t) => t.length >= 2);
+  // A category word ("phone", "fridge", "ac") sets the category and is not looked for in titles (searchMatching.service.js).
+  const { words: queryTokens, category: namedCategory } = splitCategoryWords(trimmedQuery.split(/[^a-zA-Z0-9]+/).filter((t) => t.length >= 2));
+  const categoryFloor = namedCategory && !searchFilter.productCategory ? { productCategory: namedCategory } : fallbackCategoryFloor;
   if (queryTokens.length > 0) {
     const tokenFilter = {
       ...searchFilter,
-      ...fallbackCategoryFloor,
+      ...categoryFloor,
       // Whole words, a plural allowed: "tea" matched inside "steamer", "steam iron" and "teal" (464 of the 500 shown, 2026-11-07).
       $and: queryTokens.map((token) => ({
         title: { $regex: `(?<![A-Za-z0-9])${escapeRegex(token)}(?:e?s)?(?![A-Za-z0-9])`, $options: "i" },
@@ -137,12 +139,20 @@ async function findSearchListings(trimmedQuery, searchFilter) {
     }
   }
 
+  // Joined words: a word may also be split by a space or hyphen anywhere in a title ("galaxytab a9" -> "Galaxy Tab A9").
+  if (listings.length === 0 && queryTokens.length > 0) {
+    const joinedFilter = { ...searchFilter, ...categoryFloor, $and: queryTokens.map((token) => ({ title: { $regex: joinedWordPattern(token), $options: "i" } })) };
+    delete joinedFilter.$or;
+    listings = await Listing.find(joinedFilter).sort({ price: 1, createdAt: -1 });
+    if (listings.length) matchedBy = "words";
+  }
+
   if (listings.length === 0) {
     const { $or, ...attributeFilters } = searchFilter;
-    Object.assign(attributeFilters, fallbackCategoryFloor);
+    Object.assign(attributeFilters, categoryFloor);
 
     const candidates = await Listing.find(attributeFilters, { title: 1 }).lean();
-    const fuzzyIds = fuzzyMatchIds(trimmedQuery, candidates);
+    const fuzzyIds = fuzzyMatchIds(queryTokens.join(" ") || trimmedQuery, candidates);
 
     if (fuzzyIds.length > 0) {
       listings = await Listing.find({ _id: { $in: fuzzyIds } }).sort({ price: 1, createdAt: -1 });
@@ -170,6 +180,10 @@ export async function searchListings(req, res) {
   // "a", "1" or "?+" names nothing: it matched most of the catalogue (16,600 listings for "a") and ran into the worker's time
   // limit, and one that matched nothing would have sent every store a search for it.
   if (!isSearchable(trimmedQuery)) {
+    // Urdu or another script (audit 2026-11-18: "آئی فون" was told to type letters): the stores name their products in English.
+    if (/[^\p{Script=Latin}\p{N}\p{P}\p{S}\s]/u.test(q)) {
+      throw AppError.badRequest("The stores name their products in English, so please type the name in English, for example \"iPhone 16\" or \"Samsung TV\".");
+    }
     throw AppError.badRequest("Type at least two letters or digits to search.");
   }
 
@@ -234,16 +248,18 @@ export async function searchListings(req, res) {
   // none (it waits for the stores). Judging by whether a stored title contained the phrase word for word, as before, called
   // "samsung tv" missing even right after 176 Samsung TVs were scraped: every such search waited ~17 s and asked all 23 stores
   // again (found by the load test, 2026-10-26).
-  const { done: _refreshDone, ...refreshResult } = await fetchAndRefreshListings(trimmedQuery, {
+  // Not a product name (a link, markup, an endless word): answered from what is stored, the stores are not asked.
+  const { done: _refreshDone, ...refreshResult } = !worthAskingStores(trimmedQuery) ? { scraped: false, skipped: "not a product name" } : await fetchAndRefreshListings(trimmedQuery, {
     // Forcing a re-scrape bypasses the freshness window and costs a full round of
     // requests to every store, so it needs the admin key. Anyone else's
     // ?refresh=true is ignored: they simply get the normal cached behaviour.
     force: req.query.refresh === "true" && hasAdminKey(req),
     dynamic: false,
     background: true,
-    // Only close spellings found ("walls" -> printers sold for a wall): the search names something we do not hold, so it waits for
-    // the stores like one that found nothing. Judged fresh on those, it showed printers and only asked the stores afterwards.
-    state: found.matchedBy === "spelling" ? "missing" : resultsState(found.listings),
+    // Only close spellings found ("walls" -> printers sold for a wall): never judged fresh, the stores are asked. Not waited for
+    // since 2026-11-18: "ipad ari" and "gre 1.5 ton" found the iPad Air and Gree ACs and then waited 141-161 s for every store
+    // (audit). They are shown at once, labelled as close spellings on the page, and the list updates when the stores answer.
+    state: found.matchedBy === "spelling" ? "stale" : resultsState(found.listings),
   });
   console.log("[search]", refreshResult);
 

@@ -247,6 +247,12 @@ describe("GET /api/listings/search", () => {
     expect(vi.mocked(fetchAndRefreshListings).mock.calls.length).toBe(asked);
   });
 
+  it("asks for English when the search is in Urdu (audit 2026-11-18)", async () => {
+    const { res, body } = await json(`/api/listings/search?q=${encodeURIComponent("آئی فون")}`);
+    expect(res.status).toBe(400);
+    expect(body.message).toMatch(/in English/);
+  });
+
   // 2026-11-07: "samsung s25 ultra" showed only cases that say it word for word; the phones say "Samsung Galaxy S25 Ultra".
   // (A search of no known category; "samsung s25 ultra" itself now reads as a phone search.)
   it("asks for every word as well as the whole phrase, and keeps both", async () => {

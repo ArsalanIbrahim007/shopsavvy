@@ -1,5 +1,5 @@
 import { normalizeTitle, extractStorage, modelTokens, extractModelCodes, extractScreenInches, ramStorageShorthand } from "./normalizeTitle.service.js";
-import { isSimilarProduct, attributeConflict, tokenize, VARIANT_TOKENS } from "./similarity.service.js";
+import { isSimilarProduct, applianceCodeKeys, attributeConflict, tokenize, VARIANT_TOKENS } from "./similarity.service.js";
 import { calculateDealScores } from "../ranking/dealScore.js";
 import { SHARED_CODE_LENGTH, SHARED_CODE_PRICE_GAP, brandOf, prefixConflict, sameBrand, withoutStoreWording } from "./similarityModel.service.js";
 import { headlineOffers, isOutOfDate } from "./offerFreshness.service.js";
@@ -393,7 +393,9 @@ function mergeSameModelGroups(groups, sameModel, networkFamilies) {
     const codes = [...extractModelCodes(title, { minCodeLength: 4 })];
     // A TV title's three-character codes too ("Q7F"), for the rule's "55Q7F" / "Q7F" case (sameTvShortCode).
     const short = extractScreenInches(title) !== null ? [...extractModelCodes(title, { minCodeLength: 3 })].filter((code) => code.length === 3) : [];
-    return [...codes, ...codes.map((code) => code.replace(/^\d{2,3}(?=[a-z][a-z0-9]{2,}$)/, "")), ...short];
+    // and an appliance's hyphenated code as the veto reads it ("80-1217" for "HWM 80-1217E"), so such products are compared at all
+    const appliance = [...applianceCodeKeys(title)].map((key) => `appliance:${key}`);
+    return [...codes, ...codes.map((code) => code.replace(/^\d{2,3}(?=[a-z][a-z0-9]{2,}$)/, "")), ...short, ...appliance];
   };
   // One offer per distinct title and price is enough to ask the rule about (a store lists one TV many times).
   const distinctOffers = (group) => [...new Map(group.offers.map((o) => [`${titleOf(o)}|${o.price}`, o])).values()];

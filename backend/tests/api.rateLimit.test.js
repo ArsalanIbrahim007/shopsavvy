@@ -41,9 +41,9 @@ describe("rate limits", () => {
   });
 
   it("limits searches per address, because each one can trigger live scraping", async () => {
-    // 120 allowed; a missing q is answered 400 but still counts against the limit.
+    // 300 allowed; a missing q is answered 400 but still counts against the limit.
     let last;
-    for (let i = 0; i < 121; i++) last = await call("/api/listings/search");
+    for (let i = 0; i < 301; i++) last = await call("/api/listings/search");
     expect(last.status).toBe(429);
     expect((await last.json()).code).toBe("RATE_LIMITED");
   });

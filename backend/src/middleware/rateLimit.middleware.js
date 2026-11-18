@@ -45,7 +45,8 @@ export const alertReadLimiter = rateLimit({
 // searches on load (ten in development under React StrictMode), and a
 // shopper refining a query issues several more. It is a ceiling against
 // scripts, not a throttle on people.
-export function createSearchLimiter({ windowMs = 15 * 60 * 1000, limit = 120 } = {}) {
+// 300 since 2026-11-18 (was 120): a panel or a class on one Wi-Fi shares one address, and the audit itself reached 120 in 15 minutes.
+export function createSearchLimiter({ windowMs = 15 * 60 * 1000, limit = 300 } = {}) {
   return rateLimit({
     windowMs,
     limit,

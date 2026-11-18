@@ -16,6 +16,17 @@ const CURRENT_MS = 14 * 24 * 60 * 60 * 1000;
 
 const words = (text) => String(text ?? "").toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
 
+/**
+ * True when a search that found nothing stored is worth asking every store about. A link, markup, a very long text or one endless
+ * word is not a product name: "<script>alert(1)</script>", a 300-letter word, an Amazon link each made a shopper wait 16-24 s
+ * while 23 stores were searched (audit 2026-11-18). The site's box turns a pasted link into a product name before searching.
+ */
+export function worthAskingStores(query) {
+  const q = String(query ?? "");
+  if (q.length > 80 || /https?:|www\.|[<>{}[\]\\]/i.test(q)) return false;
+  return !q.split(/\s+/).some((word) => word.length > 25);
+}
+
 /** True when the search holds something to look for: a run of at least two letters or digits ("tv", "i7"; not "a", "1", "?+"). */
 export function isSearchable(query) {
   return /[a-z0-9]{2}/i.test(String(query ?? ""));

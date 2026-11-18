@@ -701,11 +701,27 @@ const CATEGORIES = {
 // phones among the accessories on "hub" once brand names counted for less (2026-11-08). Removed before scoring.
 const SELLER_NAMES = ["electronix hub", "urban hub"];
 
+// Before the scores (audit 2026-11-18): the device a thing is FOR outscored what it is. "UNIQ Valencia Case for Apple Watch Series 10"
+// was the third product for "Apple Watch Series 10", "UNIQ Glase Lock Case with Magnetic Lid for AirPods Pro" the third for "AirPods
+// Pro 2", "Spigen Galaxy Watch 5 Pro Glass Protector" a watch, "PEL Water Dispenser … Without Refrigerator" the first product for
+// "refrigerator". "Apple Watch Series 10 42mm with Sport Band" names its band, not what it is for, and stays a watch.
+const MADE_FOR = /\b(case|cases|cover|covers|protector|protectors|skin|skins|pouch|sleeve|strap|straps|band|bands|holder|stand|mount|charger|cable|adapter|tray)\s+(for|compatible with)\b/;
+const ACCESSORY_THING = /\b(glass|screen|lens|camera) protector\b|\block case\b|\bmagnetic lid\b|\bstorage tray\b|\bfridge (organizer|mat|cover)\b/;
+const NOT_A_FRIDGE = /\bwater dispenser\b/;
+// Replicas sold under the real product's name ("Apple AirPods Pro 2 Anc Hengxuan Wireless…" at Rs 3,300, 17 AlfaMall listings, the
+// first product for "AirPods Pro 2"; "Airpods Pro 2 With Slicon Pouch TWS Wireless Earbuds"): not the brand's product, so not in its
+// category; "other" keeps them findable by their own words but out of device results and best deals.
+const REPLICA = /\b(hengxuan|master copy|first copy|1st copy|high copy|copy master|replica|clone)\b|\bairpods?\b.*\btws\b|\btws\b.*\bairpods?\b/;
+
 function detectCategory(title) {
     const text = SELLER_NAMES.reduce((t, name) => t.split(name).join(" "), title.toLowerCase()).trim();
     // A store's test listing is no product ("Testing COD - Dawlance - Smart LED TV Canvas Series 55 Inch" at PKR 300,000, AlfaMall,
     // in a TV product; Fable's final check, 2026-11-12).
     if (/^(test|testing|dummy)\b/.test(text)) return { category: "other", confidence: 0 };
+    if (REPLICA.test(text)) return { category: "other", confidence: 0 };
+    if (MADE_FOR.test(text) || ACCESSORY_THING.test(text)) return { category: "accessory", confidence: 1 };
+    // "Samsung 635L SBS Refrigerator with Water Dispenser" is a fridge that has one; "PEL Water Dispenser (Without Ref)" is not a fridge.
+    if (NOT_A_FRIDGE.test(text) && !/\b(with|and|plus|\+) water dispenser\b/.test(text)) return { category: "appliance", confidence: 1 };
 
     let bestCategory = "other";
     let bestScore = 0;

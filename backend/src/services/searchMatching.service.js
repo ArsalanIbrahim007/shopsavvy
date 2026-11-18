@@ -34,6 +34,62 @@ export function buildWholeWordPattern(query) {
   return `(?<![A-Za-z0-9])${buildSpaceTolerantPattern(query)}(?![A-Za-z0-9])`;
 }
 
+/**
+ * Words that name a category rather than appear in product titles: a phone's title says "Samsung Galaxy A17", never "phone", so
+ * "samsung phone" found nothing after asking every store (34 s, audit 2026-11-18; we hold 1,671 Samsung Galaxy phones). Such a word
+ * sets the category and is not matched against titles.
+ */
+export const CATEGORY_WORDS = new Map([
+  ...["phone", "phones", "mobile", "mobiles", "smartphone", "smartphones", "cellphone"].map((w) => [w, "smartphone"]),
+  ...["fridge", "fridges", "refrigerator", "refrigerators"].map((w) => [w, "refrigerator"]),
+  ...["ac", "acs", "aircon", "airconditioner"].map((w) => [w, "air_conditioner"]),
+  ...["washer", "washers", "washing"].map((w) => [w, "washing_machine"]),
+  ...["tv", "tvs", "television", "televisions"].map((w) => [w, "tv"]),
+  ...["laptop", "laptops", "notebook", "notebooks"].map((w) => [w, "laptop"]),
+  ...["smartwatch", "smartwatches"].map((w) => [w, "smartwatch"]),
+  ...["earbuds", "earphones", "headphones", "headset", "headsets"].map((w) => [w, "headphones"]),
+  ...["tablet", "tablets"].map((w) => [w, "tablet"]),
+  ...["monitor", "monitors"].map((w) => [w, "monitor"]),
+]);
+// "machine" goes with "washing"; "air" and "conditioner" are ordinary title words and stay.
+const WITH_CATEGORY_WORD = new Set(["machine", "machines"]);
+
+/**
+ * Splits a search's words into the ones to match in titles and the category its category words name (or null). A search made only
+ * of category words keeps them ("phone" alone is still a search for the word).
+ * @returns {{ words: string[], category: string|null }}
+ */
+export function splitCategoryWords(words) {
+  const named = words.map((w) => CATEGORY_WORDS.get(w.toLowerCase())).filter(Boolean);
+  const category = new Set(named).size === 1 ? named[0] : null;
+  if (!category) return { words, category: null };
+  const rest = words.filter((w) => !CATEGORY_WORDS.has(w.toLowerCase()) && !(category === "washing_machine" && WITH_CATEGORY_WORD.has(w.toLowerCase())));
+  return rest.length ? { words: rest, category } : { words, category: null };
+}
+
+/**
+ * A word as a pattern that also matches it split by a space or hyphen anywhere: "galaxytab" finds "Galaxy Tab", "sonywh1000xm4"
+ * finds "Sony WH-1000XM4", "thinkpadx1" finds "ThinkPad X1" (audit 2026-11-18: each found nothing).
+ */
+export function joinedWordPattern(word) {
+  const chars = [...String(word).toLowerCase()].map((c) => escapeRegex(c));
+  return `(?<![A-Za-z0-9])${chars.join("[\\s-]?")}(?![A-Za-z0-9])`;
+}
+
+/** True when `short` (3 letters) is `long` with one letter left out ("gre" for "gree", "del" for "dell"). */
+function missesOneLetter(short, long) {
+  if (long.length !== short.length + 1) return false;
+  for (let i = 0; i < long.length; i++) if (long.slice(0, i) + long.slice(i + 1) === short) return true;
+  return false;
+}
+
+/** True when `a` and `b` differ by two neighbouring letters swapped ("ari" for "air"). */
+function swapsTwoLetters(a, b) {
+  if (a.length !== b.length || a === b) return false;
+  const diff = [...a].map((c, i) => (c === b[i] ? -1 : i)).filter((i) => i >= 0);
+  return diff.length === 2 && diff[1] === diff[0] + 1 && a[diff[0]] === b[diff[1]] && a[diff[1]] === b[diff[0]];
+}
+
 function tokenize(text) {
   return String(text)
     .toLowerCase()
@@ -124,6 +180,9 @@ export function fuzzyTokenScore(query, title) {
     const hasCloseMatch = isNumeric
       ? titleTokens.includes(queryToken)
       : titleTokens.some((titleToken) => {
+          // A 3-letter word may miss one letter or swap two ("gre" Gree, "del" Dell, "ari" Air; audit 2026-11-18), never change one:
+          // "gun" is not "sun".
+          if (queryToken.length === 3 && (missesOneLetter(queryToken, titleToken) || swapsTwoLetters(queryToken, titleToken))) return true;
           const allowed = maxAllowedDistance(queryToken);
           return Math.abs(titleToken.length - queryToken.length) <= allowed
             && typoDistance(queryToken, titleToken) <= allowed;

@@ -49,6 +49,12 @@ export function findDrop(entries, { now = Date.now() } = {}) {
   const percent = (rupees / previous.price) * 100;
   if (rupees < DROPS.MIN_RUPEES || percent < DROPS.MIN_PERCENT || percent > DROPS.MAX_PERCENT) return null;
 
+  // A price going back to where it was days ago is the end of a spike, not a drop (audit 2026-11-18: Vivo V70 FE 121,999 -> 141,499 ->
+  // 121,999 and two more of the top ten). The new price must be below every price of the BEFORE_MAX_DAYS days before it.
+  const windowStart = dayNumber(latest.day) - DROPS.BEFORE_MAX_DAYS;
+  const earlier = days.slice(0, -1).filter((d) => dayNumber(d.day) >= windowStart).map((d) => d.price);
+  if (earlier.length && latest.price >= Math.min(...earlier)) return null;
+
   return { price: latest.price, before: previous.price, day: latest.day, beforeDay: previous.day, rupees, percent: Math.round(percent * 10) / 10 };
 }
 

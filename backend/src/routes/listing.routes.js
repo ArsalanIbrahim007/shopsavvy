@@ -547,7 +547,7 @@ router.get("/suggest", suggestLimiter, suggestListings);
  *       400:
  *         description: Missing, empty, non-text or over-long (more than 100 characters) q parameter.
  *       429:
- *         description: Too many searches from this address (120 per 15 minutes).
+ *         description: Too many searches from this address (300 per 15 minutes).
  *       503:
  *         description: The database is unreachable (code DATABASE_UNAVAILABLE), or the grouping workers are saturated and the request was refused (code SERVICE_BUSY). Retry shortly.
  */

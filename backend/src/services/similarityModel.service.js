@@ -13,7 +13,7 @@ import { dirname, join } from "path";
 import { buildFeatureVector } from "../ml/features.js";
 import { FILLER_WORDS } from "../ml/fillerWords.js";
 import { predictProba } from "../ml/logisticRegression.js";
-import { attributeConflict, tokenize, sameSet, statedSizes, withoutSizePrefix } from "./similarity.service.js";
+import { attributeConflict, tokenize, sameSet, sharedApplianceCode, statedSizes, withoutSizePrefix } from "./similarity.service.js";
 import { modelTokens, extractStorage, extractPtaStatus, extractModelCodes, extractScreenInches } from "./normalizeTitle.service.js";
 import { extractRamGb } from "./productAttributes.service.js";
 
@@ -87,6 +87,9 @@ export function sharedModelCode(itemA, itemB, { shortTvCode = false } = {}) {
   const codesB = withoutSizePrefix(extractModelCodes(itemB.title, { minCodeLength: 4 }), sizes);
   const shared = codesA.find((code) => codesB.has(code));
   if (shared) return gap <= SHARED_CODE_PRICE_GAP && !differentVariant(itemA.title, itemB.title, shared) ? shared : null;
+  // An appliance's hyphenated code, as the veto reads it ("HWM 80-1217E" / "HWM-80-1217"; similarity.service.js sharedApplianceCode)
+  const appliance = sharedApplianceCode(itemA.title, itemB.title);
+  if (appliance) return gap <= SHARED_CODE_PRICE_GAP ? appliance : null;
   const yearless = sameTvWithoutYearLetter(itemA.title, itemB.title, sizes) ?? (shortTvCode ? sameTvShortCode(itemA.title, itemB.title) : null);
   return yearless && gap <= YEAR_LETTER_PRICE_GAP ? yearless : null;
 }

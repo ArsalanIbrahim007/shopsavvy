@@ -268,7 +268,10 @@ const CAPACITY_PART = /^\d+(?:\.\d+)?(gb|tb|kg|kgs|ltr|ltrs|ton|tons|cft|inch|ma
  */
 function hyphenModelCodesUncached(text = "") {
   const codes = new Set();
-  for (const [code, prefix, rest] of String(text).toLowerCase().matchAll(HYPHEN_CODE)) {
+  // "Haier HWM 80-60" written with a space: the prefix is joined to the code, so "HWM 80-60" and "HWM 80-1217E" are two models
+  // (audit 2026-11-18: the 80-60 sat inside the 80-1217E's product, as neither code was read).
+  const joined = String(text).toLowerCase().replace(/(?<![a-z0-9])([a-z]{2,5}) (\d{2,3}-\d)/g, (all, prefix, rest) => (NOT_A_CODE_PREFIX.has(prefix) ? all : `${prefix}-${rest}`));
+  for (const [code, prefix, rest] of joined.matchAll(HYPHEN_CODE)) {
     if (NOT_A_CODE_PREFIX.has(prefix) || CAPACITY_PART.test(rest)) continue;
     if ((code.match(/\d/g) ?? []).length >= 2) codes.add(code);
   }
@@ -281,7 +284,10 @@ function hyphenModelCodesUncached(text = "") {
  */
 const codeParts = (code) => {
   const parts = code.split("-").map((part) => part.replace(/(\d)[a-z]$/, "$1"));
-  return /^[a-z]+$/.test(parts[0]) ? parts.slice(1) : parts;
+  if (/^[a-z]+$/.test(parts[0])) return parts.slice(1);
+  // "hwm150-826" and "hwm-150-826" ("HWM 150-826", its prefix joined): the same prefix, attached or not
+  if (/^[a-z]+\d+$/.test(parts[0])) parts[0] = parts[0].replace(/^[a-z]+/, "");
+  return parts;
 };
 
 /**
@@ -329,7 +335,9 @@ export function sameSet(a, b) {
  * handset. Where both listings declare such an attribute and the values
  * differ, they are different products whatever their similarity score.
  */
-export function attributeConflict(textA, textB, { ignoreUnstatedStorage = false } = {}) {
+export function attributeConflict(rawA, rawB, { ignoreUnstatedStorage = false } = {}) {
+  const textA = withoutSellerTag(rawA);
+  const textB = withoutSellerTag(rawB);
   // Capacity blocks a match when both sides state it and the values differ.
   // When exactly one side states it equivalence is unproven, which is what
   // stopped a bare "iPhone 16 Pro Max" being compared against a 256GB unit at
@@ -474,3 +482,36 @@ export const lineWords = memoize(lineWordsUncached);
 export const shortModelIds = memoize(shortModelIdsUncached);
 export const hyphenModelCodes = memoize(hyphenModelCodesUncached);
 const slotNumbers = memoize(slotNumbersUncached);
+
+/**
+ * An appliance's hyphenated model codes as keys that agree whenever the veto above calls two codes one model: the maker's prefix
+ * and a one-letter suffix dropped ("HWM 80-1217E", "HWM-80-1217", "Haier HWM 80-1217" -> "80-1217"). Only codes with two parts
+ * that both hold digits, so a lone "S24-256GB" or "TV-55" is no key.
+ */
+export function applianceCodeKeys(title) {
+  const keys = new Set();
+  for (const code of hyphenModelCodes(title)) {
+    const parts = codeParts(code);
+    if (parts.length >= 2 && parts.every((p) => /\d/.test(p))) keys.add(parts.join("-"));
+  }
+  return keys;
+}
+
+/**
+ * The appliance code two titles share, or null. "Haier HWM 80-1217E 8KG" and "HAIER 8KG ... Model HWM 80-1217" are one washing
+ * machine that the matcher scored apart, three products of 18, 13 and 11 offers (audit 2026-11-18; the owner confirmed the E is
+ * the same machine). No capacity, tonnage or kind may differ (applianceConflict).
+ */
+export function sharedApplianceCode(titleA, titleB) {
+  const keysB = applianceCodeKeys(titleB);
+  const shared = [...applianceCodeKeys(titleA)].find((key) => keysB.has(key));
+  return shared && !applianceConflict(titleA, titleB) ? shared : null;
+}
+
+// A seller's name at the end of a marketplace title, often with a running number: AlfaMall's "Tech House" ends each listing
+// "…-By TechHouse336", "…-By Tech House316", "…ByTech House84", and the numbers read as two model numbers, so 20 listings of one
+// Haier washing machine were 20 products (audit 2026-11-18). Removed before the titles are compared.
+const SELLER_TAG = /(?:[\s\-–|]+|\s*)by\s*[a-z][a-z.&']*(?:\s+[a-z][a-z.&']*){0,3}\s*\d{0,4}\s*$/i;
+export function withoutSellerTag(title) {
+  return String(title ?? "").replace(SELLER_TAG, "");
+}
