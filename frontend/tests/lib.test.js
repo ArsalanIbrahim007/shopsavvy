@@ -264,3 +264,13 @@ describe("a price far below the specs price (audit S-016, 2026-11-19)", () => {
     expect(fairPriceGap(92000, { price: 100000 })).toEqual({ tone: "good", text: "8% below it" });
   });
 });
+
+describe("swiping a carousel on a phone (2026-11-19)", () => {
+  it("reads a sideways move as a swipe and leaves a vertical one to the page", async () => {
+    const { swipeDirection } = await import("../src/hooks/useSwipe.js");
+    expect(swipeDirection(-80, 10)).toBe("left");
+    expect(swipeDirection(90, -5)).toBe("right");
+    expect(swipeDirection(-20, 0)).toBe(null); // too short: a tap
+    expect(swipeDirection(-60, 120)).toBe(null); // a scroll
+  });
+});

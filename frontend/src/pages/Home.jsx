@@ -106,8 +106,14 @@ function TrustRow({ stats, caught }) {
 }
 
 function Categories({ stats }) {
+  const { hash } = useLocation();
+  // the phone's tab bar "Categories" is /#categories (MobileTabBar.jsx): scroll to the tiles once they are there
+  const loaded = stats.status !== "loading";
+  useEffect(() => {
+    if (loaded && hash === "#categories") document.getElementById("categories")?.scrollIntoView();
+  }, [loaded, hash]);
   return (
-    <section className="home-section container" aria-labelledby="cat-heading" aria-busy={stats.status === "loading"}>
+    <section id="categories" className="home-section container" aria-labelledby="cat-heading" aria-busy={stats.status === "loading"}>
       <h2 id="cat-heading">Browse by category</h2>
       {stats.status === "loading" && (
         <div className="tiles">{Array.from({ length: 6 }, (_, i) => <Skeleton key={i} height={84} style={{ borderRadius: "var(--radius-card)" }} />)}</div>

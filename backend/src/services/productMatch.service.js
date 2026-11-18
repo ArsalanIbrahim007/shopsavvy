@@ -14,7 +14,7 @@
 
 import mongoose from "mongoose";
 
-import { DISABLED_PLATFORMS } from "../config/platforms.js";
+import { DISABLED_PLATFORMS, VISIBLE_PLATFORMS_FILTER } from "../config/platforms.js";
 import Listing from "../models/listing.model.js";
 import { detectCategory } from "../scrapers/productCategory.js";
 import { extractStorage, normalizeTitle } from "./normalizeTitle.service.js";
@@ -25,7 +25,7 @@ import { extractCondition, extractPtaStatus } from "./productAttributes.service.
 import { coreTitle, searchableText } from "./coreTitle.service.js";
 import { productPath } from "./productPath.js";
 import { buildProductView } from "./productView.service.js";
-import { escapeRegex } from "./searchMatching.service.js";
+import { escapeRegex, searchWordPattern } from "./searchMatching.service.js";
 import { attributeConflict } from "./similarity.service.js";
 
 /** Store web addresses (without "www." or "m.") and the platform name their listings are stored under. */
@@ -301,5 +301,36 @@ export async function matchPage({ url: address, title, price }, { strategy = "ml
     answer = matchResponse(view, { matchedBy: "similar", pageId: idOf(page), pagePrice: price, title, site, now });
     if (answer.found) return answer;
   }
+
+  // Last, as the search box would find it: every word of the page's name in a listing's title, the same category and storage, a
+  // price within WORDS_PRICE_RANGE, no hard conflict. Daraz's "iPad A16 - 128GB" (PKR 165,999) found nothing although "Apple iPad
+  // 11Inch (A16) 128GB" is sold by seven stores (2026-11-19): too few shared words for the matcher, and "A16" too short a code.
+  const byWords = await listingByWords(core || title, price);
+  if (byWords) {
+    const view = await buildProductView(byWords, { strategy });
+    const viaWords = matchResponse(view, { matchedBy: "similar", pageId: "this-page", pagePrice: price, title, site, now });
+    if (viaWords.found) return viaWords;
+  }
   return answer;
+}
+
+export const WORDS_PRICE_RANGE = 0.3;
+const NAME_FILLER = new Set(["pta", "approved", "official", "warranty", "new", "brand", "with", "and", "the", "for", "by", "in", "of", "original", "sealed", "box", "pack"]);
+
+/** The stored listing a page's name finds word for word (see matchPage), nearest the page's price; null when none. */
+export async function listingByWords(text, price, { model = Listing } = {}) {
+  const words = String(text ?? "").split(/[^a-zA-Z0-9]+/).filter((w) => w.length >= 2 && !NAME_FILLER.has(w.toLowerCase()));
+  if (words.length < 2 || !(price > 0)) return null; // one word ("iPad") names too much
+  const category = detectCategory(text).category;
+  const storage = extractStorage(text);
+  const filter = {
+    ...VISIBLE_PLATFORMS_FILTER,
+    price: { $gte: price * (1 - WORDS_PRICE_RANGE), $lte: price * (1 + WORDS_PRICE_RANGE) },
+    $and: words.map((w) => ({ title: { $regex: searchWordPattern(w), $options: "i" } })),
+    ...(category !== "other" ? { productCategory: category } : {}),
+    ...(storage ? { storageGb: storage } : {}),
+  };
+  const found = (await model.find(filter).limit(60).lean()).filter((l) => !attributeConflict(text, l.title, { ignoreUnstatedStorage: true }));
+  if (found.length === 0) return null;
+  return found.sort((a, b) => Math.abs(a.price - price) - Math.abs(b.price - price))[0];
 }

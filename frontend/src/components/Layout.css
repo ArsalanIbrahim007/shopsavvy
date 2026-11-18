@@ -121,3 +121,42 @@ a:hover .logo__tag { transform: rotate(-8deg); }
 .site-footer__stores li { display: inline-flex; opacity: 0.75; transition: opacity var(--dur-fast) var(--ease); }
 .site-footer__stores li:hover { opacity: 1; }
 .site-footer__note { max-width: 70ch; }
+
+/* ---- Phones: the main places in a bar at the bottom, where a thumb reaches them (MobileTabBar.jsx, 2026-11-19) ----
+   The header keeps the logo, the theme and the search box; its links wrapped onto two rows above every page. */
+.tab-bar { display: none; }
+@media (max-width: 719px) {
+  .site-header .site-nav { display: none; }
+  .site-header__inner { grid-template-areas: "brand toggle" "search search"; padding-block: var(--space-2); }
+  .site-header__inner--bare { grid-template-areas: "brand toggle"; }
+
+  .tab-bar {
+    position: fixed; inset-inline: 0; bottom: 0; z-index: 35;
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: var(--header-bg); backdrop-filter: blur(12px);
+    border-top: 1px solid var(--line);
+  }
+  .tab-bar__tab {
+    display: grid; justify-items: center; gap: 2px; padding: 8px 2px 6px; min-height: 56px;
+    color: var(--ink-mute); font-size: 0.6875rem; font-weight: 500;
+  }
+  .tab-bar__tab:hover { text-decoration: none; color: var(--ink); }
+  .tab-bar__tab[aria-current="page"] { color: var(--accent); }
+  .tab-bar__icon { position: relative; display: grid; place-items: center; }
+  .tab-bar__count {
+    position: absolute; top: -4px; right: -10px; min-width: 16px; height: 16px; padding: 0 4px;
+    border-radius: var(--radius-pill); background: var(--accent); color: var(--on-accent); font-size: 0.625rem; font-weight: 700;
+    display: grid; place-items: center;
+  }
+  /* room for the bar under the page, and the compare tray sits on top of it */
+  body { padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px)); }
+  .compare-tray { bottom: calc(56px + env(safe-area-inset-bottom, 0px)); }
+}
+
+/* ---- Tablets (720-1079px): the home page's header puts the links beside the logo, and "How it works" wrapped under them on an
+   iPad (768px). One line, tighter. */
+@media (min-width: 720px) and (max-width: 1079px) {
+  .site-nav { flex-wrap: nowrap; gap: 0; }
+  .site-nav a { padding-inline: var(--space-2); }
+}

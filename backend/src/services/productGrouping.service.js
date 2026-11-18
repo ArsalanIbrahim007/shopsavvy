@@ -78,19 +78,36 @@ function ruleMatchStrategy(rawTitle, group, listing, listingStorage) {
  * different, newer phone): without that limit one store's "Reno" / "Reno 5G" pair split every Reno model.
  */
 function splitNetworkFamilies(listings) {
-  const seen = new Map(); // "platform|familyKey" -> set of generations that store lists
+  const seen = new Map(); // "platform|familyKey" -> generation -> prices that store lists it at
+  const exact = new Map(); // "platform|whole title without its generation" -> generations: titles identical but for "5G"
+  const families = new Set();
   for (const listing of listings) {
     const title = listing.title || listing.normalizedTitle || "";
-    const key = `${listing.platform}|${networkFamilyKey(title)}`;
-    if (!seen.has(key)) seen.set(key, new Set());
-    seen.get(key).add(extractNetworkGeneration(title));
+    const whole = `${listing.platform}|${networkFamilyKey(title)}`;
+    if (!exact.has(whole)) exact.set(whole, new Set());
+    exact.get(whole).add(extractNetworkGeneration(title));
+    if (exact.get(whole).size > 1) families.add(modelFamilyKey(title)); // the same store, the same title but for "5G": two products
+    const key = `${listing.platform}|${modelFamilyKey(title)}`;
+    if (!seen.has(key)) seen.set(key, new Map());
+    const generation = extractNetworkGeneration(title);
+    if (!seen.get(key).has(generation)) seen.get(key).set(generation, []);
+    if (listing.price > 0) seen.get(key).get(generation).push(listing.price);
   }
-  const families = new Set();
-  for (const [key, generations] of seen) {
-    if (generations.size > 1) families.add(key.slice(key.indexOf("|") + 1));
+  // A store that writes "4G" and "5G" names two products. One that writes nothing and "5G" may be writing one phone two ways
+  // ("Galaxy S24" and "Galaxy S24 5G"), so there it takes a price: the 5G clearly dearer (MIN_5G_PREMIUM), as AlfaMall's A17 5G at
+  // PKR 97,000 beside its A17 at 80,449 (2026-11-19).
+  const median = (xs) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
+  for (const [key, byGeneration] of seen) {
+    if (byGeneration.size < 2) continue;
+    const explicit = byGeneration.has(4) && byGeneration.has(5);
+    const five = byGeneration.get(5) ?? [];
+    const plain = byGeneration.get(null) ?? byGeneration.get(4) ?? [];
+    const dearer = five.length > 0 && plain.length > 0 && median(five) >= median(plain) * (1 + MIN_5G_PREMIUM);
+    if (explicit || dearer) families.add(key.slice(key.indexOf("|") + 1));
   }
   return [...families];
 }
+const MIN_5G_PREMIUM = 0.08;
 
 // Words stores add to a title that describe the listing, not which model it is.
 const WORDING = new Set([
@@ -106,11 +123,20 @@ const isWording = (token) => WORDING.has(token) || /^\d{1,4}(gb|tb)$/.test(token
 const inFamily = (key, family) =>
   key === family || (key.startsWith(`${family} `) && key.slice(family.length + 1).split(" ").every(isWording));
 
+/**
+ * The model words of a title, for the network families: no seller text (withoutStoreWording), no generation, no capacity, colour
+ * or "PTA approved" wording. "Samsung Galaxy A17 8GB 256GB Pta Approved With Official Warranty At 0% Markup … By Microtel
+ * Trading", "Samsung Galaxy A17 5G 8GB 256GB Dual - PTA Approved" and "Samsung Galaxy A17 | (256GB - 8GB RAM)" are all
+ * "samsung galaxy a17": the whole title was the key, and AlfaMall's seller text kept the A17 and the A17 5G in one product,
+ * its "biggest saving" PKR 16,551 the 5G's price over the A17's (2026-11-19). "oppo reno" and "oppo reno 15" stay apart.
+ */
+const modelFamilyKey = (title) => networkFamilyKey(withoutStoreWording(title)).split(" ").filter((t) => t && !isWording(t)).join(" ");
+
 function isNetworkSplit(titleA, titleB, families) {
   if (families.length === 0) return false;
   if (extractNetworkGeneration(titleA) === extractNetworkGeneration(titleB)) return false;
-  const keyA = networkFamilyKey(titleA);
-  const keyB = networkFamilyKey(titleB);
+  const keyA = modelFamilyKey(titleA);
+  const keyB = modelFamilyKey(titleB);
   return families.some((family) => inFamily(keyA, family) && inFamily(keyB, family));
 }
 

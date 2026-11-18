@@ -3,6 +3,8 @@
   display: grid; gap: var(--space-4);
   box-shadow: var(--shadow-pop);
   width: 100%; max-width: 440px; justify-self: center;
+  /* the page scrolls up and down through the card; a sideways move is the card's swipe (hooks/useSwipe.js) */
+  touch-action: pan-y;
 }
 .proof--loading { min-height: 360px; }
 
@@ -62,3 +64,8 @@
   transition: width var(--dur-base) var(--ease), background-color var(--dur-base) var(--ease);
 }
 .proof__dot[aria-pressed="true"]::before { width: 18px; background: var(--accent); }
+/* a finger needs about 44px to hit; the dot stays small, its target grows */
+@media (pointer: coarse) {
+  .proof__dots { gap: 0; }
+  .proof__dot { width: 44px; height: 44px; }
+}

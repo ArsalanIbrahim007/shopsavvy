@@ -122,16 +122,16 @@ export default function OfferTable({ offers, name, currentId, colour = null }) {
                   {oldPrice && <div className="offer-table__pta"><VerdictBadge tone={oldPrice.tone} label={oldPrice.label} title={oldPrice.reason} /></div>}
                   {pta && <div className="offer-table__pta"><VerdictBadge tone={pta.tone} label={pta.label} title={pta.reason} /></div>}
                 </td>
-                <td className="num">
+                <td className="num offer-table__price-cell" data-label="Price">
                   <span className="price offer-table__price">{formatPrice(offer.price)}</span>
                   {offer.originalPrice > offer.price && (
                     <span className="price offer-table__was small muted">{formatPrice(offer.originalPrice)}</span>
                   )}
                 </td>
-                <td><DiscountCell offer={offer} /></td>
-                <td><ScoreCell offer={offer} /></td>
-                <td><VerdictCell offer={offer} lowestPrice={lowest?.price ?? null} /></td>
-                <td className="small">
+                <td data-label="Discount"><DiscountCell offer={offer} /></td>
+                <td data-label="Deal score"><ScoreCell offer={offer} /></td>
+                <td data-label="Verdict"><VerdictCell offer={offer} lowestPrice={lowest?.price ?? null} /></td>
+                <td className="small" data-label="Availability">
                   {((stock) => (stock.known && offer.inStock !== false ? stock.label : <span className="muted" title={stock.reason}>{stock.label}</span>))(stockLabelOf(offer))}
                   {offer.lastScrapedAt && <span className="offer-table__age muted">Price checked {timeAgo(offer.lastScrapedAt)}</span>}
                 </td>

@@ -45,7 +45,7 @@ function PriceInput({ label, value, placeholder, onCommit }) {
   );
 }
 
-export default function FilterPanel({ filters, stores, categories, facets, bounds, canPickCategory, filtered, onChange, onReset, open }) {
+export default function FilterPanel({ filters, stores, categories, facets, bounds, canPickCategory, filtered, onChange, onReset, open, onClose, resultCount = null }) {
   const allStoreIds = stores.map((store) => store.id);
   const selectedStores = filters.platforms ?? allStoreIds;
 
@@ -62,6 +62,11 @@ export default function FilterPanel({ filters, stores, categories, facets, bound
 
   return (
     <aside className={open ? "filters card is-open" : "filters card"} aria-label="Filters">
+      {/* On a phone the panel is a sheet from the bottom of the screen (results.css): its own title and close button. */}
+      <div className="filters__sheet-head">
+        <strong>Filters and sorting</strong>
+        <button type="button" className="filters__close" aria-label="Close filters" onClick={onClose}>×</button>
+      </div>
       <fieldset className="filter-group">
         <legend className="eyebrow">Sort by</legend>
         <div className="sort-pills">
@@ -137,6 +142,11 @@ export default function FilterPanel({ filters, stores, categories, facets, bound
           Reset filters
         </button>
       )}
+      <div className="filters__sheet-foot">
+        <button type="button" className="btn btn-primary" onClick={onClose}>
+          {resultCount === null ? "Show results" : `Show ${resultCount} ${resultCount === 1 ? "product" : "products"}`}
+        </button>
+      </div>
     </aside>
   );
 }

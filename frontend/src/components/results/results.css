@@ -211,3 +211,79 @@
 
 /* a search that began with a pasted link */
 .link-notice { padding: var(--space-4); display: grid; gap: var(--space-2); border-color: var(--brand); background: var(--brand-soft); }
+
+/* ---- Phones: the four figures in one row the shopper swipes through, not a stack that pushed the products two screens down
+   (2026-11-19). Each takes most of the width, so the next one peeks in and says there is more. */
+@media (max-width: 719px) {
+  .summary-cards {
+    display: grid; grid-auto-flow: column; grid-auto-columns: 78%; grid-template-columns: none;
+    overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none;
+  }
+  .summary-cards::-webkit-scrollbar { display: none; }
+  .summary-card { scroll-snap-align: start; box-shadow: inset 1px 0 0 var(--line); margin: 0 0 0 -1px; padding: var(--space-3) var(--space-4); }
+}
+
+/* ---- Filters: on a phone a sheet from the bottom of the screen, as in a shopping app (2026-11-19); opened inline above the
+   products, it had pushed them a screen down. On a tablet and wider the panel is as before; the sheet's parts are hidden. */
+.filters__sheet-head, .filters__sheet-foot, .filters-backdrop { display: none; }
+@media (max-width: 719px) {
+  .filters.is-open {
+    position: fixed; inset-inline: 0; bottom: 0; z-index: 50;
+    max-height: 82vh; overflow-y: auto; overscroll-behavior: contain;
+    border-radius: var(--radius-card) var(--radius-card) 0 0; border-bottom: 0;
+    padding: 0 var(--space-4) calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+    box-shadow: var(--shadow-pop);
+    animation: sheet-up var(--dur-base) var(--ease) both;
+  }
+  .filters.is-open .filters__sheet-head {
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 1; margin-inline: calc(-1 * var(--space-4)); padding: var(--space-3) var(--space-4);
+    background: var(--paper); border-bottom: 1px solid var(--line);
+  }
+  .filters.is-open .filters__sheet-head::before {
+    content: ""; position: absolute; top: 6px; left: 50%; width: 40px; height: 4px; margin-left: -20px;
+    border-radius: var(--radius-pill); background: var(--line);
+  }
+  .filters__close {
+    width: 44px; height: 44px; margin-right: calc(-1 * var(--space-2)); border: 0; background: none; color: var(--ink-soft);
+    font-size: 1.75rem; line-height: 1; cursor: pointer;
+  }
+  .filters.is-open .filters__sheet-foot {
+    display: block; position: sticky; bottom: calc(-1 * var(--space-4)); margin-inline: calc(-1 * var(--space-4));
+    padding: var(--space-3) var(--space-4); background: var(--paper); border-top: 1px solid var(--line);
+  }
+  .filters__sheet-foot .btn { width: 100%; min-height: 48px; }
+  .filters-backdrop { display: block; position: fixed; inset: 0; z-index: 45; background: var(--scrim); animation: fade-in var(--dur-base) var(--ease) both; }
+  body.sheet-open { overflow: hidden; }
+  /* bigger targets for a thumb */
+  .filter-check { min-height: 44px; }
+}
+@keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---- Offers on a phone: each store a card, not a table row the shopper scrolled sideways through (audit S-017, 2026-11-19).
+   The store and its price on top, the other columns as labelled lines, "View deal" the width of the card. */
+@media (max-width: 719px) {
+  .offer-table__wrap { overflow-x: visible; }
+  .offer-table { min-width: 0; }
+  .offer-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .offer-table, .offer-table tbody { display: block; }
+  .offer-table tr {
+    display: grid; grid-template-columns: 1fr auto; gap: var(--space-1) var(--space-3);
+    padding: var(--space-4); border-bottom: 1px solid var(--line);
+  }
+  .offer-table tr.is-lowest { box-shadow: inset 3px 0 0 var(--accent); }
+  .offer-table tr.is-lowest td:first-child { box-shadow: none; } /* the bar is the card's edge, not over its text */
+  .offer-table td { display: block; padding: 0; border: 0; }
+  .offer-table td:first-child { grid-column: 1; grid-row: 1; }
+  .offer-table td.offer-table__price-cell { grid-column: 2; grid-row: 1; text-align: right; }
+  .offer-table td[data-label]:not(.offer-table__price-cell) {
+    grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+    padding-top: var(--space-2); border-top: 1px solid var(--line-soft);
+  }
+  .offer-table td[data-label]:not(.offer-table__price-cell)::before {
+    content: attr(data-label); color: var(--ink-faint); font-size: 0.8125rem; flex: none;
+  }
+  .offer-table td:last-child { grid-column: 1 / -1; padding-top: var(--space-3); }
+  .offer-table__go { width: 100%; min-height: 44px; justify-content: center; }
+}

@@ -119,6 +119,11 @@ function GroupList({ groups }) {
 
 function ResultsView({ groups, total, refreshing = false, narrowed = null, spelling = false, brands = null, query, browseCategory, filters, searchParams, setSearchParams }) {
   const [filtersOpen, setFiltersOpen] = useState(false);
+  // the phone's filter sheet holds the page still behind it (results.css .filters)
+  useEffect(() => {
+    document.body.classList.toggle("sheet-open", filtersOpen);
+    return () => document.body.classList.remove("sheet-open");
+  }, [filtersOpen]);
 
   const allOffers = groups.flatMap((group) => group.offers ?? []);
   const category = activeCategory(allOffers, filters.category);
@@ -218,11 +223,13 @@ function ResultsView({ groups, total, refreshing = false, narrowed = null, spell
         <div>
           <div className="results-toolbar" style={{ marginBottom: "var(--space-3)" }}>
             <button type="button" className="btn btn-ghost filters-toggle" aria-expanded={filtersOpen} onClick={() => setFiltersOpen((v) => !v)}>
-              {filtersOpen ? "Hide filters" : "Filters and sorting"}
+              {filtersOpen ? "Hide filters" : filtered ? "Filters and sorting (on)" : "Filters and sorting"}
             </button>
           </div>
           <FilterPanel
             open={filtersOpen}
+            onClose={() => setFiltersOpen(false)}
+            resultCount={shown.length}
             filters={filters}
             stores={stores}
             categories={categories}
@@ -233,6 +240,7 @@ function ResultsView({ groups, total, refreshing = false, narrowed = null, spell
             onChange={update}
             onReset={reset}
           />
+          {filtersOpen && <div className="filters-backdrop" aria-hidden="true" onClick={() => setFiltersOpen(false)} />}
         </div>
 
         <div className="results-list">

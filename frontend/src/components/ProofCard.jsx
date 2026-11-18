@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { prefersReducedMotion, useCountUp } from "../hooks/useCountUp.js";
+import { useSwipe } from "../hooks/useSwipe.js";
 import { formatNumber, formatPrice } from "../lib/format.js";
 import { platformName } from "../lib/platforms.js";
 import { productPath } from "../lib/productPath.js";
@@ -78,6 +79,13 @@ export default function ProofCard({ caught }) {
     return () => window.clearInterval(timer);
   }, [count, paused]);
 
+  // Swipe on a phone, arrow keys on a keyboard; either stops the rotation, as a hover does.
+  const step = (by) => {
+    setPaused(true);
+    setIndex((i) => (i + by + count) % count);
+  };
+  const swipe = useSwipe({ onLeft: () => step(1), onRight: () => step(-1) });
+
   if (caught.status === "loading") return <div className="proof card proof--loading" aria-hidden="true" />;
   if (count === 0) return null;
 
@@ -86,10 +94,17 @@ export default function ProofCard({ caught }) {
     <aside
       className="proof card"
       aria-label="A discount our checks caught"
+      aria-roledescription="carousel"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
+      onKeyDown={(event) => {
+        if (count < 2) return;
+        if (event.key === "ArrowRight") step(1);
+        if (event.key === "ArrowLeft") step(-1);
+      }}
+      {...(count > 1 ? swipe : {})}
     >
       <p className="proof__head small">
         <span className="proof__pulse" aria-hidden="true" /> Caught by our checks

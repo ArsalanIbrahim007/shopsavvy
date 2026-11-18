@@ -15,6 +15,7 @@ import SearchBox from "./SearchBox.jsx";
 import { StoreMark } from "./StoreLogo.jsx";
 import ThemeToggle from "./ThemeToggle.jsx";
 import CompareTray from "./CompareTray.jsx";
+import MobileTabBar from "./MobileTabBar.jsx";
 import "./Layout.css";
 
 const STORES = [
@@ -125,6 +126,7 @@ export default function Layout() {
       </main>
       <CompareTray />
       <Footer />
+      <MobileTabBar />
     </>
   );
 }

@@ -314,3 +314,21 @@ describe("GET /api/listings/match", () => {
     expect(body.matchedBy).toBe("url");
   });
 });
+
+describe("a page found as the search box would find it (2026-11-19: Daraz's \"iPad A16 - 128GB\")", () => {
+  it("needs every word, the same storage and a price within 30%, and takes the nearest price", async () => {
+    const { listingByWords } = await import("../src/services/productMatch.service.js");
+    let asked = null;
+    const rows = [
+      { _id: "a", title: "Apple iPad 11Inch (A16) 128GB", price: 138000 },
+      { _id: "b", title: "Apple iPad 11-Inch A16 Chip 128GB Wi-Fi Only | Silver", price: 149999 },
+    ];
+    const model = { find: (filter) => { asked = filter; return { limit: () => ({ lean: async () => rows }) }; } };
+    const found = await listingByWords("iPad A16 - 128GB", 165999, { model });
+    expect(found._id).toBe("b"); // the nearest price
+    expect(asked.storageGb).toBe(128);
+    expect(asked.price).toEqual({ $gte: 165999 * 0.7, $lte: 165999 * 1.3 });
+    expect(asked.$and.map((c) => new RegExp(c.title.$regex, "i").test("Apple iPad 11Inch (A16) 128GB"))).toEqual([true, true, true]);
+    expect(await listingByWords("iPad", 165999, { model })).toBe(null); // one word names too much
+  });
+});
