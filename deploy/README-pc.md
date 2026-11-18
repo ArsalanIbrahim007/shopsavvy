@@ -30,14 +30,18 @@ For an always-on server, see `README.md` in this folder (a cloud server; Google 
 
 ## 3. The API's settings on this PC (once)
 
-Add two lines to `backend\.env` (your website's address from step 2):
+Add three lines to `backend\.env` (your website's address from step 2):
 
 ```
 CORS_ORIGINS=https://shopsavvy.pages.dev
 TRUST_PROXY=1
+PUBLIC_SITE_URL=https://shopsavvy.pages.dev
 ```
 
-`CORS_ORIGINS` lets the website read the API; `TRUST_PROXY=1` makes the rate limits count each visitor, not ngrok (one proxy).
+`CORS_ORIGINS` lets the website read the API; `TRUST_PROXY=1` makes the rate limits count each visitor, not ngrok (one proxy);
+`PUBLIC_SITE_URL` is the website the API links to: the extension's "Compare" and "Search for it" buttons, shared links' previews,
+the sitemap and alert emails. Without it they all point at `http://localhost:5173` (found on 2026-11-19, after the PC was set up
+again: the extension's "Search for it on ShopSavvy" opened localhost).
 
 ## 4. Going online
 

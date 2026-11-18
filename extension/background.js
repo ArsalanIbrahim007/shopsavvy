@@ -70,6 +70,16 @@ async function lookup(product) {
   }
 }
 
+// The API builds the links to the website from its PUBLIC_SITE_URL setting, and without it they point at the developer's
+// http://localhost:5173 ("Search for it on ShopSavvy" opened it on 2026-11-19). From a deployed API, such a link is the website's.
+const LOCAL_SITE = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i;
+async function withSiteLinks(result, base) {
+  if (!result || LOCAL_SITE.test(base)) return result;
+  const site = await siteBase();
+  const fix = (url) => (typeof url === "string" ? url.replace(LOCAL_SITE, site) : url);
+  return { ...result, productUrl: fix(result.productUrl), searchUrl: fix(result.searchUrl) };
+}
+
 async function match(product) {
   const base = await apiBase();
   const params = new URLSearchParams({ url: product.url });
@@ -79,7 +89,7 @@ async function match(product) {
     const res = await fetch(`${base}/api/listings/match?${params}`, { headers: apiHeaders(base), signal: AbortSignal.timeout(20000) });
     if (res.status === 429) return { error: "busy" };
     if (!res.ok) return { error: "failed", status: res.status };
-    return await res.json();
+    return withSiteLinks(await res.json(), base);
   } catch {
     return { error: "offline", base };
   }
