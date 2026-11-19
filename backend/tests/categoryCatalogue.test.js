@@ -90,3 +90,27 @@ describe("a product page the store deleted (W11Stop, 2026-11-19)", () => {
     expect(errors).toEqual(["https://s.pk/refused.html: HTTP 520"]);
   });
 });
+
+describe("a store whose bot check refuses page after page (Paklap, 2026-11-19)", () => {
+  it("is left alone after five refusals in a row instead of being asked for every page", async () => {
+    const { productPagesCatalogue } = await import("../src/scrapers/catalogue.js");
+    const held = Array.from({ length: 40 }, (_, i) => ({ sourceUrl: `https://s.pk/p${i}.html`, title: `p${i}`, lastScrapedAt: new Date(2026, 10, 1, i) }));
+    let asked = 0;
+    const fetchText = async () => { asked += 1; throw new Error("HTTP 403"); };
+    const run = productPagesCatalogue({ platform: "s" }, held, { fetchText, gapMs: 0 });
+    await expect((async () => { for await (const _p of run) { /* read */ } })()).rejects.toThrow(/every page refused \(5 tried\)/);
+    expect(asked).toBe(5);
+  });
+
+  it("keeps reading when refusals are not in a row", async () => {
+    const { productPagesCatalogue } = await import("../src/scrapers/catalogue.js");
+    const held = Array.from({ length: 12 }, (_, i) => ({ sourceUrl: `https://s.pk/p${i}.html`, title: `p${i}`, lastScrapedAt: new Date(2026, 10, 1, i) }));
+    const fetchText = async (url) => {
+      if (/p(3|7|11)\.html/.test(url)) return '<meta property="product:price:amount" content="1000">';
+      throw new Error("HTTP 403");
+    };
+    const read = [];
+    for await (const page of productPagesCatalogue({ platform: "s" }, held, { fetchText, gapMs: 0, onError: () => {} })) read.push(...page.map((l) => l.title));
+    expect(read).toEqual(["p3", "p7", "p11"]);
+  });
+});

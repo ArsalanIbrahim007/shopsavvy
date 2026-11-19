@@ -102,7 +102,7 @@ function fit(train, key) {
   return trainLogisticRegression(train.map((r) => r[key]), train.map((r) => r.label), { ...TRAIN, l2: best.l2 });
 }
 
-const lastDay = Math.max(...rows.map((r) => r.day));
+const lastDay = rows.reduce((m, r) => Math.max(m, r.day), -Infinity);
 const testStart = lastDay - STRICT_TEST_DAYS + 1;
 const train = rows.filter((r) => r.day + FORECAST.WINDOW_DAYS < testStart);
 const test = rows.filter((r) => r.day >= testStart);

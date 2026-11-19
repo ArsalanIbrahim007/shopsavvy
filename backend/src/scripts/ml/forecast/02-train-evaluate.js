@@ -118,7 +118,7 @@ function evaluate(train, test) {
   };
 }
 
-const describe = (set) => `${set.length} samples, ${new Set(set.map((r) => r.listing)).size} listings, ${drops(set)} drops (${(100 * rate(set)).toFixed(2)}%), ${dayDate(Math.min(...set.map((r) => r.day)))} to ${dayDate(Math.max(...set.map((r) => r.day)))}`;
+const describe = (set) => `${set.length} samples, ${new Set(set.map((r) => r.listing)).size} listings, ${drops(set)} drops (${(100 * rate(set)).toFixed(2)}%), ${dayDate(set.reduce((m, r) => Math.min(m, r.day), Infinity))} to ${dayDate(set.reduce((m, r) => Math.max(m, r.day), -Infinity))}`;
 const num = (v, d = 3) => (v === null || v === undefined ? "n/a" : v.toFixed(d));
 const pct = (v) => (v === null || v === undefined ? "n/a" : `${(100 * v).toFixed(1)}%`);
 const range = (iv) => (iv ? ` (${num(iv[0])} to ${num(iv[1])})` : "");
@@ -138,7 +138,9 @@ function resultSection(evaluation, test) {
     `Against the strongest baseline ("${strongest.name}"): AUC ${gain.value >= 0 ? "+" : ""}${num(gain.value)}${range(gain.interval)}. ` +
       (gain.interval && gain.interval[0] > 0
         ? "The interval is above zero: the model ranks drop risk better than that baseline, beyond resampling noise."
-        : "The interval includes zero: the model is not shown to rank drop risk better than that baseline."),
+        : gain.interval && gain.interval[1] < 0
+          ? "The interval is below zero: that baseline ranks drop risk better than the model, beyond resampling noise."
+          : "The interval includes zero: the model is not shown to rank drop risk better than that baseline."),
     "",
     `Shuffled-label check: ${SHUFFLES} models trained on the same features with the labels shuffled scored AUC ${num(shuffled.mean)} on average and`,
     `${num(shuffled.max)} at most (noise alone, on a test set this size). The real model's ${num(results[0].auc)} is ${shuffled.p <= 1 / (SHUFFLES + 1) ? "above every one of them" : "not above all of them"} (permutation p = ${num(shuffled.p, 3)}).`,
@@ -146,7 +148,8 @@ function resultSection(evaluation, test) {
 }
 
 // ---- strict: by date, with a full label-week gap ----
-const lastDay = Math.max(...rows.map((r) => r.day));
+// a loop, not Math.max(...rows): spreading 200,000+ days overflows the call stack
+const lastDay = rows.reduce((m, r) => Math.max(m, r.day), -Infinity);
 const testStart = lastDay - STRICT.testDays + 1;
 const strictTrain = rows.filter((r) => r.day + FORECAST.WINDOW_DAYS < testStart);
 const strictTest = rows.filter((r) => r.day >= testStart);

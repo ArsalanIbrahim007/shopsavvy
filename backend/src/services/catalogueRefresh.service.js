@@ -57,10 +57,10 @@ export const CATALOGUE_ONLY_STORES = Object.freeze([
   },
   // Mega.pk (2026-11-18): its category pages, read for the categories our listings come from (catalogue.js megaCategories).
   { platform: "mega", type: "category", baseUrl: "https://www.mega.pk", parse: parseMegaCategoryHtml, pageUrl: megaCategoryUrl, categories: megaCategories },
-  // Paklap and W11Stop (2026-11-19): their robots.txt forbids their search and category paging; the listings we hold are
-  // refreshed from their product pages, which it allows (catalogue.js productPagesCatalogue).
+  // Paklap (2026-11-19): its robots.txt forbids its search; the listings we hold are refreshed from their product pages, which it
+  // allows (catalogue.js productPagesCatalogue). Its bot check refuses our crawler at present, so the read stops after five refusals.
+  // W11Stop was read the same way until 2026-11-19, then dropped: its pages time out or are gone; its listings fade after 15 days.
   { platform: "paklap", type: "pages", baseUrl: "https://www.paklap.pk" },
-  { platform: "w11stop", type: "pages", baseUrl: "https://w11stop.com" },
 ]);
 export const CATALOGUE_STORES = [
   ...ADAPTER_STORES.filter((store) => ["shopify", "woocommerce", "storefront"].includes(store.type)),

@@ -340,6 +340,7 @@ export function parseMegaCategoryHtml(html) {
 // (their firewall answers 403 or 520 now and then) is skipped and comes round again.
 export const PAGES_PER_NIGHT = 300;
 const PAGE_GAP_MS = 3000;
+const REFUSALS_BEFORE_STOP = 5; // refusals in a row after which a store is left alone until the next night
 
 /** {price, inStock} from a product page's own schema.org data, else its product:price meta tag; null when it states no price. */
 export function pagePriceAndStock(html) {
@@ -384,21 +385,26 @@ export function pagePriceAndStock(html) {
 export async function* productPagesCatalogue(store, held, { fetchText = politeFetchText, onError, onGone, perNight = PAGES_PER_NIGHT, gapMs = PAGE_GAP_MS } = {}) {
   const due = [...held].filter((l) => /^https?:\/\//.test(l.sourceUrl ?? "") && !String(l.sourceUrl).includes("?"))
     .sort((a, b) => new Date(a.lastScrapedAt ?? 0) - new Date(b.lastScrapedAt ?? 0)).slice(0, perNight);
-  let failed = 0;
+  let failed = 0, refusedInARow = 0, read = 0;
   const gone = [];
   for (const listing of due) {
     try {
       const found = pagePriceAndStock(await fetchText(listing.sourceUrl));
+      refusedInARow = 0;
+      read += 1;
       if (found) yield [makeListing({ platform: store.platform, sourceUrl: listing.sourceUrl, title: listing.title, price: found.price, inStock: found.inStock })];
     } catch (error) {
-      if (/HTTP (404|410)(?!\d)/.test(error.message)) gone.push(listing.sourceUrl);
+      if (/HTTP (404|410)(?!\d)/.test(error.message)) { gone.push(listing.sourceUrl); refusedInARow = 0; read += 1; }
       else {
         failed += 1;
+        refusedInARow += 1;
         onError?.({ error: new Error(`${listing.sourceUrl}: ${error.message}`) });
+        // A store that refuses page after page (Paklap's bot check, 2026-11-19) is left alone for the night rather than asked 300 times.
+        if (refusedInARow >= REFUSALS_BEFORE_STOP) break;
       }
     }
     if (gapMs) await new Promise((resolve) => setTimeout(resolve, gapMs));
   }
   if (gone.length) onGone?.(gone);
-  if (due.length > 0 && failed === due.length) throw new Error(`${store.platform}: every page refused`);
+  if (due.length > 0 && read === 0) throw new Error(`${store.platform}: every page refused (${failed} tried)`);
 }
