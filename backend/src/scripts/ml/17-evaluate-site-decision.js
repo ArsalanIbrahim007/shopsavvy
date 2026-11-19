@@ -76,7 +76,12 @@ if (process.argv[2] === "--child") {
 
 const candidate = process.argv[2] || "model.artifact.v4-nov.json";
 const { test, evalOnly } = JSON.parse(readFileSync(join(ML_DIR, "dataset", "split.json"), "utf8"));
-const sets = { sealed: sealedPairs(), old164: [...test, ...evalOnly] };
+// The earlier 164-pair set less the 16 pairs the live model was trained on (dataset/live_model_training_pairs.json, its training
+// split at commit 0effc7c): the 148 pairs the live model never saw.
+const pairKey = (p) => [p.idA, p.idB].sort().join("|");
+const liveTrained = new Set(JSON.parse(readFileSync(join(ML_DIR, "dataset", "live_model_training_pairs.json"), "utf8")).pairs.map(pairKey));
+const old164 = [...test, ...evalOnly];
+const sets = { sealed: sealedPairs(), old164, unseen148: old164.filter((p) => !liveTrained.has(pairKey(p))) };
 const setsFile = join(ML_DIR, "dataset", ".site-decision-sets.tmp.json");
 writeFileSync(setsFile, JSON.stringify(sets));
 const predict = (model) => JSON.parse(execFileSync(process.execPath, [__filename, "--child", setsFile], { env: { ...process.env, SHOPSAVVY_MATCH_MODEL: model }, maxBuffer: 1 << 28, stdio: ["ignore", "pipe", "ignore"] }).toString());
@@ -111,7 +116,10 @@ const lines = [
   "Nothing was tuned for this: the same functions the live site runs, with each model.",
   "",
 ];
-for (const [setName, title] of [["sealed", "Sealed November test set"], ["old164", "Earlier 164-pair evaluation set"]]) {
+const { isSimilarProduct } = await import("../../services/similarity.service.js");
+const isSimilarRule = (p) => isSimilarProduct(p.titleA, p.titleB, 0.7);
+const rulePreds = Object.fromEntries(Object.entries(sets).map(([k, pairs]) => [k, pairs.map((p) => (isSimilarRule(p) ? 1 : 0))]));
+for (const [setName, title] of [["sealed", "Sealed November test set"], ["unseen148", "Earlier pairs the live model never saw (164 less the 16 it was trained on)"], ["old164", "Earlier 164-pair evaluation set (16 of these were in the live model's training data)"]]) {
   const pairs = sets[setName];
   lines.push(`## ${title} (${pairs.length} pairs, ${pairs.filter((p) => p.label === 1).length} same)`, "",
     "| Decision | Model | Accuracy | Precision | Recall | F1 (95% interval) | TP / FP / FN |", "|---|---|---|---|---|---|---|");
@@ -121,6 +129,8 @@ for (const [setName, title] of [["sealed", "Sealed November test set"], ["old164
       lines.push(`| ${kind === "site" ? "Site decision" : "Classifier step"} | ${name} | ${pct(m.accuracy)} | ${pct(m.precision)} | ${pct(m.recall)} | ${pct(m.f1)} (${interval(pairs, preds[setName][kind])}) | ${m.tp} / ${m.fp} / ${m.fn} |`);
     }
   }
+  const r = metrics(pairs, rulePreds[setName]);
+  lines.push(`| Rule baseline | Word overlap (Jaccard >= 0.70) | ${pct(r.accuracy)} | ${pct(r.precision)} | ${pct(r.recall)} | ${pct(r.f1)} (${interval(pairs, rulePreds[setName])}) | ${r.tp} / ${r.fp} / ${r.fn} |`);
   lines.push("");
 }
 writeFileSync(join(ML_DIR, "SITE_DECISION_REPORT.md"), lines.join("\n") + "\n");
