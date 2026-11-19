@@ -52,4 +52,10 @@
 @media (max-width: 600px) {
   .uat-task { padding: var(--space-4); }
   .uat-sus .uat-choice--scale .uat-choice__options { grid-template-columns: 1fr; }
+  /* The 1-7 ease scale: all seven in one row on a phone (it wrapped, leaving "7" alone). The radio dot is hidden but the input
+     stays focusable and read out; the chosen number shows by its border and fill. */
+  .uat-task .uat-choice--scale .uat-choice__options { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+  .uat-task .uat-choice--scale .uat-choice__option { padding: 0; min-height: 44px; }
+  .uat-task .uat-choice--scale .uat-choice__option input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .uat-task .uat-choice--scale .uat-choice__option:has(input:checked) { font-weight: 700; }
 }

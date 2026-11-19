@@ -27,6 +27,7 @@
 .compare__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); flex-wrap: wrap; }
 .compare__head h1 { margin: 0; }
 .compare__note { max-width: 70ch; }
+.compare__swipe { display: none; margin: 0; } /* shown on phones only, with three or four products */
 .compare-empty { padding: var(--space-6); display: grid; gap: var(--space-3); justify-items: start; }
 .compare-empty h2 { margin: 0; }
 
@@ -47,8 +48,35 @@
 .compare-table td.is-best { background: var(--good-soft); }
 .compare-best { color: var(--good); font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
 
-@media (max-width: 640px) {
-  .compare-table tbody th { width: 110px; min-width: 100px; }
-  .compare-table__product { min-width: 150px; }
+/* Phones: no label column eating the width. Each row's label becomes a full-width line, and the products' values sit under it in
+   equal columns (two products fit the screen; three or four scroll sideways together, each column at least 140px). */
+@media (max-width: 719px) {
+  .compare { padding-block: var(--space-4); gap: var(--space-3); }
+  .compare__head h1 { font-size: 1.5rem; }
+  .compare-table { display: block; min-width: calc(var(--compare-cols, 2) * 140px); }
+  .compare-table thead, .compare-table tbody { display: block; }
+  .compare-table tr {
+    display: grid; grid-template-columns: repeat(var(--compare-cols, 2), minmax(0, 1fr));
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .compare-table tbody tr:last-child { border-bottom: 0; }
+  .compare-table th, .compare-table td { border-bottom: 0; padding: var(--space-2) var(--space-3); min-width: 0; overflow-wrap: anywhere; }
+  .compare-table__corner { display: none; }
+  .compare-table thead th + th, .compare-table tbody td + td { border-left: 1px solid var(--line-soft); }
+  .compare-table__product { min-width: 0; padding-block: var(--space-3); }
+  .compare-table__product img { max-height: 84px; }
+  .compare-table__name { font-size: 0.875rem; }
+  /* the row label: one full-width line above its values */
+  .compare-table tbody th {
+    /* as wide as the visible box and stuck to its left edge, so the label stays in view while three or four products scroll */
+    grid-column: 1 / -1; justify-self: start; position: sticky; left: 0; width: min(100%, calc(100vw - 2 * var(--gutter, 16px) - 2px)); min-width: 0;
+    padding: var(--space-2) var(--space-3) 2px; background: var(--raised);
+    font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .compare-table tbody th .compare-table__hint { text-transform: none; letter-spacing: 0; display: inline; margin-left: 4px; }
+  .compare-table tbody td { font-size: 0.875rem; }
+  .compare-table tbody th + td { border-left: 0; }
+  .compare-table .price { font-size: 0.95rem; }
   .compare-tray__item { max-width: 150px; }
+  .compare__swipe { display: block; }
 }

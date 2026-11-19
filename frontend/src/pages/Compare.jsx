@@ -92,8 +92,9 @@ export default function Compare() {
         <button type="button" className="btn btn-ghost" onClick={() => { clearCompare(); setParams({}); }}>Clear all</button>
       </div>
 
+      {products.length > 2 && <p className="compare__swipe small muted">Swipe the table sideways to see all {products.length} products.</p>}
       <div className="compare-scroll" role="region" aria-label="Comparison table" tabIndex={0}>
-        <table className="compare-table">
+        <table className="compare-table" style={{ "--compare-cols": products.length }}>
           <thead>
             <tr>
               <td className="compare-table__corner" />
