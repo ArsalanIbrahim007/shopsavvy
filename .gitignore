@@ -56,3 +56,7 @@ frontend/dist-e2e/
 # computed feeds kept across restarts (src/services/snapshot.service.js)
 backend/.cache/
 deploy/ngrok-domain.txt
+
+# Every pair two matchers group differently (16-compare-models-grouping.js): 20+ MB, kept out of git
+backend/src/ml/dataset/grouping_changes_*.json
+backend/src/ml/dataset/.site-decision-sets.tmp.json

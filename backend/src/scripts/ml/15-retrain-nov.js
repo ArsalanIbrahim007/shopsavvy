@@ -26,7 +26,7 @@ import { readFileSync, writeFileSync, existsSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-import { buildFeatureVector, FEATURE_NAMES } from "../../ml/features.js";
+import { buildFeatureVector, FEATURE_NAMES, EXTENDED_FEATURE_NAMES } from "../../ml/features.js";
 import { trainLogisticRegression, predictProba } from "../../ml/logisticRegression.js";
 import { pairComponents } from "../../ml/dataset/family.js";
 import { isSimilarProduct, attributeConflict } from "../../services/similarity.service.js";
@@ -38,6 +38,12 @@ const DATASET_DIR = join(ML_DIR, "dataset");
 const arg = (name) => process.argv.find((a) => a.startsWith(`--${name}=`))?.split("=").slice(1).join("=");
 const SIMULATE = process.argv.includes("--simulate");
 const SHEETS_DIR = arg("sheets") || "D:/FYP PROJECT/labelling";
+// --features=extended: the 13 features of features.js EXTENDED_FEATURE_NAMES (filler-free overlap, differing identifiers) instead of 9.
+const EXTENDED = arg("features") === "extended";
+const FEATURES = EXTENDED ? EXTENDED_FEATURE_NAMES : FEATURE_NAMES;
+const SUFFIX = EXTENDED ? "-ext" : "";
+// --cv-only: print the cross-validated F1 on the training pairs and stop, without scoring the sealed set (to choose a feature set).
+const CV_ONLY = process.argv.includes("--cv-only");
 
 // ---------- reading the sheets ----------
 
@@ -116,7 +122,7 @@ function mulberry32(seed) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-const featuresOf = (p) => buildFeatureVector({ titleA: p.titleA, titleB: p.titleB, priceA: p.priceA, priceB: p.priceB }, FEATURE_NAMES);
+const featuresOf = (p) => buildFeatureVector({ titleA: p.titleA, titleB: p.titleB, priceA: p.priceA, priceB: p.priceB }, FEATURES);
 const weightsFor = (set) => {
   const pos = set.filter((p) => p.label === 1).length;
   return { 1: set.length / (2 * pos), 0: set.length / (2 * (set.length - pos)) };
@@ -201,11 +207,14 @@ if (SIMULATE) {
   ({ byPair, files } = readSheets(SHEETS_DIR));
 }
 
-const resolvedFile = join(SHEETS_DIR, "resolved.csv");
+// The settled disagreements: resolve-disputes.csv (the disputed pairs as a sheet, labelled after discussion), read by its headers.
+const resolvedFile = join(SHEETS_DIR, "resolve-disputes.csv");
 const resolved = new Map();
 if (!SIMULATE && existsSync(resolvedFile)) {
-  const [, ...rows] = parseCsv(readFileSync(resolvedFile, "utf8"));
-  for (const [id, label] of rows) if (labelValue(label) !== null) resolved.set(id.trim(), labelValue(label));
+  const [head, ...rows] = parseCsv(readFileSync(resolvedFile, "utf8"));
+  const idCol = head.findIndex((h) => /pair_id/i.test(h));
+  const labelCol = head.findIndex((h) => /^label/i.test(h.trim()));
+  for (const r of rows) if (labelValue(r[labelCol]) !== null) resolved.set(r[idCol].trim(), labelValue(r[labelCol]));
 }
 
 const counts = { labelled: 0, unsure: 0, missing: 0, disagreed: 0, settled: 0 };
@@ -258,13 +267,13 @@ if (counts.labelled < 150 && !SIMULATE) {
 const model = fit(train);
 const chosen = chooseThreshold(train);
 const candidate = {
-  featureNames: FEATURE_NAMES, weights: model.weights, bias: model.bias, means: model.means, stds: model.stds, threshold: chosen.threshold,
+  featureNames: FEATURES, weights: model.weights, bias: model.bias, means: model.means, stds: model.stds, threshold: chosen.threshold,
   thresholdSelection: { method: "grouped 5-fold cross-validation on the training pairs, maximising F0.5", crossValidatedPrecision: +chosen.precision.toFixed(3), crossValidatedRecall: +chosen.recall.toFixed(3) },
   trainedAt: new Date().toISOString(), trainingSize: train.length, classWeight: weightsFor(train),
 };
 
 const contenders = [
-  ["Candidate (v4-nov)", classifyWith(candidate)],
+  [`Candidate (v4-nov${SUFFIX})`, classifyWith(candidate)],
   [`Live model (v1, ${live.trainingSize} pairs)`, classifyWith(live)],
   ["Word-overlap rule (Jaccard >= 0.70)", classifyRule],
 ];
@@ -290,6 +299,39 @@ const byCategory = (pairs) => {
   return lines.join("\n");
 };
 
+// Learning curve: would more labels help? Models trained on 25 / 50 / 75 / 100% of the training pairs (whole product groups at a
+// time), each scored by grouped 5-fold cross-validation on its own training pairs; the sealed set is not used.
+function cvF1(set) {
+  const rng = mulberry32(4242);
+  const groups = pairComponents(set).map(([, m]) => m).sort(() => rng() - 0.5);
+  const folds = Array.from({ length: 5 }, () => []);
+  groups.sort((a, b) => b.length - a.length).forEach((g) => { folds[folds.reduce((m, f, i) => (f.length < folds[m].length ? i : m), 0)].push(...g); });
+  let tp = 0, fp = 0, fn = 0;
+  folds.forEach((holdout, k) => {
+    const rest = folds.filter((_, i) => i !== k).flat();
+    if (!rest.some((p) => p.label === 1) || !rest.some((p) => p.label === 0)) return;
+    const m = fit(rest);
+    const art = { ...m, featureNames: FEATURES, threshold: chosen.threshold };
+    for (const p of holdout) {
+      const yes = classifyWith(art)(p) === 1;
+      if (yes && p.label === 1) tp++; else if (yes) fp++; else if (p.label === 1) fn++;
+    }
+  });
+  return tp ? (2 * tp) / (2 * tp + fp + fn) : 0;
+}
+const curveRng = mulberry32(99);
+const curveGroups = pairComponents(train).map(([, m]) => m).sort(() => curveRng() - 0.5);
+const curve = [0.25, 0.5, 0.75, 1].map((share) => {
+  const subset = [];
+  for (const g of curveGroups) { if (subset.length >= share * train.length) break; subset.push(...g); }
+  return { share, pairs: subset.length, f1: cvF1(subset) };
+});
+console.log("Learning curve (cross-validated F1 on the training pairs):", curve.map((c) => `${c.pairs} pairs ${pct(c.f1)}`).join(", "));
+if (CV_ONLY) {
+  console.log(`Features: ${EXTENDED ? "extended (13)" : "base (9)"}; threshold ${chosen.threshold}; cross-validated F1 on all ${train.length} training pairs ${pct(curve[3].f1)}`);
+  process.exit(0);
+}
+
 const report = [
   "# November retrain: candidate v4-nov against the live model",
   "",
@@ -314,6 +356,15 @@ const report = [
   "",
   "Each model sits behind the same attribute veto the live site applies (different storage, size and so on is never merged).",
   "",
+  "## Would more labels help? (learning curve)",
+  "",
+  "Each row trains on part of the training pairs (whole product groups) and scores F1 by grouped 5-fold cross-validation on that",
+  "part, at the chosen threshold. The sealed set is not used. A curve still rising at 100% says more labels would likely help.",
+  "",
+  "| Share | Training pairs | Cross-validated F1 |",
+  "|---|---|---|",
+  ...curve.map((c) => `| ${Math.round(c.share * 100)}% | ${c.pairs} | ${pct(c.f1)} |`),
+  "",
   "## Disagreements between labellers",
   "",
   ...(disagreements.length ? disagreements.map((d) => `- ${d.pairId}: ${d.marks} — "${d.titleA}" / "${d.titleB}"`) : ["None."]),
@@ -329,7 +380,7 @@ console.log("\n" + report.slice(report.indexOf("## Results on pairs no model tra
 if (SIMULATE) {
   console.log("\n(simulated: nothing written)");
 } else {
-  writeFileSync(join(ML_DIR, "model.artifact.v4-nov.json"), JSON.stringify(candidate, null, 2));
-  writeFileSync(join(ML_DIR, "RETRAIN_NOV_REPORT.md"), report.join("\n") + "\n");
+  writeFileSync(join(ML_DIR, `model.artifact.v4-nov${SUFFIX}.json`), JSON.stringify(candidate, null, 2));
+  writeFileSync(join(ML_DIR, `RETRAIN_NOV_REPORT${SUFFIX}.md`), report.join("\n") + "\n");
   console.log("\nWrote src/ml/model.artifact.v4-nov.json and src/ml/RETRAIN_NOV_REPORT.md (the live model is untouched).");
 }
