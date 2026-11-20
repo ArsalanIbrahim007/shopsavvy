@@ -12,9 +12,24 @@ const SPEC_PART =
   /\b\d+(\.\d+)?\s*(-?\s*inch(es)?|"|″|mp|megapixels?|mah|hz|nits|w)\b|\b(display|screen|camera|battery|processor|chipset|octa|quad|core|unisoc|snapdragon|helio|dimensity|exynos|bionic|tensor|kirin|dual\s*sim|single\s*sim|sim\b|fingerprint|android|ios\b|charging|charger|fast|wifi|bluetooth|nfc|gps|amoled|lcd|oled|ips|resolution|refresh|stereo|speakers?|ip\d\d|water|dust|warranty|official|brand new|box packed|free)\b/i;
 const CAPACITY = /\b\d+\s*(gb|tb)\b/i;
 
+/**
+ * A seller's tag written before the name: "NS - Logitech K400 Plus Wireless Touch Keyboard with ..." (Daraz, 2026-11-20). Kept, the
+ * title's core was "NS" and the extension's "Search for it on ShopSavvy" link searched for "NS". Only these words: a short first
+ * part is usually the brand ("LG - 1.5 Ton Inverter AC", "HP - 15s Laptop"), which must stay.
+ */
+const SELLER_TAG =
+  /^(ns|new|new arrival|sale|hot|hot sale|flash sale|mega sale|offer|special offer|limited offer|deal|best|best seller|original|100% original|genuine|imported|branded)$/i;
+
+/** The title with its spaces tidied and a leading seller's tag ("NS - ", "Hot Sale | ") removed. */
+function withoutSellerTag(title) {
+  const text = String(title ?? "").replace(/\s+/g, " ").trim();
+  const tag = text.match(/^([^-|–]{1,20}?)\s*[-|–]\s+(?=\S)/);
+  return tag && SELLER_TAG.test(tag[1].trim()) ? text.slice(tag[0].length).trim() : text;
+}
+
 /** "Tecno Spark Go 3 - 6.75 Inches Display - 4GB RAM 64GB/128GB ROM - ..." -> "Tecno Spark Go 3 4GB RAM". Short titles come back as they are. */
 export function coreTitle(title) {
-  const text = String(title ?? "").replace(/\s+/g, " ").trim();
+  const text = withoutSellerTag(title);
   const parts = text.split(/\s+[-|–]\s+|\s*\|\s*/).map((p) => p.trim()).filter(Boolean);
   if (parts.length < 3 && text.length <= 80) return text;
 
@@ -33,7 +48,7 @@ export function coreTitle(title) {
 
 /** A search text at most `max` characters: the core of a long title, then cut at a word. */
 export function searchableText(text, max = 100) {
-  const raw = String(text ?? "").replace(/\s+/g, " ").trim();
+  const raw = withoutSellerTag(text);
   if (raw.length <= max) return raw;
   const core = coreTitle(raw);
   if (core.length <= max) return core;

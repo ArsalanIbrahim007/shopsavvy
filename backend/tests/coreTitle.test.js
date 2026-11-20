@@ -18,6 +18,16 @@ describe("coreTitle", () => {
     expect(coreTitle("Apple iPhone 16 Pro Max 256GB | PTA Approved")).toBe("Apple iPhone 16 Pro Max 256GB | PTA Approved");
   });
 
+  it("drops a seller's tag before the name, but not a short brand", () => {
+    const daraz = "NS - Logitech K400 Plus Wireless Touch Keyboard with Easy Media Control and Built-In Touchpad";
+    expect(coreTitle(daraz)).toBe("Logitech K400 Plus Wireless Touch Keyboard with Easy Media Control and Built-In Touchpad");
+    expect(searchableText(daraz)).toBe("Logitech K400 Plus Wireless Touch Keyboard with Easy Media Control and Built-In Touchpad");
+    expect(coreTitle("Hot Sale - Apple AirPods 4")).toBe("Apple AirPods 4");
+    expect(coreTitle("LG - 1.5 Ton Dual Inverter Split AC - Wifi Control - Low Voltage Startup - Copper Condenser")).toMatch(/^LG\b/);
+    expect(coreTitle("HP - 15s Laptop")).toBe("HP - 15s Laptop");
+    expect(coreTitle("Nashville Speaker")).toBe("Nashville Speaker");
+  });
+
   it("a search text is at most 100 characters, cut at a word", () => {
     const long = `Samsung Galaxy S26 Ultra ${"wonderful ".repeat(15)}`;
     expect(searchableText(long).length).toBeLessThanOrEqual(100);
