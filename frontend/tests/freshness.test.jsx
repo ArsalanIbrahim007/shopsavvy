@@ -207,7 +207,9 @@ describe("Results page: out-of-date prices", () => {
     const cards = await screen.findByRole("group", { name: /summary of these results/i });
     expect(cards).toHaveTextContent("PKR 330,000at PriceOye");
     expect(cards).not.toHaveTextContent("PKR 300,000");
-    expect(cards).toHaveTextContent("2 offers shown, 1 with an old price not counted");
+    // plain words on the box (2026-11-21); how many old prices were left out is in its tooltip
+    expect(cards).toHaveTextContent("2 offers");
+    expect(within(cards).getByTitle("1 offer has a price older than a week, not counted")).toBeInTheDocument();
   });
 
   it("prices a card at the lowest current offer, and badges a card whose every price is old", async () => {
@@ -225,8 +227,8 @@ describe("Results page: out-of-date prices", () => {
   it("does not mention old prices when there are none", async () => {
     renderResults([group("Acer Nitro V 15", [offer("a", "priceoye", 330000), offer("b", "mega", 335000)])]);
     const cards = await screen.findByRole("group", { name: /summary of these results/i });
-    expect(cards).toHaveTextContent("2 offers shown");
-    expect(cards).not.toHaveTextContent(/old price/);
+    expect(cards).toHaveTextContent("2 offers");
+    expect(within(cards).queryByTitle(/older than a week/)).toBeNull();
   });
 });
 

@@ -14,19 +14,15 @@ export default function IntegrityStrip({ offers }) {
   const first = flagged[0];
   const reason = briefReason(offerFlags(first).find((flag) => flag.reason)?.reason);
 
+  // One slim line (2026-11-21): the boxed two-line note pushed the products further down. The reason is in its tooltip and on the
+  // product's page.
   return (
-    <div className="integrity card" role="note">
+    <p className="integrity small" role="note" title={reason ? `${platformName(first.platform)}: ${reason}` : undefined}>
       <span className="integrity__icon" aria-hidden="true">!</span>
-      <div>
-        <p className="integrity__title">
-          ShopSavvy flagged {flagged.length} {flagged.length === 1 ? "offer" : "offers"} with a doubtful discount or price.
-        </p>
-        {reason && (
-          <p className="small muted">
-            {platformName(first.platform)}: {reason}
-          </p>
-        )}
-      </div>
-    </div>
+      <span className="integrity__title">
+        ShopSavvy flagged {flagged.length} {flagged.length === 1 ? "offer" : "offers"} with a doubtful discount or price.
+      </span>
+      {reason && <span className="muted"> {platformName(first.platform)}: {reason}</span>}
+    </p>
   );
 }

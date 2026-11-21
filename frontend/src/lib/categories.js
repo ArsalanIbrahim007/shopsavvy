@@ -29,9 +29,11 @@ export const isKnownCategory = (category) => Object.hasOwn(CATEGORY_NAMES, categ
 // The categories the site is about, in the order they are offered when counts tie.
 // "accessory", "other", "appliance" and the like are stored but are not what a shopper
 // comes here to compare, so they are not promoted on the home page.
+// In the order the tiles show them (2026-11-21): the devices people compare most first, the big appliances last. Sorting by listing
+// count put air conditioners first on an electronics site.
 export const FEATURED_CATEGORIES = [
-  "smartphone", "tv", "laptop", "smartwatch", "tablet", "headphones",
-  "air_conditioner", "refrigerator", "washing_machine", "monitor",
+  "smartphone", "laptop", "tv", "tablet", "smartwatch", "headphones", "monitor",
+  "air_conditioner", "refrigerator", "washing_machine",
 ];
 
 // A category with fewer listings than this would look empty, so it gets no tile.
@@ -46,7 +48,7 @@ export function featuredCategories(counts = [], { min = MIN_TILE_COUNT } = {}) {
   return counts
     .filter((row) => FEATURED_CATEGORIES.includes(row?.category) && Number(row.count) >= min)
     .map((row) => ({ category: row.category, name: categoryName(row.category), count: Number(row.count) }))
-    .sort((a, b) => b.count - a.count || FEATURED_CATEGORIES.indexOf(a.category) - FEATURED_CATEGORIES.indexOf(b.category));
+    .sort((a, b) => FEATURED_CATEGORIES.indexOf(a.category) - FEATURED_CATEGORIES.indexOf(b.category));
 }
 
 export const FACETS_BY_CATEGORY = {

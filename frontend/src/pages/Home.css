@@ -6,10 +6,14 @@
 }
 .hero__copy { display: grid; gap: var(--space-4); justify-items: start; min-width: 0; }
 .hero__title { font-size: clamp(2.25rem, 6vw, 3.75rem); line-height: 1.04; letter-spacing: -0.045em; max-width: 13ch; }
-.hero__lead { font-size: 1.125rem; max-width: 46ch; color: var(--ink-soft); }
+.hero__lead { font-size: 1.1875rem; line-height: 1.5; max-width: 42ch; color: var(--ink-soft); }
 .hero__search { width: 100%; max-width: 560px; margin-top: var(--space-2); }
 .hero__popular { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); color: var(--ink-faint); }
-.hero__hint { color: var(--ink-faint); }
+/* the headline's key word underlined in the brand amber: a marker stroke under it, the text itself stays full contrast */
+.hero__mark {
+  background: linear-gradient(transparent 64%, var(--accent) 64%, var(--accent) 88%, transparent 88%);
+  padding-inline: 0.04em; border-radius: 2px;
+}
 .hero__clear { background: none; border: 0; color: var(--ink-faint); text-decoration: underline; cursor: pointer; font: inherit; padding: var(--space-1); }
 .hero__clear:hover { color: var(--ink); }
 @media (min-width: 960px) {
@@ -36,11 +40,16 @@
 .home-section { margin-top: var(--space-8); display: grid; gap: var(--space-5); }
 .home-section__head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: var(--space-2) var(--space-5); }
 .home-section__title { display: grid; gap: var(--space-2); max-width: 70ch; }
+/* a section's one-line subtitle under its heading (Verified deals, Deals to avoid) */
+.home-section__sub { font-size: 0.9375rem; margin: 0; }
+.home-section__fresh { color: var(--ink-faint); white-space: nowrap; }
 .home-section__links { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); }
 /* small section labels: sentence case as written (no uppercase tracking), quieter by colour and size, not by shouting */
 .eyebrow { font-size: 0.8125rem; font-weight: 500; color: var(--ink-faint); }
 
 .tiles { display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+/* ten categories as two even rows of five on a laptop (auto-fill made six and four, 2026-11-21) */
+@media (min-width: 1000px) { .tiles { grid-template-columns: repeat(5, 1fr); } }
 .tile {
   padding: var(--space-4); display: grid; gap: 2px; color: var(--ink);
   grid-template-areas: "icon" "name" "count"; justify-items: start;

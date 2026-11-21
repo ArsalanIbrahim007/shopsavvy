@@ -14,6 +14,8 @@ import { useAsync } from "../hooks/useAsync.js";
 import { useCountUp, useInView } from "../hooks/useCountUp.js";
 import { usePageTitle } from "../hooks/usePageTitle.js";
 import { featuredCategories } from "../lib/categories.js";
+import { showableExamples } from "../lib/caught.js";
+import { pickDeals, pickMostCompared } from "../lib/homePicks.js";
 import { formatNumber, timeAgo } from "../lib/format.js";
 import { clearRecentSearches, getRecentSearches } from "../lib/recentSearches.js";
 import CaughtCard from "../components/CaughtCard.jsx";
@@ -28,7 +30,8 @@ import { CardSkeleton, Skeleton } from "../components/Skeleton.jsx";
 import "./Home.css";
 
 // Searches that are known to return good comparisons on the data we hold.
-const POPULAR_SEARCHES = ["iPhone 17 Pro Max", "Samsung Galaxy A17", "Redmi Note 15", "MacBook Air", "Samsung TV"];
+// Four, so they fit on one line under the search box (a fifth wrapped onto a line of its own).
+const POPULAR_SEARCHES = ["iPhone 17 Pro Max", "Samsung Galaxy A17", "Redmi Note 15", "MacBook Air"];
 
 function Hero({ caught }) {
   // This browser's own last searches (never sent anywhere); read once when the page opens.
@@ -38,8 +41,9 @@ function Hero({ caught }) {
     <section className="hero">
       <div className="container hero__inner">
         <div className="hero__copy stagger">
-          <h1 className="hero__title">Know if the price is real, before you buy</h1>
-          <p className="hero__lead">One search across Pakistan's electronics stores. Every discount checked against price history.</p>
+          {/* "real" carries the promise, so it carries the colour; the lead says it in one short line (2026-11-21) */}
+          <h1 className="hero__title">Know if the price is <span className="hero__mark">real</span>, before you buy</h1>
+          <p className="hero__lead">21 Pakistani stores in one search. Every discount checked against its price history.</p>
           <div className="hero__search">
             <SearchBox size="large" />
           </div>
@@ -58,7 +62,6 @@ function Hero({ caught }) {
               <button type="button" className="hero__clear" onClick={() => { clearRecentSearches(); setRecent([]); }}>Clear</button>
             </p>
           )}
-          <p className="hero__hint small">Seen it on Amazon, AliExpress or Temu? Paste the link to see the price here.</p>
         </div>
         <ProofCard caught={caught} />
       </div>
@@ -134,8 +137,10 @@ function Categories({ stats }) {
   );
 }
 
+// Two full rows of five, at most three from one category (lib/homePicks.js; 2026-11-21: eight deals left a row of three, mostly spin
+// dryers and earbuds).
 function Deals() {
-  const deals = useAsync((signal) => getDeals({ limit: 8, signal }), []);
+  const deals = useAsync((signal) => getDeals({ limit: 30, signal }), []);
 
   const { hash } = useLocation();
   const loaded = deals.status === "success";
@@ -149,35 +154,64 @@ function Deals() {
 
   return (
     <section id="deals" className="home-section container" aria-labelledby="deals-heading" aria-busy={deals.status === "loading"}>
-      <div className="home-section__head">
+      {/* the heading with one quiet line under it (2026-11-21: the right-aligned note floated far from the heading) */}
+      <div className="home-section__title">
         <h2 id="deals-heading">Verified deals</h2>
-        {deals.status === "success" && deals.data.generatedAt && (
-          <p className="small muted">Updated {timeAgo(deals.data.generatedAt)}. Only savings we can verify.</p>
-        )}
+        <p className="muted home-section__sub">
+          Real savings, checked against each product's price history
+          {deals.status === "success" && deals.data.generatedAt && <span className="home-section__fresh"> · updated {timeAgo(deals.data.generatedAt)}</span>}
+        </p>
       </div>
       <div className="card-grid">
         {deals.status === "loading"
           ? Array.from({ length: 4 }, (_, i) => <CardSkeleton key={i} />)
-          : deals.data.deals.map((deal) => <DealCard key={deal.lowest._id} deal={deal} />)}
+          : pickDeals(deals.data.deals).map((deal) => <DealCard key={deal.lowest._id} deal={deal} />)}
       </div>
     </section>
   );
 }
 
-// "Deals we didn't show you": the discounts our checks caught, with the evidence. Other comparison sites show such claims as their
-// hottest deals ("89% off" a Rs 10,000 inverter sold for Rs 94,000 elsewhere); this shows what checking them is worth.
-function Caught({ caught }) {
+// The products of one category that the most stores sell, from the server's cached catalog. One row of five (a wide screen's row);
+// "See all" has the rest. Picked for a home page (2026-11-21): only prices checked in the last two days (the MacBooks here said
+// "Price checked 3 days ago"), and at most two of one brand (the phones row was five Xiaomis).
+const MOST_COMPARED_SHOWN = 5;
+
+function MostCompared({ category, title, allLabel }) {
+  const products = useAsync((signal) => getCatalog({ category, limit: MOST_COMPARED_SHOWN * 4, signal }), [category]);
+  const groups = products.status === "success" ? pickMostCompared(products.data.groups) : [];
+
+  if (products.status === "error") return null;
+  if (products.status === "success" && groups.length === 0) return null;
+
+  return (
+    <section className="home-section container" aria-labelledby={`${category}-heading`} aria-busy={products.status === "loading"}>
+      <div className="home-section__head">
+        <h2 id={`${category}-heading`}>{title}</h2>
+        <Link to={`/results?category=${category}`}>{allLabel}</Link>
+      </div>
+      <div className="card-grid">
+        {products.status === "loading"
+          ? Array.from({ length: 4 }, (_, i) => <CardSkeleton key={i} />)
+          : groups.map((group) => <ProductCard key={group.offers[0]._id} group={group} />)}
+      </div>
+    </section>
+  );
+}
+
+// "Deals to avoid", the page's last section (2026-11-21): the discounts our checks caught, fake "was" prices and ones above every
+// other store, with the evidence. Other sites show such claims as their hottest deals; this shows what checking them is worth.
+function AvoidDeals({ caught }) {
   if (caught.status !== "success" || caught.data.examples.length === 0) return null; // a bonus: nothing while loading or on error
 
   const { counts, examples } = caught.data;
   return (
-    <section className="home-section container" aria-labelledby="caught-heading">
+    <section className="home-section container" aria-labelledby="avoid-heading">
       <div className="home-section__head">
         <div className="home-section__title">
-          <h2 id="caught-heading">Deals we didn't show you</h2>
-          <p className="muted">
-            {formatNumber(counts.fakeDiscount)} fake discounts, {formatNumber(counts.aboveMarket)} inflated "was" prices and{" "}
-            {formatNumber(counts.unusualPrice)} likely listing errors, kept off our deal lists. The worst:
+          <h2 id="avoid-heading">Deals to avoid</h2>
+          <p className="muted home-section__sub">
+            {formatNumber(counts.fakeDiscount)} fake discounts and {formatNumber(counts.aboveMarket)} inflated "was" prices our checks
+            caught and kept off the deals above. The worst right now:
           </p>
         </div>
         <Link to="/honest-prices">How we check</Link>
@@ -189,45 +223,25 @@ function Caught({ caught }) {
   );
 }
 
-// The products of one category that the most stores sell, straight from the server's cached catalog. One row of five (a wide
-// screen's row), not two: three sections of two identical rows made the page about 5,600 px long; "See all" has the rest.
-const MOST_COMPARED_SHOWN = 5;
-function MostCompared({ category, title, allLabel }) {
-  const products = useAsync((signal) => getCatalog({ category, limit: MOST_COMPARED_SHOWN, signal }), [category]);
-
-  if (products.status === "error") return null;
-  if (products.status === "success" && products.data.groups.length === 0) return null;
-
-  return (
-    <section className="home-section container" aria-labelledby={`${category}-heading`} aria-busy={products.status === "loading"}>
-      <div className="home-section__head">
-        <h2 id={`${category}-heading`}>{title}</h2>
-        <Link to={`/results?category=${category}`}>{allLabel}</Link>
-      </div>
-      <div className="card-grid">
-        {products.status === "loading"
-          ? Array.from({ length: 4 }, (_, i) => <CardSkeleton key={i} />)
-          : products.data.groups.map((group) => <ProductCard key={group.offers[0]._id} group={group} />)}
-      </div>
-    </section>
-  );
-}
-
+// A shorter page (2026-11-21, "too much information"): one row each of phones and laptops; the hero's card shows four caught
+// discounts and "Deals to avoid" closes the page with the rest.
 export default function Home() {
   const stats = useAsync((signal) => getStats({ signal }), []);
-  const caught = useAsync((signal) => getCaught({ signal }), []);
+  const fetched = useAsync((signal) => getCaught({ signal }), []);
+  const caught = fetched.status === "success" ? { ...fetched, data: { ...fetched.data, examples: showableExamples(fetched.data.examples) } } : fetched;
+  // the hero's card cycles through four at most (ten dots would be a row of noise)
+  const heroCaught = caught.status === "success" ? { ...caught, data: { ...caught.data, examples: caught.data.examples.slice(0, 4) } } : caught;
   usePageTitle("");
 
   return (
     <>
-      <Hero caught={caught} />
+      <Hero caught={heroCaught} />
       <TrustRow stats={stats} caught={caught} />
       <Categories stats={stats} />
       <Deals />
-      <Caught caught={caught} />
       <MostCompared category="smartphone" title="Most compared phones" allLabel="See all phones" />
       <MostCompared category="laptop" title="Most compared laptops" allLabel="See all laptops" />
-      <MostCompared category="tv" title="Most compared TVs" allLabel="See all TVs" />
+      <AvoidDeals caught={caught} />
       <HowWeCheck />
     </>
   );

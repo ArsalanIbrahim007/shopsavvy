@@ -183,13 +183,15 @@ describe("SearchBox", () => {
 });
 
 describe("Layout", () => {
-  it("has a skip link, a labelled main region, search everywhere but the home page, and shows data freshness", async () => {
+  it("has a skip link, a labelled main region, search everywhere but the home page, and a short footer", async () => {
     renderAt("/results?q=iphone", <p>page</p>, { withLayout: true });
     expect(screen.getByRole("link", { name: /skip to content/i })).toHaveAttribute("href", "#main");
     expect(screen.getByRole("main")).toHaveAttribute("id", "main");
     expect(screen.getByRole("combobox")).toHaveValue("iphone");
-    expect(await screen.findByText(/prices last updated/i)).toBeInTheDocument();
     expect(screen.getByText(/we don't take money from stores/i)).toBeInTheDocument();
+    // 2026-11-21: no "Prices last updated" (the deals and every product say when), and the 21 stores fold behind one line
+    expect(screen.queryByText(/prices last updated/i)).toBeNull();
+    expect(screen.getByText("See the 21 stores we compare")).toBeInTheDocument();
   });
 
   it("leaves the header search out on the home page, where the hero has one", () => {
@@ -354,15 +356,16 @@ describe("Home", () => {
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(/know if the price is real/i);
   });
 
-  it("shows the most compared products of phones, laptops and TVs, each from that category's catalog", async () => {
+  // A shorter page (2026-11-21, "too much information"): phones and laptops; the TVs row is gone (TVs are a category tile).
+  it("shows the most compared products of phones and laptops, each from that category's catalog", async () => {
     renderAt("/", <Home />);
-    for (const title of [/most compared phones/i, /most compared laptops/i, /most compared tvs/i]) {
+    for (const title of [/most compared phones/i, /most compared laptops/i]) {
       expect(await screen.findByRole("heading", { name: title })).toBeInTheDocument();
     }
+    expect(screen.queryByRole("heading", { name: /most compared tvs/i })).toBeNull();
     expect(screen.getByRole("link", { name: "See all laptops" })).toHaveAttribute("href", "/results?category=laptop");
-    expect(screen.getByRole("link", { name: "See all TVs" })).toHaveAttribute("href", "/results?category=tv");
     const categories = vi.mocked(api.getCatalog).mock.calls.map(([arg]) => arg.category).sort();
-    expect(categories).toEqual(["laptop", "smartphone", "tv"]);
+    expect(categories).toEqual(["laptop", "smartphone"]);
   });
 
   // The unslop audit's polish (2026-11-08): no pill badge above the headline, a headline without a period, no uppercase "Catalog"
@@ -374,9 +377,10 @@ describe("Home", () => {
     expect(container.querySelector(".hero__eyebrow")).toBeNull();
     expect(screen.queryByText(/^catalog$/i)).toBeNull();
     await screen.findByRole("heading", { name: /most compared phones/i });
-    expect(vi.mocked(api.getCatalog).mock.calls.every(([arg]) => arg.limit === 5)).toBe(true);
+    // more are asked for than shown: the row keeps fresh prices and at most two of a brand (lib/homePicks.js)
+    expect(vi.mocked(api.getCatalog).mock.calls.every(([arg]) => arg.limit === 20)).toBe(true);
     const card = (await screen.findAllByRole("article")).find((a) => a.textContent.includes("Samsung Galaxy A17"));
-    expect(within(card).queryByText(/^Score \d+$/).closest(".badge")).toBeNull();
+    expect(within(card).queryByText(/^Score/)).toBeNull(); // the score is on the product page (2026-11-21)
   });
 
   it("has the hero search and popular searches that go to the results page", async () => {

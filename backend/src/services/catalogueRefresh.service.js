@@ -10,7 +10,7 @@
 
 import Listing from "../models/listing.model.js";
 import PriceHistory from "../models/priceHistory.model.js";
-import { categoryCatalogue, productPagesCatalogue, megaCategories, megaCategoryUrl, parseMegaCategoryHtml, magentoCatalogue, shopifyCatalogue, storefrontCatalogue, wooCatalogue } from "../scrapers/catalogue.js";
+import { categoryCatalogue, productPagesCatalogue, megaCategories, megaCategoryUrl, parseMegaCategoryHtml, parseWooCategoryHtml, magentoCatalogue, shopifyCatalogue, storefrontCatalogue, wooCatalogue, wooCategoryUrl } from "../scrapers/catalogue.js";
 import { parseIShoppingHtml } from "../scrapers/ishopping.scraper.js";
 import { STORES as ADAPTER_STORES } from "../scrapers/stores.js";
 import { priceOyeSection } from "../scrapers/priceoye.scraper.js";
@@ -61,9 +61,21 @@ export const CATALOGUE_ONLY_STORES = Object.freeze([
   // allows (catalogue.js productPagesCatalogue). Its bot check refuses our crawler at present, so the read stops after five refusals.
   // W11Stop was read the same way until 2026-11-19, then dropped: its pages time out or are gone; its listings fade after 15 days.
   { platform: "paklap", type: "pages", baseUrl: "https://www.paklap.pk" },
+  // Subhan Electronics (2026-11-21): its robots.txt forbids /wp-json/ since 13 Nov (the API answered 403 every night, and its prices
+  // stopped on 11 Nov). Read from its category pages instead, which robots.txt allows: the departments its 148 listings come from.
+  {
+    platform: "subhanelectronics", type: "category", baseUrl: "https://subhanelectronics.pk",
+    parse: (html) => parseWooCategoryHtml("subhanelectronics", html), pageUrl: wooCategoryUrl("https://subhanelectronics.pk"),
+    categories: [
+      "led-tv", "gaming-tv", "air-conditioners", "washing-machine", "refrigerators", "deep-freezers", "upright-freezer",
+      "microwave-oven", "kitchen-appliances", "small-domestic-appliances", "air-coolers-water-coolers", "water-dispenser", "geysers",
+      "heaters", "dishwasher", "air-purifier", "garment-steamer",
+    ],
+  },
 ]);
 export const CATALOGUE_STORES = [
-  ...ADAPTER_STORES.filter((store) => ["shopify", "woocommerce", "storefront"].includes(store.type)),
+  // a store whose search is off-limits (noSearch, scrapers/stores.js) is read only the way CATALOGUE_ONLY_STORES says
+  ...ADAPTER_STORES.filter((store) => !store.noSearch && ["shopify", "woocommerce", "storefront"].includes(store.type)),
   ...CATALOGUE_ONLY_STORES,
 ];
 

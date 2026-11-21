@@ -7,6 +7,11 @@
 // "Discount" never repeats a store's claim as fact: the cell shows the verdict (verified / fake / suspicious /
 // above market / unusual price). A claim we could not check is shown as a claim.
 
+import { Fragment, useState } from "react";
+
+// Rows shown before "Show all offers": the cheapest that can be the lowest price (OfferTable below).
+const ROWS_SHOWN = 8;
+
 import { collapseVariants } from "../../lib/colours.js";
 import { conditionFlag } from "../../lib/condition.js";
 import { outOfDateFlag } from "../../lib/freshness.js";
@@ -17,7 +22,7 @@ import { offerLink } from "../../lib/safeLink.js";
 import { ptaFlag } from "../../lib/pta.js";
 import { bestDealOffer } from "../../lib/score.js";
 import { offerFlags, offerVerdict, stockLabelOf } from "../../lib/verdicts.js";
-import { summarizeOffers } from "../../lib/summary.js";
+import { countsForLowest, summarizeOffers } from "../../lib/summary.js";
 import { Swatch } from "../ColourPicker.jsx";
 import StoreLogo from "../StoreLogo.jsx";
 import VerdictBadge from "../VerdictBadge.jsx";
@@ -76,12 +81,25 @@ function SellerDelivery({ offer }) {
 }
 
 export default function OfferTable({ offers, name, currentId, colour = null }) {
-  // One row per store and price: a store's colour variants at one price are one offer that lists its colours.
-  const entries = collapseVariants(offers, { colour, currentId }).sort((a, b) => a.offer.price - b.offer.price);
+  // One row per store and price: a store's colour variants at one price are one offer that lists its colours. The offers that can be
+  // the lowest price come first, cheapest first; then the rest (out of stock, PTA not stated, an old price), under a line that says
+  // why (2026-11-21: the header said "lowest at eezepc, PKR 68,490" above an out-of-stock PKR 68,000 and a PTA-not-stated PKR 68,200).
+  const has = (entry, id) => entry.variants.some((variant) => variant._id === id);
+  const byPrice = collapseVariants(offers, { colour, currentId }).sort((a, b) => a.offer.price - b.offer.price);
+  const counted = byPrice.filter((entry) => countsForLowest(entry.offer));
+  const rest = counted.length ? byPrice.filter((entry) => !countsForLowest(entry.offer)) : [];
+  const ordered = counted.length ? [...counted, ...rest] : byPrice;
+  // The first ROWS_SHOWN rows, and the rest behind a button (2026-11-21: 32 offers made the table 4,500px tall before the verdict,
+  // the history or the alert). The listing the shopper opened is always shown.
+  const [expanded, setExpanded] = useState(false);
+  const opened = ordered.find((entry) => has(entry, currentId));
+  const folded = !expanded && ordered.length > ROWS_SHOWN;
+  const entries = folded ? ordered.filter((entry, i) => i < ROWS_SHOWN || entry === opened) : ordered;
+  const hidden = ordered.length - entries.length;
+  const firstOfRest = rest.find((entry) => entries.includes(entry))?.offer._id;
   const lowest = summarizeOffers(offers).lowest;
   const lowestId = lowest?._id;
   const bestId = bestDealOffer(offers)?._id;
-  const has = (entry, id) => entry.variants.some((variant) => variant._id === id);
 
   return (
     <div className="offer-table__wrap">
@@ -107,7 +125,13 @@ export default function OfferTable({ offers, name, currentId, colour = null }) {
             const condition = conditionFlag(offer);
             const oldPrice = outOfDateFlag(offer);
             return (
-              <tr key={offer._id} className={isLowest ? "is-lowest" : undefined}>
+              <Fragment key={offer._id}>
+              {offer._id === firstOfRest && (
+                <tr className="offer-table__divider">
+                  <td colSpan={7} className="small muted">Not counted for the lowest price: out of stock, PTA status not stated, or an old price</td>
+                </tr>
+              )}
+              <tr className={isLowest ? "is-lowest" : rest.includes(entry) ? "is-uncounted" : undefined}>
                 <td>
                   <StoreLogo platform={offer.platform} />
                   <div className="offer-table__tags">
@@ -151,10 +175,18 @@ export default function OfferTable({ offers, name, currentId, colour = null }) {
                   )}
                 </td>
               </tr>
+              </Fragment>
             );
           })}
         </tbody>
       </table>
+      {(hidden > 0 || expanded) && ordered.length > ROWS_SHOWN && (
+        <button type="button" className="btn btn-ghost offer-table__more" aria-expanded={expanded} onClick={() => setExpanded((open) => !open)}>
+          {expanded
+            ? "Show fewer offers"
+            : `Show all ${ordered.length} offers${rest.length ? ` (${rest.length} not counted for the lowest price)` : ""}`}
+        </button>
+      )}
       <p className="offer-table__note small muted">
         Deal score: price against the other stores and the fair price for its specs (60), store trust and the product's rating (20), data freshness (10) and availability (10). Hover a score for its parts.
       </p>

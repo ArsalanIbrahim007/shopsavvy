@@ -18,7 +18,12 @@ export default defineConfig(({ mode }) => {
       socialMetaPlugin({ SITE_URL: env.SITE_URL }),
     ],
     // The app's own port (the earlier frontend, which this replaced, also used 5173).
-    server: { port: 5173 },
+    // VITE_API_URL=/api (a local preview against the API on this PC): the dev server passes /api on to it, so the page and the API
+    // share one origin and the API's CORS list (set to the public site on the team's PC) does not block the preview.
+    server: {
+      port: 5173,
+      proxy: env.VITE_API_URL === "/api" ? { "/api": env.API_PROXY_TARGET || "http://localhost:5000" } : undefined,
+    },
     test: {
       environment: "jsdom",
       setupFiles: ["./tests/setup.js"],

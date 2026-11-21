@@ -91,7 +91,7 @@ describe("Results: summary", () => {
     renderResults("/results?q=samsung");
     await screen.findAllByRole("article"); // the loading state has a heading too; wait for the real page
     expect(screen.getByRole("heading", { level: 1, name: /results for "samsung"/i })).toBeInTheDocument();
-    expect(screen.getByRole("status")).toHaveTextContent("8 offers across 4 stores, grouped into 3 products");
+    expect(screen.getByRole("status")).toHaveTextContent("3 products from 4 stores");
 
     const cards = screen.getByRole("group", { name: /summary of these results/i });
     expect(cards).toHaveTextContent("Stores compared4");
@@ -107,10 +107,9 @@ describe("Results: summary", () => {
   it("follows the filters: the numbers describe the offers still shown", async () => {
     renderResults("/results?q=samsung&platforms=mega");
     await screen.findAllByRole("article");
-    const cards = screen.getByRole("group", { name: /summary of these results/i });
-    expect(cards).toHaveTextContent("Stores compared1");
-    expect(cards).toHaveTextContent("PKR 65,500Smartphones, at Mega.pk");
-    expect(cards).toHaveTextContent("No product here is sold at two different prices");
+    // Filtered to one store there is nothing to compare: the four figures are left out (2026-11-21), and the line says what is left.
+    expect(screen.queryByRole("group", { name: /summary of these results/i })).toBeNull();
+    expect(screen.getByRole("status")).toHaveTextContent(/your filters leave/i);
   });
 
   it("never takes the lowest price or the biggest saving from another category", async () => {
@@ -208,7 +207,7 @@ describe("Results: the product cards", () => {
     expect(card).toHaveTextContent("PKR 64,000");
     expect(card).toHaveTextContent("PriceOye"); // the store: its mark and name
     expect(card).toHaveTextContent("Good deal");
-    expect(card).toHaveTextContent("4 offers from 4 stores");
+    expect(card).toHaveTextContent("Compared at 4 stores");
     expect(within(card).queryByRole("table")).toBeNull(); // the comparison table is on the product page
     expect(within(card).getByRole("link", { name: "Samsung Galaxy A17 256GB" })).toHaveAttribute("href", "/product/phone-a1"); // the offer's own title, then its id (lib/productPath.js)
   });
@@ -266,8 +265,8 @@ describe("Results: filters and sorting live in the URL", () => {
     expect(where()).toBe("/results?q=samsung&platforms=mega,priceoye,shophive"); // in the order the stores are listed (most offers first)
     // every product still has an offer somewhere else, so all three stay; the A17 loses only its Telemart row
     expect(titles()).toHaveLength(3);
-    expect(screen.getAllByRole("article").find((a) => a.textContent.includes("A17"))).toHaveTextContent("3 offers from 3 stores");
-    expect(screen.getAllByRole("article").find((a) => a.textContent.includes("TV"))).toHaveTextContent("1 offer from 1 store");
+    expect(screen.getAllByRole("article").find((a) => a.textContent.includes("A17"))).toHaveTextContent("Compared at 3 stores");
+    expect(screen.getAllByRole("article").find((a) => a.textContent.includes("TV"))).toHaveTextContent("Only at this store");
     expect(api.searchListings).toHaveBeenCalledTimes(1);
   });
 
@@ -312,7 +311,8 @@ describe("Results: filters and sorting live in the URL", () => {
     fireEvent.change(stores().getByLabelText("Max"), { target: { value: "111000" } });
     fireEvent.keyDown(stores().getByLabelText("Max"), { key: "Enter" });
     expect(where()).toContain("maxPrice=111000");
-    expect(screen.getByRole("group", { name: /summary/i })).toHaveTextContent("PKR 110,000");
+    expect(titles()).toEqual(["Samsung Galaxy A57 128GB"]);
+    expect(screen.getByRole("status")).toHaveTextContent(/your filters leave/i);
   });
 
   it("offers the options of the results' main category with counts, and filters by them", async () => {
@@ -529,12 +529,12 @@ describe("Results: prices refreshed in the background", () => {
 
     const card = await screen.findByRole("article");
     expect(card).toHaveTextContent("PKR 64,000");
-    expect(screen.getByText(/checking the stores for newer prices/i)).toBeInTheDocument();
+    expect(screen.getByText(/getting newer prices from the stores/i)).toBeInTheDocument();
 
     await act(() => vi.advanceTimersByTimeAsync(REFRESH_DELAY_MS));
     await waitFor(() => expect(screen.getByRole("article")).toHaveTextContent("PKR 61,000"));
     expect(api.searchListings).toHaveBeenCalledTimes(2);
-    expect(screen.queryByText(/checking the stores/i)).toBeNull();
+    expect(screen.queryByText(/getting newer prices/i)).toBeNull();
     expect(screen.queryByText(/getting the latest prices/i)).toBeNull(); // never went back to the loading state
   });
 
@@ -554,7 +554,7 @@ describe("Results: prices refreshed in the background", () => {
     await screen.findByRole("article");
     await act(() => vi.advanceTimersByTimeAsync(REFRESH_DELAY_MS * 2));
     expect(api.searchListings).toHaveBeenCalledTimes(1);
-    expect(screen.queryByText(/checking the stores/i)).toBeNull();
+    expect(screen.queryByText(/getting newer prices/i)).toBeNull();
   });
 });
 

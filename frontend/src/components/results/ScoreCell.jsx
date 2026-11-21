@@ -16,7 +16,7 @@ export default function ScoreCell({ offer }) {
 
   return (
     <div className="score-cell" tabIndex={parts.length ? 0 : undefined} aria-describedby={parts.length ? popoverId : undefined}>
-      <span className={`score-value score-${scoreTone(score)}`}>{score.toFixed(1)}</span>
+      <span className={`score-value score-${scoreTone(score)}`}>{Math.round(score)}</span>
       {parts.length > 0 && (
         <>
           <span className="score-bar" aria-hidden="true">

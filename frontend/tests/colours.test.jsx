@@ -217,11 +217,17 @@ describe("ResultGroup colour choice", () => {
 });
 
 describe("ProductCard colours", () => {
-  it("counts the offers without the colour copies, and shows the colours it comes in", () => {
+  it("counts stores, not the colour copies, and leaves the colours to the product page", () => {
+    // 2026-11-21 ("too much information"): the card no longer lists colours; the product page's colour picker does.
     inRouter(<ProductCard group={{ productName: "Apple iPad Air 11", offers: ipad() }} />);
-    expect(screen.getByText(/^1 offer from 1 store$/)).toBeInTheDocument();
+    expect(screen.getByText("Only at this store")).toBeInTheDocument();
+    expect(screen.queryByText(/4 colours/)).toBeNull();
+  });
+
+  it("lists the colours a product comes in, by count then name (ColourStrip, used on the product page)", () => {
+    inRouter(<ColourStrip offers={ipad()} />);
     expect(screen.getByText(/4 colours/)).toBeInTheDocument();
-    expect(screen.getByText(/: Blue, Purple, Space grey, Starlight/)).toBeInTheDocument(); // by count, then name
+    expect(screen.getByText(/: Blue, Purple, Space grey, Starlight/)).toBeInTheDocument();
   });
 
   it("shows no colour line for a single colour or none", () => {

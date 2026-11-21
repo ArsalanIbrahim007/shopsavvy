@@ -3,7 +3,7 @@
 import { canonicalPlatform } from "./platforms.js";
 import { offerCount } from "./colours.js";
 import { allPreOwned, comparableOffers } from "./condition.js";
-import { currentOffers } from "./freshness.js";
+import { currentOffers, isOutOfDate } from "./freshness.js";
 import { isDiscountDoubtful } from "./filters.js";
 
 /**
@@ -124,6 +124,19 @@ export function summarizeOffers(allOffers) {
  * "1 offer from 1 store", and what the count leaves out, so it agrees with the table underneath: "1 offer from 1 store (and 1 used,
  * 1 out of date)" (2026-11-18: a card said "1 offer from 1 store" above a table of two, the second used).
  */
+/** A product card's one line about stores (ProductCard.jsx, 2026-11-21): "Compared at 11 stores", or "Only at this store". */
+export function storeCountText(stores) {
+  return stores > 1 ? `Compared at ${stores} stores` : "Only at this store";
+}
+
+/**
+ * Whether an offer can be "the lowest price" (OfferTable.jsx orders these first): in stock, current, PTA status stated where it
+ * matters, not a likely listing error. The rules summarizeOffers applies.
+ */
+export function countsForLowest(offer) {
+  return offer.inStock !== false && !isOutOfDate(offer) && !offer.ptaAssessment && !suspect(offer);
+}
+
 export function offerCountText(summary) {
   const base = `${summary.count} ${summary.count === 1 ? "offer" : "offers"} from ${summary.platformCount} ${summary.platformCount === 1 ? "store" : "stores"}`;
   const extra = [

@@ -6,19 +6,16 @@ import { Link, useLocation } from "react-router-dom";
 
 import { conditionFlag } from "../lib/condition.js";
 import { outOfDateFlag } from "../lib/freshness.js";
-import { formatPrice, timeAgo } from "../lib/format.js";
+import { formatPrice } from "../lib/format.js";
 import { lowestFlag } from "../lib/outlook.js";
 import { platformName } from "../lib/platforms.js";
 import { productPath } from "../lib/productPath.js";
 import { prefetchProps } from "../lib/prefetch.js";
 import { ptaFlag } from "../lib/pta.js";
-import { scoreOf } from "../lib/score.js";
 import { StoreMark } from "./StoreLogo.jsx";
 import { cardBadges } from "../lib/verdicts.js";
-import { offerCountText, summarizeOffers } from "../lib/summary.js";
-import { ColourStrip } from "./ColourPicker.jsx";
+import { storeCountText, summarizeOffers } from "../lib/summary.js";
 import ProductImage from "./ProductImage.jsx";
-import ProductRating from "./ProductRating.jsx";
 import VerdictBadge from "./VerdictBadge.jsx";
 import CompareButton from "./CompareButton.jsx";
 import "./cards.css";
@@ -32,7 +29,6 @@ export default function ProductCard({ group }) {
 
   // The badges describe the offer whose price is shown, so the price and its verdict always agree.
   const badges = cardBadges(best);
-  const score = scoreOf(best);
   const pta = ptaFlag(best);
   const condition = conditionFlag(best);
   const oldPrice = outOfDateFlag(best); // only when no offer of this product is current: otherwise the shown price is a current one
@@ -55,31 +51,16 @@ export default function ProductCard({ group }) {
         </span>
       </div>
 
+      {/* Two badges at most, the most important first (2026-11-21: "too much information" — a card had up to six pills, the
+          colours, the rating, the offer count, the score and the check time; those are on the product page). */}
       <div className="product-card__badges">
-        {condition && <VerdictBadge tone={condition.tone} label={condition.label} title={condition.reason} />}
-        {oldPrice && <VerdictBadge tone={oldPrice.tone} label={oldPrice.label} title={oldPrice.reason} />}
-        {pta && <VerdictBadge tone={pta.tone} label={pta.label} title={pta.reason} />}
-        {lowest && <VerdictBadge tone={lowest.tone} label={lowest.label} title={lowest.reason} />}
-        {badges.map((badge) => (
-          <VerdictBadge key={badge.id} tone={badge.tone} label={badge.label} title={badge.reason} />
-        ))}
+        {[condition, oldPrice, lowest, pta, ...badges.map((badge) => ({ ...badge, key: badge.id }))]
+          .filter(Boolean)
+          .slice(0, 2)
+          .map((flag) => <VerdictBadge key={flag.key ?? flag.label} tone={flag.tone} label={flag.label} title={flag.reason} />)}
       </div>
 
-      <ColourStrip offers={offers} />
-      <ProductRating offers={offers} />
-
-      <p className="small muted">
-        {offerCountText(summary)}
-      </p>
-      {/* Meta as quiet text, not more pills: the deal score, and when the price shown was last read from the store. The badges
-          above are left for verdicts (unslop audit, 2026-11-08: six pills per card). */}
-      {(score !== null || best.lastScrapedAt) && (
-        <p className="small muted product-card__meta">
-          {score !== null && <span title="Deal score out of 100: price (against other stores and the fair price for its specs), store trust and rating, freshness and availability">Score {Math.round(score)}</span>}
-          {score !== null && best.lastScrapedAt && " · "}
-          {best.lastScrapedAt && `Price checked ${timeAgo(best.lastScrapedAt)}`}
-        </p>
-      )}
+      <p className="small muted product-card__stores">{storeCountText(summary.platformCount)}</p>
       <CompareButton item={{ id: String(best._id), name: group.productName, category: best.productCategory, image: best.imageUrl }} />
     </article>
   );

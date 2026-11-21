@@ -8,7 +8,12 @@
 // telemart  switched off 2026-10-25: telemart.pk now redirects to telex.pk, whose terms forbid "any robot, spider, scraping, data
 //           gathering and extraction tools, automatic devices or processes", and whose agent guide (/agents.md) requires signed
 //           requests (Shopify's Web Bot Auth) from servers; it had answered our searches with 429 for weeks anyway.
-export const DISABLED_PLATFORMS = ["daraz", "telemart"];
+// w11stop  hidden 2026-11-21: dropped on 19 Nov (its pages time out or are gone, and robots.txt forbids its search); its last prices
+//          were still shown, and the site counted it among the stores it compares.
+// paklap   hidden 2026-11-21: its bot check refuses our crawler, so its prices are days old (four of 1,510 read in two days); the
+//          catalogue refresh still tries its pages (catalogueRefresh.service.js), and its listings come back when this name is removed.
+// With these the site counts the 21 stores the final report names.
+export const DISABLED_PLATFORMS = ["daraz", "telemart", "w11stop", "paklap"];
 
 // Mongo filter fragment that excludes them; listings retired because the same store lists the product again under its variants' own
 // addresses (services/supersededListings.service.js); and listings the store no longer has (catalogueRefresh.service.js: gone from its

@@ -92,11 +92,18 @@ a:hover .logo__tag { transform: rotate(-8deg); }
 }
 
 @media (min-width: 1080px) {
+  /* One row: the links take the room they need (never wrapping under the search box, as "How it works" did), the search box the
+     rest, up to 520px. Every control is 40px tall, so the search box, the links and the theme button line up (2026-11-21). */
   .site-header__inner {
-    grid-template-columns: auto minmax(240px, 480px) 1fr auto;
+    grid-template-columns: auto minmax(200px, 1fr) auto auto;
     grid-template-areas: "brand search nav toggle";
     gap: var(--space-5);
   }
+  .site-header__search { max-width: 520px; }
+  .site-header .site-nav { flex-wrap: nowrap; }
+  .site-header .site-nav a, .site-header .cat-menu__button { height: 40px; display: inline-flex; align-items: center; }
+  .site-header__search .searchbox__input { height: 40px; }
+  .site-header__search .searchbox__button { width: 30px; height: 30px; top: 5px; }
   /* the home page has no header search (the hero has one): the links take its place */
   .site-header__inner--bare { grid-template-columns: auto 1fr auto; grid-template-areas: "brand nav toggle"; }
   /* pushed right with a margin, not justify-content: flex-end, which would clip the first links out of reach when they overflow */
@@ -118,8 +125,11 @@ a:hover .logo__tag { transform: rotate(-8deg); }
 .site-footer__top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3) var(--space-5); }
 .site-footer__links { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); }
 .site-footer__stores { display: flex; flex-wrap: wrap; gap: var(--space-2); list-style: none; margin: 0; padding: 0; }
-.site-footer__stores li { display: inline-flex; opacity: 0.75; transition: opacity var(--dur-fast) var(--ease); }
-.site-footer__stores li:hover { opacity: 1; }
+.site-footer__stores li {
+  display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 3px 4px;
+  border: 1px solid var(--line); border-radius: var(--radius-pill); background: var(--paper);
+  color: var(--ink-soft); font-size: 0.8125rem;
+}
 .site-footer__note { max-width: 70ch; }
 
 /* ---- Phones: the main places in a bar at the bottom, where a thumb reaches them (MobileTabBar.jsx, 2026-11-19) ----
@@ -160,3 +170,8 @@ a:hover .logo__tag { transform: rotate(-8deg); }
   .site-nav { flex-wrap: nowrap; gap: 0; }
   .site-nav a { padding-inline: var(--space-2); }
 }
+
+/* the store list, folded behind one line (2026-11-21) */
+.site-footer__more summary { cursor: pointer; color: var(--ink-soft); width: fit-content; }
+.site-footer__more summary:hover { color: var(--ink); }
+.site-footer__more[open] summary { margin-bottom: var(--space-3); }

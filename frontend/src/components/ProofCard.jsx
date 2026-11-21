@@ -111,6 +111,8 @@ export default function ProofCard({ caught }) {
       </p>
       {/* the key replays the entrance, the strike and the counting for each example */}
       <Proof key={item.id} item={item} />
+      {/* every caught discount: the section that repeated these under the hero is gone (2026-11-21) */}
+      <Link to="/honest-prices" className="proof__more small">See every discount we caught →</Link>
       {count > 1 && (
         <div className="proof__dots" role="group" aria-label="Examples">
           {examples.map((example, i) => (

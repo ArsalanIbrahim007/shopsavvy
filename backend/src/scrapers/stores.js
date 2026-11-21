@@ -60,7 +60,9 @@ export const STORES = [
   { platform: "eezepc", type: "woocommerce", baseUrl: "https://eezepc.com" },
   { platform: "ledshop", type: "woocommerce", baseUrl: "https://ledshop.pk" },
   { platform: "techroid", type: "woocommerce", baseUrl: "https://techroid.com" },
-  { platform: "subhanelectronics", type: "woocommerce", baseUrl: "https://subhanelectronics.pk", sells: ["tv"] },
+  // noSearch (2026-11-21): since 13 Nov its robots.txt says "Disallow: /wp-json/" (the Store API this adapter searches), and the API
+  // answers 403. Not searched; its catalogue is read from its category pages, which robots.txt allows (catalogueRefresh.service.js).
+  { platform: "subhanelectronics", type: "woocommerce", baseUrl: "https://subhanelectronics.pk", sells: ["tv"], noSearch: true },
   { platform: "jalalelectronics", type: "shopify", baseUrl: "https://jalalelectronics.com", sells: ["tv"] },
   { platform: "japanelectronics", type: "shopify", baseUrl: "https://japanelectronics.com.pk", sells: ["tv"] },
   { platform: "zerolifestyle", type: "shopify", baseUrl: "https://zerolifestyle.co", sells: ["smartwatch", "headphones"] },
@@ -104,7 +106,7 @@ export function storeSells(store, query) {
  * @param {Function} [options.fetchJson]  injectable for tests
  */
 export function storeTasks(query, options = {}) {
-  return STORES.filter((store) => storeSells(store, query)).map((store) => ({
+  return STORES.filter((store) => !store.noSearch && storeSells(store, query)).map((store) => ({
     platform: store.platform,
     fn: () => ADAPTERS[store.type](store, query, options),
   }));

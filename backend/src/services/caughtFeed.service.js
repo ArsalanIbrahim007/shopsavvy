@@ -14,8 +14,9 @@ import { readSnapshot, writeSnapshot } from "./snapshot.service.js";
 import { CATALOG_CATEGORIES, peekCatalogGroups } from "./catalogFeed.service.js";
 
 const CACHE_TTL_MS = 10 * 60 * 1000;
-// Four: a full row on a wide screen, two rows of two on a tablet (six left one card alone on a second row).
-export const MAX_EXAMPLES = 4;
+// Ten (2026-11-21): two full rows of five for the home page's "Deals to avoid" section, which closes the page; the hero's card shows
+// the first four. It was four, a single row, when the section sat under the hero.
+export const MAX_EXAMPLES = 10;
 const MAX_PER_STORE = 2;
 // A "discount" of a few per cent is not what a shopper is lured by; the examples are claims of at least this much.
 const MIN_CLAIMED_PERCENT = 10;

@@ -138,18 +138,18 @@ describe("StoreLogo", () => {
 });
 
 describe("ScoreCell", () => {
-  it("shows the score to one decimal with a coloured band", () => {
+  it("shows the score as a whole number with a coloured band (2026-11-21: 80.2 beside a card's 'Score 83' read as two scores)", () => {
     const { rerender } = render(<ScoreCell offer={scored({ dealScore: 92 })} />);
-    expect(screen.getByText("92.0")).toHaveClass("score-high");
+    expect(screen.getByText("92")).toHaveClass("score-high");
     rerender(<ScoreCell offer={scored({ dealScore: 60 })} />);
-    expect(screen.getByText("60.0")).toHaveClass("score-mid");
+    expect(screen.getByText("60")).toHaveClass("score-mid");
     rerender(<ScoreCell offer={scored({ dealScore: 30 })} />);
-    expect(screen.getByText("30.0")).toHaveClass("score-low");
+    expect(screen.getByText("30")).toHaveClass("score-low");
   });
 
   it("explains how the score was worked out, with each part and the total, for hover and keyboard users", () => {
     render(<ScoreCell offer={scored()} />);
-    const cell = screen.getByText("82.5").closest(".score-cell");
+    const cell = screen.getByText("83").closest(".score-cell");
     expect(cell).toHaveAttribute("tabindex", "0"); // focusable, so a keyboard or touch user gets the explanation too
     const tip = screen.getByRole("tooltip");
     expect(cell).toHaveAttribute("aria-describedby", tip.id);
@@ -164,7 +164,7 @@ describe("ScoreCell", () => {
     const { rerender } = render(<ScoreCell offer={{}} />);
     expect(screen.getByText("Not scored")).toBeInTheDocument();
     rerender(<ScoreCell offer={{ dealScore: 50 }} />);
-    expect(screen.getByText("50.0")).toBeInTheDocument();
+    expect(screen.getByText("50")).toBeInTheDocument();
     expect(screen.queryByRole("tooltip")).toBeNull();
   });
 });
@@ -193,6 +193,38 @@ describe("Sparkline", () => {
   });
 });
 
+describe("OfferTable: a long table folds (2026-11-21)", () => {
+  // 12 in-stock offers at 12 stores, and one out of stock that is cheaper than all of them
+  const many = () => [
+    ...["priceoye", "mega", "shophive", "ishopping", "mistore", "mymart", "alfatah", "xcessorieshub", "eezepc", "ledshop", "techroid", "digimall"]
+      .map((platform, i) => offer(`o${i}`, platform, 60000 + i * 500)),
+    offer("out", "alfamall", 50000, { inStock: false }),
+  ];
+  const bodyRows = () => within(screen.getByRole("table")).getAllByRole("row").slice(1);
+
+  it("shows the eight cheapest that count for the lowest price, and the rest on request", () => {
+    inRouter(<OfferTable offers={many()} name="Phone" />);
+    expect(bodyRows()).toHaveLength(8);
+    expect(screen.queryByText("PKR 50,000")).toBeNull(); // the out-of-stock one is folded away
+    fireEvent.click(screen.getByRole("button", { name: "Show all 13 offers (1 not counted for the lowest price)" }));
+    expect(bodyRows()).toHaveLength(14); // 13 offers and the "not counted" line
+    expect(screen.getByText("PKR 50,000")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Show fewer offers" }));
+    expect(bodyRows()).toHaveLength(8);
+  });
+
+  it("always shows the listing the shopper opened", () => {
+    inRouter(<OfferTable offers={many()} name="Phone" currentId="o11" />);
+    expect(bodyRows()).toHaveLength(9);
+    expect(screen.getByText("The one you opened")).toBeInTheDocument();
+  });
+
+  it("does not fold a short table", () => {
+    inRouter(<OfferTable offers={many().slice(0, 5)} name="Phone" />);
+    expect(screen.queryByRole("button", { name: /show all/i })).toBeNull();
+  });
+});
+
 describe("OfferTable: scores, verdicts and best deal", () => {
   const offers = [
     offer("a", "priceoye", 64000, { ...scored({ dealScore: 88 }), recommendation: { action: "GOOD_DEAL", reason: "cheapest by a margin" }, priceHistory: [point(70000, 20), point(64000, 1)] }),
@@ -210,7 +242,7 @@ describe("OfferTable: scores, verdicts and best deal", () => {
     expect(rows[0]).not.toHaveTextContent("Best deal");
     expect(rows[1]).toHaveTextContent("Best deal"); // Mega scores highest (95), though it is not the cheapest
     expect(rows[0].querySelector(".store-mark")).not.toBeNull();
-    expect(within(rows[0]).getByText("88.0")).toBeInTheDocument();
+    expect(within(rows[0]).getByText("88")).toBeInTheDocument();
     expect(within(rows[0]).getByText("Good deal")).toHaveAttribute("title", "cheapest by a margin"); // the server's reason
     expect(within(rows[0]).getByText(/↓ 9% since first seen/)).toBeInTheDocument();
     expect(within(rows[1]).getByText("Tracking started")).toBeInTheDocument();
@@ -637,10 +669,11 @@ describe("Specifications and CrossStoreSummary", () => {
   });
 });
 
-describe("ProductCard shows the deal score and the store", () => {
-  it("shows the best offer's score out of 100 and the store's badge and name", () => {
+describe("ProductCard shows the store, not the deal score", () => {
+  // 2026-11-21 ("too much information"): the score is on the product page, beside its breakdown; the card shows the store.
+  it("shows the best offer's store with its badge and name, and no score", () => {
     const { container } = inRouter(<ProductCard group={{ productName: "Samsung Galaxy A17", offers: [offer("a", "priceoye", 64000, { dealScore: 91.6 }), offer("b", "mega", 65000)] }} />);
-    expect(screen.getByText("Score 92")).toHaveAttribute("title", expect.stringMatching(/out of 100/));
+    expect(screen.queryByText(/^Score/)).toBeNull();
     expect(container.querySelector(".product-card__store")).toHaveTextContent("PriceOye");
     expect(container.querySelector(".product-card__store .store-mark")).not.toBeNull();
   });

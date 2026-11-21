@@ -11,9 +11,9 @@ describe("featuredCategories", () => {
     { category: "monitor", count: 23 },
   ];
 
-  it("keeps only the categories the site is about, biggest first, with readable names", () => {
+  it("keeps only the categories the site is about, in the site's own order (devices first), with readable names", () => {
     // Monitors are featured since 2026-10-22; "accessory", "other" and the leftover "appliance" bucket are not.
-    expect(featuredCategories(counts).map((t) => t.category)).toEqual(["smartphone", "tv", "laptop", "smartwatch", "tablet", "headphones", "monitor"]);
+    expect(featuredCategories(counts).map((t) => t.category)).toEqual(["smartphone", "laptop", "tv", "tablet", "smartwatch", "headphones", "monitor"]);
     expect(featuredCategories(counts)[0]).toEqual({ category: "smartphone", name: "Smartphones", count: 1368 });
   });
 
@@ -28,9 +28,9 @@ describe("featuredCategories", () => {
     expect(featuredCategories([{ category: "tv", count: "571" }])[0].count).toBe(571);
   });
 
-  it("breaks a tie by the site's own category order", () => {
-    const tied = featuredCategories([{ category: "laptop", count: 50 }, { category: "tv", count: 50 }]);
-    expect(tied.map((t) => t.category)).toEqual(["tv", "laptop"]);
+  it("keeps the site's own order whatever the counts", () => {
+    const tied = featuredCategories([{ category: "tv", count: 900 }, { category: "laptop", count: 50 }]);
+    expect(tied.map((t) => t.category)).toEqual(["laptop", "tv"]);
   });
 
   it("knows which category ids exist, and not inherited object keys", () => {

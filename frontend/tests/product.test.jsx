@@ -148,10 +148,12 @@ describe("Product page: the product and its offers", () => {
     expect(rows[0]).toHaveTextContent("Fake discount");
     expect(rows[0]).toHaveTextContent("PKR 400,000"); // the store's was-price, struck through
     expect(rows[0]).toHaveTextContent("3 h ago");
-    expect(rows[1]).toHaveTextContent("Claims 17% off"); // an unchecked claim is labelled as a claim
-    expect(rows[1]).toHaveTextContent("Out of stock");
-    expect(rows[2]).toHaveTextContent("No discount claimed");
-    expect(rows[2]).toHaveTextContent("In stock");
+    // The out-of-stock offer cannot be the lowest price, so it comes after the ones that can, under a line saying why (2026-11-21).
+    expect(rows[1]).toHaveTextContent("No discount claimed");
+    expect(rows[1]).toHaveTextContent("In stock");
+    expect(rows[2]).toHaveTextContent(/not counted for the lowest price/i);
+    expect(rows[3]).toHaveTextContent("Claims 17% off"); // an unchecked claim is labelled as a claim
+    expect(rows[3]).toHaveTextContent("Out of stock");
   });
 
   it("does not show a good-deal badge next to a fake-discount warning", async () => {
@@ -222,7 +224,7 @@ describe("Product page: everything about the opened listing", () => {
     expect(screen.getByRole("heading", { level: 2, name: "Across stores" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 2, name: "How we check a discount" })).toBeInTheDocument();
     expect(document.querySelectorAll(".offer-table .store-mark")).toHaveLength(2);
-    expect(within(screen.getByRole("table", { name: /^offers for/i })).getByText("91.0")).toBeInTheDocument();
+    expect(within(screen.getByRole("table", { name: /^offers for/i })).getByText("91")).toBeInTheDocument();
   });
 
   it("starts the alert target about 5% below the opened listing's price", async () => {

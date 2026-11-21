@@ -29,7 +29,12 @@
 
 /* integrity strip */
 /* integrity note: one line with a mark and an orange edge, not an orange block */
-.integrity { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-3) var(--space-4); box-shadow: inset 3px 0 0 var(--caution); }
+.integrity {
+  display: flex; flex-wrap: wrap; gap: 4px var(--space-2); align-items: center; margin: 0;
+  padding: var(--space-2) var(--space-3); border-radius: var(--radius-control); background: var(--caution-soft);
+}
+/* the product name in "Biggest saving" is a store's raw title, sometimes six lines long: two lines at most */
+.summary-card .small { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .integrity__icon {
   flex: none; width: 20px; height: 20px; margin-top: 1px; border-radius: 50%;
   display: grid; place-items: center;
@@ -159,6 +164,10 @@
 /* the lowest price: an amber edge (the price tag) on a faint amber row */
 .offer-table tr.is-lowest td:first-child { box-shadow: inset 3px 0 0 var(--accent); }
 .offer-table tr.is-lowest { background: var(--raised); }
+/* the offers that cannot be the lowest price (OfferTable countsForLowest), under a line that says so */
+.offer-table tr.offer-table__divider td { padding-block: var(--space-2); background: var(--line-soft); font-weight: 500; }
+.offer-table tr.is-uncounted { opacity: 0.72; }
+.offer-table tr.is-uncounted:hover { opacity: 1; }
 .offer-table__store { font-weight: 600; display: block; }
 .offer-table__lowest { color: var(--accent-ink); font-weight: 600; }
 .offer-table__price { display: block; font-weight: 500; font-size: 1.0625rem; color: var(--ink); white-space: nowrap; }
@@ -214,13 +223,10 @@
 
 /* ---- Phones: the four figures in one row the shopper swipes through, not a stack that pushed the products two screens down
    (2026-11-19). Each takes most of the width, so the next one peeks in and says there is more. */
+/* 2026-11-21: on a phone the four figures are left out altogether, so the first screen shows products, not boxes (a friend: "too
+   much information"); every figure is on the product page. */
 @media (max-width: 719px) {
-  .summary-cards {
-    display: grid; grid-auto-flow: column; grid-auto-columns: 78%; grid-template-columns: none;
-    overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none;
-  }
-  .summary-cards::-webkit-scrollbar { display: none; }
-  .summary-card { scroll-snap-align: start; box-shadow: inset 1px 0 0 var(--line); margin: 0 0 0 -1px; padding: var(--space-3) var(--space-4); }
+  .summary-cards { display: none; }
 }
 
 /* ---- Filters: on a phone a sheet from the bottom of the screen, as in a shopping app (2026-11-19); opened inline above the
@@ -287,3 +293,17 @@
   .offer-table td:last-child { grid-column: 1 / -1; padding-top: var(--space-3); }
   .offer-table__go { width: 100%; min-height: 44px; justify-content: center; }
 }
+
+/* the "not counted" line on a phone, where rows are cards (2026-11-21) */
+@media (max-width: 719px) {
+  .offer-table tr.offer-table__divider { display: block; padding: var(--space-2) var(--space-3); background: var(--line-soft); }
+  .offer-table tr.offer-table__divider td { background: none; padding: 0; }
+}
+
+/* on a phone the flagged-offer line is the count alone; the reason is on the product page (2026-11-21) */
+@media (max-width: 719px) {
+  .integrity > .muted { display: none; }
+}
+
+/* "Show all N offers" under a long table (OfferTable ROWS_SHOWN, 2026-11-21) */
+.offer-table__more { margin: var(--space-3) var(--space-4) 0; }

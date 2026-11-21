@@ -113,13 +113,16 @@ describe("PTA on screen", () => {
   it("OfferTable marks each offer, and the best deal is an approved one", () => {
     inRouter(<OfferTable offers={mixed()} name="iPhone 17" />);
     const rows = screen.getAllByRole("row").slice(1);
-    expect(within(rows[0]).getByText("PTA not stated")).toBeInTheDocument(); // the cheapest, at 360,000
-    expect(rows[0]).not.toHaveTextContent("Best deal");
-    expect(rows[0]).not.toHaveTextContent("Lowest price"); // it may be a cheaper non-PTA unit, so it is not held up as the lowest
+    // the approved offers first, the lowest of them marked; the cheaper one that does not say comes after a line saying why
+    // (2026-11-21: listed first, it sat above the "lowest price" it was cheaper than)
+    expect(within(rows[0]).getByText("PTA approved")).toBeInTheDocument();
+    expect(rows[0]).toHaveTextContent("Best deal");
+    expect(rows[0]).toHaveTextContent("Lowest price");
     expect(within(rows[1]).getByText("PTA approved")).toBeInTheDocument();
-    expect(rows[1]).toHaveTextContent("Best deal");
-    expect(rows[1]).toHaveTextContent("Lowest price");
-    expect(within(rows[2]).getByText("PTA approved")).toBeInTheDocument();
+    expect(rows[2]).toHaveTextContent(/not counted for the lowest price/i);
+    expect(within(rows[3]).getByText("PTA not stated")).toBeInTheDocument(); // the cheapest, at 360,000
+    expect(rows[3]).not.toHaveTextContent("Best deal");
+    expect(rows[3]).not.toHaveTextContent("Lowest price"); // it may be a cheaper non-PTA unit, so it is not held up as the lowest
   });
 
   it("ResultGroup explains what the best deal counts, and leads with the lowest price that compares like with like", () => {
@@ -183,7 +186,9 @@ describe("offers that are out of stock are never the lowest price, the best deal
     expect(document.querySelector(".result-group__amount")).toHaveTextContent("61,999");
     expect(document.querySelector(".result-group__info")).toHaveTextContent("save up to PKR 4,500"); // 66,499 - 61,999
     const rows = screen.getAllByRole("row").slice(1);
-    expect(rows[0]).toHaveTextContent("Out of stock"); // still listed, cheapest first, marked
-    expect(rows[0]).not.toHaveTextContent("Lowest price");
+    expect(rows[0]).toHaveTextContent("Lowest price"); // the in-stock price leads
+    const out = rows.find((row) => row.textContent.includes("Out of stock")); // still listed, after the line, marked
+    expect(rows.indexOf(out)).toBeGreaterThan(rows.findIndex((row) => /not counted for the lowest price/i.test(row.textContent)));
+    expect(out).not.toHaveTextContent("Lowest price");
   });
 });

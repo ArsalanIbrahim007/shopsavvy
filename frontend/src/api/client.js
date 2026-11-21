@@ -25,7 +25,8 @@ export function requestHeaders(body, viaNgrok = THROUGH_NGROK) {
 const DEFAULT_TIMEOUT_MS = 15000;
 
 function buildUrl(path, params) {
-  const url = new URL(`${BASE_URL}${path}`);
+  // a relative BASE_URL ("/api", the local preview through the dev server's proxy) is read against the page's own address
+  const url = new URL(`${BASE_URL}${path}`, globalThis.location?.origin);
   for (const [key, value] of Object.entries(params || {})) {
     if (value !== undefined && value !== null && value !== "") url.searchParams.set(key, String(value));
   }

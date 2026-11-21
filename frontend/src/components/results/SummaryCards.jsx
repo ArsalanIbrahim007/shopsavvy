@@ -64,9 +64,9 @@ export default function SummaryCards({ summary, main = summary, mainCategory = n
       <div className="card summary-card">
         <p className="eyebrow">Stores compared</p>
         <p className="summary-card__value">{platformCount}</p>
-        <p className="small muted">
-          {count} {count === 1 ? "offer" : "offers"} shown
-          {outOfDate > 0 ? `, ${outOfDate} with an old price not counted` : ""}
+        {/* plain words (2026-11-21); the old prices left out are said in the tooltip */}
+        <p className="small muted" title={outOfDate > 0 ? `${outOfDate} ${outOfDate === 1 ? "offer has" : "offers have"} a price older than a week, not counted` : undefined}>
+          {count} {count === 1 ? "offer" : "offers"}
         </p>
         {platforms.length > 0 && <StoreStack platforms={platforms} />}
       </div>
@@ -83,7 +83,7 @@ export default function SummaryCards({ summary, main = summary, mainCategory = n
         <p className="eyebrow">Biggest saving</p>
         <p className="summary-card__value price">{saving ? formatPrice(saving.saving) : "—"}</p>
         <p className="small muted">
-          {saving ? `on ${saving.group.productName}, cheapest store against dearest` : "No product here is sold at two different prices"}
+          {saving ? `on ${saving.group.productName}` : "No product here is sold at two different prices"}
         </p>
         {saving && <SavingBar low={savingLow} high={savingLow + saving.saving} />}
       </div>

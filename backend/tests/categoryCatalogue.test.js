@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { categoryCatalogue, megaCategories, megaCategoryUrl, parseMegaCategoryHtml } from "../src/scrapers/catalogue.js";
+import { categoryCatalogue, megaCategories, megaCategoryUrl, parseMegaCategoryHtml, parseWooCategoryHtml, wooCategoryUrl } from "../src/scrapers/catalogue.js";
 import { CATALOGUE_STORES } from "../src/services/catalogueRefresh.service.js";
 
 const item = (n) => ({ sourceUrl: `https://s.pk/p${n}`, title: `P${n}`, price: n });
@@ -41,8 +41,8 @@ describe("Mega category pages", () => {
 });
 
 describe("the catalogue stores", () => {
-  it("now include iShopping and Mega, read by category", () => {
-    expect(CATALOGUE_STORES.filter((s) => s.type === "category").map((s) => s.platform)).toEqual(["ishopping", "mega"]);
+  it("now include iShopping, Mega and Subhan Electronics (2026-11-21), read by category", () => {
+    expect(CATALOGUE_STORES.filter((s) => s.type === "category").map((s) => s.platform)).toEqual(["ishopping", "mega", "subhanelectronics"]);
   });
 });
 
@@ -112,5 +112,51 @@ describe("a store whose bot check refuses page after page (Paklap, 2026-11-19)",
     const read = [];
     for await (const page of productPagesCatalogue({ platform: "s" }, held, { fetchText, gapMs: 0, onError: () => {} })) read.push(...page.map((l) => l.title));
     expect(read).toEqual(["p3", "p7", "p11"]);
+  });
+});
+
+// Subhan Electronics (2026-11-21): its robots.txt forbids /wp-json/ since 13 Nov, so its catalogue is read from its category pages.
+describe("WooCommerce category pages (Subhan Electronics)", () => {
+  const card = ({ slug, name, now, was, stock = "instock" }) => `
+    <li class="product type-product post-1 status-publish ${stock} product_cat-led-tv">
+      <a href="https://subhanelectronics.pk/product/${slug}/" class="woocommerce-LoopProduct-link woocommerce-loop-product__link">
+        <h2 class="woocommerce-loop-product__title">${name}</h2><img src="https://subhanelectronics.pk/img/${slug}.webp" />
+      </a>
+      <span class="price"><span class="electro-price">${now ? `<ins><span class="woocommerce-Price-amount amount"><bdi>&#8360;&nbsp;${now}</bdi></span></ins>` : ""}
+        ${was ? `<del><span class="woocommerce-Price-amount amount"><bdi>&#8360;&nbsp;${was}</bdi></span></del>` : ""}</span></span>
+    </li>`;
+
+  it("reads each card: title, address, price, the 'was' price and stock", () => {
+    const html = `<ul>${card({ slug: "ecostar-32q873", name: "Ecostar 32Q873 Qled Smart Tv", now: "43,999", was: "53,900" })}${card({ slug: "haier-ac", name: "Haier 1.5 Ton AC", now: "150,000", stock: "outofstock" })}</ul>`;
+    expect(parseWooCategoryHtml("subhanelectronics", html)).toMatchObject([
+      { platform: "subhanelectronics", title: "Ecostar 32Q873 Qled Smart Tv", sourceUrl: "https://subhanelectronics.pk/product/ecostar-32q873/", price: 43999, originalPrice: 53900, inStock: true },
+      { title: "Haier 1.5 Ton AC", price: 150000, originalPrice: null, inStock: false },
+    ]);
+  });
+
+  it("skips a card without a price, and pages as /product-category/<name>/page/<n>/", () => {
+    expect(parseWooCategoryHtml("subhanelectronics", card({ slug: "x", name: "Coming soon" }))).toEqual([]);
+    const url = wooCategoryUrl("https://subhanelectronics.pk");
+    expect(url("led-tv", 1)).toBe("https://subhanelectronics.pk/product-category/led-tv/");
+    expect(url("led-tv", 3)).toBe("https://subhanelectronics.pk/product-category/led-tv/page/3/");
+  });
+
+  it("is read as a category store, not through the Store API its robots.txt forbids", () => {
+    const subhan = CATALOGUE_STORES.filter((s) => s.platform === "subhanelectronics");
+    expect(subhan).toHaveLength(1);
+    expect(subhan[0].type).toBe("category");
+  });
+
+  it("treats a 404 after the first page as the end of a category, not an error", async () => {
+    const errors = [];
+    const store = { platform: "s", baseUrl: "https://s.pk", categories: ["a"], parse: (html) => html, pageUrl: (c, p) => `${c}?${p}` };
+    const fetchText = async (url) => {
+      if (url === "a?1") return [{ sourceUrl: "u1", title: "One", price: 1 }];
+      throw new Error("HTTP 404");
+    };
+    const read = [];
+    for await (const page of categoryCatalogue(store, { fetchText, onError: (e) => errors.push(e) })) read.push(...page);
+    expect(read).toHaveLength(1);
+    expect(errors).toEqual([]);
   });
 });

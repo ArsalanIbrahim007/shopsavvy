@@ -276,6 +276,8 @@ export async function* categoryCatalogue(store, { fetchText = politeFetchText, o
       try {
         listings = store.parse(await fetchText(url));
       } catch (error) {
+        // a WooCommerce category answers 404 one page after its last: that is the end, not a failure
+        if (page > 1 && /HTTP 404/.test(error.message)) break;
         onError?.({ error: new Error(`${url}: ${error.message}`) });
         if (page === 1) failed += 1;
         break;
@@ -332,6 +334,38 @@ export function parseMegaCategoryHtml(html) {
       inStock: !/out of stock/i.test(card.text()),
     });
   }, "mega");
+}
+
+// WooCommerce category pages (Subhan Electronics, 2026-11-21): "/product-category/led-tv/", then ".../page/2/", 32 products each.
+// Its robots.txt forbids /wp-json/ (the Store API wooCatalogue reads) since 13 Nov, and allows these. Each card is a standard
+// WooCommerce loop item: li.product, the link and title in .woocommerce-LoopProduct-link, the price in .price (the "was" price in
+// <del>, the current one in <ins>), and "outofstock" among its classes when it is out of stock.
+export const wooCategoryUrl = (baseUrl) => (category, page) => `${baseUrl}/product-category/${category}/${page > 1 ? `page/${page}/` : ""}`;
+
+/** The products on one WooCommerce category page, as listings at their product addresses. */
+export function parseWooCategoryHtml(platform, html) {
+  const $ = cheerio.load(String(html ?? ""));
+  return safeMap($("li.product.type-product").toArray(), (el) => {
+    const card = $(el);
+    const link = card.find("a.woocommerce-LoopProduct-link").first();
+    const href = link.attr("href");
+    const title = cleanText(card.find(".woocommerce-loop-product__title").first().text());
+    if (!title || !href || !/\/product\//.test(href)) return null;
+    const box = card.find(".price").first();
+    const was = parsePrice(box.find("del .amount").first().text());
+    const now = box.find("ins .amount").first();
+    const price = parsePrice((now.length ? now : box.find(".amount").first()).text());
+    if (!(price > 0)) return null;
+    return makeListing({
+      platform,
+      sourceUrl: href,
+      title,
+      price,
+      originalPrice: was > price ? was : null,
+      imageUrl: card.find("img").first().attr("src") || null,
+      inStock: !/\boutofstock\b/.test(card.attr("class") ?? ""),
+    });
+  }, platform);
 }
 
 // Product pages (Paklap, W11Stop, 2026-11-19): stores whose search and category paging their robots.txt forbids (Paklap any address

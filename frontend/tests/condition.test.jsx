@@ -240,9 +240,9 @@ describe("Results: used, refurbished and open-box products", () => {
     expect(within(section).getByText("Refurbished")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { level: 2, name: "Products" })).toBeNull();
     expect(screen.queryByRole("note")).toBeNull();
-    const cards = screen.getByRole("group", { name: /summary of these results/i });
-    expect(cards).toHaveTextContent("Lowest pre-owned price");
-    expect(cards).toHaveTextContent("PKR 27,500");
+    // one store: nothing to compare, so no summary boxes (2026-11-21); the card carries the price
+    expect(screen.queryByRole("group", { name: /summary of these results/i })).toBeNull();
+    expect(within(section).getByText("PKR 27,500")).toBeInTheDocument();
   });
 
   it("drops the section when the filters leave none of them in view", async () => {

@@ -162,10 +162,10 @@ describe("enrichFromPages", () => {
     expect(filterSeen.platform).toEqual({ $in: ["mega"] });
   });
 
-  it("never reads a switched-off store's pages (Daraz, Telemart), even when asked for by name", async () => {
+  it("never reads a switched-off store's pages (Daraz, Telemart, W11Stop, Paklap), even when asked for by name", async () => {
     model = modelReturning([]);
     await enrichFromPages({ model, now: NOW, delayMs: 0 });
-    expect(filterSeen.platform).toEqual({ $nin: ["daraz", "telemart"] });
+    expect(filterSeen.platform).toEqual({ $nin: ["daraz", "telemart", "w11stop", "paklap"] });
     await enrichFromPages({ model, now: NOW, delayMs: 0, stores: ["telemart", "mega"] });
     expect(filterSeen.platform).toEqual({ $in: ["mega"] });
   });

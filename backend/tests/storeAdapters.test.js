@@ -7,6 +7,9 @@ import { MIN_GAP_MS, USER_AGENT, fetchJson, waitForTurn } from "../src/scrapers/
 import { scrapeShopifySearch } from "../src/scrapers/shopify.scraper.js";
 import { scrapeWooSearch, searchTerm } from "../src/scrapers/woocommerce.scraper.js";
 import { STORES, storeTasks } from "../src/scrapers/stores.js";
+
+// the stores a search asks: every adapter store but those whose robots.txt forbids their search (noSearch)
+const searchable = STORES.filter((store) => !store.noSearch);
 import { PLATFORM_TRUST_SCORES, DEFAULT_TRUST } from "../src/ranking/scores/trustScore.js";
 
 // Shapes below are trimmed from the real responses read on 2026-10-01.
@@ -430,17 +433,19 @@ describe("the store list", () => {
   it("asks a single-range store only about what it sells, and every store about a search of unknown category", () => {
     const asked = (query) => storeTasks(query).map((t) => t.platform);
     // every store without `sells`, plus the named single-range ones, in the order of STORES
-    const general = (...also) => STORES.filter((s) => !s.sells || also.includes(s.platform)).map((s) => s.platform);
+    const general = (...also) => STORES.filter((s) => !s.noSearch && (!s.sells || also.includes(s.platform))).map((s) => s.platform);
     expect(asked("iphone 17")).toEqual(general("infinix"));
-    expect(asked("samsung 55 inch tv")).toEqual(general("subhanelectronics", "jalalelectronics", "japanelectronics"));
+    // Subhan is never searched (noSearch: its robots.txt forbids /wp-json/ since 2026-11-13); its catalogue is read from category pages
+    expect(asked("samsung 55 inch tv")).toEqual(general("jalalelectronics", "japanelectronics"));
+    expect(asked("samsung 55 inch tv")).not.toContain("subhanelectronics");
     expect(asked("earbuds")).toEqual(general("zerolifestyle", "audionic", "ronin", "baseus"));
     expect(asked("smart watch")).toEqual(general("zerolifestyle", "audionic", "ronin"));
     expect(asked("dell laptop")).toEqual(general("infinix"));
     expect(asked("iphone 17")).toEqual(expect.arrayContaining(["alfamall", "digimall", "mistore", "techroid"]));
     expect(asked("iphone 17")).not.toContain("audionic");
     expect(asked("infinix hot 60")).toEqual(general("infinix")); // a phone line since 2026-11-07 (it read as "other" before)
-    expect(asked("anex sandwich maker")).toEqual(STORES.map((s) => s.platform)); // reads as "other": nobody is left out
-    expect(asked("xiaomi")).toEqual(STORES.map((s) => s.platform));
+    expect(asked("anex sandwich maker")).toEqual(searchable.map((s) => s.platform)); // reads as "other": nobody is left out
+    expect(asked("xiaomi")).toEqual(searchable.map((s) => s.platform));
   });
 
   it("only uses categories the query reader knows in `sells`", () => {
@@ -463,12 +468,14 @@ describe("the store list", () => {
     const asked = [];
     // "xiaomi" reads as no particular category, so every store is asked.
     const tasks = storeTasks("xiaomi", { fetchJson: async (url) => { asked.push(url); return url.includes("suggest.json") ? shopifyResponse() : url.includes("search_products") ? { results: [] } : []; } });
-    expect(tasks.map((t) => t.platform)).toEqual(STORES.map((s) => s.platform));
+    expect(tasks.map((t) => t.platform)).toEqual(searchable.map((s) => s.platform));
     await Promise.all(tasks.map((t) => t.fn()));
-    for (const store of STORES) expect(asked.some((url) => url.startsWith(store.apiUrl ?? store.baseUrl)), store.platform).toBe(true);
-    expect(asked.filter((url) => url.includes("/search/suggest.json"))).toHaveLength(STORES.filter((s) => s.type === "shopify").length);
-    expect(asked.filter((url) => url.includes("/wp-json/wc/store/v1/products"))).toHaveLength(STORES.filter((s) => s.type === "woocommerce").length);
-    expect(asked.filter((url) => url.includes("/storefront/search_products"))).toHaveLength(STORES.filter((s) => s.type === "storefront").length);
+    for (const store of searchable) expect(asked.some((url) => url.startsWith(store.apiUrl ?? store.baseUrl)), store.platform).toBe(true);
+    // a store whose robots.txt forbids its search (Subhan's /wp-json/, 2026-11-21) is never asked
+    expect(asked.some((url) => url.includes("subhanelectronics"))).toBe(false);
+    expect(asked.filter((url) => url.includes("/search/suggest.json"))).toHaveLength(searchable.filter((s) => s.type === "shopify").length);
+    expect(asked.filter((url) => url.includes("/wp-json/wc/store/v1/products"))).toHaveLength(searchable.filter((s) => s.type === "woocommerce").length);
+    expect(asked.filter((url) => url.includes("/storefront/search_products"))).toHaveLength(searchable.filter((s) => s.type === "storefront").length);
   });
 
   it("one store failing does not stop the others", async () => {

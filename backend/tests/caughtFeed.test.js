@@ -54,7 +54,7 @@ describe("caughtFromGroups", () => {
   });
 
   it("shows at most two from one store, and at most MAX_EXAMPLES", () => {
-    const groups = Array.from({ length: 8 }, (_, i) => group(`P${i}`, [fake(i < 5 ? "priceoye" : `store${i}`, 1000, 5000 + i)]));
+    const groups = Array.from({ length: MAX_EXAMPLES + 6 }, (_, i) => group(`P${i}`, [fake(i < 5 ? "priceoye" : `store${i}`, 1000, 5000 + i)]));
     const { examples } = caughtFromGroups({ smartphone: groups });
     expect(examples).toHaveLength(MAX_EXAMPLES);
     expect(examples.filter((e) => e.platform === "priceoye")).toHaveLength(2);

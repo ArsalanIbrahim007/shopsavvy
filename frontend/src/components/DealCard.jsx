@@ -40,9 +40,9 @@ export default function DealCard({ deal }) {
         />
       </div>
 
-      <p className="small muted">
-        Save about {formatPrice(deal.savingAmount)} · {deal.offerCount} offers from {deal.storeCount} stores
-        {deal.updatedAt ? ` · updated ${timeAgo(deal.updatedAt)}` : ""}
+      {/* one short line (2026-11-21): the offer count and the update time are on the product page */}
+      <p className="small muted" title={deal.updatedAt ? `${deal.offerCount} offers, updated ${timeAgo(deal.updatedAt)}` : undefined}>
+        Save about {formatPrice(deal.savingAmount)} · compared at {deal.storeCount} stores
       </p>
     </article>
   );

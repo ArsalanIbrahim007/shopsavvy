@@ -32,7 +32,7 @@ function Empty() {
         Press <strong>Compare</strong> on two to {COMPARE_MAX} products of the same kind (on the results or a product page). They stay
         picked while you browse; the bar at the foot of the page opens the comparison.
       </p>
-      <Link className="btn btn-primary" to="/results?category=smartphone">Browse phones</Link>
+      <Link className="btn btn-accent" to="/results?category=smartphone">Browse phones</Link>
     </div>
   );
 }

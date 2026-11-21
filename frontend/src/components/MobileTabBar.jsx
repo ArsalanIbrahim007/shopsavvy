@@ -18,19 +18,20 @@ const ICONS = {
 
 const TABS = [
   { id: "home", label: "Home", to: "/", isCurrent: (pathname, hash) => pathname === "/" && !hash },
-  { id: "categories", label: "Categories", to: "/#categories", isCurrent: (pathname, hash) => (pathname === "/" && hash === "#categories") || pathname === "/results" },
+  { id: "categories", label: "Categories", to: "/#categories", // a category page is a category; a search is not (2026-11-21: the tab lit up on every search result)
+    isCurrent: (pathname, hash, search) => (pathname === "/" && hash === "#categories") || (pathname === "/results" && new URLSearchParams(search).has("category")) },
   { id: "deals", label: "Deals", to: "/#deals", isCurrent: (pathname, hash) => pathname === "/" && hash === "#deals" },
   { id: "drops", label: "Drops", to: "/drops", isCurrent: (pathname) => pathname === "/drops" },
   { id: "compare", label: "Compare", to: "/compare", isCurrent: (pathname) => pathname === "/compare" },
 ];
 
 export default function MobileTabBar() {
-  const { pathname, hash } = useLocation();
+  const { pathname, hash, search } = useLocation();
   const picked = useCompare().length;
   return (
     <nav className="tab-bar" aria-label="Shortcuts">
       {TABS.map((tab) => {
-        const current = tab.isCurrent(pathname, hash);
+        const current = tab.isCurrent(pathname, hash, search);
         return (
           <Link key={tab.id} to={tab.to} className="tab-bar__tab" aria-current={current ? "page" : undefined}>
             <span className="tab-bar__icon" aria-hidden="true">

@@ -190,7 +190,7 @@ function ResultsView({ groups, total, refreshing = false, narrowed = null, spell
               ? refreshing
                 ? "Nothing stored for this yet. The stores are still being asked: anything they have appears here by itself."
                 : "No products found."
-              : `${formatNumber(allOffers.length)} ${allOffers.length === 1 ? "offer" : "offers"} across ${platformCount} ${platformCount === 1 ? "store" : "stores"}, grouped into ${formatNumber(groups.length)} ${groups.length === 1 ? "product" : "products"}`}
+              : `${formatNumber(groups.length)} ${groups.length === 1 ? "product" : "products"} from ${platformCount} ${platformCount === 1 ? "store" : "stores"}`}
             {allOffers.length > 0 && filtered ? `. Your filters leave ${formatNumber(keptOffers.length)} ${keptOffers.length === 1 ? "offer" : "offers"} in ${formatNumber(shown.length)} ${shown.length === 1 ? "product" : "products"}` : ""}
             {!query && total > groups.length ? `. Showing the ${groups.length} most compared of ${formatNumber(total)}; filters apply to these` : ""}
           </p>
@@ -208,13 +208,16 @@ function ResultsView({ groups, total, refreshing = false, narrowed = null, spell
         <div className="small muted" style={{ textAlign: "end" }}>
           {updated && <p>Last updated {timeAgo(updated)}</p>}
           {/* Polite: announced once, without interrupting; the list then updates in place (useResults). */}
-          <p aria-live="polite">{refreshing ? "Checking the stores for newer prices; this list updates by itself." : ""}</p>
+          <p aria-live="polite">{refreshing ? "Getting newer prices from the stores…" : ""}</p>
         </div>
       </header>
 
       {linkHost && query && <LinkNotice store={linkStore} query={query} capacity={linkCapacity} host={linkHost} />}
 
-      {allOffers.length > 0 && (
+      {/* Only when there is something to compare (2026-11-21): one store's results ("sds") showed four boxes, "Stores compared 1"
+          and "Biggest saving PKR 200" among them, above a single card. On a phone the boxes are left out (results.css) so the
+          products come first. */}
+      {allOffers.length > 0 && summary.platformCount >= 2 && (
         <SummaryCards summary={summary} main={main} mainCategory={mixed ? categoryName(category) : null} saving={saving} platforms={[...new Set(keptOffers.map((offer) => offer.platform))]} />
       )}
       <IntegrityStrip offers={keptOffers} />
