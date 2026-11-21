@@ -14,10 +14,11 @@ import { readSnapshot, writeSnapshot } from "./snapshot.service.js";
 import { CATALOG_CATEGORIES, peekCatalogGroups } from "./catalogFeed.service.js";
 
 const CACHE_TTL_MS = 10 * 60 * 1000;
-// Ten (2026-11-21): two full rows of five for the home page's "Deals to avoid" section, which closes the page; the hero's card shows
-// the first four. It was four, a single row, when the section sat under the hero.
-export const MAX_EXAMPLES = 10;
-const MAX_PER_STORE = 2;
+// Fifteen, at most three from one store (2026-11-21): up to three rows of five for the home page's "Deals to avoid" section, which
+// closes the page; the hero's card shows the first four. It was four, at most two a store, when the section sat under the hero. On
+// the catalogues of 21 Nov this gives 15 examples from 7 stores.
+export const MAX_EXAMPLES = 15;
+const MAX_PER_STORE = 3;
 // A "discount" of a few per cent is not what a shopper is lured by; the examples are claims of at least this much.
 const MIN_CLAIMED_PERCENT = 10;
 

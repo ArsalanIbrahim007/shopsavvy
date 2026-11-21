@@ -9,11 +9,9 @@
 .hero__lead { font-size: 1.1875rem; line-height: 1.5; max-width: 42ch; color: var(--ink-soft); }
 .hero__search { width: 100%; max-width: 560px; margin-top: var(--space-2); }
 .hero__popular { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); color: var(--ink-faint); }
-/* the headline's key word underlined in the brand amber: a marker stroke under it, the text itself stays full contrast */
-.hero__mark {
-  background: linear-gradient(transparent 64%, var(--accent) 64%, var(--accent) 88%, transparent 88%);
-  padding-inline: 0.04em; border-radius: 2px;
-}
+/* the headline's key word in the brand amber, as text (a marker stroke under it looked odd, 2026-11-21); --accent-ink is the amber
+   that stays readable: dark amber on the light theme, bright amber on the dark one */
+.hero__mark { color: var(--accent-ink); }
 .hero__clear { background: none; border: 0; color: var(--ink-faint); text-decoration: underline; cursor: pointer; font: inherit; padding: var(--space-1); }
 .hero__clear:hover { color: var(--ink); }
 @media (min-width: 960px) {

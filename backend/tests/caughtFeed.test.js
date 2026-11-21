@@ -53,11 +53,11 @@ describe("caughtFromGroups", () => {
     expect(examples[0].claimedPercent).toBe(60); // the biggest claim of the product
   });
 
-  it("shows at most two from one store, and at most MAX_EXAMPLES", () => {
+  it("shows at most three from one store, and at most MAX_EXAMPLES", () => {
     const groups = Array.from({ length: MAX_EXAMPLES + 6 }, (_, i) => group(`P${i}`, [fake(i < 5 ? "priceoye" : `store${i}`, 1000, 5000 + i)]));
     const { examples } = caughtFromGroups({ smartphone: groups });
     expect(examples).toHaveLength(MAX_EXAMPLES);
-    expect(examples.filter((e) => e.platform === "priceoye")).toHaveLength(2);
+    expect(examples.filter((e) => e.platform === "priceoye")).toHaveLength(3);
   });
 });
 
