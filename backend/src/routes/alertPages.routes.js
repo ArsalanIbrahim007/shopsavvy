@@ -43,18 +43,35 @@ function renderPage(page, nonce) {
 <meta name="robots" content="noindex">
 <title>${page.heading} - ShopSavvy</title>
 <style nonce="${nonce}">
-  body { font-family: system-ui, sans-serif; max-width: 30rem; margin: 12vh auto; padding: 0 1rem; line-height: 1.5; color: #1c1c1c; }
-  h1 { font-size: 1.4rem; }
-  button { font: inherit; padding: .6rem 1.2rem; border-radius: .4rem; border: 0; background: #1c5bd8; color: #fff; cursor: pointer; }
-  button:disabled { opacity: .6; cursor: default; }
-  #result { margin-top: 1rem; font-weight: 600; }
+  /* the same look as the alert emails (alertEmail.service.js), 2026-11-24 */
+  body { margin: 0; min-height: 100vh; background: #f4f5f8; font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif; color: #111827; line-height: 1.55; }
+  main { max-width: 30rem; margin: 0 auto; padding: 12vh 1rem 2rem; }
+  .brand { display: flex; align-items: center; gap: .55rem; font-weight: 700; font-size: 1.3rem; margin: 0 0 1rem .25rem; color: #111827; }
+  .brand__tile { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: #111827; color: #f5a524; font-size: 1rem; }
+  .brand__soft { color: #4b5563; }
+  .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 2rem 1.75rem; box-shadow: 0 8px 24px rgba(17, 24, 39, .06); }
+  h1 { font-size: 1.5rem; line-height: 1.25; margin: 0 0 .5rem; }
+  p { margin: 0; color: #4b5563; }
+  button { margin-top: 1.5rem; font: 600 1rem/1 inherit; padding: .9rem 1.6rem; border-radius: 10px; border: 0; background: #2457d6; color: #fff; cursor: pointer; }
+  button:hover { background: #1c47b3; }
+  button:disabled { opacity: .55; cursor: default; }
+  #result { margin-top: 1rem; font-weight: 600; color: #111827; }
+  #result:empty { display: none; }
+  .foot { margin-top: 1rem; text-align: center; font-size: .8rem; color: #6b7280; }
+  .foot a { color: #4b5563; }
 </style>
 </head>
 <body>
+<main>
+<p class="brand"><span class="brand__tile" aria-hidden="true">&#127991;</span><span>Shop<span class="brand__soft">Savvy</span></span></p>
+<div class="card">
 <h1>${page.heading}</h1>
 <p>${page.intro}</p>
 <button id="go" type="button">${page.button}</button>
 <p id="result" role="status"></p>
+</div>
+<p class="foot"><a href="https://shopsavvy.pages.dev">Back to ShopSavvy</a></p>
+</main>
 <script nonce="${nonce}">
   const token = new URLSearchParams(location.search).get("token");
   const button = document.getElementById("go");

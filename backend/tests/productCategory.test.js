@@ -359,3 +359,14 @@ describe("a store's test listing is no product (2026-11-12)", () => {
     expect(detectCategory("Samsung 55 Inch Crystal UHD 4K Smart TV (Tested Picture Quality)").category).toBe("tv");
   });
 });
+
+// Audit, 2026-11-24: "Infinix GTBOOK 13th Generation Core i9 13900H 1TB-32GB" was filed as a phone (Infinix's phones outweighed it).
+describe("detectCategory: Infinix's laptop lines", () => {
+  it.each([
+    ["Infinix GTBOOK 13th Generation Core i9 13900H 1TB-32GB", "laptop"],
+    ["Infinix INBook Y4 Max Core i5", "laptop"],
+    ["Infinix Hot 60 Pro 8GB 256GB", "smartphone"],
+  ])("%s -> %s", (title, category) => {
+    expect(detectCategory(title).category).toBe(category);
+  });
+});

@@ -2,6 +2,7 @@
 // 2026-11-21.
 import { describe, it, expect } from "vitest";
 
+import * as require_variants from "../src/lib/variants.js";
 import { modelName, variantRows } from "../src/lib/variants.js";
 import { bestOfferOn } from "../src/lib/outlook.js";
 
@@ -81,15 +82,26 @@ describe("VariantPicker", () => {
 
 describe("VariantPicker remembers a model's versions (2026-11-24)", () => {
   it("shows the rows at once, with no second search, when this visit has looked the model up", async () => {
-    const { rememberVariants, forgetVariants } = await import("../src/lib/variants.js");
+    const { rememberVariants, forgetVariants, modelKey } = await import("../src/lib/variants.js");
     const { searchListings } = await import("../src/api/endpoints.js");
     forgetVariants();
     const current = group("Samsung Galaxy A17 6GB 128GB", 68490, { storageGb: 128, ramGb: 6 });
-    rememberVariants("Samsung Galaxy A17", [current, group("Samsung Galaxy A17 8GB 256GB", 77490, { storageGb: 256, ramGb: 8 })]);
+    // remembered from another version, spelt without the maker: one model, one key
+    rememberVariants(modelKey("Galaxy A17 8GB 256GB"), [current, group("Samsung Galaxy A17 8GB 256GB", 77490, { storageGb: 256, ramGb: 8 })]);
     searchListings.mockClear();
     const { container } = render(<MemoryRouter><VariantPicker group={current} category="smartphone" /></MemoryRouter>);
     expect(container.querySelector(".variant-picker__row")).not.toBeNull(); // in the first render, not after a search
     expect(searchListings).not.toHaveBeenCalled();
     forgetVariants();
+  });
+});
+
+describe("modelKey", () => {
+  it("is the same for every version of a model, however a store spells it", () => {
+    const { modelKey } = require_variants;
+    expect(modelKey("iPhone 17 Pro Max 256GB")).toBe("iphone 17 pro max");
+    expect(modelKey("Apple iPhone 17 Pro Max 512GB")).toBe("iphone 17 pro max");
+    expect(modelKey("Apple iPhone 17 Pro Max (Blue) 512 GB Factory Unlocked PTA Approved")).toBe("iphone 17 pro max");
+    expect(modelKey("Apple iPhone 17 Pro Max 256GB Storage NON PTA")).toBe("iphone 17 pro max");
   });
 });

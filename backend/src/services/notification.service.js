@@ -1,3 +1,4 @@
+import { confirmationEmail, pkr, reachedEmail } from "./alertEmail.service.js";
 import { maskEmail } from "./maskEmail.js";
 
 // notification.service.js — delivery for alert emails: the confirmation that starts
@@ -68,7 +69,7 @@ async function transportFor(settings) {
  * The single place a message leaves the system.
  * @returns {Promise<{delivered: boolean, channel: string, reason?: string}>}
  */
-async function deliver({ to, subject, text }) {
+async function deliver({ to, subject, text, html }) {
   const settings = smtpSettings();
   if (!settings) {
     console.log(`[notification] (${CONSOLE_CHANNEL}) To ${maskEmail(to)} — ${subject}\n${text}`);
@@ -80,7 +81,8 @@ async function deliver({ to, subject, text }) {
   }
   try {
     const transport = await transportFor(settings);
-    await transport.sendMail({ from: settings.from, to, subject, text });
+    // the designed HTML where there is one, with the plain text for mail apps that show no HTML (alertEmail.service.js)
+    await transport.sendMail({ from: settings.from, to, subject, text, ...(html ? { html } : {}) });
     return { delivered: true, channel: SMTP_CHANNEL };
   } catch (err) {
     const reason = String(err?.code ?? err?.responseCode ?? "error").slice(0, 40);
@@ -104,9 +106,11 @@ export function sendAlertConfirmation(alert, { confirmUrl, cancelUrl }) {
     to: alert.email,
     subject: "Confirm your ShopSavvy price alert",
     text:
-      `Someone (hopefully you) asked to be told when "${alert.title}" drops to PKR ${alert.targetPrice} or less.\n` +
-      `Confirm: ${confirmUrl}\n` +
-      `If this was not you, ignore this message or cancel: ${cancelUrl}`,
+      `Confirm your ShopSavvy price alert\n\n` +
+      `Product: ${alert.title}\nTell me at or below: ${pkr(alert.targetPrice)}\n\n` +
+      `Confirm: ${confirmUrl}\n\n` +
+      `Didn't ask for this? Ignore this email, or cancel: ${cancelUrl}`,
+    html: confirmationEmail(alert, { confirmUrl, cancelUrl }),
   });
 }
 
@@ -120,8 +124,9 @@ export function notifyAlert(alert, listing, { cancelUrl } = {}) {
     to: alert.email,
     subject: "Your ShopSavvy price alert was reached",
     text:
-      `"${alert.title}" dropped to PKR ${listing.price} (target was PKR ${alert.targetPrice}).` +
-      (listing.productUrl ? `\n${listing.productUrl}` : "") +
-      (cancelUrl ? `\nStop alerts like this: ${cancelUrl}` : ""),
+      `"${alert.title}" dropped to ${pkr(listing.price)} (your target was ${pkr(alert.targetPrice)}).` +
+      (listing.productUrl ? `\nView deal: ${listing.productUrl}` : "") +
+      (cancelUrl ? `\n\nStop alerts like this: ${cancelUrl}` : ""),
+    html: reachedEmail(alert, listing, { cancelUrl }),
   });
 }

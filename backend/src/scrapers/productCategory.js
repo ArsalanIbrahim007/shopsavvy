@@ -219,6 +219,7 @@ const CATEGORIES = {
             "aspire",
             "nitro",
             "inbook", // Infinix's laptops
+            "gtbook", // Infinix's gaming laptops: "Infinix GTBOOK ... Core i9 13900H" was a phone on the brand (audit, 2026-11-24)
         ],
         exclude: [
             "bag",
@@ -786,6 +787,7 @@ function detectCategory(title) {
                     keyword === "thinkpad" ||
                     keyword === "latitude" ||
                     keyword === "inspiron" ||
+                    keyword === "gtbook" || // a laptop line only, though its maker sells phones (2026-11-24)
                     keyword === "qled" ||
                     keyword === "oled" ||
                     keyword === "tv"

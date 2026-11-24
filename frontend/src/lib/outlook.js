@@ -8,7 +8,7 @@
 // answer for most products for now.
 
 import { formatAxisDate, formatDate, formatNumber, formatPrice } from "./format.js";
-import { chartModel, historyPoints } from "./history.js";
+import { chartModel, historyPoints, smoothStepPath } from "./history.js";
 
 // The server sends its thresholds with every outlook (`limits`); these are only used if an older server does not.
 const DEFAULT_LIMITS = { minDays: 7, minRecords: 5, fairDays: 28, fairRecords: 20, staleDays: 3 };
@@ -152,7 +152,8 @@ export function chartFor(outlook, { width = 640, height = 240 } = {}) {
   const reference = (id, label, price) => ({ id, label, price, y: model.y(price) });
   return {
     ...model,
-    path: line.path,
+    // soft corners, honest steps (history.js smoothStepPath)
+    path: smoothStepPath(line.dots.map((dot) => [dot.cx, dot.cy])),
     dots: line.dots,
     today: { cx: today.cx, cy: today.cy, price: today.price },
     references: [reference("high", "Highest", stats.high), reference("usual", "Usual", stats.usual), reference("low", "Lowest", stats.low)],

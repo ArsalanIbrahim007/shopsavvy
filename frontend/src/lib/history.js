@@ -84,6 +84,31 @@ export function stepPath(coords) {
 }
 
 /**
+ * The step line with soft corners (2026-11-24): flat while a price holds, and each change drawn as a short S-curve that ends exactly
+ * on the day of the new price, so the line looks smooth without pretending the price slid over weeks (a fully curved line would
+ * draw an overnight jump as a month-long climb). The curve takes at most `radius` pixels, and never more than half the gap.
+ * @param {Array<[number, number]>} coords  the points, left to right
+ */
+export function smoothStepPath(coords, radius = 14) {
+  const f = (n) => n.toFixed(1);
+  let d = "";
+  coords.forEach(([x, y], i) => {
+    if (i === 0) {
+      d = `M${f(x)},${f(y)}`;
+      return;
+    }
+    const [px, py] = coords[i - 1];
+    if (y === py) {
+      d += ` H${f(x)}`;
+      return;
+    }
+    const r = Math.min(radius, (x - px) / 2);
+    d += ` H${f(x - 2 * r)} C${f(x - r)},${f(py)} ${f(x - r)},${f(y)} ${f(x)},${f(y)}`;
+  });
+  return d;
+}
+
+/**
  * Round axis values: about `target` ticks, each a multiple of 1, 2 or 5 times a power of ten, that cover
  * [min, max]. A flat range (min = max) gets a band of 5% either side, so a single price still has an axis.
  * @returns {{ticks: number[], min: number, max: number}} min and max are the first and last tick

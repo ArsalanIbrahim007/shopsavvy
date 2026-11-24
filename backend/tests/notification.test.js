@@ -88,6 +88,10 @@ describe("with SMTP configured", () => {
     expect(mail).toMatchObject({ from: "ShopSavvy <alerts@example.com>", to: "shopper@example.com", subject: "Confirm your ShopSavvy price alert" });
     expect(mail.text).toContain(links.confirmUrl);
     expect(mail.text).toContain(links.cancelUrl);
+    // the designed version (2026-11-24): a confirm button and the cancel link
+    expect(mail.html).toContain(`href="${links.confirmUrl}"`);
+    expect(mail.html).toContain("Confirm my alert");
+    expect(mail.html).toContain(links.cancelUrl);
   });
 
   it("an alert-reached email carries the product link, the price and the way to stop", async () => {
@@ -95,7 +99,9 @@ describe("with SMTP configured", () => {
     await notifyAlert(alert, { price: 49000, productUrl: "https://shop.example/a17" }, { cancelUrl: links.cancelUrl });
     const mail = sendMail.mock.calls[0][0];
     expect(mail.subject).toBe("Your ShopSavvy price alert was reached");
-    expect(mail.text).toContain("PKR 49000");
+    expect(mail.text).toContain("PKR 49,000");
+    expect(mail.html).toContain("It's down to PKR 49,000");
+    expect(mail.html).toContain('href="https://shop.example/a17"');
     expect(mail.text).toContain("https://shop.example/a17");
     expect(mail.text).toContain(links.cancelUrl);
   });

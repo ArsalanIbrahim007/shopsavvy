@@ -12,7 +12,8 @@ import { searchListings } from "../../api/endpoints.js";
 import { useAsync } from "../../hooks/useAsync.js";
 import { formatPrice } from "../../lib/format.js";
 import { productPath } from "../../lib/productPath.js";
-import { modelName, rememberedVariants, rememberVariants, variantRows } from "../../lib/variants.js";
+import { modelKey, modelName, rememberedVariants, rememberVariants, variantRows } from "../../lib/variants.js";
+import { prefetchProps } from "../../lib/prefetch.js";
 import "./VariantPicker.css";
 
 const CATEGORIES = new Set(["smartphone", "tablet", "laptop"]);
@@ -35,7 +36,9 @@ const groupsOf = (answer) => (Array.isArray(answer?.groups) ? answer.groups : []
 
 export default function VariantPicker({ group, category }) {
   const model = CATEGORIES.has(category) ? modelName(group.productName) : "";
-  const fresh = rememberedVariants(model); // the model's versions, if this visit has looked them up (lib/variants.js)
+  // remembered under the model's key, the same for every version ("iPhone 17 Pro Max 256GB", "Apple iPhone 17 Pro Max 512GB")
+  const key = model ? modelKey(group.productName) : "";
+  const fresh = rememberedVariants(key);
   // A bonus: a search that fails (or a page without the search at all) shows no rows rather than an error. Not asked again while
   // the model's versions are remembered.
   const siblings = useAsync(
@@ -44,12 +47,12 @@ export default function VariantPicker({ group, category }) {
       return Promise.resolve()
         .then(() => searchListings({ q: model, signal }))
         .then((answer) => {
-          rememberVariants(model, groupsOf(answer));
+          rememberVariants(key, groupsOf(answer));
           return answer;
         })
         .catch(() => ({ groups: [] }));
     },
-    [model],
+    [key, model],
   );
   if (!model) return null;
   // the first visit to a model: a placeholder of the rows' shape while the search runs, so the page does not jump when they appear
@@ -74,7 +77,7 @@ export default function VariantPicker({ group, category }) {
                   <span className="variant-tile__price">{formatPrice(option.price)}</span>
                 </span>
               ) : (
-                <Link key={option.label} className="variant-tile" to={productPath(option.target._id, option.target.title)}>
+                <Link key={option.label} {...prefetchProps(option.target._id)} className="variant-tile" to={productPath(option.target._id, option.target.title)}>
                   {option.best && <span className="variant-tile__best">Best deal</span>}
                   <span className="variant-tile__label">{option.label}</span>
                   <span className="variant-tile__price">{formatPrice(option.price)}</span>

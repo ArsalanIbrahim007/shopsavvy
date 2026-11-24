@@ -7,15 +7,16 @@ import { summarizeOffers } from "./summary.js";
 
 /** "Samsung Galaxy A17 6GB RAM 128GB Storage PTA Approved" -> "Samsung Galaxy A17": the name up to its first capacity. */
 export function modelName(name) {
-  const text = String(name ?? "").replace(/\s+/g, " ").trim();
-  const cut = text.split(/\s(?=\(?\d+\s?(?:gb|tb)\b)/i)[0];
+  // a colour or note in brackets is not the model: "Apple iPhone 17 Pro Max (Blue) 512 GB" is "Apple iPhone 17 Pro Max"
+  const text = String(name ?? "").replace(/\([^)]*\)/g, " ").replace(/\s+/g, " ").trim();
+  const cut = text.split(/\s(?=\d+\s?(?:gb|tb)\b)/i)[0];
   return cut.replace(/\b(pta|non[- ]?pta|approved|official|warranty)\b.*$/i, "").replace(/[\s,(–-]+$/, "").trim();
 }
 
 // The model as a key: lower case, without a leading maker's name ("Apple iPhone 17 Pro Max" and "iPhone 17 Pro Max" are one model).
 // ("Redmi" is a line, not a maker: "Xiaomi Redmi Note 15" and "Redmi Note 15" both become "redmi note 15".)
 const BRANDS = /^(apple|samsung|xiaomi|tecno|infinix|oppo|vivo|realme|google|oneplus|nokia|motorola|honor|huawei|itel|zte|nothing|lenovo|hp|dell|asus|acer|msi)\s+/;
-const modelKey = (name) => {
+export const modelKey = (name) => {
   const key = modelName(name).toLowerCase();
   const bare = key.replace(BRANDS, "");
   return bare.split(" ").length >= 2 ? bare : key; // "Xiaomi 15": keep the maker when one word would be left
