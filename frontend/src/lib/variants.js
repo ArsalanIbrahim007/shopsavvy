@@ -66,11 +66,34 @@ export function variantRows(current, groups) {
       const weight = { pta: 4, storage: 2, ram: 1 };
       const kept = (v) => Object.keys(weight).filter((k) => k !== key && v[k] === self[k]).reduce((sum, k) => sum + weight[k], 0);
       const target = [...withValue].sort((a, b) => kept(b) - kept(a) || a.price - b.price)[0];
-      return { value, label: label[key](value), price: Math.min(...withValue.map((v) => v.price)), current: value === self[key], target: target.lowest };
+      // the price of the version the button opens (2026-11-24): on a PTA-approved page, "256GB" showed a non-PTA phone's price
+      const price = value === self[key] ? self.price : target.price;
+      return { value, label: label[key](value), price, current: value === self[key], target: target.lowest };
     });
     const prices = options.map((o) => o.price);
     const cheapest = Math.min(...prices) < Math.max(...prices) ? Math.min(...prices) : null;
     rows.push({ key, title, options: options.map((o) => ({ ...o, best: o.price === cheapest })) });
   }
   return rows;
+}
+
+// Each model's versions, remembered for this visit (2026-11-24): every version of a phone (256GB, 512GB, Non-PTA) searches the same
+// model, so a click from one to another found the rows gone for two seconds while the same search ran again. Kept 10 minutes.
+const REMEMBER_MS = 10 * 60 * 1000;
+const remembered = new Map();
+
+/** The remembered search groups for a model, or null when none (or too old). */
+export function rememberedVariants(model, now = Date.now()) {
+  const known = model ? remembered.get(model) : null;
+  return known && now - known.at < REMEMBER_MS ? known.groups : null;
+}
+
+/** Remembers a model's search groups. */
+export function rememberVariants(model, groups, now = Date.now()) {
+  if (model) remembered.set(model, { at: now, groups: Array.isArray(groups) ? groups : [] });
+}
+
+/** For tests: forget what was remembered. */
+export function forgetVariants() {
+  remembered.clear();
 }

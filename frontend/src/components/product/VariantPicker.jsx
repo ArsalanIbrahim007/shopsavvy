@@ -12,22 +12,52 @@ import { searchListings } from "../../api/endpoints.js";
 import { useAsync } from "../../hooks/useAsync.js";
 import { formatPrice } from "../../lib/format.js";
 import { productPath } from "../../lib/productPath.js";
-import { modelName, variantRows } from "../../lib/variants.js";
+import { modelName, rememberedVariants, rememberVariants, variantRows } from "../../lib/variants.js";
 import "./VariantPicker.css";
 
 const CATEGORIES = new Set(["smartphone", "tablet", "laptop"]);
 
+/** The rows' shape, greyed, while the versions are looked up. */
+function VariantSkeleton() {
+  return (
+    <div className="variant-picker" aria-hidden="true">
+      <div className="variant-picker__row">
+        <span className="skeleton variant-skeleton__label" />
+        <div className="variant-picker__options">
+          {[0, 1, 2].map((i) => <span key={i} className="skeleton variant-skeleton__tile" />)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const groupsOf = (answer) => (Array.isArray(answer?.groups) ? answer.groups : []);
+
 export default function VariantPicker({ group, category }) {
   const model = CATEGORIES.has(category) ? modelName(group.productName) : "";
-  // A bonus: a search that fails (or a page without the search at all) shows no rows rather than an error.
+  const fresh = rememberedVariants(model); // the model's versions, if this visit has looked them up (lib/variants.js)
+  // A bonus: a search that fails (or a page without the search at all) shows no rows rather than an error. Not asked again while
+  // the model's versions are remembered.
   const siblings = useAsync(
-    (signal) => (model ? Promise.resolve().then(() => searchListings({ q: model, signal })).catch(() => ({ groups: [] })) : Promise.resolve({ groups: [] })),
+    (signal) => {
+      if (!model || fresh) return Promise.resolve({ groups: fresh ?? [] });
+      return Promise.resolve()
+        .then(() => searchListings({ q: model, signal }))
+        .then((answer) => {
+          rememberVariants(model, groupsOf(answer));
+          return answer;
+        })
+        .catch(() => ({ groups: [] }));
+    },
     [model],
   );
-  if (!model || siblings.status !== "success") return null;
+  if (!model) return null;
+  // the first visit to a model: a placeholder of the rows' shape while the search runs, so the page does not jump when they appear
+  if (!fresh && siblings.status === "loading") return <VariantSkeleton />;
+  if (!fresh && siblings.status !== "success") return null;
 
   // an answer without groups (an empty or odd reply) shows no rows; it never breaks the product page (CI, 2026-11-24)
-  const rows = variantRows(group, Array.isArray(siblings.data?.groups) ? siblings.data.groups : []);
+  const rows = variantRows(group, fresh ?? groupsOf(siblings.data));
   if (rows.length === 0) return null;
 
   return (

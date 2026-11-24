@@ -28,10 +28,11 @@ describe("variantRows", () => {
     group("Samsung Galaxy A17 5G 8GB 256GB", 80945, { storageGb: 256, ramGb: 8 }), // another model
   ];
 
-  it("lists each storage, RAM and PTA option with its lowest price, the current one and the cheapest", () => {
+  it("lists each option with the price of the version it opens, the current one and the cheapest", () => {
     const rows = variantRows(current, siblings);
     const storage = rows.find((r) => r.key === "storage");
-    expect(storage.options.map((o) => [o.label, o.price, o.current, o.best])).toEqual([["128GB", 68490, true, false], ["256GB", 64000, false, true]]);
+    // 256GB opens the PTA-approved 256GB (PKR 77,490), not the cheaper non-PTA one (2026-11-24: it showed PKR 64,000)
+    expect(storage.options.map((o) => [o.label, o.price, o.current, o.best])).toEqual([["128GB", 68490, true, true], ["256GB", 77490, false, false]]);
     expect(rows.find((r) => r.key === "pta").options.map((o) => o.label)).toEqual(["PTA approved", "Non-PTA"]);
   });
 
@@ -75,5 +76,20 @@ describe("VariantPicker", () => {
     const { container } = render(<MemoryRouter><VariantPicker group={group("Samsung Galaxy A17 6GB 128GB", 68490)} category="smartphone" /></MemoryRouter>);
     await new Promise((resolve) => setTimeout(resolve, 20));
     expect(container.querySelector(".variant-picker")).toBeNull();
+  });
+});
+
+describe("VariantPicker remembers a model's versions (2026-11-24)", () => {
+  it("shows the rows at once, with no second search, when this visit has looked the model up", async () => {
+    const { rememberVariants, forgetVariants } = await import("../src/lib/variants.js");
+    const { searchListings } = await import("../src/api/endpoints.js");
+    forgetVariants();
+    const current = group("Samsung Galaxy A17 6GB 128GB", 68490, { storageGb: 128, ramGb: 6 });
+    rememberVariants("Samsung Galaxy A17", [current, group("Samsung Galaxy A17 8GB 256GB", 77490, { storageGb: 256, ramGb: 8 })]);
+    searchListings.mockClear();
+    const { container } = render(<MemoryRouter><VariantPicker group={current} category="smartphone" /></MemoryRouter>);
+    expect(container.querySelector(".variant-picker__row")).not.toBeNull(); // in the first render, not after a search
+    expect(searchListings).not.toHaveBeenCalled();
+    forgetVariants();
   });
 });

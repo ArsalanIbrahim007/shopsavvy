@@ -16,3 +16,7 @@ a.variant-tile:hover { border-color: var(--ink-mute); text-decoration: none; }
   position: absolute; top: -9px; left: 50%; transform: translateX(-50%); white-space: nowrap;
   padding: 1px 7px; border-radius: var(--radius-pill); background: var(--accent); color: var(--on-accent); font-size: 0.625rem; font-weight: 700;
 }
+
+/* the placeholder while a model's versions are looked up the first time (VariantSkeleton) */
+.variant-skeleton__label { display: block; width: 70px; height: 12px; border-radius: 4px; }
+.variant-skeleton__tile { display: block; width: 104px; height: 54px; border-radius: var(--radius-control); }
