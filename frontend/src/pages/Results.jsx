@@ -46,6 +46,8 @@ const searchResult = (result) => ({
   narrowed: result.matched > result.grouped ? { matched: result.matched, grouped: result.grouped } : null,
   // Nothing matched the search as typed, only close spellings of its words: the page says so rather than pass them off as matches.
   spelling: result.matchedBy === "spelling",
+  // Found by the first words only (a pasted store title, or junk after the model): the page names the words that found them.
+  searchedFor: result.matchedBy === "fewer_words" ? result.searchedFor ?? null : null,
 });
 
 function useResults(query, browseCategory, browseBrand) {
@@ -117,7 +119,7 @@ function GroupList({ groups }) {
   );
 }
 
-function ResultsView({ groups, total, refreshing = false, narrowed = null, spelling = false, brands = null, query, browseCategory, filters, searchParams, setSearchParams }) {
+function ResultsView({ groups, total, refreshing = false, narrowed = null, spelling = false, searchedFor = null, brands = null, query, browseCategory, filters, searchParams, setSearchParams }) {
   const [filtersOpen, setFiltersOpen] = useState(false);
   // the phone's filter sheet holds the page still behind it (results.css .filters)
   useEffect(() => {
@@ -197,6 +199,11 @@ function ResultsView({ groups, total, refreshing = false, narrowed = null, spell
           {query && spelling && (
             <p className="small">
               No exact matches for "{query}". Showing products whose names are spelt nearly the same: check they are what you meant.
+            </p>
+          )}
+          {query && searchedFor && (
+            <p className="small">
+              No exact match for the whole name, so these are the results for <strong>{searchedFor}</strong>.
             </p>
           )}
           {query && narrowed && (
@@ -344,6 +351,7 @@ export default function Results() {
       refreshing={results.data.refreshing}
       narrowed={results.data.narrowed}
       spelling={results.data.spelling}
+      searchedFor={results.data.searchedFor}
       brands={results.data.brands ?? null}
       query={query}
       browseCategory={browseCategory}

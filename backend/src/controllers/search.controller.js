@@ -77,7 +77,7 @@ export async function suggestListings(req, res) {
  * (every word, in any order), together; else "spelling" (every word nearly right: a typo), only when those found nothing.
  * @returns {Promise<{listings: object[], matchedBy: "exact"|"words"|"spelling"|null}>}
  */
-async function findSearchListings(trimmedQuery, searchFilter) {
+export async function findSearchListings(trimmedQuery, searchFilter) {
   let listings = await Listing.find(searchFilter).sort({
     price: 1,
     createdAt: -1,
@@ -164,6 +164,34 @@ async function findSearchListings(trimmedQuery, searchFilter) {
     if (listings.length) matchedBy = "words";
   }
 
+  // Fewer words (2026-11-24): a store's whole title pasted in ("Audionic Airbud 550 Quad MIC ENC Earbuds, Gaming Mode, IPx4 ...") or a
+  // word with junk on it ("Audionic Airbud 550sdasdasd") found nothing, because every word must match and the extra ones are in no
+  // title. Junk glued to a number is cut off ("550sdasdasd" -> "550"); then, as titles start with the product, the most leading
+  // words that some title has are kept: the listings with the first two words are fetched once, and those matching the longest
+  // run of leading words shown. At least two words are kept (the brand and model, never one loose word). The page says which
+  // words were searched (`searchedFor`).
+  let searchedFor = null;
+  const cleanTokens = queryTokens.map((token) => token.replace(/^(\d{2,})[a-z]{4,}$/i, "$1"));
+  const cleaned = cleanTokens.some((token, i) => token !== queryTokens[i]);
+  if (listings.length === 0 && cleanTokens.length >= 2 && (cleanTokens.length > 2 || cleaned)) {
+    const patterns = cleanTokens.map((token) => new RegExp(searchWordPattern(token), "i"));
+    const fewerFilter = { ...searchFilter, ...categoryFloor, $and: cleanTokens.slice(0, 2).map((token) => ({ title: { $regex: searchWordPattern(token), $options: "i" } })) };
+    delete fewerFilter.$or;
+    const candidates = await Listing.find(fewerFilter).sort({ price: 1, createdAt: -1 });
+    const leadingWords = (listing) => {
+      let count = 0;
+      while (count < patterns.length && patterns[count].test(listing.title ?? "")) count += 1;
+      return count;
+    };
+    const scored = candidates.map((listing) => ({ listing, words: leadingWords(listing) }));
+    const best = Math.max(0, ...scored.map((s) => s.words));
+    if (best >= 2) {
+      listings = scored.filter((s) => s.words === best).map((s) => s.listing);
+      matchedBy = "fewer_words";
+      searchedFor = cleanTokens.slice(0, best).join(" ");
+    }
+  }
+
   if (listings.length === 0) {
     const { $or, ...attributeFilters } = searchFilter;
     Object.assign(attributeFilters, categoryFloor);
@@ -177,7 +205,7 @@ async function findSearchListings(trimmedQuery, searchFilter) {
     }
   }
 
-  return { listings, matchedBy };
+  return { listings, matchedBy, searchedFor };
 }
 
 export async function searchListings(req, res) {
@@ -276,7 +304,8 @@ export async function searchListings(req, res) {
     // Only close spellings found ("walls" -> printers sold for a wall): never judged fresh, the stores are asked. Not waited for
     // since 2026-11-18: "ipad ari" and "gre 1.5 ton" found the iPad Air and Gree ACs and then waited 141-161 s for every store
     // (audit). They are shown at once, labelled as close spellings on the page, and the list updates when the stores answer.
-    state: found.matchedBy === "spelling" ? "stale" : resultsState(found.listings),
+    // Found with fewer words (a pasted store title): the same, shown at once (2026-11-24).
+    state: found.matchedBy === "spelling" || found.matchedBy === "fewer_words" ? "stale" : resultsState(found.listings),
   });
   console.log("[search]", refreshResult);
 
@@ -363,6 +392,8 @@ export async function searchListings(req, res) {
     matched: selected.matched,
     // How they were found: "exact", "words" (every word, any order) or "spelling" (close spellings: the page says so); null for none.
     matchedBy: found.matchedBy,
+    // With "fewer_words": the leading words that found them ("audionic airbud 550"), which the page names.
+    searchedFor: found.searchedFor,
     groupCount: groups.length,
     summary: {
       platforms: platforms.length,

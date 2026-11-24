@@ -25,6 +25,9 @@ After changing a file: press the extension's reload button on `chrome://extensio
   store we compare sells this" with a link to its price history (since 2026-11-19; it used to stay away then). Below
   it, the warnings that apply: a discount that looks fake or doubtful, a price that looks like a listing error, the lowest
   price we have recorded, and "check it is the same model" when the page was matched by name and price rather than by address.
+  Since 2026-11-24 it has the site's light look (dark when the computer is): the saving as the big figure ("Save PKR 6,521",
+  "Cheaper at Shophive"), the three cheapest stores with this page placed among them, the checks as marked notes, and a
+  minimise button that folds it into a small "Save PKR 6,521" tag.
 - **The toolbar badge**: the saving ("-7k", "-1.5L") when another store is cheaper, a tick when this page is the cheapest.
 - **The popup**: this page's price, the other stores cheapest first (with old, unusual, used or out-of-stock prices marked),
   and the settings (the API's address, and whether to show the panel).

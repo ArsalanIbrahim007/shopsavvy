@@ -80,6 +80,13 @@ describe("Results: summary", () => {
     expect(await screen.findByText(/^No exact matches for "samsnug"\. Showing products whose names are spelt nearly the same/)).toBeInTheDocument();
   });
 
+  it("names the words it searched when the whole name matched nothing (a pasted store title)", async () => {
+    vi.mocked(api.searchListings).mockReset().mockResolvedValue({ offers: [], groups: [A17], groupCount: 1, summary: null, matched: 1, grouped: 1, matchedBy: "fewer_words", searchedFor: "Samsung Galaxy A17" });
+    renderResults("/results?q=Samsung%20Galaxy%20A17%20blah%20blah");
+    expect(await screen.findByText(/^No exact match for the whole name, so these are the results for/)).toBeInTheDocument();
+    expect(screen.getByText("Samsung Galaxy A17", { selector: "strong" })).toBeInTheDocument();
+  });
+
   it("says nothing of the kind when every match is shown", async () => {
     vi.mocked(api.searchListings).mockReset().mockResolvedValue({ offers: [], groups: [A17], groupCount: 1, summary: null, matched: 3, grouped: 3 });
     renderResults("/results?q=galaxy");

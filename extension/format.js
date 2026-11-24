@@ -86,5 +86,45 @@
     return { tone: "info", headline: `In Pakistan from ${rupees(result.cheapest.price)} at ${storeName(result.cheapest.platform)}`, lines };
   }
 
-  globalThis.ShopSavvyFormat = { rupees, badgeSaving, safeLink, summary, lookupQuery, lookupSummary };
+  /**
+   * One row per store, at its lowest price: a marketplace's several sellers (AlfaMall listed four times, two at one price) are one
+   * store to the shopper. The offers come cheapest first, so a store's first is its lowest.
+   * @returns {{offer: object, more: number}[]}
+   */
+  function storeRows(offers) {
+    const byStore = new Map();
+    for (const offer of offers ?? []) {
+      if (byStore.has(offer.platform)) byStore.get(offer.platform).more += 1;
+      else byStore.set(offer.platform, { offer, more: 0 });
+    }
+    return [...byStore.values()];
+  }
+
+  /**
+   * The panel's and popup's big line (2026-11-24): a small label, the figure that matters, and one line under it.
+   * @returns {{tone: "save"|"best"|"info", kicker: string, big: string, sub: string, pill: string}}
+   */
+  function hero(result, storeName) {
+    const stores = storeRows(result.offers).length;
+    const cheapest = result.cheapest;
+    if (result.lookup && cheapest) {
+      return { tone: "info", kicker: "Sold in Pakistan", big: `From ${rupees(cheapest.price)}`, sub: `at ${storeName(cheapest.platform)}, across ${stores} ${stores === 1 ? "store" : "stores"}`, pill: rupees(cheapest.price) };
+    }
+    if (cheapest?.cheaperThanThisPage) {
+      return { tone: "save", kicker: `Cheaper at ${storeName(cheapest.platform)}`, big: `Save ${rupees(cheapest.saving)}`, sub: `${rupees(cheapest.price)} there, ${rupees(cheapest.price + cheapest.saving)} on this page`, pill: `Save ${rupees(cheapest.saving)}` };
+    }
+    if (stores > 0) {
+      return { tone: "best", kicker: "Good news", big: "Lowest price", sub: `Cheapest of ${stores + 1} stores we compare`, pill: "Lowest price" };
+    }
+    return { tone: "info", kicker: "Price check", big: "Only sold here", sub: "No other store we compare sells it", pill: "Price check" };
+  }
+
+  /** How a summary line is shown (2026-11-24): "warn" (amber/red mark), "good" (green tick) or "info". */
+  function noteKind(line) {
+    if (/fake|doubtful|unusual|check it|not converted|Overpriced|Wait$/i.test(line)) return "warn";
+    if (/is real|lowest price we have recorded|Buy now|Good deal/i.test(line)) return "good";
+    return "info";
+  }
+
+  globalThis.ShopSavvyFormat = { rupees, badgeSaving, safeLink, summary, lookupQuery, lookupSummary, storeRows, noteKind, hero };
 })();

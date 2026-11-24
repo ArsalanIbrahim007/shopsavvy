@@ -331,4 +331,21 @@ describe("a page found as the search box would find it (2026-11-19: Daraz's \"iP
     expect(asked.$and.map((c) => new RegExp(c.title.$regex, "i").test("Apple iPad 11Inch (A16) 128GB"))).toEqual([true, true, true]);
     expect(await listingByWords("iPad", 165999, { model })).toBe(null); // one word names too much
   });
+
+  it("with extra words no title has, takes the most leading words, up to the model number (2026-11-24)", async () => {
+    const { listingByWords } = await import("../src/services/productMatch.service.js");
+    const rows = [
+      { _id: "550", title: "Audionic Airbud 550 Slide Earbuds", price: 3999 },
+      { _id: "590", title: "Audionic Airbud 590 Earbuds", price: 4100 },
+    ];
+    const model = {
+      find: (filter) => {
+        const hit = rows.filter((r) => filter.$and.every((c) => new RegExp(c.title.$regex, "i").test(r.title)));
+        return { limit: () => ({ lean: async () => hit }) };
+      },
+    };
+    expect((await listingByWords("Audionic Airbud 550 Quad MIC ENC Earbuds Gaming Mode", 4000, { model }))._id).toBe("550");
+    expect((await listingByWords("Audionic Airbud 550sdasdasd", 4000, { model }))._id).toBe("550");
+    expect(await listingByWords("Audionic Airbud 777 Quad MIC", 4000, { model })).toBe(null); // the model number must match
+  });
 });

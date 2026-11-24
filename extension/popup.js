@@ -7,7 +7,7 @@
   "use strict";
 
   const { lookupSiteOf, storeOfHost, storeName, STORES } = globalThis.ShopSavvyStores;
-  const { lookupSummary, rupees, safeLink, summary } = globalThis.ShopSavvyFormat;
+  const { hero, lookupSummary, noteKind, rupees, safeLink, storeRows, summary } = globalThis.ShopSavvyFormat;
   const app = document.getElementById("app");
 
   function el(tag, attrs = {}, text) {
@@ -37,7 +37,11 @@
       );
     }
     if (!entry) return show(el("h2", {}, "Not a product page"), el("p", { class: "muted" }, "Open a product's own page on this store to compare its price."));
-    if (!entry.result) return show(el("p", {}, "Checking the other stores…"));
+    if (!entry.result) {
+      const checking = el("div", { class: "checking" });
+      checking.append(el("span", { class: "spinner", "aria-hidden": "true" }), el("span", {}, "Checking the other stores…"));
+      return show(checking);
+    }
 
     const { product, result } = entry;
     if (result.error === "offline") {
@@ -46,49 +50,59 @@
     if (result.error) return show(el("h2", {}, "Something went wrong"), el("p", { class: "muted" }, result.error === "busy" ? "Too many requests just now: try again in a minute." : "The comparison could not be made."));
 
     const thisPage = el("div", { class: "this" });
-    thisPage.append(el("div", { class: "title" }, product.title || "This page"));
-    if (product.price && !abroad) thisPage.append(el("div", {}, `${rupees(product.price)} at ${storeOfHost(host).name}`));
-    if (abroad) thisPage.append(el("div", { class: "muted" }, `On ${abroad}`));
+    thisPage.append(el("div", { class: "title", title: product.title || "" }, product.title || "This page"));
+    if (product.price && !abroad) {
+      const where = el("div", { class: "where" });
+      where.append(el("b", {}, rupees(product.price)), ` on this page at ${storeOfHost(host).name}`);
+      thisPage.append(where);
+    }
+    if (abroad) thisPage.append(el("div", { class: "where" }, `On ${abroad}`));
 
     if (!result.found) {
       const why = result.reason === "no_match" ? "No other store sells this product, as far as we know." : "We do not know this product yet.";
-      return show(thisPage, el("p", {}, why), link(result.searchUrl, "button ghost", "Search for it on ShopSavvy"));
+      const actions = el("div", { class: "actions" });
+      const search = link(result.searchUrl, "button ghost", "Search for it on ShopSavvy");
+      if (search) actions.append(search);
+      return show(thisPage, el("p", { class: "muted" }, why), actions);
     }
 
-    const { tone, headline, lines } = result.lookup ? lookupSummary(result, storeName) : summary(result, storeName);
-    const head = el("div", { class: tone });
-    head.append(el("div", { class: "headline" }, headline));
+    const top = hero(result, storeName);
+    const { lines } = result.lookup ? lookupSummary(result, storeName) : summary(result, storeName);
+    const head = el("div", { class: top.tone });
+    const box = el("div", { class: "hero" });
+    box.append(el("div", { class: "kicker" }, top.kicker), el("div", { class: "big" }, top.big), el("div", { class: "sub" }, top.sub));
+    head.append(box);
+
     const notes = el("ul", { class: "notes" });
-    for (const line of lines) notes.append(el("li", {}, line));
+    for (const line of lines) notes.append(el("li", { class: noteKind(line) }, line));
 
-    // One row per store, at its lowest price: a marketplace's several sellers (AlfaMall listed four times, two at one price) are one
-    // store to the shopper. The offers come cheapest first, so a store's first is its lowest.
-    const byStore = new Map();
-    for (const offer of result.offers) {
-      if (byStore.has(offer.platform)) byStore.get(offer.platform).more += 1;
-      else byStore.set(offer.platform, { offer, more: 0 });
-    }
-    const stores = [...byStore.values()];
+    // One row per store, at its lowest price (format.js storeRows), cheapest first.
+    const stores = storeRows(result.offers);
     const offers = el("ol", { class: "offers", "aria-label": "Other stores, cheapest first" });
-    for (const { offer, more } of stores.slice(0, 6)) {
-      const li = el("li", { class: offer === result.offers.find((o) => o.id === result.cheapest?.id) ? "cheapest" : "" });
-      const name = link(offer.url, "", storeName(offer.platform)) ?? el("span", {}, storeName(offer.platform));
-      const flags = [offer.outOfDate && "old price", offer.unusualPrice && "unusual", offer.condition !== "new" && offer.condition, !offer.inStock && "out of stock", more && `+${more} more`].filter(Boolean);
-      const left = el("span");
-      left.append(name);
-      if (flags.length) left.append(el("span", { class: "flag" }, ` · ${flags.join(", ")}`));
-      li.append(left, el("span", {}, rupees(offer.price)));
+    stores.slice(0, 6).forEach(({ offer, more }, i) => {
+      const li = el("li");
+      const name = el("span", { class: "name" });
+      name.append(link(offer.url, "", storeName(offer.platform)) ?? storeName(offer.platform));
+      const flags = [offer.outOfDate && "old price", offer.unusualPrice && "unusual", offer.condition !== "new" && offer.condition, !offer.inStock && "out of stock", more && `+${more} sellers`].filter(Boolean);
+      if (flags.length) name.append(el("span", { class: "flag" }, ` · ${flags.join(", ")}`));
+      li.append(name);
+      if (i === 0 && stores.length > 1) li.append(el("span", { class: "tag" }, "Cheapest"));
+      li.append(el("span", { class: "price" }, rupees(offer.price)));
       offers.append(li);
-    }
+    });
+
+    const actions = el("div", { class: "actions" });
+    const deal = result.cheapest?.cheaperThanThisPage ? link(result.cheapest.url, "button", `Go to ${storeName(result.cheapest.platform)}`) : null;
+    const compare = link(result.productUrl, deal ? "button ghost" : "button", "Full comparison");
+    for (const a of [deal, compare, result.lookup ? link(result.searchUrl, "button ghost", "Search") : null]) if (a) actions.append(a);
 
     show(
       thisPage,
       head,
-      lines.length ? notes : null,
-      offers,
+      stores.length ? offers : null,
       stores.length > 6 ? el("p", { class: "muted" }, `and ${stores.length - 6} more stores`) : null,
-      link(result.productUrl, "button", "See the full comparison"),
-      result.lookup ? link(result.searchUrl, "button ghost", "Search ShopSavvy for it") : null,
+      lines.length ? notes : null,
+      actions,
     );
   }
 

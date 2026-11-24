@@ -293,7 +293,8 @@ export async function matchPage({ url: address, title, price }, { strategy = "ml
   // the spec words had kept it from every product (2026-11-10).
   // The closest SIMILAR_CANDIDATES listings are enough to place one page; the product page groups up to 300, which took 4 s in a
   // large category (accessories) for a page that matched nothing.
-  const core = coreTitle(title);
+  // Junk glued to a number ("Airbud 550sdasdasd") is cut off first: it had placed the page with the Airbud 745 (2026-11-24).
+  const core = coreTitle(title.replace(/(?<![a-z0-9])(\d{2,})[a-z]{4,}(?![a-z0-9])/gi, "$1"));
   let answer = null;
   for (const text of core && core !== title ? [core, title] : [title]) {
     const page = asPage(text);
@@ -323,14 +324,33 @@ export async function listingByWords(text, price, { model = Listing } = {}) {
   if (words.length < 2 || !(price > 0)) return null; // one word ("iPad") names too much
   const category = detectCategory(text).category;
   const storage = extractStorage(text);
+  // Junk glued to a number is cut off ("550sdasdasd" -> "550"), as in the search box.
+  const clean = words.map((w) => w.replace(/^(\d{2,})[a-z]{4,}$/i, "$1"));
   const filter = {
     ...VISIBLE_PLATFORMS_FILTER,
     price: { $gte: price * (1 - WORDS_PRICE_RANGE), $lte: price * (1 + WORDS_PRICE_RANGE) },
-    $and: words.map((w) => ({ title: { $regex: searchWordPattern(w), $options: "i" } })),
     ...(category !== "other" ? { productCategory: category } : {}),
     ...(storage ? { storageGb: storage } : {}),
   };
-  const found = (await model.find(filter).limit(60).lean()).filter((l) => !attributeConflict(text, l.title, { ignoreUnstatedStorage: true }));
-  if (found.length === 0) return null;
-  return found.sort((a, b) => Math.abs(a.price - price) - Math.abs(b.price - price))[0];
+  const fits = (l) => !attributeConflict(text, l.title, { ignoreUnstatedStorage: true });
+  const nearest = (found) => found.sort((a, b) => Math.abs(a.price - price) - Math.abs(b.price - price))[0];
+  const everyWord = (await model.find({ ...filter, $and: clean.map((w) => ({ title: { $regex: searchWordPattern(w), $options: "i" } })) }).limit(60).lean()).filter(fits);
+  if (everyWord.length) return nearest(everyWord);
+
+  // Fewer words (2026-11-24): a name with words no stored title has ("Audionic Airbud 550 Quad MIC ENC Earbuds, Gaming Mode, IPx4")
+  // found nothing. Titles start with the product, so the listings with the most LEADING words are taken, and those words must
+  // reach the first word with a digit, the model number ("550"): "Audionic Airbud" alone would also take the Airbud 590.
+  const firstNumber = clean.findIndex((w) => /\d/.test(w));
+  const needed = Math.max(2, firstNumber + 1);
+  if (clean.length <= needed) return null;
+  const patterns = clean.map((w) => new RegExp(searchWordPattern(w), "i"));
+  const candidates = (await model.find({ ...filter, $and: clean.slice(0, needed).map((w) => ({ title: { $regex: searchWordPattern(w), $options: "i" } })) }).limit(200).lean()).filter(fits);
+  const leading = (l) => {
+    let count = 0;
+    while (count < patterns.length && patterns[count].test(l.title ?? "")) count += 1;
+    return count;
+  };
+  const best = Math.max(0, ...candidates.map(leading));
+  if (best < needed) return null;
+  return nearest(candidates.filter((l) => leading(l) === best));
 }
