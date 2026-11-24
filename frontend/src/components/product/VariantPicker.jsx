@@ -26,7 +26,8 @@ export default function VariantPicker({ group, category }) {
   );
   if (!model || siblings.status !== "success") return null;
 
-  const rows = variantRows(group, siblings.data.groups);
+  // an answer without groups (an empty or odd reply) shows no rows; it never breaks the product page (CI, 2026-11-24)
+  const rows = variantRows(group, Array.isArray(siblings.data?.groups) ? siblings.data.groups : []);
   if (rows.length === 0) return null;
 
   return (

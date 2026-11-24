@@ -61,3 +61,19 @@ describe("bestOfferOn", () => {
     expect(bestOfferOn([offer("mega", 1, [["2026-11-10", 1]])], at, 2)).toBeNull();
   });
 });
+
+// CI, 2026-11-24: a search that answered with nothing (a test's bare mock) crashed the product page.
+import { render } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
+import { vi } from "vitest";
+
+vi.mock("../src/api/endpoints.js", () => ({ searchListings: vi.fn(async () => undefined) }));
+const { default: VariantPicker } = await import("../src/components/product/VariantPicker.jsx");
+
+describe("VariantPicker", () => {
+  it("shows nothing, and does not crash, when the search answers with nothing", async () => {
+    const { container } = render(<MemoryRouter><VariantPicker group={group("Samsung Galaxy A17 6GB 128GB", 68490)} category="smartphone" /></MemoryRouter>);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(container.querySelector(".variant-picker")).toBeNull();
+  });
+});
