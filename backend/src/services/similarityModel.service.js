@@ -15,7 +15,7 @@ import { FILLER_WORDS } from "../ml/fillerWords.js";
 import { predictProba } from "../ml/logisticRegression.js";
 import { attributeConflict, tokenize, sameSet, sharedApplianceCode, statedSizes, withoutSizePrefix } from "./similarity.service.js";
 import { modelTokens, extractStorage, extractPtaStatus, extractModelCodes, extractScreenInches } from "./normalizeTitle.service.js";
-import { extractRamGb } from "./productAttributes.service.js";
+import { COLOURS, extractRamGb } from "./productAttributes.service.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // The live model. SHOPSAVVY_MATCH_MODEL names another artifact in src/ml/ to try a
@@ -258,6 +258,13 @@ function fillerFreeTokens(title) {
  * requires that the listing conflict with no member (checked by the grouping
  * loop).
  */
+// A colour after a dash at the end of a title ("...Earbuds-Pink", "... - Red & Black"); the rest of the title is the product.
+const COLOUR_WORDS = COLOURS.map((c) => c.replace(/ /g, "\\s+")).join("|");
+const COLOUR_TAIL = new RegExp(`\\s*[-–]\\s*(?:${COLOUR_WORDS})(?:\\s*(?:&|and|/|,)\\s*(?:${COLOUR_WORDS}))*\\s*$`, "i");
+export function withoutColourTail(title) {
+  return String(title || "").replace(COLOUR_TAIL, "").trim();
+}
+
 export function mlMatchStrategy(rawTitle, group, listing) {
   const groupPrice = group.lowestPrice != null && group.highestPrice != null
     ? (group.lowestPrice + group.highestPrice) / 2
@@ -277,6 +284,22 @@ export function mlMatchStrategy(rawTitle, group, listing) {
   if (priceAgrees && classifyPairML(
     { title: rawTitle, price: listing.price },
     { title: group.rawGroupKey, price: groupPrice }
+  ).isMatch) return true;
+
+  // Again without a seller code and a colour at the end (2026-11-24): AlfaMall's "Audionic Airbud 550 Slide Earbuds-Pink -
+  // ISPK-0608" (and its White, Sky Blue, Black, Red & Black) scored 0.39 against "Airbud 550 Slide Earbuds" and made a group of
+  // their own beside it on the results page. Colours of one product belong in one group (the colour picker chooses among them).
+  // Only the code and the colour: the rest of the store's wording ("Installments (Pak Mobiles)") can go with a different price,
+  // and is left to the price-checked last pass (mergeStoreWordedGroups).
+  const withoutCode = (title) => String(title || "").replace(STORE_CODE, " ").replace(/[\s|_([–-]+$/, "").replace(/\s+/g, " ").trim();
+  const ownCode = withoutCode(rawTitle);
+  const groupCode = withoutCode(group.rawGroupKey);
+  const tidyOwn = withoutColourTail(ownCode);
+  const tidyGroup = withoutColourTail(groupCode);
+  const colourCut = tidyOwn !== ownCode || tidyGroup !== groupCode;
+  if (priceAgrees && colourCut && tidyOwn && tidyGroup && classifyPairML(
+    { title: tidyOwn, price: listing.price },
+    { title: tidyGroup, price: groupPrice }
   ).isMatch) return true;
 
   const own = fillerFreeTokens(rawTitle);
