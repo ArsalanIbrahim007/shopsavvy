@@ -11,6 +11,7 @@ import { hasAdminKey } from "../middleware/adminKey.middleware.js";
 import { groupListings } from "../services/grouping.service.js";
 import { attachPriceHistory } from "../services/historyEnrichment.service.js";
 import { extractScreenInches, normalizeTitle } from "../services/normalizeTitle.service.js";
+import { extractBrand } from "../services/productAttributes.service.js";
 import { currentOffers } from "../services/offerFreshness.service.js";
 import { lowestBadge } from "../services/priceOutlook.service.js";
 import { textParam, numberParam } from "../services/queryParams.service.js";
@@ -143,6 +144,25 @@ export async function findSearchListings(trimmedQuery, searchFilter) {
     if (added.length) {
       listings = [...listings, ...added].sort((a, b) => a.price - b.price);
       matchedBy ??= "words";
+    }
+
+    // A maker's own store leaves its name out ("Airbud 550 Slide Earbuds" at audionic.co and Shophive, "TRANCE Airbud 815 with ANC"
+    // at AlfaMall), so "Audionic Airbud 550" never found them and they showed as other products (2026-11-24). A search that starts
+    // with a brand also takes the titles with every OTHER word that name no brand, or the same one ("ZERO TRANCE AIRBUD 850" is
+    // Zero's, and stays out). Only with a model number left, never a brand and one loose word.
+    const searchedBrand = extractBrand(queryTokens[0] ?? "");
+    const rest = queryTokens.slice(1);
+    if (searchedBrand && rest.length >= 2 && rest.some((token) => /\d/.test(token))) {
+      const brandlessFilter = { ...tokenFilter, $and: rest.map((token) => ({ title: { $regex: searchWordPattern(token), $options: "i" } })) };
+      const brandless = (await Listing.find(brandlessFilter).sort({ price: 1, createdAt: -1 }))
+        .filter(sameSize)
+        .filter((listing) => [null, searchedBrand].includes(extractBrand(listing.title ?? "", listing.brand)));
+      const have = new Set(listings.map((listing) => String(listing._id)));
+      const more = brandless.filter((listing) => !have.has(String(listing._id)));
+      if (more.length) {
+        listings = [...listings, ...more].sort((a, b) => a.price - b.price);
+        matchedBy ??= "words";
+      }
     }
   }
 

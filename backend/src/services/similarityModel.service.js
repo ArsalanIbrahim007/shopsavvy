@@ -15,7 +15,7 @@ import { FILLER_WORDS } from "../ml/fillerWords.js";
 import { predictProba } from "../ml/logisticRegression.js";
 import { attributeConflict, tokenize, sameSet, sharedApplianceCode, statedSizes, withoutSizePrefix } from "./similarity.service.js";
 import { modelTokens, extractStorage, extractPtaStatus, extractModelCodes, extractScreenInches } from "./normalizeTitle.service.js";
-import { COLOURS, extractRamGb } from "./productAttributes.service.js";
+import { COLOURS, extractBrand, extractRamGb } from "./productAttributes.service.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // The live model. SHOPSAVVY_MATCH_MODEL names another artifact in src/ml/ to try a
@@ -91,7 +91,30 @@ export function sharedModelCode(itemA, itemB, { shortTvCode = false } = {}) {
   const appliance = sharedApplianceCode(itemA.title, itemB.title);
   if (appliance) return gap <= SHARED_CODE_PRICE_GAP ? appliance : null;
   const yearless = sameTvWithoutYearLetter(itemA.title, itemB.title, sizes) ?? (shortTvCode ? sameTvShortCode(itemA.title, itemB.title) : null);
-  return yearless && gap <= YEAR_LETTER_PRICE_GAP ? yearless : null;
+  if (yearless && gap <= YEAR_LETTER_PRICE_GAP) return yearless;
+  const line = sameLineNumber(itemA.title, itemB.title);
+  return line && gap <= LINE_NUMBER_PRICE_GAP ? line : null;
+}
+
+// A product line's name and number, written apart: "Airbud 425", "Trance Airbud 850" (2026-11-24). Stores word the rest their own
+// way ("AUDIONIC EARBUDS AIRBUD 425 BLACK", "Audionic Wireless Airbuds 425", "Audionic Airbud 425 Tws Earbuds"; "... 850 Hexa Mic
+// with ANC" and "... 850 with 6 Mics ANC"), and each wording made a product of its own. The same maker named by both, the same
+// line word (four letters or more, a plural s dropped) and number (three or four digits), the same variant words, and prices
+// within LINE_NUMBER_PRICE_GAP.
+export const LINE_NUMBER_PRICE_GAP = 0.15;
+const LINE_VARIANT_WORDS = new Set(["pro", "plus", "max", "lite", "ultra", "mini", "neo", "se", "nc", "anc", "enc", "flip", "slide", "ion", "prime", "signature"]);
+function sameLineNumber(titleA, titleB) {
+  if (process.env.SHOPSAVVY_NO_LINE_NUMBER) return null; // to measure the grouping without this rule
+  const brandA = extractBrand(titleA);
+  if (!brandA || brandA !== extractBrand(titleB)) return null;
+  const words = (title) => (String(title).toLowerCase().match(/[a-z0-9]+/g) ?? []).map((w) => w.replace(/^([a-z]{4,})s$/, "$1"));
+  const pairs = (list) => new Set(list.flatMap((w, i) => (/^[a-z]{4,}$/.test(w) && /^\d{3,4}$/.test(list[i + 1] ?? "") && w !== brandA ? [`${w} ${list[i + 1]}`] : [])));
+  const wordsA = words(titleA);
+  const wordsB = words(titleB);
+  const shared = [...pairs(wordsA)].find((pair) => pairs(wordsB).has(pair));
+  if (!shared) return null;
+  const variants = (list) => [...new Set(list.filter((w) => LINE_VARIANT_WORDS.has(w)))].sort().join(" ");
+  return variants(wordsA) === variants(wordsB) ? shared : null;
 }
 
 // A TV's code written with its screen size and without: Samsung's "55Q7F" and "Q7F" (2026-11-09, labelled pair r287). A code of
@@ -236,6 +259,18 @@ const isPtaApproved = (offer) => {
   return (stated !== "unknown" ? stated : offer.ptaStatus) === "pta_approved";
 };
 
+// The same words but the brand, which one title leaves out (2026-11-24): a maker's own store writes "Airbud 550 Slide Earbuds",
+// the others "Audionic Airbud 550 Slide Earbuds", and the two stayed apart. Only when the title without it names no brand at all.
+function sameButTheBrand(titleA, tokensA, titleB, tokensB) {
+  if (Math.abs(tokensA.size - tokensB.size) !== 1) return false;
+  const [longer, longTitle, shorter, shortTitle] = tokensA.size > tokensB.size ? [tokensA, titleA, tokensB, titleB] : [tokensB, titleB, tokensA, titleA];
+  if (extractBrand(shortTitle) !== null) return false;
+  const brand = extractBrand(longTitle);
+  if (!brand) return false;
+  const extra = [...longer].filter((token) => !shorter.has(token));
+  return extra.length === 1 && extractBrand(extra[0]) === brand && [...shorter].every((token) => longer.has(token));
+}
+
 function fillerFreeTokens(title) {
   return new Set(tokenize(modelTokens(title)).filter((t) => !FILLER_WORDS.has(t)));
 }
@@ -261,9 +296,17 @@ function fillerFreeTokens(title) {
 // A colour after a dash at the end of a title ("...Earbuds-Pink", "... - Red & Black"); the rest of the title is the product.
 const COLOUR_WORDS = COLOURS.map((c) => c.replace(/ /g, "\\s+")).join("|");
 const COLOUR_TAIL = new RegExp(`\\s*[-–]\\s*(?:${COLOUR_WORDS})(?:\\s*(?:&|and|/|,)\\s*(?:${COLOUR_WORDS}))*\\s*$`, "i");
+// Or a colour name of the seller's own of up to three words with one known colour in it ("-Black All", "-Gray Pistachio",
+// "– Obsidian Black"), no digits (2026-11-24: AlfaMall's Trance Airbuds 815 in those colours stayed apart).
+const COLOUR_NAME_TAIL = /\s*[-–]\s*([a-z]+(?:\s+[a-z]+){0,2})\s*$/i;
+const KNOWN_COLOUR = new RegExp(`\\b(?:${COLOUR_WORDS})\\b`, "i");
 export function withoutColourTail(title) {
-  return String(title || "").replace(COLOUR_TAIL, "").trim();
+  const text = String(title || "").replace(COLOUR_TAIL, "").trim();
+  return text.replace(COLOUR_NAME_TAIL, (whole, name) => (KNOWN_COLOUR.test(name) ? "" : whole)).trim();
 }
+
+// "Airbuds" and "Airbud", "Earbuds" and "Earbud": a plural s is dropped from both titles when they are compared again.
+const singular = (title) => title.replace(/\b([a-z]{3,}[^s\W])s\b/gi, "$1");
 
 export function mlMatchStrategy(rawTitle, group, listing) {
   const groupPrice = group.lowestPrice != null && group.highestPrice != null
@@ -294,8 +337,8 @@ export function mlMatchStrategy(rawTitle, group, listing) {
   const withoutCode = (title) => String(title || "").replace(STORE_CODE, " ").replace(/[\s|_([–-]+$/, "").replace(/\s+/g, " ").trim();
   const ownCode = withoutCode(rawTitle);
   const groupCode = withoutCode(group.rawGroupKey);
-  const tidyOwn = withoutColourTail(ownCode);
-  const tidyGroup = withoutColourTail(groupCode);
+  const tidyOwn = singular(withoutColourTail(ownCode));
+  const tidyGroup = singular(withoutColourTail(groupCode));
   const colourCut = tidyOwn !== ownCode || tidyGroup !== groupCode;
   if (priceAgrees && colourCut && tidyOwn && tidyGroup && classifyPairML(
     { title: tidyOwn, price: listing.price },
@@ -309,7 +352,7 @@ export function mlMatchStrategy(rawTitle, group, listing) {
   for (const member of group.offers || []) {
     if (++checks > MAX_MEMBER_CHECKS) break;
     const title = member.title || member.normalizedTitle || "";
-    if (!title || !sameSet(own, fillerFreeTokens(title))) continue;
+    if (!title || !(sameSet(own, fillerFreeTokens(title)) || sameButTheBrand(rawTitle, own, title, fillerFreeTokens(title)))) continue;
 
     const capacityUnstated = ownStorage === null || extractStorage(title) === null;
     if (capacityUnstated && member.price > 0) {

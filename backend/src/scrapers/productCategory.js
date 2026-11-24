@@ -470,6 +470,8 @@ const CATEGORIES = {
             "earbud",
             "airpods",
             "air buds",
+            "airbud",
+            "airbuds",
             "buds",
             "galaxy buds",
             "tws",
