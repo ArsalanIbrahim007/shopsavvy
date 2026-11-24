@@ -15,6 +15,7 @@ import { FEATURED_CATEGORIES, categoryName } from "../lib/categories.js";
 import { rulesSentence } from "../lib/drops.js";
 import { timeAgo } from "../lib/format.js";
 import "../components/cards.css";
+import PageHero from "../components/PageHero.jsx";
 import "./PriceDrops.css";
 
 export default function PriceDrops() {
@@ -27,21 +28,15 @@ export default function PriceDrops() {
 
   return (
     <div className="container drops-page">
-      <header className="drops-page__head">
-        <div className="drops-page__title">
-          <h1>Price drops</h1>
-          <p className="muted">
-            Prices that came down since the store's previous check. The "was" price is the one we recorded ourselves, not the
-            store's own crossed-out price.
-          </p>
-        </div>
+      <PageHero icon="drops" eyebrow="Updated with every price check" title="Price drops"
+        lead={`Prices that came down since the store's previous check. The "was" price is the one we recorded ourselves, not the store's own crossed-out price.`}>
         {biggest > 0 && (
           <p className="drops-page__stat">
             <span className="drops-page__stat-value price">↓ {Number.isInteger(biggest) ? biggest : biggest.toFixed(1)}%</span>
             <span className="small muted">the biggest drop {category ? `in ${categoryName(category).toLowerCase()}` : "right now"}</span>
           </p>
         )}
-      </header>
+      </PageHero>
 
       <nav className="drops-page__filter" aria-label="Category">
         <Link className="chip" to="/drops" aria-current={category === "" ? "page" : undefined}>All</Link>

@@ -9,7 +9,7 @@
 
 /* one colour: its picture (or a swatch), outlined when chosen, its name underneath */
 .colour-tile {
-  display: grid; justify-items: center; gap: 4px; width: 84px; padding: 6px;
+  display: grid; justify-items: center; gap: 4px; width: 100px; padding: 6px;
   background: var(--paper); color: var(--ink-soft); font: inherit; cursor: pointer;
   border: 2px solid var(--line); border-radius: var(--radius-control);
 }
@@ -26,3 +26,12 @@
 .colour-strip__dots .swatch:first-child { margin-left: 0; }
 
 .offer-table__colours { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+
+/* each colour's lowest price under its name, and the cheapest colour marked, as a shop's colour buttons do (2026-11-21) */
+.colour-tile { position: relative; }
+.colour-tile__price { font-family: var(--font-mono); color: var(--ink-soft); font-weight: 500; font-size: 0.75rem; }
+.colour-tile__best {
+  position: absolute; top: -9px; left: 50%; transform: translateX(-50%); white-space: nowrap;
+  padding: 1px 7px; border-radius: var(--radius-pill); background: var(--accent); color: var(--on-accent); font-size: 0.625rem; font-weight: 700;
+}
+.colour-picker__options { padding-top: 6px; }

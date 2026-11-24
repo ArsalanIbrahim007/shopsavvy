@@ -1,13 +1,14 @@
-// theme.js — the shopper's colour-theme choice: dark (the default, since 2026-11-08), light, or follow the device.
+// theme.js — the shopper's colour-theme choice: light (the default again since 2026-11-21: shoppers found it more inviting; dark was
+// the default from 2026-11-08), dark, or follow the device.
 // Kept in their own browser only. Storage can be unavailable (private windows, blocked site data), so
 // every read and write is guarded and the page simply follows the device without it.
 //
 // The choice is applied as a data-theme attribute on <html>; tokens.css does the rest. "system" means no
-// attribute, so the device's own setting (prefers-color-scheme) decides. Nothing stored means dark, so
+// attribute, so the device's own setting (prefers-color-scheme) decides. Nothing stored means light, so
 // "system" has to be stored like the others.
 
 export const THEME_KEY = "shopsavvy:theme:v1";
-export const THEMES = ["dark", "light", "system"];
+export const THEMES = ["light", "dark", "system"];
 
 // index.html repeats this key in a tiny inline script that applies the choice before the first paint, so
 // a dark-mode shopper never sees a white flash. tests/theme.test.js checks the two agree.
@@ -20,9 +21,9 @@ function storage() {
   }
 }
 
-export const DEFAULT_THEME = "dark";
+export const DEFAULT_THEME = "light";
 
-/** @returns {"system"|"light"|"dark"} the saved choice; anything else (missing, junk) is the default, dark */
+/** @returns {"system"|"light"|"dark"} the saved choice; anything else (missing, junk) is the default, light */
 export function getStoredTheme() {
   try {
     const saved = storage()?.getItem(THEME_KEY);
@@ -46,7 +47,7 @@ export function applyTheme(theme, root = document.documentElement) {
   else root.removeAttribute("data-theme");
 }
 
-/** The button cycles dark -> light -> device -> dark. */
+/** The button cycles light -> dark -> device -> light. */
 export function nextTheme(theme) {
   return THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length];
 }

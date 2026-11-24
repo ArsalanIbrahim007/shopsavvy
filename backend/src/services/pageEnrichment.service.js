@@ -11,7 +11,7 @@
 
 import { DISABLED_PLATFORMS } from "../config/platforms.js";
 import Listing from "../models/listing.model.js";
-import { extractColourOptions } from "./colourPage.service.js";
+import { extractColourOptions, priceOyeColourPrices } from "./colourPage.service.js";
 import { extractConditionFromPage } from "./conditionPage.service.js";
 import { extractPagePrices } from "./pagePrice.service.js";
 import { extractPtaFromPage } from "./ptaPage.service.js";
@@ -151,6 +151,11 @@ export async function enrichFromPages({
       const html = await fetchPage(listing);
       pta = extractPtaFromPage(html, { productName: listing.title });
       colours = extractColourOptions(html);
+      // PriceOye prices each colour on its own (2026-11-21): each colour keeps its price and stock beside its name and picture
+      if (String(listing.platform).toLowerCase() === "priceoye") {
+        const priced = new Map(priceOyeColourPrices(html, { storageGb: listing.storageGb, price: listing.price, url: listing.sourceUrl }).map((p) => [p.colour, p]));
+        colours = colours.map((c) => (priced.has(c.colour) ? { ...c, ...priced.get(c.colour) } : c));
+      }
       pagePrices = extractPagePrices(listing.platform, html);
       // A used phone sold under a new phone's title (iShopping, 2026-11-12): only its page says so (conditionPage.service.js).
       if (PTA_CATEGORIES.includes(listing.productCategory) && CONDITION_STORES.has(String(listing.platform).toLowerCase())) used = extractConditionFromPage(html);

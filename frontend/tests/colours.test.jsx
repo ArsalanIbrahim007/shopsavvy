@@ -295,3 +295,48 @@ describe("colours a store's page lists (colourOptions)", () => {
     expect(container.querySelector(".result-group__image img").getAttribute("src")).toBe("https://img.example/p.jpg"); // the lowest offer's picture
   });
 });
+
+// A store that prices each colour on its own (PriceOye, 2026-11-21): the iPhone 17 Pro Max at PKR 474,745 in orange, 494,945 in
+// silver and 499,995 in blue. Choosing a colour shows that colour's price; each colour button shows its lowest price.
+describe("colour prices", () => {
+  const priced = (over = {}) => ({
+    _id: "po", platform: "priceoye", price: 474745, title: "Apple iPhone 17 Pro Max", productCategory: "smartphone", inStock: true,
+    lastScrapedAt: new Date().toISOString(), productUrl: "https://priceoye.pk/x",
+    colourOptions: [
+      { colour: "Silver", image: null, price: 494945, inStock: true },
+      { colour: "Blue", image: null, price: 499995, inStock: false },
+      { colour: "Orange", image: null, price: 474745, inStock: true },
+    ],
+    ...over,
+  });
+  const other = { _id: "mg", platform: "mega", price: 480000, title: "iPhone 17 Pro Max Silver", colour: "Silver", productCategory: "smartphone", inStock: true, lastScrapedAt: new Date().toISOString(), productUrl: "https://mega.pk/x" };
+
+  it("prices an offer at the chosen colour's own price and stock", () => {
+    const [silver] = offersInColour([priced()], "Silver");
+    expect(silver.price).toBe(494945);
+    const [blue] = offersInColour([priced()], "Blue");
+    expect(blue.price).toBe(499995);
+    expect(blue.inStock).toBe(false);
+    expect(offersInColour([priced()], null)[0].price).toBe(474745); // no colour chosen: the store's own price
+  });
+
+  it("opens the store on the chosen colour's own page when it gives one", () => {
+    const linked = priced({ colourOptions: priced().colourOptions.map((o) => ({ ...o, link: `https://priceoye.pk/x/ppc/${o.colour.toLowerCase()}/256gb` })) });
+    expect(offersInColour([linked], "Silver")[0].productUrl).toBe("https://priceoye.pk/x/ppc/silver/256gb");
+    expect(offersInColour([priced()], "Silver")[0].productUrl).toBe("https://priceoye.pk/x"); // none given: the listing's own page
+  });
+
+  it("ignores colour prices that no longer agree with today's price (they are read every two weeks)", () => {
+    const moved = priced({ price: 469999 }); // the store dropped its price since the page was read
+    expect(offersInColour([moved], "Silver")[0].price).toBe(469999);
+  });
+
+  it("shows each colour's lowest price on its button and marks the cheapest colour", () => {
+    render(<ColourPicker offers={[priced(), other]} value={null} onChange={() => {}} />);
+    const button = (name) => screen.getByRole("button", { name: new RegExp(`(^|deal )${name}`) });
+    expect(button("Orange")).toHaveTextContent("PKR 474,745");
+    expect(button("Orange")).toHaveTextContent("Best deal");
+    expect(button("Silver")).toHaveTextContent("PKR 480,000"); // Mega's silver beats PriceOye's silver
+    expect(button("Silver")).not.toHaveTextContent("Best deal");
+  });
+});

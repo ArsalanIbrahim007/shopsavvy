@@ -20,7 +20,6 @@ import CrossStoreSummary from "../components/product/CrossStoreSummary.jsx";
 import DealVerdict from "../components/product/DealVerdict.jsx";
 import DropChance from "../components/product/DropChance.jsx";
 import PriceOutlook from "../components/product/PriceOutlook.jsx";
-import PriceHistoryChart from "../components/product/PriceHistoryChart.jsx";
 import ShareButton from "../components/product/ShareButton.jsx";
 import Specifications from "../components/product/Specifications.jsx";
 import CompareButton from "../components/CompareButton.jsx";
@@ -149,7 +148,7 @@ export default function Product() {
       <StructuredData data={productJsonLd({ name: group.productName, offers: allOffers, url: canonical })} />
       <ResultGroup group={group} currentId={listing._id} colour={colour} onColour={chooseColour} />
 
-      <PriceOutlook outlook={outlook} />
+      <PriceOutlook outlook={outlook} offers={allOffers} />
       <DropChance chances={dropChances} />
 
       <section className="product-section" aria-labelledby="verdict-heading">
@@ -157,11 +156,8 @@ export default function Product() {
         <DealVerdict listing={listing} lowestPrice={summarizeOffers(allOffers).lowest?.price ?? null} />
       </section>
 
-      <section className="product-section" aria-labelledby="history-heading">
-        <h2 id="history-heading">Price history</h2>
-        <PriceHistoryChart offers={allOffers} currentId={listing._id} />
-      </section>
-
+      {/* The every-store "Price history" chart is gone (2026-11-21): ten lines at once said little. The best-price chart under "Wait
+          or buy?" says, for any day, the price and which store had it. */}
       <div className="product-facts">
         <section className="product-section" aria-labelledby="alert-heading">
           <h2 id="alert-heading">Price alert</h2>

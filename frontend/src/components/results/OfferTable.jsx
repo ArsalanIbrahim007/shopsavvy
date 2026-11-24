@@ -17,7 +17,7 @@ import { conditionFlag } from "../../lib/condition.js";
 import { outOfDateFlag } from "../../lib/freshness.js";
 import { claimedDiscount } from "../../lib/filters.js";
 import { formatPercent, formatPrice, timeAgo } from "../../lib/format.js";
-import { platformName } from "../../lib/platforms.js";
+import { canonicalPlatform, platformName } from "../../lib/platforms.js";
 import { offerLink } from "../../lib/safeLink.js";
 import { ptaFlag } from "../../lib/pta.js";
 import { bestDealOffer } from "../../lib/score.js";
@@ -89,14 +89,45 @@ export default function OfferTable({ offers, name, currentId, colour = null }) {
   const counted = byPrice.filter((entry) => countsForLowest(entry.offer));
   const rest = counted.length ? byPrice.filter((entry) => !countsForLowest(entry.offer)) : [];
   const ordered = counted.length ? [...counted, ...rest] : byPrice;
-  // The first ROWS_SHOWN rows, and the rest behind a button (2026-11-21: 32 offers made the table 4,500px tall before the verdict,
-  // the history or the alert). The listing the shopper opened is always shown.
-  const [expanded, setExpanded] = useState(false);
+  // One row per store: its best offer (the first in the order above), and its other offers behind "Show 6 more from AlfaMall"
+  // (2026-11-21: a marketplace's seven sellers of one phone were seven rows). The listing the shopper opened is always shown.
+  const byStore = new Map();
+  for (const entry of ordered) {
+    const store = canonicalPlatform(entry.offer.platform);
+    if (!byStore.has(store)) byStore.set(store, []);
+    byStore.get(store).push(entry);
+  }
+  const primaries = [...byStore.values()].map((list) => list[0]);
   const opened = ordered.find((entry) => has(entry, currentId));
-  const folded = !expanded && ordered.length > ROWS_SHOWN;
-  const entries = folded ? ordered.filter((entry, i) => i < ROWS_SHOWN || entry === opened) : ordered;
-  const hidden = ordered.length - entries.length;
-  const firstOfRest = rest.find((entry) => entries.includes(entry))?.offer._id;
+  const openedStore = opened ? canonicalPlatform(opened.offer.platform) : null;
+  const [openStores, setOpenStores] = useState(() => new Set());
+  const storeOpen = (store) => openStores.has(store) || (store === openedStore && byStore.get(store)[0] !== opened);
+  const toggleStore = (store) => setOpenStores((open) => {
+    const next = new Set(open);
+    if (next.has(store)) next.delete(store);
+    else next.add(store);
+    return next;
+  });
+
+  // The first ROWS_SHOWN stores, and the rest behind a button (2026-11-21: 32 offers made the table 4,500px tall before the verdict,
+  // the history or the alert).
+  const [expanded, setExpanded] = useState(false);
+  const folded = !expanded && primaries.length > ROWS_SHOWN;
+  const shownPrimaries = folded ? primaries.filter((entry, i) => i < ROWS_SHOWN || canonicalPlatform(entry.offer.platform) === openedStore) : primaries;
+  const hidden = primaries.length - shownPrimaries.length;
+  const restStores = primaries.filter((entry) => rest.includes(entry)).length;
+  // the rows in order: each store's best offer, its other sellers when opened, then the button that opens or closes them
+  const items = [];
+  for (const primary of shownPrimaries) {
+    const store = canonicalPlatform(primary.offer.platform);
+    const others = byStore.get(store).slice(1);
+    items.push({ entry: primary });
+    if (others.length && storeOpen(store)) others.forEach((entry) => items.push({ entry, seller: true }));
+    if (others.length) {
+      items.push({ more: store, count: others.length, open: storeOpen(store), name: platformName(primary.offer.platform), from: Math.min(...others.map((e) => e.offer.price)) });
+    }
+  }
+  const firstOfRest = shownPrimaries.find((entry) => rest.includes(entry))?.offer._id;
   const lowest = summarizeOffers(offers).lowest;
   const lowestId = lowest?._id;
   const bestId = bestDealOffer(offers)?._id;
@@ -117,7 +148,24 @@ export default function OfferTable({ offers, name, currentId, colour = null }) {
           </tr>
         </thead>
         <tbody>
-          {entries.map((entry) => {
+          {items.map((item) => {
+            if (item.more) {
+              return (
+                <tr key={`more-${item.more}`} className="offer-table__sellers">
+                  <td colSpan={7}>
+                    <button type="button" className="offer-table__sellers-toggle" aria-expanded={item.open} onClick={() => toggleStore(item.more)}
+                      aria-label={item.open ? `Show fewer from ${item.name}` : `Show ${item.count} more from ${item.name}`}>
+                      <span className="offer-table__sellers-count" aria-hidden="true">+{item.count}</span>
+                      <span className="offer-table__sellers-text">
+                        {item.open ? `Hide the other sellers at ${item.name}` : <>{item.count} more {item.count === 1 ? "seller" : "sellers"} at {item.name} <span className="muted">· from <span className="price">{formatPrice(item.from)}</span></span></>}
+                      </span>
+                      <span className="offer-table__chevron" aria-hidden="true" />
+                    </button>
+                  </td>
+                </tr>
+              );
+            }
+            const entry = item.entry;
             const offer = entry.offer;
             const href = offerLink(offer);
             const isLowest = has(entry, lowestId);
@@ -131,7 +179,7 @@ export default function OfferTable({ offers, name, currentId, colour = null }) {
                   <td colSpan={7} className="small muted">Not counted for the lowest price: out of stock, PTA status not stated, or an old price</td>
                 </tr>
               )}
-              <tr className={isLowest ? "is-lowest" : rest.includes(entry) ? "is-uncounted" : undefined}>
+              <tr className={[isLowest ? "is-lowest" : rest.includes(entry) ? "is-uncounted" : "", item.seller ? "is-seller" : ""].filter(Boolean).join(" ") || undefined}>
                 <td>
                   <StoreLogo platform={offer.platform} />
                   <div className="offer-table__tags">
@@ -180,11 +228,11 @@ export default function OfferTable({ offers, name, currentId, colour = null }) {
           })}
         </tbody>
       </table>
-      {(hidden > 0 || expanded) && ordered.length > ROWS_SHOWN && (
+      {(hidden > 0 || expanded) && primaries.length > ROWS_SHOWN && (
         <button type="button" className="btn btn-ghost offer-table__more" aria-expanded={expanded} onClick={() => setExpanded((open) => !open)}>
           {expanded
-            ? "Show fewer offers"
-            : `Show all ${ordered.length} offers${rest.length ? ` (${rest.length} not counted for the lowest price)` : ""}`}
+            ? "Show fewer stores"
+            : `Show all ${primaries.length} stores${restStores ? ` (${restStores} not counted for the lowest price)` : ""}`}
         </button>
       )}
       <p className="offer-table__note small muted">

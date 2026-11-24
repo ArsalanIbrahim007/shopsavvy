@@ -21,6 +21,7 @@ import { discountRows, formatScore, formatShare, markupRows, matcherRows, outloo
 import { categoryName } from "../lib/categories.js";
 import { platformName } from "../lib/platforms.js";
 import "./HowItWorks.css"; // the shared reading column (.prose)
+import PageHero from "../components/PageHero.jsx";
 import "./HonestPrices.css";
 
 // A whole-number figure counts up when it comes into view; a share or other text is shown as it is.
@@ -540,10 +541,8 @@ export default function HonestPrices() {
   usePageTitle("How accurate we are");
   return (
     <div className="container prose honest">
-      <header>
-        <h1>How we keep prices honest</h1>
-        <p className="lead muted">What our checks found in today's data, how accurate they are, and where they are still weak.</p>
-      </header>
+      <PageHero icon="accuracy" eyebrow="How accurate we are" title="How we keep prices honest"
+        lead="What our checks found in today's data, how accurate they are, and where they are still weak." />
 
       {report.status === "success" && report.data.live && <KpiBand live={report.data.live} />}
 

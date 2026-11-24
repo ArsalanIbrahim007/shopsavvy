@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 
 import { usePageDescription, usePageTitle } from "../hooks/usePageTitle.js";
 import "./HowItWorks.css";
+import PageHero from "../components/PageHero.jsx";
 import "./Help.css";
 
 const CONTENTS = [
@@ -38,13 +39,8 @@ export default function Help() {
 
   return (
     <div className="container prose help">
-      <div>
-        <h1>How to use ShopSavvy</h1>
-        <p className="lead muted">
-          ShopSavvy compares the prices of electronics at Pakistani online stores, checks whether their discounts are real, and tells you
-          when a price falls. It is free, and needs no account.
-        </p>
-      </div>
+      <PageHero icon="help" eyebrow="How to use it" title="How to use ShopSavvy"
+        lead="ShopSavvy compares the prices of electronics at Pakistani online stores, checks whether their discounts are real, and tells you when a price falls. It is free, and needs no account." />
 
       <nav className="help-contents card" aria-label="On this page">
         <ol>

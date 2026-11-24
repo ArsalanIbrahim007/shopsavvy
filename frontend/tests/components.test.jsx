@@ -205,34 +205,34 @@ describe("Layout", () => {
       document.documentElement.removeAttribute("data-theme");
     });
 
-    it("opens dark, cycles dark -> light -> device -> dark, sets the page theme, and says what a click does", () => {
+    it("opens light, cycles light -> dark -> device -> light, sets the page theme, and says what a click does", () => {
       renderAt("/x", <p>page</p>, { withLayout: true });
       const button = () => screen.getByRole("button", { name: /colour theme/i });
       const root = document.documentElement;
 
-      expect(button()).toHaveAccessibleName("Colour theme: Dark. Switch to Light.");
-      expect(root.getAttribute("data-theme")).toBe("dark");
-
-      fireEvent.click(button());
-      expect(button()).toHaveAccessibleName("Colour theme: Light. Switch to Device setting.");
+      expect(button()).toHaveAccessibleName("Colour theme: Light. Switch to Dark.");
       expect(root.getAttribute("data-theme")).toBe("light");
-      expect(window.localStorage.getItem("shopsavvy:theme:v1")).toBe("light");
 
       fireEvent.click(button());
-      expect(button()).toHaveAccessibleName("Colour theme: Device setting. Switch to Dark.");
+      expect(button()).toHaveAccessibleName("Colour theme: Dark. Switch to Device setting.");
+      expect(root.getAttribute("data-theme")).toBe("dark");
+      expect(window.localStorage.getItem("shopsavvy:theme:v1")).toBe("dark");
+
+      fireEvent.click(button());
+      expect(button()).toHaveAccessibleName("Colour theme: Device setting. Switch to Light.");
       expect(root.hasAttribute("data-theme")).toBe(false);
       expect(window.localStorage.getItem("shopsavvy:theme:v1")).toBe("system");
 
       fireEvent.click(button());
-      expect(root.getAttribute("data-theme")).toBe("dark");
-      expect(window.localStorage.getItem("shopsavvy:theme:v1")).toBe("dark");
+      expect(root.getAttribute("data-theme")).toBe("light");
+      expect(window.localStorage.getItem("shopsavvy:theme:v1")).toBe("light");
     });
 
     it("starts from the saved choice", () => {
-      window.localStorage.setItem("shopsavvy:theme:v1", "light");
+      window.localStorage.setItem("shopsavvy:theme:v1", "dark");
       renderAt("/x", <p>page</p>, { withLayout: true });
-      expect(screen.getByRole("button", { name: /colour theme/i })).toHaveAccessibleName("Colour theme: Light. Switch to Device setting.");
-      expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+      expect(screen.getByRole("button", { name: /colour theme/i })).toHaveAccessibleName("Colour theme: Dark. Switch to Device setting.");
+      expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
     });
   });
 
@@ -284,11 +284,16 @@ describe("ProductImage", () => {
 });
 
 describe("VerdictBadge", () => {
-  it("shows a symbol and a word, with the symbol hidden from screen readers, and falls back for an unknown tone", () => {
+  it("shows a picture and a word, with the picture hidden from screen readers, and falls back for an unknown tone", () => {
     const { container, rerender } = render(<VerdictBadge tone="bad" label="Fake discount" title="why" />);
     expect(screen.getByText("Fake discount").closest(".badge")).toHaveClass("badge-bad");
-    expect(container.querySelector("[aria-hidden='true']")).toHaveTextContent("✕");
+    // its own drawing (2026-11-21): a crossed-out tag
+    expect(container.querySelector("svg.badge__icon[aria-hidden='true']")).not.toBeNull();
     expect(screen.getByTitle("why")).toBeInTheDocument();
+
+    // a verdict without a drawing keeps its tone's mark
+    rerender(<VerdictBadge tone="bad" label="Something else" />);
+    expect(container.querySelector("[aria-hidden='true']")).toHaveTextContent("✕");
 
     rerender(<VerdictBadge tone="sparkly" label="Odd" />);
     expect(screen.getByText("Odd").closest(".badge")).toHaveClass("badge-neutral");

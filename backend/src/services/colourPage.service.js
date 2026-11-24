@@ -153,3 +153,74 @@ export function extractColourOptions(html) {
   }
   return [];
 }
+
+/** The JSON object assigned to `name` in a page's inline script ("window.product_data = {...};"), or null. */
+function inlineObject(page, name) {
+  const at = page.indexOf(name);
+  if (at < 0) return null;
+  const start = page.indexOf("{", at);
+  if (start < 0) return null;
+  let depth = 0;
+  let inString = false;
+  for (let i = start; i < page.length; i++) {
+    const c = page[i];
+    if (inString) {
+      if (c === "\\") i++;
+      else if (c === '"') inString = false;
+    } else if (c === '"') inString = true;
+    else if (c === "{") depth++;
+    else if (c === "}" && --depth === 0) {
+      try {
+        return JSON.parse(page.slice(start, i + 1));
+      } catch {
+        return null;
+      }
+    }
+  }
+  return null;
+}
+
+const rupees = (text) => {
+  const n = Number(String(text ?? "").replace(/[^\d.]/g, ""));
+  return Number.isFinite(n) && n > 0 ? Math.round(n) : null;
+};
+const sizeInGb = (key) => {
+  const m = String(key).match(/(\d+)\s*(gb|tb)/i);
+  return m ? Number(m[1]) * (m[2].toLowerCase() === "tb" ? 1024 : 1) : null;
+};
+
+/**
+ * Each colour's own price at PriceOye (2026-11-21). One PriceOye listing covers every colour and storage of a phone, at its cheapest
+ * (the iPhone 17 Pro Max: PKR 474,745 is the orange 256 GB; silver is PKR 494,945, blue PKR 499,995). Its page holds the whole table
+ * in `window.product_data.product_config.dataPrices` (colour -> storage -> [{ product_price, product_availability }]). The storage
+ * read is the listing's own when it says one, else the one whose prices include the listing's price, else the smallest.
+ *
+ * With the listing's address (`url`), each colour also gets the address of that colour and storage at PriceOye
+ * ("<url>/ppc/cosmic_orange/256gb", the form its own colour and storage buttons link to), so "View deal" opens that variant.
+ *
+ * @returns {Array<{colour: string, price: number, inStock: boolean, link?: string}>} [] when the page has no such table
+ */
+export function priceOyeColourPrices(html, { storageGb = null, price = null, url = null } = {}) {
+  const data = inlineObject(String(html ?? ""), "window.product_data")?.product_config?.dataPrices;
+  if (!data || typeof data !== "object") return [];
+  const sizes = [...new Set(Object.values(data).flatMap((bySize) => Object.keys(bySize ?? {})))].filter((key) => sizeInGb(key) !== null);
+  if (sizes.length === 0) return [];
+  const priceAt = (colourKey, size) => rupees(data[colourKey]?.[size]?.[0]?.product_price);
+  const size =
+    sizes.find((key) => storageGb && sizeInGb(key) === Number(storageGb)) ??
+    sizes.find((key) => price && Object.keys(data).some((colourKey) => priceAt(colourKey, key) === price)) ??
+    [...sizes].sort((a, b) => sizeInGb(a) - sizeInGb(b))[0];
+
+  const found = new Map();
+  for (const colourKey of Object.keys(data)) {
+    const colour = normalise(colourKey);
+    const entry = data[colourKey]?.[size]?.[0];
+    const at = rupees(entry?.product_price);
+    if (!colour || !at || found.has(colour)) continue;
+    const inStock = !/out of stock|sold out|not available/i.test(String(entry.product_availability ?? ""));
+    const page = String(url ?? "").replace(/\/+$/, "");
+    const base = /^https:\/\/priceoye\.pk\/[a-z0-9/_-]+$/i.test(page) ? page : null;
+    found.set(colour, { colour, price: at, inStock, ...(base ? { link: `${base}/ppc/${encodeURIComponent(colourKey)}/${encodeURIComponent(size)}` } : {}) });
+  }
+  return [...found.values()];
+}

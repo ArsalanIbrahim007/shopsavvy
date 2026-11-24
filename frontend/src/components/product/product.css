@@ -154,6 +154,25 @@ details.verdict-card:hover { border-color: var(--ink-mute); }
 .outlook-chart__ref--usual { stroke: var(--ink-mute); stroke-dasharray: 6 4; }
 .outlook-chart__ref--low, .outlook-chart__ref--high { stroke: var(--ink-faint); stroke-dasharray: 2 4; }
 
+/* reading the chart day by day (2026-11-21): a guide line, the day's point, and a card with the date, the best price, the store that
+   had it and how it stood against the usual price. The card sits above the point and flips to its left past the middle. */
+.outlook-chart__plot { position: relative; }
+.outlook-chart__svg { cursor: crosshair; touch-action: pan-y; }
+.outlook-chart__svg:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.outlook-chart__focus line { stroke: var(--ink-mute); stroke-width: 1; stroke-dasharray: 3 3; }
+.outlook-chart__focus circle { fill: var(--paper); stroke: var(--brand); stroke-width: 3; }
+.outlook-day {
+  position: absolute; z-index: 2; transform: translate(-50%, -100%); pointer-events: none;
+  min-width: 168px; padding: var(--space-2) var(--space-3); display: grid; gap: 2px;
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-control); box-shadow: var(--shadow-pop);
+}
+.outlook-day p { margin: 0; }
+.outlook-day__date { font-size: 0.75rem; color: var(--ink-soft); }
+.outlook-day__price { font-size: 1.0625rem; font-weight: 600; color: var(--ink); }
+.outlook-day__store { display: inline-flex; align-items: center; gap: 6px; color: var(--ink); }
+.outlook-day__vs.is-good { color: var(--good); }
+.outlook-day__vs.is-high { color: var(--caution); }
+
 .outlook-tiles { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
 .outlook-tile { display: grid; gap: 2px; align-content: start; padding: var(--space-3) var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-card); background: var(--canvas); }
 .outlook-tile--good { background: var(--good-soft); border-color: var(--good-line); }
@@ -205,3 +224,39 @@ details[open] > .drop-chance__summary .verdict-card__why::after { transform: rot
 .outlook-gauge__tag--usual { bottom: 0; color: var(--ink-faint); }
 .outlook-gauge__fill { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: var(--brand-soft); animation: gauge-fill 900ms var(--ease) both; transform-origin: left; }
 @keyframes gauge-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* ---- "Wait or buy?", redrawn (2026-11-21): four figure cards, the chart across the whole width with a soft area under its line,
+   and a row of small facts. */
+.outlook-stats { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 860px) { .outlook-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.outlook-stat {
+  display: grid; gap: 4px; align-content: start; padding: var(--space-4);
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-card);
+}
+.outlook-stat__label { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.02em; color: var(--ink-soft); }
+.outlook-stat__value { font-size: clamp(1.125rem, 2.2vw, 1.5rem); font-weight: 600; letter-spacing: -0.03em; color: var(--ink); line-height: 1.2; }
+.outlook-stat__sub { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-soft); }
+.outlook-stat__arrow { font-size: 0.8em; margin-right: 4px; }
+.outlook-stat--today { border-color: var(--brand); box-shadow: inset 0 3px 0 var(--brand); }
+.outlook-stat--good .outlook-stat__value { color: var(--good); }
+.outlook-stat--bad .outlook-stat__value { color: var(--bad); }
+.outlook-stat--caution .outlook-stat__value { color: var(--caution); }
+
+.outlook-chart__area-top { stop-color: var(--brand); stop-opacity: 0.22; }
+.outlook-chart__area-foot { stop-color: var(--brand); stop-opacity: 0; }
+.outlook-chart__area { animation: rise var(--dur-slow) var(--ease) both; }
+
+.outlook-facts { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.outlook-fact {
+  display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 12px; font-size: 0.875rem;
+  border: 1px solid var(--line); border-radius: var(--radius-pill); background: var(--paper);
+}
+.outlook-fact strong { font-weight: 600; color: var(--ink); }
+.outlook-fact--good strong { color: var(--good); }
+.outlook-fact--caution strong { color: var(--caution); }
+.outlook__body { gap: var(--space-5); }
+
+/* near the top of the chart the card opens under the point, clear of the legend */
+.outlook-day--below { transform: translate(-50%, 0); }
+/* and never past the chart's left or right edge */
+.outlook-chart__plot { overflow: visible; }

@@ -11,6 +11,7 @@
 import { Link } from "react-router-dom";
 
 import { usePageDescription, usePageTitle } from "../hooks/usePageTitle.js";
+import PageHero from "../components/PageHero.jsx";
 import "./HowItWorks.css";
 
 export const PRIVACY_UPDATED = "9 November 2026";
@@ -32,11 +33,8 @@ export default function Privacy() {
 
   return (
     <div className="container prose">
-      <h1>Privacy</h1>
-      <p className="lead muted">
-        ShopSavvy has no accounts, no cookies, no analytics and no ads. The only personal information it ever holds is the email
-        address you give for a price alert, and only for as long as that alert needs it.
-      </p>
+      <PageHero icon="privacy" eyebrow="Your data" title="Privacy"
+        lead="ShopSavvy has no accounts, no cookies, no analytics and no ads. The only personal information it ever holds is the email address you give for a price alert, and only for as long as that alert needs it." />
 
       <section aria-labelledby="collect-heading">
         <h2 id="collect-heading">What we collect, and why</h2>

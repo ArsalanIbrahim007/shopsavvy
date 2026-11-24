@@ -11,6 +11,7 @@ import { Checked, Flagged, Matched } from "../components/HowWeCheck.jsx";
 import { useInView } from "../hooks/useCountUp.js";
 import { usePageTitle } from "../hooks/usePageTitle.js";
 import "../components/HowWeCheck.css";
+import PageHero from "../components/PageHero.jsx";
 import "./HowItWorks.css";
 
 const STEPS = [
@@ -54,10 +55,8 @@ export default function HowItWorks() {
   usePageTitle("How we check prices");
   return (
     <div className="container prose how">
-      <header className="how__head">
-        <h1>How ShopSavvy checks prices</h1>
-        <p className="lead muted">Comparing prices is easy. Knowing whether a price is real is the hard part.</p>
-      </header>
+      <PageHero icon="how" eyebrow="How it works" title="How ShopSavvy checks prices"
+        lead="Comparing prices is easy. Knowing whether a price is real is the hard part." />
 
       <div className="how__steps">
         {STEPS.map((step, i) => <Step key={step.id} step={step} index={i} />)}

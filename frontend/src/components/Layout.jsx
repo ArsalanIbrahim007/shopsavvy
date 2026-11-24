@@ -91,33 +91,38 @@ function Header() {
 // were updated, and every product says when its price was checked).
 function Footer() {
   return (
+    // Three columns (2026-11-21): who we are, with the stores folded under it; using the site; and why to trust it.
     <footer className="site-footer">
       <div className="container site-footer__inner">
-        <div className="site-footer__top">
+        <div className="site-footer__brand">
           <Logo />
-          <nav className="site-footer__links" aria-label="About ShopSavvy">
-            <Link to="/how-it-works">How it works</Link>
-            <Link to="/honest-prices">How accurate we are</Link>
-            <Link to="/drops">Price drops</Link>
-            <Link to="/help">How to use it</Link>
-            <Link to="/try">Help us test it</Link>
-            <Link to="/privacy">Privacy</Link>
-          </nav>
+          <p className="site-footer__note">
+            Compare prices across {STORES.length} Pakistani stores for free. We don't take money from stores.
+          </p>
+          <details className="site-footer__more">
+            <summary>See the {STORES.length} stores we compare</summary>
+            <ul className="site-footer__stores" aria-label={`The ${STORES.length} stores we compare`}>
+              {STORES.map((store) => (
+                <li key={store}>
+                  <StoreMark platform={store} size={18} />
+                  <span>{platformName(store)}</span>
+                </li>
+              ))}
+            </ul>
+          </details>
         </div>
-        <p className="site-footer__note">
-          {STORES.length} Pakistani stores, compared for free. We don't take money from stores, and prices are shown as we found them.
-        </p>
-        <details className="site-footer__more">
-          <summary>See the {STORES.length} stores we compare</summary>
-          <ul className="site-footer__stores" aria-label={`The ${STORES.length} stores we compare`}>
-            {STORES.map((store) => (
-              <li key={store}>
-                <StoreMark platform={store} size={18} />
-                <span>{platformName(store)}</span>
-              </li>
-            ))}
-          </ul>
-        </details>
+        <nav className="site-footer__col" aria-labelledby="footer-using">
+          <h2 id="footer-using" className="site-footer__heading">Using ShopSavvy</h2>
+          <Link to="/how-it-works">How it works</Link>
+          <Link to="/help">How to compare prices</Link>
+          <Link to="/drops">Price drops</Link>
+        </nav>
+        <nav className="site-footer__col" aria-labelledby="footer-about">
+          <h2 id="footer-about" className="site-footer__heading">About ShopSavvy</h2>
+          <Link to="/honest-prices">How accurate are our prices?</Link>
+          <Link to="/try">Help us test it</Link>
+          <Link to="/privacy">Privacy</Link>
+        </nav>
       </div>
     </footer>
   );

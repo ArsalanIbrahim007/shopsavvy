@@ -15,6 +15,7 @@ import { ptaFlag, ptaNotice } from "../../lib/pta.js";
 import { offerCountText, possibleSaving, summarizeOffers } from "../../lib/summary.js";
 import { cardBadges } from "../../lib/verdicts.js";
 import ColourPicker from "../ColourPicker.jsx";
+import VariantPicker from "../product/VariantPicker.jsx";
 import ProductRating from "../ProductRating.jsx";
 import ProductImage from "../ProductImage.jsx";
 import VerdictBadge from "../VerdictBadge.jsx";
@@ -80,6 +81,8 @@ export default function ResultGroup({ group, currentId, colour = null, onColour 
       {oldNotice && <p className="result-group__pta small" role="note">{oldNotice}</p>}
       {notice && <p className="result-group__pta small" role="note">{notice}</p>}
 
+      {/* the other storage / RAM / PTA versions of the model, each a page of its own (product page only) */}
+      {onColour && <VariantPicker group={group} category={category} />}
       {onColour && <ColourPicker offers={allOffers} value={chosen} onChange={onColour} />}
       {chosen && unstated > 0 && (
         <p className="colour-picker__note small muted">

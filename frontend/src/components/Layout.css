@@ -175,3 +175,25 @@ a:hover .logo__tag { transform: rotate(-8deg); }
 .site-footer__more summary { cursor: pointer; color: var(--ink-soft); width: fit-content; }
 .site-footer__more summary:hover { color: var(--ink); }
 .site-footer__more[open] summary { margin-bottom: var(--space-3); }
+
+/* ---- The footer in three columns (2026-11-21): the brand with its note and the folded store list, "Using ShopSavvy", "About
+   ShopSavvy". One column on a phone, then two, then three. */
+.site-footer__inner { grid-template-columns: 1fr; gap: var(--space-6) var(--space-7); align-items: start; }
+@media (min-width: 640px) { .site-footer__inner { grid-template-columns: 1fr 1fr; } .site-footer__brand { grid-column: 1 / -1; } }
+@media (min-width: 960px) { .site-footer__inner { grid-template-columns: 1.4fr 1fr 1fr; } .site-footer__brand { grid-column: auto; } }
+.site-footer__brand { display: grid; gap: var(--space-3); justify-items: start; }
+.site-footer__brand .logo__word { font-size: 1.375rem; }
+.site-footer__note { max-width: 40ch; font-size: 0.9375rem; color: var(--ink-soft); line-height: 1.55; }
+.site-footer__col { display: grid; gap: var(--space-3); align-content: start; }
+.site-footer__heading { font-size: 1rem; font-weight: 700; color: var(--ink); margin: 0 0 var(--space-1); letter-spacing: -0.01em; }
+.site-footer__col a { font-size: 0.9375rem; width: fit-content; }
+.site-footer__more summary {
+  list-style: none; display: inline-flex; align-items: center; gap: var(--space-2);
+  color: var(--brand); text-decoration: underline; text-underline-offset: 3px; font-size: 0.9375rem;
+}
+.site-footer__more summary::-webkit-details-marker { display: none; }
+.site-footer__more summary::after {
+  content: ""; width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg) translateY(-2px); transition: transform var(--dur-base) var(--ease);
+}
+.site-footer__more[open] summary::after { transform: rotate(225deg) translateY(-1px); }

@@ -142,3 +142,12 @@ a.chip:hover, button.chip:hover { border-color: var(--brand); color: var(--brand
 /* Pages whose content arrives after a skeleton: tall from the start, so the footer is not in view and
    does not jump down when the content replaces the skeleton. */
 .page-tall { min-height: 100vh; align-content: start; }
+
+/* A store's crossed-out "was" price (2026-11-21): readable text with a red strike, so the cut is seen in both themes (in dark mode
+   the faint grey it had nearly vanished). The offer table, the caught-discount cards and the hero card. */
+.offer-table .offer-table__was, .caught-card .caught-card__claim s {
+  color: var(--ink-soft);
+  text-decoration: line-through; text-decoration-color: var(--bad); text-decoration-thickness: 1.5px;
+}
+.badge__icon { flex: none; }
+.proof .proof__was { color: var(--ink-soft); } /* its own red line is drawn over it (ProofCard.css) */

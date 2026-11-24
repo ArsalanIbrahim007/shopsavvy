@@ -206,16 +206,41 @@ describe("OfferTable: a long table folds (2026-11-21)", () => {
     inRouter(<OfferTable offers={many()} name="Phone" />);
     expect(bodyRows()).toHaveLength(8);
     expect(screen.queryByText("PKR 50,000")).toBeNull(); // the out-of-stock one is folded away
-    fireEvent.click(screen.getByRole("button", { name: "Show all 13 offers (1 not counted for the lowest price)" }));
+    fireEvent.click(screen.getByRole("button", { name: "Show all 13 stores (1 not counted for the lowest price)" }));
     expect(bodyRows()).toHaveLength(14); // 13 offers and the "not counted" line
     expect(screen.getByText("PKR 50,000")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Show fewer offers" }));
+    fireEvent.click(screen.getByRole("button", { name: "Show fewer stores" }));
     expect(bodyRows()).toHaveLength(8);
   });
 
   it("always shows the listing the shopper opened", () => {
     inRouter(<OfferTable offers={many()} name="Phone" currentId="o11" />);
     expect(bodyRows()).toHaveLength(9);
+    expect(screen.getByText("The one you opened")).toBeInTheDocument();
+  });
+
+  it("shows one row per store, its best offer first, and its other sellers on request", () => {
+    // AlfaMall: three sellers of the phone; DigiMall one
+    const sellers = [
+      offer("a1", "alfamall", 61000, { seller: "Seller A" }), offer("a2", "alfamall", 62500, { seller: "Seller B" }),
+      offer("a3", "alfamall", 63000, { seller: "Seller C" }), offer("d1", "digimall", 61500),
+    ];
+    inRouter(<OfferTable offers={sellers} name="Phone" />);
+    expect(bodyRows()).toHaveLength(3); // AlfaMall's best, its "more" line, DigiMall
+    expect(bodyRows()[0]).toHaveTextContent("PKR 61,000");
+    const prices = () => [...document.querySelectorAll(".offer-table__price")].map((p) => p.textContent);
+    expect(prices()).not.toContain("PKR 62,500");
+    expect(screen.getByRole("button", { name: "Show 2 more from AlfaMall" })).toHaveTextContent("2 more sellers at AlfaMall · from PKR 62,500");
+    fireEvent.click(screen.getByRole("button", { name: "Show 2 more from AlfaMall" }));
+    expect(screen.getByText("PKR 62,500")).toBeInTheDocument();
+    expect(screen.getByText("PKR 63,000")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Show fewer from AlfaMall" })).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("opens a store's sellers when the one the shopper opened is among them", () => {
+    const sellers = [offer("a1", "alfamall", 61000), offer("a2", "alfamall", 62500)];
+    inRouter(<OfferTable offers={sellers} name="Phone" currentId="a2" />);
+    expect(screen.getByText("PKR 62,500")).toBeInTheDocument();
     expect(screen.getByText("The one you opened")).toBeInTheDocument();
   });
 

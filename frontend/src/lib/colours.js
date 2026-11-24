@@ -39,9 +39,39 @@ export const colourOf = (offer) => (offer?.colour ? String(offer.colour) : null)
 function optionsOf(offer) {
   const options = Array.isArray(offer?.colourOptions) ? offer.colourOptions : [];
   return options
-    .map((option) => (typeof option === "string" ? { colour: option, image: null } : { colour: option?.colour, image: option?.image ?? null }))
+    .map((option) => (typeof option === "string" ? { colour: option, image: null } : { colour: option?.colour, image: option?.image ?? null, price: option?.price, inStock: option?.inStock, link: option?.link }))
     .filter((option) => typeof option.colour === "string" && option.colour.trim() !== "")
-    .map((option) => ({ colour: option.colour.trim(), image: safeExternalUrl(option.image) || null }));
+    .map((option) => ({
+      colour: option.colour.trim(),
+      image: safeExternalUrl(option.image) || null,
+      // a store that prices each colour on its own says so (PriceOye, backend colourPage.service.js priceOyeColourPrices)
+      price: Number(option.price) > 0 ? Number(option.price) : null,
+      inStock: typeof option.inStock === "boolean" ? option.inStock : null,
+      // and the store's page for that colour ("…/ppc/cosmic_orange/256gb"), so "View deal" opens the variant chosen
+      link: safeExternalUrl(option.link) || null,
+    }));
+}
+
+/**
+ * The offer as it is in one colour (2026-11-21): a store that prices each colour on its own (PriceOye: the iPhone 17 Pro Max is
+ * PKR 474,745 in orange, 494,945 in silver) gives that colour's price and stock; any other offer is unchanged.
+ */
+export function inColour(offer, colour) {
+  const options = colour ? optionsOf(offer) : [];
+  const option = options.find((o) => o.colour === colour);
+  if (!option?.price) return offer;
+  // The colour prices are read with the product page (every two weeks); the offer's price every night. They are used only while
+  // they still agree: the cheapest colour is the offer's price today. Otherwise the store's prices have moved since, and a colour's
+  // old price would be shown as today's.
+  const cheapestColour = Math.min(...options.map((o) => o.price).filter((p) => p > 0));
+  if (cheapestColour !== offer.price) return offer;
+  return {
+    ...offer,
+    price: option.price,
+    ...(option.inStock !== null ? { inStock: option.inStock } : {}),
+    ...(option.link ? { productUrl: option.link } : {}),
+    colourPriced: true,
+  };
 }
 
 /** Every colour one offer is sold in: the ones its page lists, plus its own title's. */
@@ -79,10 +109,12 @@ export function coloursOf(offers) {
  */
 export function offersInColour(offers, colour) {
   if (!colour) return offers ?? [];
-  return (offers ?? []).filter((offer) => {
-    const sold = coloursOfOffer(offer);
-    return sold.length === 0 || sold.includes(colour);
-  });
+  return (offers ?? [])
+    .filter((offer) => {
+      const sold = coloursOfOffer(offer);
+      return sold.length === 0 || sold.includes(colour);
+    })
+    .map((offer) => inColour(offer, colour)); // that colour's own price where the store gives one
 }
 
 /** How many offers state no colour at all (they stay when a colour is chosen, and the page says so). */

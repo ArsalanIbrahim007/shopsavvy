@@ -216,7 +216,8 @@ describe("Product page: everything about the opened listing", () => {
 
     expect(screen.getByRole("heading", { level: 2, name: "Deal verdict for PriceOye" })).toBeInTheDocument();
     expect(screen.getByText("Cheapest in 20 days.")).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: "Price history" })).toBeInTheDocument();
+    // no every-store "Price history" chart (2026-11-21): the best-price chart under "Wait or buy?" names the store for each day
+    expect(screen.queryByRole("heading", { level: 2, name: "Price history" })).toBeNull();
     expect(screen.getByRole("heading", { level: 2, name: "Price alert" })).toBeInTheDocument();
     expect(screen.getByLabelText("Your email")).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 2, name: "Specifications" })).toBeInTheDocument();
@@ -238,7 +239,7 @@ describe("Product page: everything about the opened listing", () => {
     serve([offer("p1", "priceoye", 64000, { dealScore: undefined, productCategory: "other" })]);
     renderProduct("p1");
     await screen.findByRole("article");
-    expect(screen.getByText(/no price history has been recorded/i)).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { level: 2, name: "Price history" })).toBeNull();
     expect(screen.queryByRole("heading", { level: 2, name: "Specifications" })).toBeNull();
     expect(screen.getByText("Not scored")).toBeInTheDocument();
   });

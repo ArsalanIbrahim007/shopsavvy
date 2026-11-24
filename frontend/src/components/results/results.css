@@ -307,3 +307,35 @@
 
 /* "Show all N offers" under a long table (OfferTable ROWS_SHOWN, 2026-11-21) */
 .offer-table__more { margin: var(--space-3) var(--space-4) 0; }
+
+/* a store's other sellers (OfferTable, 2026-11-21): its best offer is the row, the rest open under it */
+.offer-table tr.offer-table__sellers td { padding-block: var(--space-1) var(--space-2); }
+.offer-table__sellers-toggle {
+  display: inline-flex; align-items: center; gap: var(--space-2); padding: 4px 10px;
+  border: 1px solid var(--line); border-radius: var(--radius-pill); background: var(--paper); color: var(--ink-soft); font: inherit; cursor: pointer;
+}
+.offer-table__sellers-toggle:hover { color: var(--ink); border-color: var(--ink-mute); }
+.offer-table__chevron { width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg) translateY(-2px); }
+.offer-table__sellers-toggle[aria-expanded="true"] .offer-table__chevron { transform: rotate(225deg) translateY(-1px); }
+.offer-table tr.is-seller td:first-child { box-shadow: inset 3px 0 0 var(--line); padding-left: calc(var(--space-4) + 12px); }
+.offer-table tr.is-seller { background: var(--raised); }
+@media (max-width: 719px) {
+  .offer-table tr.offer-table__sellers { display: block; padding: 0 var(--space-3) var(--space-2); }
+  .offer-table tr.offer-table__sellers td { padding: 0; }
+}
+
+/* "+10 more sellers at DigiMall · from PKR 70,500" (2026-11-21): a full-width row under the store's best offer, its count in a
+   circle, the arrow at the end turning when it opens */
+.offer-table__sellers-toggle {
+  width: 100%; justify-content: flex-start; gap: var(--space-3); padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-control); border-style: dashed; font-size: 0.875rem; color: var(--ink);
+  transition: background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+.offer-table__sellers-toggle:hover { background: var(--raised); border-style: solid; }
+.offer-table__sellers-toggle[aria-expanded="true"] { border-style: solid; background: var(--raised); }
+.offer-table__sellers-count {
+  flex: none; min-width: 30px; height: 26px; padding: 0 6px; display: grid; place-items: center;
+  border-radius: var(--radius-pill); background: var(--brand-soft); color: var(--brand); font-weight: 700; font-size: 0.75rem;
+}
+.offer-table__sellers-text { flex: 1; text-align: left; }
+.offer-table__sellers-toggle .offer-table__chevron { margin-left: auto; }

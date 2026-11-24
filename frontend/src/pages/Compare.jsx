@@ -18,6 +18,7 @@ import { platformName } from "../lib/platforms.js";
 import { productPath } from "../lib/productPath.js";
 import { safeExternalUrl } from "../lib/safeLink.js";
 import { bestOf, formatSpec, SPEC_FIELDS } from "../lib/specs.js";
+import PageHero from "../components/PageHero.jsx";
 import "../components/Compare.css";
 
 // A rank among one or two products says nothing ("#1 of 1"): shown from three products priced alike.
@@ -53,7 +54,8 @@ export default function Compare() {
   if (ids.length < 2) {
     return (
       <div className="container compare page-tall">
-        <h1>Compare</h1>
+        <PageHero icon="compare" eyebrow="Side by side" title="Compare"
+          lead="Put two to four products next to each other: price, specifications and the best offer for each." />
         <Empty />
       </div>
     );

@@ -134,18 +134,18 @@ describe("theme choice", () => {
     document.documentElement.removeAttribute("data-theme");
   });
 
-  it("cycles dark -> light -> device -> dark", () => {
-    expect(THEMES).toEqual(["dark", "light", "system"]);
-    expect(nextTheme("dark")).toBe("light");
-    expect(nextTheme("light")).toBe("system");
-    expect(nextTheme("system")).toBe("dark");
-    expect(nextTheme("junk")).toBe("dark");
+  it("cycles light -> dark -> device -> light", () => {
+    expect(THEMES).toEqual(["light", "dark", "system"]);
+    expect(nextTheme("light")).toBe("dark");
+    expect(nextTheme("dark")).toBe("system");
+    expect(nextTheme("system")).toBe("light");
+    expect(nextTheme("junk")).toBe("light");
   });
 
-  it("opens dark when nothing or junk is stored", () => {
-    expect(getStoredTheme()).toBe("dark");
+  it("opens light when nothing or junk is stored (the default since 2026-11-21)", () => {
+    expect(getStoredTheme()).toBe("light");
     window.localStorage.setItem(THEME_KEY, "purple");
-    expect(getStoredTheme()).toBe("dark");
+    expect(getStoredTheme()).toBe("light");
   });
 
   it("remembers each choice, including following the device", () => {
@@ -160,8 +160,8 @@ describe("theme choice", () => {
   it("works when storage is blocked", () => {
     vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => { throw new Error("blocked"); });
     vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => { throw new Error("blocked"); });
-    expect(getStoredTheme()).toBe("dark");
-    expect(() => storeTheme("light")).not.toThrow();
+    expect(getStoredTheme()).toBe("light");
+    expect(() => storeTheme("dark")).not.toThrow();
   });
 
   it("sets data-theme for light and dark and clears it for the device setting", () => {
@@ -178,7 +178,7 @@ describe("theme choice", () => {
     expect(html).toContain(`"${THEME_KEY}"`);
     // run the inline script as the browser would, for each stored value
     const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
-    for (const [stored, expected] of [[null, "dark"], ["purple", "dark"], ["dark", "dark"], ["light", "light"], ["system", null]]) {
+    for (const [stored, expected] of [[null, "light"], ["purple", "light"], ["dark", "dark"], ["light", "light"], ["system", null]]) {
       document.documentElement.removeAttribute("data-theme");
       if (stored === null) window.localStorage.removeItem(THEME_KEY); else window.localStorage.setItem(THEME_KEY, stored);
       new Function(script)();

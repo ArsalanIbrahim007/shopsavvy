@@ -10,10 +10,10 @@
     <script>
       try {
         var t = localStorage.getItem("shopsavvy:theme:v1");
-        if (t !== "light" && t !== "system") t = "dark"; // dark unless the shopper chose otherwise (src/lib/theme.js)
+        if (t !== "dark" && t !== "system") t = "light"; // light unless the shopper chose otherwise (src/lib/theme.js)
         if (t !== "system") document.documentElement.setAttribute("data-theme", t);
       } catch (e) {
-        document.documentElement.setAttribute("data-theme", "dark");
+        document.documentElement.setAttribute("data-theme", "light");
       }
     </script>
     <title>ShopSavvy - Compare Prices in Pakistan</title>

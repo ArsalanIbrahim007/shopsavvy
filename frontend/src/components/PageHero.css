@@ -1,0 +1,19 @@
+/* The top of every side page (PageHero.jsx): an icon tile beside the label, title and lead, on a card tinted with the brand colour. */
+.page-hero {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-4) var(--space-5); align-items: start;
+  margin-block: var(--space-6) var(--space-6); padding: var(--space-6);
+  background: linear-gradient(135deg, var(--brand-soft) 0%, var(--paper) 62%);
+  border: 1px solid var(--line); border-radius: var(--radius-card);
+}
+.page-hero__icon {
+  display: grid; place-items: center; width: 56px; height: 56px; border-radius: 14px;
+  background: var(--paper); border: 1px solid var(--line); color: var(--brand); box-shadow: var(--shadow-pop);
+}
+.page-hero__text { display: grid; gap: var(--space-2); min-width: 0; }
+.page-hero__eyebrow { margin: 0; font-size: 0.8125rem; font-weight: 600; color: var(--brand); }
+.page-hero__title { margin: 0; font-size: clamp(1.75rem, 4vw, 2.5rem); line-height: 1.1; letter-spacing: -0.035em; }
+.page-hero__lead { margin: 0; max-width: 62ch; font-size: 1.0625rem; line-height: 1.55; color: var(--ink-soft); }
+@media (max-width: 559px) {
+  .page-hero { grid-template-columns: 1fr; padding: var(--space-5); }
+  .page-hero__icon { width: 48px; height: 48px; }
+}

@@ -13,6 +13,7 @@ import {
   SUS_STATEMENTS, toUatResponse, UAT_TASKS,
 } from "../lib/uat.js";
 import "./HowItWorks.css";
+import PageHero from "../components/PageHero.jsx";
 import "./TryShopSavvy.css";
 
 /** A row of radio buttons. `options` are [{value, label}]; `name` must be unique on the page. */
@@ -79,13 +80,8 @@ export default function TryShopSavvy() {
 
   return (
     <div className="container prose uat">
-      <div>
-        <h1>Help us test ShopSavvy</h1>
-        <p className="lead muted">
-          Five short tasks and ten quick questions: about ten minutes. It is anonymous: we don't ask your name or email, and keep only
-          your answers. <Link to="/privacy">Privacy</Link>
-        </p>
-      </div>
+      <PageHero icon="test" eyebrow="About ten minutes" title="Help us test ShopSavvy"
+        lead={<>Five short tasks and ten quick questions. It is anonymous: we don't ask your name or email, and keep only your answers. <Link to="/privacy">Privacy</Link></>} />
 
       <form className="uat-form" onSubmit={submit} noValidate>
         <section aria-labelledby={`${uid}-tasks`}>

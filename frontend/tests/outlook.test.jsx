@@ -255,7 +255,9 @@ describe("PriceOutlook panel", () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it("draws the verdict, the gauge, the chart, the four figures, the evidence and the movement", () => {
+  // 2026-11-21: four figure cards on top (today, lowest, highest, versus usual), the chart across the width, the rest as facts;
+  // the gauge only where there is no chart.
+  it("draws the verdict, the figure cards, the chart, the facts, the evidence and the movement", () => {
     renderPanel(outlook({ market }));
     const section = screen.getByRole("region", { name: "Wait or buy?" });
     expect(within(section).getByRole("heading", { level: 2, name: "Wait or buy?" })).toBeInTheDocument();
@@ -263,22 +265,28 @@ describe("PriceOutlook panel", () => {
     expect(within(section).getByText("Today's best price is at or near the lowest we have recorded.")).toBeInTheDocument();
     expect(within(section).getByText("Early estimate")).toBeInTheDocument();
 
-    const gauge = within(section).getByRole("img", { name: /Today's best price is PKR 60,000\. The lowest it has been is PKR 60,000, the highest PKR 66,000, and its usual price PKR 62,000\./ });
-    expect(gauge).toBeInTheDocument();
     expect(within(section).getByRole("img", { name: /The best price each day for 10 days/ })).toBeInTheDocument();
+    expect(within(section).queryByRole("img", { name: /Today's best price is PKR/ })).toBeNull(); // the cards say it
 
-    const figures = within(section).getByRole("list", { name: "The numbers" });
-    expect(within(figures).getAllByRole("listitem")).toHaveLength(4);
-    expect(figures).toHaveTextContent("3.2% below");
-    expect(figures).toHaveTextContent("Down 9.1%");
-    expect(figures).toHaveTextContent("Today");
-    expect(figures).toHaveTextContent("10 days");
+    const cards = within(section).getByRole("list", { name: "The best price in figures" });
+    expect(within(cards).getAllByRole("listitem")).toHaveLength(4);
+    expect(cards).toHaveTextContent("Today's bestPKR 60,000");
+    expect(cards).toHaveTextContent("Lowest recordedPKR 60,000");
+    expect(cards).toHaveTextContent("Highest recordedPKR 66,000");
+    expect(cards).toHaveTextContent("3.2% below");
+    expect(cards).toHaveTextContent("Usual PKR 62,000");
+
+    const facts = within(section).getByRole("list", { name: "More about the best price" });
+    expect(within(facts).getAllByRole("listitem")).toHaveLength(3);
+    expect(facts).toHaveTextContent("Down 9.1%");
+    expect(facts).toHaveTextContent("Today");
+    expect(facts).toHaveTextContent("10 days");
   });
 
   it("gives each figure's direction in words as well as an arrow", () => {
     renderPanel(outlook());
-    const figures = screen.getByRole("list", { name: "The numbers" });
-    expect(figures).toHaveTextContent("(down)");
+    const facts = screen.getByRole("list", { name: "More about the best price" });
+    expect(facts).toHaveTextContent("(down)");
   });
 
   it("shows the evidence as progress bars with their values, and says how far each is from its mark", () => {
@@ -353,11 +361,11 @@ describe("PriceOutlook panel", () => {
     expect(calm.container.querySelector(".outlook-split__part--rose")).toBeNull();
   });
 
-  it("for a price that never moved: no gauge, but the chart and the figures", () => {
+  it("for a price that never moved: no gauge, but the chart and the figure cards", () => {
     renderPanel(outlook({ verdict: "flat", stats: { ...stats, high: 60000 }, series: series.map((p) => ({ ...p, price: 60000 })) }));
     expect(screen.queryByRole("img", { name: /Today's best price is PKR/ })).toBeNull();
     expect(screen.getByRole("img", { name: /The best price each day/ })).toBeInTheDocument();
-    expect(screen.getByRole("list", { name: "The numbers" })).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "The best price in figures" })).toBeInTheDocument();
   });
 
   it("has no accessibility violations (structure and names)", async () => {

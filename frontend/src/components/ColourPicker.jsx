@@ -8,7 +8,9 @@
 
 import { useState } from "react";
 
-import { coloursOf, swatchFor } from "../lib/colours.js";
+import { coloursOf, offersInColour, swatchFor } from "../lib/colours.js";
+import { formatPrice } from "../lib/format.js";
+import { summarizeOffers } from "../lib/summary.js";
 import "./ColourPicker.css";
 
 export function Swatch({ colour }) {
@@ -51,6 +53,11 @@ export function ColourStrip({ offers, max = 6 }) {
 export default function ColourPicker({ offers, value, onChange }) {
   const colours = coloursOf(offers);
   if (colours.length < 2) return null; // nothing to choose between
+  // Each colour's lowest price, the way a shop's colour buttons show it (2026-11-21): the offers in that colour, at that colour's own
+  // price where the store gives one. The cheapest colour is marked, when the colours do differ.
+  const priced = new Map(colours.map(({ colour }) => [colour, summarizeOffers(offersInColour(offers, colour)).lowest?.price ?? null]));
+  const known = [...priced.values()].filter((p) => p > 0);
+  const cheapest = known.length > 1 && Math.min(...known) < Math.max(...known) ? Math.min(...known) : null;
 
   return (
     <div className="colour-picker" role="group" aria-label="Colour">
@@ -70,8 +77,10 @@ export default function ColourPicker({ offers, value, onChange }) {
               aria-pressed={chosen}
               onClick={() => onChange(chosen ? null : colour)}
             >
+              {cheapest !== null && priced.get(colour) === cheapest && <span className="colour-tile__best">Best deal</span>}
               <Thumb colour={colour} image={image} />
               <span className="colour-tile__name small">{colour}</span>
+              {priced.get(colour) > 0 && <span className="colour-tile__price small">{formatPrice(priced.get(colour))}</span>}
               <span className="visually-hidden">, {count} {count === 1 ? "offer" : "offers"}</span>
             </button>
           );

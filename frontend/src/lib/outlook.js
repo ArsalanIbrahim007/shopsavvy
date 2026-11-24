@@ -8,7 +8,7 @@
 // answer for most products for now.
 
 import { formatAxisDate, formatDate, formatNumber, formatPrice } from "./format.js";
-import { chartModel } from "./history.js";
+import { chartModel, historyPoints } from "./history.js";
 
 // The server sends its thresholds with every outlook (`limits`); these are only used if an older server does not.
 const DEFAULT_LIMITS = { minDays: 7, minRecords: 5, fairDays: 28, fairRecords: 20, staleDays: 3 };
@@ -113,6 +113,30 @@ export function movementFor(market) {
  * The chart of the best price day by day, on axes, as a step line (a price holds until it changes) with today's price marked and the
  * lowest, usual and highest levels as reference lines. Null with fewer than two days of records.
  */
+// A store's last recorded price counts on a later day only while it is at most this old: the backend's rule for the series
+// (priceOutlook.service.js CARRY_DAYS).
+const CARRY_MS = 3 * 24 * 3600 * 1000;
+
+/**
+ * Which store had the best price on a day of the chart (2026-11-21: the hover card says where the price was, not only what it was).
+ * From the offers' own histories: the offer whose latest record on or before the day (and at most three days old) is the price the
+ * chart shows; the cheapest such offer when several match, null when none does.
+ * @param {object[]} offers  the product's offers, each with a `priceHistory`
+ * @param {Date} at  the chart point's time (noon of its day in Karachi)
+ * @param {number} price  the best price the chart shows that day
+ * @returns {object|null}  the offer
+ */
+export function bestOfferOn(offers, at, price) {
+  const end = at.getTime() + 12 * 3600 * 1000; // the whole day, to midnight
+  let found = null;
+  for (const offer of offers ?? []) {
+    const latest = historyPoints(offer).filter((point) => point.at.getTime() <= end).at(-1);
+    if (!latest || end - latest.at.getTime() > CARRY_MS + 24 * 3600 * 1000) continue;
+    if (latest.price === price && (!found || offer.price < found.price)) found = offer;
+  }
+  return found;
+}
+
 export function chartFor(outlook, { width = 640, height = 240 } = {}) {
   const { series, stats } = outlook;
   if (!stats || !Array.isArray(series) || series.length < 2) return null;

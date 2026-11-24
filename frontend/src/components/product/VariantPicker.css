@@ -1,0 +1,18 @@
+/* The Storage / RAM / PTA rows on the product page (VariantPicker.jsx), matching the colour buttons below them (ColourPicker.css). */
+.variant-picker { display: grid; gap: var(--space-4); padding: var(--space-4) var(--space-5) 0; }
+.variant-picker__row { display: grid; gap: var(--space-2); }
+.variant-picker__options { display: flex; flex-wrap: wrap; gap: var(--space-2); padding-top: 6px; }
+
+.variant-tile {
+  position: relative; display: grid; gap: 2px; min-width: 104px; padding: var(--space-2) var(--space-3);
+  border: 2px solid var(--line); border-radius: var(--radius-control); background: var(--paper); color: var(--ink);
+  text-decoration: none;
+}
+a.variant-tile:hover { border-color: var(--ink-mute); text-decoration: none; }
+.variant-tile[aria-current="true"] { border-color: var(--accent); }
+.variant-tile__label { font-weight: 600; font-size: 0.9375rem; }
+.variant-tile__price { font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-soft); }
+.variant-tile__best {
+  position: absolute; top: -9px; left: 50%; transform: translateX(-50%); white-space: nowrap;
+  padding: 1px 7px; border-radius: var(--radius-pill); background: var(--accent); color: var(--on-accent); font-size: 0.625rem; font-weight: 700;
+}
