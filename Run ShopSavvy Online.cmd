@@ -10,8 +10,15 @@ if not exist "..\deploy\ngrok-domain.txt" (
 )
 set /p NGROK_DOMAIN=<"..\deploy\ngrok-domain.txt"
 
+REM ngrok on the PATH, or else where winget installed it: winget's link to it can disappear, and the script then stopped although
+REM ngrok was installed (2026-11-26).
+set "NGROK=ngrok"
 where ngrok >nul 2>nul
 if errorlevel 1 (
+  set "NGROK="
+  for /d %%D in ("%LOCALAPPDATA%\Microsoft\WinGet\Packages\Ngrok.Ngrok_*") do if exist "%%D\ngrok.exe" set "NGROK=%%D\ngrok.exe"
+)
+if not defined NGROK (
   echo ngrok is not installed or not on the PATH. See deploy\README-pc.md, step 1.
   pause
   exit /b 1
@@ -34,4 +41,4 @@ REM Without this, on a fresh cache folder the first home page took up to 79 s an
 start "ShopSavvy warm-up" cmd /c "node src\scripts\ops\warm-up.js & echo. & echo This window closes in a minute. & timeout /t 60 >nul"
 
 echo Opening the tunnel at https://%NGROK_DOMAIN% ...
-ngrok http --url=%NGROK_DOMAIN% 5000
+"%NGROK%" http --url=%NGROK_DOMAIN% 5000
