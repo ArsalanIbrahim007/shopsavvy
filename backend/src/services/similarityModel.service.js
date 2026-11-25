@@ -337,9 +337,13 @@ export function mlMatchStrategy(rawTitle, group, listing) {
   const withoutCode = (title) => String(title || "").replace(STORE_CODE, " ").replace(/[\s|_([–-]+$/, "").replace(/\s+/g, " ").trim();
   const ownCode = withoutCode(rawTitle);
   const groupCode = withoutCode(group.rawGroupKey);
-  const tidyOwn = singular(withoutColourTail(ownCode));
-  const tidyGroup = singular(withoutColourTail(groupCode));
-  const colourCut = tidyOwn !== ownCode || tidyGroup !== groupCode;
+  const plainOwn = withoutColourTail(ownCode);
+  const plainGroup = withoutColourTail(groupCode);
+  const tidyOwn = singular(plainOwn);
+  const tidyGroup = singular(plainGroup);
+  // Compared again only when something was cut, or when one title has a plural the other has not: every title with a plural word
+  // ("Earbuds", "Watches") was compared twice, and a cold start took 228 s for the phones (2026-11-26).
+  const colourCut = plainOwn !== ownCode || plainGroup !== groupCode || (tidyOwn !== plainOwn) !== (tidyGroup !== plainGroup);
   if (priceAgrees && colourCut && tidyOwn && tidyGroup && classifyPairML(
     { title: tidyOwn, price: listing.price },
     { title: tidyGroup, price: groupPrice }
