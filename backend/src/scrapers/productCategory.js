@@ -45,6 +45,10 @@ const NOT_A_PHONE_KINDS = [
   // "Free Original Apple USB-C 20W Power Adapter") nor "battery" (Daraz phone titles end with it).
   "book", "lighter", "walkie", "privacy glass", "clear glass", "anti ?static", "glas\\.tr", "screen shield", "pathfinder", "uag",
   "boya", "handfree", "pd adapter", "audio adapter", "lightning", "display panel", "smart ?tag",
+  // Smartphone audit, 2026-11-27: "Logitech P710e Bluetooth Mobile Speakerphone", "Razer Barracuda X … Mobile Headset", "Huawei 1TB
+  // … NVMe SSD", "Enviro 1.5 Ton Galaxy Series AC", "SX6 … Lapel Mic Set For Type-C & iPhone", AlfaMall's "Custom Leather Mobile
+  // Sheet – Machine Cut … for All iPhones" were phones on "mobile", "galaxy" or "iphone". In none of the 8,100 phone titles.
+  "speakerphone", "headset", "ssd", "nvme", "\\d(\\.\\d)?\\s?ton", "lapel", "mic set", "mobile sheet", "jelly paper", "machine cut",
 ];
 
 /**
@@ -561,6 +565,7 @@ const CATEGORIES = {
             "1.0 ton",
             "1.5 ton",
             "2 ton",
+            "2.0 ton", // "Enviro 2.0 Ton Galaxy Series AC" (2026-11-27)
             "2.5 ton",
             "4 ton",
         ],
@@ -653,6 +658,7 @@ const CATEGORIES = {
             "1 ton",
             "1.5 ton",
             "2 ton",
+            "2.0 ton",
             "2.5 ton",
             "purifier ac",
             "filter",
@@ -664,6 +670,9 @@ const CATEGORIES = {
 
     accessory: {
         keywords: [
+            "mobile sheet", // phone skins: "Custom Leather Mobile Sheet – Machine Cut … for All iPhones" (2026-11-27)
+            "jelly paper",
+            "lapel mic",
             "bag",
             "backpack",
             "sleeve",

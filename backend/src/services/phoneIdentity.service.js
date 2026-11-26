@@ -34,11 +34,22 @@ function storageShorthand(text) {
   return n !== null && n >= 16 && n <= 2048 ? n : null;
 }
 
+// A storage size written without "GB": "Apple Iphone 17 Pro Max 256 | PTA Approved", "VIVO Y500 (8GB | 256)" (2026-11-27). One of
+// the sizes phones are sold in, standing alone (not "256GB", "5000mAh", "6/128", "1/2").
+function bareStorage(text) {
+  const m = String(text).match(/(?<![\d./+-])\b(64|128|256|512)\b(?!\s*(?:[a-z]|\/|\+|-\s*\d|\.\d))/i);
+  return m ? Number(m[1]) : null;
+}
+
 // "8+256", "8/256", "8-256GB", "(256GB - 8GB RAM)", "8GB RAM": the RAM, when extractRamGb does not read it.
 function ramOf(text) {
+  // RAM and "extended" RAM (part of the storage): "(3+5GB External RAM)", "3+5=8GB" is a 3GB phone (Realme Note 60x, 2026-11-27)
+  const virtual = String(text).match(/(?<![\d.])(\d{1,2})\s*(?:gb)?\s*\+\s*(\d{1,2})\s*(?:gb)?\s*(?:=\s*\d{1,2}\s*gb|gb\s*(?:external|extended|virtual|expandable))/i);
+  if (virtual && Number(virtual[2]) < 32) return Number(virtual[1]);
   const stated = extractRamGb(text);
   if (stated !== null) return stated;
-  const short = text.match(/(?<![\d.])(\d{1,2})\s*(?:gb)?\s*[+/-]\s*\d{2,4}\s*(?:gb|tb)?(?![\d.])/i) ?? text.match(/\b(\d{2,4})\s*(?:gb|tb)\s*[-/,|]\s*(\d{1,2})\s*gb\s*(?:ram)?\b/i);
+  // (the second number a storage, 32 and up: "OnePlus 13 - 12GB" is not 13GB RAM)
+  const short = text.match(/(?<![\d.])(\d{1,2})\s*(?:gb)?\s*[+/-]\s*(?:3[2-9]|[4-9]\d|\d{3,4})\s*(?:gb|tb)?(?![\d.])/i) ?? text.match(/\b(\d{2,4})\s*(?:gb|tb)\s*[-/,|]\s*(\d{1,2})\s*gb\s*(?:ram)?\b/i);
   if (!short) return null;
   const n = Number(short[2] ?? short[1]);
   return n >= 1 && n <= 24 ? n : null;
@@ -76,12 +87,16 @@ function phoneIdentityUncached(title = "") {
   let name = model.join("");
   if (brand === "apple") name = name.replace(/^iphone\d+air/, "iphoneair");
   if (brand === "samsung") name = name.replace(/^(fold|flip)/, "z$1");
+  // A size under 32GB read as the storage is the RAM ("VIVO Y500 (8GB | 256)": its storage is the bare 256)
+  const read = extractStorage(raw);
+  const small = read !== null && read < 32 ? read : null;
+  const twoStorages = /\b(32|64|128|256|512)\s*\/\s*(64|128|256|512|1024)\s*gb\b/i.test(raw);
   return {
     brand,
     model: name,
     network: /\b5g\b/i.test(raw) ? "5g" : "",
-    ram: brand === "apple" ? null : ramOf(raw),
-    storage: /\b(32|64|128|256|512)\s*\/\s*(64|128|256|512|1024)\s*gb\b/i.test(raw) ? null : extractStorage(raw) ?? storageShorthand(raw),
+    ram: brand === "apple" ? null : ramOf(raw) ?? small,
+    storage: twoStorages ? null : (small === null ? read : null) ?? storageShorthand(raw) ?? bareStorage(raw),
     nonPta: extractPtaStatus(raw) === "non_pta",
   };
 }

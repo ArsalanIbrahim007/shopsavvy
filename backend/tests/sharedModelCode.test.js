@@ -100,6 +100,11 @@ describe("grouping joins groups of one phone that a store's wording kept apart (
       [
         phone("a", "alfamall", "Samsung Galaxy A17 | (256GB - 8GB RAM) | PTA Approved | Official Warranty With Free SURPRISE GIFT | Electro Ease", 80000),
         phone("b", "paklap", "Samsung Galaxy A17 - 8GB RAM - 256GB ROM - Installments (Pak Mobiles)", 104000),
+        // the A17 is sold as a 4G and a 5G phone (three stores sell the 5G dearer): a copy 23% dearer not saying "5G" may be the 5G
+        phone("f1", "mega", "Samsung Galaxy A17 5G 8GB 256GB", 97000),
+        phone("f2", "shophive", "Samsung Galaxy A17 5G 8GB 256GB", 97500),
+        phone("f3", "priceoye", "Samsung Galaxy A17 5G 8GB 256GB", 96500),
+        phone("p1", "techroid", "Samsung Galaxy A17 8GB 256GB", 80500),
       ],
       { matchStrategy: mlMatchStrategy },
     );

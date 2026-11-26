@@ -666,10 +666,14 @@ function joinBareModelNames(groups, networkFamilies) {
  * one, and their prices are within PHONE_PRICE_GAP. Used units and non-PTA prices are taken apart again after this
  * (separateByCondition, separateLikelyNonPta), as for any product.
  */
-export const PHONE_PRICE_GAP = 0.2;
+// 35% between the nearest prices of two products of one phone (2026-11-27; 20% before): instalment sellers ask a quarter to a third
+// more than the shops (Realme Note 60x 3GB 64GB PKR 30,899 and 23,999, Infinix Smart 10 Plus 4GB 128GB 44,000 and 33,700).
+export const PHONE_PRICE_GAP = 0.35;
+// ... and 20% for a phone sold as a 4G and a 5G phone (twoNetworkPhones), whose dearer copies not saying "5G" may be the 5G one
+export const TWO_NETWORK_PRICE_GAP = 0.2;
 // "5G" said by one product and not the other: one phone only when priced alike (the Galaxy A17 8GB 256GB is a 4G phone at PKR 80,000
 // and a 5G one at 97,000; the Vivo V70 FE, sold in one version, is called "5G" by some stores and not by others).
-export const PHONE_NETWORK_PRICE_GAP = 0.08;
+export const PHONE_NETWORK_PRICE_GAP = 0.12; // 8% before 2026-11-27: the Galaxy A56 (5G only) "5G" listings were 10% dearer
 const isPhoneGroup = (group) => group.offers.some((o) => o.productCategory === "smartphone");
 const titleOfOffer = (o) => o.title || o.normalizedTitle || "";
 // A phone's title as the phone passes read it: with the RAM and storage its store's page sells it in when the title names neither
@@ -723,6 +727,7 @@ const phoneNetworkOf = (group) => {
 function splitMixedPhones(groups) {
   if (process.env.SHOPSAVVY_NO_PHONE_KEY) return groups;
   const out = [];
+  const twoNetworks = twoNetworkPhones(groups);
   for (const group of groups) {
     out.push(group);
     if (!isPhoneGroup(group)) continue;
@@ -737,14 +742,14 @@ function splitMixedPhones(groups) {
     });
     // The 4G and 5G phones of one model at different prices (Galaxy A17 8GB 256GB: PKR 80,000 and 97,000): the offers that say 5G
     // leave a product most of whose offers do not, or the other way round, when the two are priced more than
-    // PHONE_NETWORK_PRICE_GAP apart (medians). A phone sold in one version, called "5G" by some stores, is priced alike and stays.
+    // PHONE_NETWORK_PRICE_GAP apart (medians), for a phone sold in two networks (twoNetworkPhones). One sold in one version, called "5G" by some stores, stays.
     const median = (xs) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
     const named = namedOffers(group);
     const fiveG = named.filter((o) => phoneNetwork(phoneTitleOf(o)) === "5g");
     const other = named.filter((o) => phoneNetwork(phoneTitleOf(o)) !== "5g");
     if (fiveG.length && other.length) {
       const [a, b] = [median(fiveG.map((o) => o.price)), median(other.map((o) => o.price))];
-      if (Math.abs(a - b) / Math.max(a, b) > PHONE_NETWORK_PRICE_GAP) {
+      if (twoNetworks.has(kept) && fiveGDearer(a, b)) {
         const minority = fiveG.length < other.length ? fiveG : other;
         const leaving = new Set(minority);
         group.offers = group.offers.filter((o) => !leaving.has(o) || away(o, `net:${phoneNetwork(phoneTitleOf(o))}`));
@@ -772,9 +777,44 @@ function splitMixedPhones(groups) {
  * or more, 314 too many, mostly AlfaMall's sellers' copies ("Samsung A07 4/64 | PTA Approved | On Easy Monthly Installments …",
  * "… Authentico.pk", "… ALI's Mobile") and one store's colour pages ("Oppo A6s Pro 256GB 8GB RAM Eclipse Blue"); the A17 5G 8GB
  * 256GB was four products. Two products join when every offer of each that names its phone names the same one and their prices are
- * within PHONE_PRICE_GAP (PHONE_NETWORK_PRICE_GAP when one says 5G and the other does not). Used units and non-PTA prices are taken
+ * within PHONE_PRICE_GAP (and a "5G" one beside one not saying it unless the phone is sold in two networks). Used units and non-PTA prices are taken
  * apart again after this (separateByCondition, separateLikelyNonPta), as for any product.
  */
+// A phone sold as a 4G and a 5G phone: the offers saying "5G" priced clearly above the others (medians, PHONE_NETWORK_PRICE_GAP:
+// the Galaxy A17 8GB 256GB at PKR 97,000 and 80,000). Where the "5G" ones cost the same or less, "5G" is a store's wording of a phone
+// sold in one version (Redmi Note 15 Pro+, Galaxy A57, A56, A26: two products each, 2026-11-27).
+const fiveGDearer = (fiveG, plain) => fiveG > plain * (1 + PHONE_NETWORK_PRICE_GAP);
+// The phones sold as a 4G and a 5G phone, from every listing naming the phone: those saying "5G" dearer, and sold so by at least
+// FIVE_G_STORES stores. Two instalment sellers asking more for a "Galaxy A56 5G" (a phone sold only as 5G) made it two products; the
+// A17 5G is sold by six (2026-11-27).
+const FIVE_G_STORES = 3;
+function twoNetworkPhones(groups) {
+  const byKey = new Map(); // phone -> { five: offers, plain: offers }
+  for (const group of groups) {
+    if (!isPhoneGroup(group)) continue;
+    for (const o of group.offers) {
+      const key = phoneModelKey(phoneTitleOf(o));
+      if (!key) continue;
+      if (!byKey.has(key)) byKey.set(key, { five: [], plain: [] });
+      byKey.get(key)[phoneNetwork(phoneTitleOf(o)) === "5g" ? "five" : "plain"].push(o);
+    }
+  }
+  const median = (xs) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
+  // one price per store (its median), so that one store's several pages do not decide it: Techroid's three Galaxy A56 8GB 256GB at
+  // PKR 115,000 beside Mega's and AlfaMall's at 150,000-155,000
+  const byStore = (offers) => {
+    const prices = new Map();
+    for (const o of offers) prices.set(o.platform, [...(prices.get(o.platform) ?? []), o.price]);
+    return [...prices.values()].map(median);
+  };
+  const out = new Set();
+  for (const [key, { five, plain }] of byKey) {
+    if (!five.length || !plain.length || new Set(five.map((o) => o.platform)).size < FIVE_G_STORES) continue;
+    if (fiveGDearer(median(byStore(five)), median(byStore(plain)))) out.add(key);
+  }
+  return out;
+}
+
 // How far a price is from the range of a product's offers naming the phone (0 inside it).
 function gapToRange(price, group) {
   const prices = (namedOffers(group).length ? namedOffers(group) : group.offers).map((o) => o.price);
@@ -810,7 +850,11 @@ function mergeSamePhones(groups) {
     byKey.get(key).push(group);
   }
   const absorbed = new Set();
-  for (const list of byKey.values()) {
+  // the products of one network join first, then across: a lone "A17 5G" listing goes to the A17 5G product, not to the larger 4G
+  // one that would otherwise take it first
+  const twoNetworks = twoNetworkPhones(groups);
+  for (const phase of ["same", "across"]) for (const [fullKey, list] of byKey) {
+    const key = fullKey.replace(/\|(nonpta)?$/, "");
     if (list.length < 2) continue;
     list.sort((a, b) => b.offers.length - a.offers.length);
     for (const target of list) {
@@ -822,11 +866,16 @@ function mergeSamePhones(groups) {
         if ((pa.has("non_pta") && pb.has("pta_approved")) || (pa.has("pta_approved") && pb.has("non_pta"))) continue;
         const medianGap = Math.abs(phonePrice(target) - phonePrice(other)) / Math.max(phonePrice(target), phonePrice(other));
         const sameNetwork = phoneNetworkOf(target) === phoneNetworkOf(other);
-        // One phone in one network: the nearest prices of the two (2026-11-27). AlfaMall's instalment sellers ask ~70% more for the
-        // Redmi 14C 6/128 (PKR 51,000) than Techroid (29,999), and one of them 35,999: medians 41% apart kept it two products.
-        // Between a 4G and a 5G product the medians still decide (the A17 8GB 256GB at PKR 80,000 and 97,000 overlap at the ends).
-        const gap = sameNetwork ? Math.min(medianGap, nearestPriceGap(target, other)) : medianGap;
-        if (gap > (sameNetwork ? PHONE_PRICE_GAP : PHONE_NETWORK_PRICE_GAP)) continue;
+        if (sameNetwork !== (phase === "same")) continue;
+        // The nearest prices of the two (2026-11-27): AlfaMall's instalment sellers ask ~70% more for the Redmi 14C 6/128 (PKR
+        // 51,000) than Techroid (29,999), and one of them 35,999: medians 41% apart kept it two products. A "5G" product and one
+        // not saying it join unless the "5G" one is clearly dearer, a 4G and a 5G phone (fiveGDearer).
+        if (!sameNetwork) {
+          const [five, plain] = phoneNetworkOf(target) === "5g" ? [target, other] : [other, target];
+          if (twoNetworks.has(key) && fiveGDearer(phonePrice(five), phonePrice(plain))) continue;
+        }
+        const gap = Math.min(medianGap, nearestPriceGap(target, other));
+        if (gap > (twoNetworks.has(key) ? TWO_NETWORK_PRICE_GAP : PHONE_PRICE_GAP)) continue;
         for (const listing of other.offers) addOffer(target, listing);
         absorbed.add(other);
       }
@@ -923,6 +972,18 @@ const MARKETPLACES = new Set(["alfamall", "digimall", "daraz"]);
 // was the product's lowest price (2026-11-27). Run after the phone passes, which join products.
 function takeOutMisfitModelOnly(groups) {
   if (process.env.SHOPSAVVY_NO_PHONE_KEY) return groups;
+  // the versions each model is sold in: a model sold in one keeps its model-only offers within its offers' price range too
+  const versions = new Map();
+  for (const group of groups) {
+    if (!isPhoneGroup(group)) continue;
+    for (const o of group.offers) {
+      const key = phoneModelKey(phoneTitleOf(o));
+      if (!key) continue;
+      const model = key.split("|").slice(0, 2).join("|");
+      if (!versions.has(model)) versions.set(model, new Set());
+      versions.get(model).add(key);
+    }
+  }
   const out = [];
   for (const group of groups) {
     out.push(group);
@@ -933,7 +994,10 @@ function takeOutMisfitModelOnly(groups) {
     const leaving = new Map();
     group.offers = group.offers.filter((o) => {
       const k = phoneModelOnlyKey(phoneTitleOf(o));
-      if (!k || Math.abs(o.price - typical) / Math.max(o.price, typical) <= MODEL_ONLY_MISFIT) return true;
+      if (!k) return true;
+      let gap = Math.abs(o.price - typical) / Math.max(o.price, typical);
+      if (versions.get(k)?.size === 1) gap = Math.min(gap, gapToRange(o.price, group));
+      if (gap <= MODEL_ONLY_MISFIT) return true;
       if (!leaving.has(k)) leaving.set(k, []);
       leaving.get(k).push(o);
       return false;
@@ -954,6 +1018,7 @@ function placeStoragelessPhones(groups) {
   if (process.env.SHOPSAVVY_NO_PHONE_KEY) return groups;
   const products = new Map(); // brand|model|ram -> [{ group, storage, network, price }]
   const byModel = new Map(); // brand|model -> the same entries, every RAM and storage
+  const phoneOf = new Map(); // product -> the phone it is (key and network)
   for (const group of groups) {
     if (!isPhoneGroup(group)) continue;
     const keys = new Set(group.offers.map((o) => phoneModelKey(phoneTitleOf(o))).filter(Boolean));
@@ -964,6 +1029,7 @@ function placeStoragelessPhones(groups) {
     if (!products.has(partial)) products.set(partial, []);
     const entry = { group, storage: parts[3], network: phoneNetworkOf(group), price: phonePrice(group), size: group.offers.length };
     products.get(partial).push(entry);
+    phoneOf.set(group, `${key}|${entry.network}`);
     const model = parts.slice(0, 2).join("|");
     if (!byModel.has(model)) byModel.set(model, []);
     byModel.get(model).push(entry);
@@ -979,11 +1045,18 @@ function placeStoragelessPhones(groups) {
       if (modelOnly) {
         let versions = (byModel.get(modelOnly) ?? []).filter((c) => c.size >= 2);
         if (phoneNetwork(phoneTitleOf(offer)) === "5g") versions = versions.filter((c) => c.network === "5g");
+        // the model sold in one version only: within its offers' price range, or STORAGELESS_PRICE_GAP of it ("Infinix HOT 60 PRO" at
+        // PKR 78,849 beside the Hot 60 Pro 8GB 128GB at 69,000-84,000; "Vivo X300 Pro" at 317,000 beside the 16GB 512GB at 350,000)
+        const single = versions.length === 1 && (byModel.get(modelOnly) ?? []).length === 1;
         const ranked = versions
-          .map((c) => ({ c, gap: Math.abs(c.price - offer.price) / Math.max(c.price, offer.price) }))
+          .map((c) => {
+            const typical = Math.abs(c.price - offer.price) / Math.max(c.price, offer.price);
+            return { c, gap: single ? Math.min(typical, gapToRange(offer.price, c.group)) : typical };
+          })
           .sort((a, b) => a.gap - b.gap);
         const [best, next] = ranked;
-        if (best && best.c.group !== group && best.gap <= MODEL_ONLY_PRICE_GAP && (!next || next.gap - best.gap >= MODEL_ONLY_MARGIN)) {
+        const limit = single ? STORAGELESS_PRICE_GAP : MODEL_ONLY_PRICE_GAP;
+        if (best && best.c.group !== group && best.gap <= limit && (!next || next.gap - best.gap >= MODEL_ONLY_MARGIN)) {
           moves.push({ offer, from: group, to: best.c.group });
         }
         continue;
@@ -1004,7 +1077,9 @@ function placeStoragelessPhones(groups) {
           return { c, gap: only ? Math.min(typical, gapToRange(offer.price, c.group)) : typical };
         })
         .sort((a, b) => a.gap - b.gap)[0];
-      if (!nearest || nearest.gap > STORAGELESS_PRICE_GAP) continue;
+      // (twice that when the phone is one product: "Samsung Galaxy A55 8GB RAM" from instalment sellers at PKR 116,000-120,000 beside
+      // the A55 8GB 256GB at 92,000-100,000, the only A55 8GB sold)
+      if (!nearest || nearest.gap > (only ? 2 * STORAGELESS_PRICE_GAP : STORAGELESS_PRICE_GAP)) continue;
       // Not an iPhone (every model is sold in several storages, whatever is stored), and not beside the same store's page of that
       // phone at another price: one store's two pages priced apart are two versions (m003: Mega's "iPhone 16 Pro Max" and "… 512GB").
       if (partial.startsWith("apple|")) continue;
@@ -1018,6 +1093,9 @@ function placeStoragelessPhones(groups) {
   }
   for (const { offer, from, to } of moves) {
     if (from === to) continue;
+    // Never from one product of a phone to another of the same phone: both are right, and the one it sits in is the one the other
+    // passes made (the Redmi Note 15 Pro+ 12GB 512GB of 41 offers lost 9 to a 4-offer product of it, nearer their price, 2026-11-27).
+    if (phoneOf.has(from) && phoneOf.get(from) === phoneOf.get(to)) continue;
     from.offers = from.offers.filter((o) => o !== offer);
     addOffer(to, offer);
   }

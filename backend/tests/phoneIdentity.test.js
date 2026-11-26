@@ -21,6 +21,12 @@ describe("a phone's identity, however a store words it", () => {
     ["Tecno Spark 40 Pro+ 8/256", "tecno|spark40proplus|8|256|"],
     ["Samsung Galaxy Fold 5 12GB 512GB", "samsung|zfold5|12|512|"],
     ["Samsung Galaxy S26+ 12GB 256GB", "samsung|s26plus|12|256|"],
+    ["Apple Iphone 17 Pro Max 256 | PTA Approved | With Official Warranty", "apple|iphone17promax||256|"],
+    ["VIVO Y500 (8GB | 256) On Easy Monthly Instalments by ALI's Mobile", "vivo|y500|8|256|"],
+    ["OnePlus 13 - 12GB RAM 256GB", "oneplus|13|12|256|"],
+    ["Realme Note 60x 64GB 8GB (3+5GB External RAM) - ISPK-0514", "realme|note60x|3|64|"],
+    ["Realme Note 60x 3+5=8GB 64GB Dual - PTA Approved", "realme|note60x|3|64|"],
+    ["Tecno Spark 40 8+256GB", "tecno|spark40|8|256|"],
     ["Samsung Galaxy S26 Plus 12GB+ 256GB", "samsung|s26plus|12|256|"],
     ["Apple iPhone 17 Air 256GB", "apple|iphoneair||256|"],
     ["Apple iPhone Air Sky Blue 256GB", "apple|iphoneair||256|"],
@@ -71,6 +77,20 @@ describe("grouping phones by identity", () => {
     expect(holding(groups, "a2").phone).toEqual({ model: "xiaomi|redmi14c", ram: 6, storage: 128 });
     expect(holding(groups, "t").phone).toEqual({ model: "xiaomi|redmi14c", ram: 6, storage: 128 });
     expect(holding(groups, "f").phone).toEqual({ model: "xiaomi|redmi14c", ram: 4, storage: 128 });
+  });
+
+  it("joins a phone sold in one version whose dearer sellers say 5G, and one whose instalment sellers ask a third more", () => {
+    const groups = groupListingsByProduct([
+      phone("a", "techroid", "Samsung Galaxy A57 12GB 256GB", 164000),
+      phone("b", "eezepc", "Samsung Galaxy A57 12GB 256GB", 168000),
+      phone("c", "alfamall", "Samsung Galaxy A57 5G 12GB 256GB PTA Approved | 0% Markup up to 6 Months | Seller One", 185000),
+      phone("d", "alfamall", "Samsung Galaxy A57 5G 12GB 256GB PTA Approved | 0% Markup up to 6 Months | Seller Two", 189000),
+      phone("r1", "alfamall", "Realme Note 60x 3GB 64GB 0% Markup On Upto 6 Months Installments with 1 Year Warranty", 30899),
+      phone("r2", "alfamall", "Realme Note 60x 3GB 64GB 0% Markup On Upto 6 Months Installments By Other Seller", 31499),
+      phone("r3", "techroid", "Realme Note 60X 3GB 64GB", 23999),
+    ], { matchStrategy: mlMatchStrategy });
+    for (const id of ["b", "c", "d"]) expect(holding(groups, id)).toBe(holding(groups, "a"));
+    expect(holding(groups, "r3")).toBe(holding(groups, "r1"));
   });
 
   it("joins one phone that some stores call 5G and others do not, when priced alike", () => {
@@ -141,6 +161,7 @@ describe("a listing that names the model only (AlfaMall's sellers, 2026-11-27)",
     phone("4b", "eezepc", "Samsung Galaxy A17 8GB – 256GB", 81899),
     phone("5a", "mega", "Samsung Galaxy A17 8GB RAM 256GB Storage PTA Approved 5G", 96999),
     phone("5b", "alfamall", "Samsung A17 5G 8GB RAM 256GB ROM | PTA Approved | One Year Brand Warranty | Authentico.pk", 97299),
+    phone("5c", "shophive", "Samsung Galaxy A17 5G 8GB 256GB", 97499), // a third store: the A17 5G is another phone than the 4G
   ];
 
   it("joins the version its price clearly points to", () => {
@@ -162,6 +183,15 @@ describe("a listing that names the model only (AlfaMall's sellers, 2026-11-27)",
     ], { matchStrategy: mlMatchStrategy });
     expect(holding(groups, "ish")).toBe(holding(groups, "6a"));
     expect(holding(groups, "old")).not.toBe(holding(groups, "6a")); // price changed since the page was read
+  });
+
+  it("joins the one version a model is sold in when priced within its range", () => {
+    const groups = groupListingsByProduct([
+      phone("a", "techroid", "Vivo X300 Pro 16GB 512GB", 349999),
+      phone("b", "eezepc", "Vivo X300 Pro 16GB 512GB", 367499),
+      phone("m", "alfamall", "Vivo X300 Pro | PTA Approved | By Some Store", 316999),
+    ], { matchStrategy: mlMatchStrategy });
+    expect(holding(groups, "m")).toBe(holding(groups, "a"));
   });
 
   it("stays apart when its price sits between two versions, or far from all", () => {
