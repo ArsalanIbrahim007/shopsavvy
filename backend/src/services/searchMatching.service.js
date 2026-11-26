@@ -87,10 +87,44 @@ export function sizedModelCode(word) {
 }
 
 /** The pattern for a search word: the word as a whole word (a plural allowed), or for a sized model code also its other spellings. */
+// A model word and its number, glued, spaced or hyphenated alike: "gt5", "gt 5" (modelNumberWords) and "gt-5" all find "GT 5", "GT5"
+// and "GT-5" (2026-11-26: "HUAWEI GT 5 Pro" did not find "Huawei Watch GT5 Pro 46mm"). Only a letter before a short number.
+const looseNumber = (escaped) => escaped.replace(/([a-z]) (?=\d)/gi, "$1[\\s-]?").replace(/(^|[^a-z])([a-z]{2,})(?=\d{1,2}$)/gi, "$1$2[\\s-]?");
+
+// A brand's short name, as stores write it out: "mi band 9" found nothing after asking every store for 25 s, though 17 "Xiaomi Smart
+// Band 9" listings were stored (audit A-05, 2026-11-26).
+const BRAND_ALIASES = new Map([["mi", ["mi", "xiaomi"]]]);
+
 export function searchWordPattern(word) {
+  const aliases = BRAND_ALIASES.get(String(word).toLowerCase());
+  if (aliases) return `(?<![A-Za-z0-9])(?:${aliases.map(escapeRegex).join("|")})(?![A-Za-z0-9])`;
   const sized = sizedModelCode(word);
-  if (!sized) return `(?<![A-Za-z0-9])${escapeRegex(word)}(?:e?s)?(?![A-Za-z0-9])`;
+  if (!sized) return `(?<![A-Za-z0-9])${looseNumber(escapeRegex(word))}(?:e?s)?(?![A-Za-z0-9])`;
   return `(?<![A-Za-z0-9])(?:[a-z]{0,2}${sized.size})?${escapeRegex(sized.code)}[a-z]{0,4}(?![A-Za-z0-9])`;
+}
+
+/**
+ * A search's words, with a model's one-digit number kept on the word before it: ["huawei", "gt 5", "pro"] for "HUAWEI GT 5 Pro".
+ * Words shorter than two characters were dropped, so "GT 5 Pro" was searched as "GT Pro" and found the GT 2, 5, 6 and 7 Pro alike
+ * (2026-11-26). The number goes with a word of letters that is not a brand ("Haier 1 Ton" keeps dropping its "1": the 1 is the
+ * tonnage, and the title may put the model code between them) nor a unit; other one-character words are dropped as before.
+ */
+const LINE_BRANDS = new Set(["pixel", "iphone", "ipad", "galaxy", "redmi", "poco", "macbook"]);
+export function modelNumberWords(tokens, isBrand = () => false) {
+  const out = [];
+  tokens.forEach((token, i) => {
+    const before = tokens[i - 1];
+    const after = String(tokens[i + 1] ?? "").toLowerCase();
+    const unitAfter = /^(tons?|kg|kgs|ltrs?|l|inch|in|gb|tb|mm|hp|w|pcs|pack|year|years)$/.test(after) || /^\d/.test(after);
+    // After a brand only when the number ends the search or a word follows it ("Pixel 9 Pro": "pixel" reads as Google's brand, and
+    // the 9 was dropped, so a used Pixel 8 Pro came up, audit 2026-11-26); "Haier 1 Ton" and "Haier 1.5 ton" still drop it.
+    // Only a brand word that is itself a product line ("samsung 5 star" is an energy rating).
+    const brandOk = Boolean(before) && (!isBrand(before) || (LINE_BRANDS.has(before.toLowerCase()) && /^[a-z]*$/i.test(after)));
+    if (/^\d$/.test(token) && out.length && before && /^[a-z]{2,}$/i.test(before) && brandOk && !unitAfter) {
+      out[out.length - 1] = `${out[out.length - 1]} ${token}`;
+    } else if (token.length >= 2) out.push(token);
+  });
+  return out;
 }
 
 /** True when `short` (3 letters) is `long` with one letter left out ("gre" for "gree", "del" for "dell"). */

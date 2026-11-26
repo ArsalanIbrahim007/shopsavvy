@@ -19,8 +19,8 @@ import { searchableText } from "../services/coreTitle.service.js";
 import { attachRecommendation } from "../services/recommendation/recommendation.service.js";
 import { fetchAndRefreshListings } from "../services/scraper.service.js";
 import { resultsState } from "../services/searchFreshness.js";
-import { buildWholeWordPattern, fuzzyMatchIds, joinedWordPattern, searchWordPattern, sizedModelCode, splitCategoryWords } from "../services/searchMatching.service.js";
-import { isSearchable, selectSearchListings, worthAskingStores } from "../services/searchRanking.service.js";
+import { buildWholeWordPattern, fuzzyMatchIds, joinedWordPattern, modelNumberWords, searchWordPattern, sizedModelCode, splitCategoryWords } from "../services/searchMatching.service.js";
+import { groupRelevance, isSearchable, selectSearchListings, storeCount, worthAskingStores } from "../services/searchRanking.service.js";
 import { getSuggestions } from "../services/suggestions.service.js";
 import { priceStats } from "./priceStats.js";
 import { resolveMatchStrategy } from "./matchStrategy.js";
@@ -121,7 +121,8 @@ export async function findSearchListings(trimmedQuery, searchFilter) {
   // A maker's series letters hyphenated to a model code ("KDL-32R300") are not looked for on their own: stores write the Sony
   // "32R300E" without them (audit re-test, 2026-11-19: "Sony KDL-32R300" found nothing, two stored).
   const codePrefixes = new Set([...trimmedQuery.toLowerCase().matchAll(/(?<![a-z0-9])([a-z]{2,4})-(?=\d)/g)].map((m) => m[1]));
-  const allTokens = trimmedQuery.split(/[^a-zA-Z0-9]+/).filter((t) => t.length >= 2);
+  // A model's one-digit number stays with its word ("GT 5", "Fit 4": modelNumberWords); other one-character words are dropped.
+  const allTokens = modelNumberWords(trimmedQuery.split(/[^a-zA-Z0-9]+/).filter(Boolean), (word) => extractBrand(word) !== null);
   const withoutPrefixes = allTokens.filter((t) => !codePrefixes.has(t.toLowerCase()));
   const { words: queryTokens, category: namedCategory } = splitCategoryWords(withoutPrefixes.length ? withoutPrefixes : allTokens);
   const categoryFloor = namedCategory && !searchFilter.productCategory ? { productCategory: namedCategory } : fallbackCategoryFloor;
@@ -152,7 +153,9 @@ export async function findSearchListings(trimmedQuery, searchFilter) {
     // Zero's, and stays out). Only with a model number left, never a brand and one loose word.
     const searchedBrand = extractBrand(queryTokens[0] ?? "");
     const rest = queryTokens.slice(1);
-    if (searchedBrand && rest.length >= 2 && rest.some((token) => /\d/.test(token))) {
+    // A real model number left (three digits or a code like "R50i"): "cmf watch pro 2" took in a brand-less "Gen 9 Pro 2 Ladies Smart
+    // Watch", a clone, on "watch" and "pro 2" alone (audit 2026-11-26).
+    if (searchedBrand && rest.length >= 2 && rest.some((token) => /\d{3,}|[a-z]\d|\d[a-z]/i.test(token))) {
       const brandlessFilter = { ...tokenFilter, $and: rest.map((token) => ({ title: { $regex: searchWordPattern(token), $options: "i" } })) };
       const brandless = (await Listing.find(brandlessFilter).sort({ price: 1, createdAt: -1 }))
         .filter(sameSize)
@@ -355,6 +358,10 @@ export async function searchListings(req, res) {
 
   // "Lowest we have recorded" on a product's card: the same rule as its outlook (priceOutlook.service.js), from the history attached above.
   for (const group of groups) group.atLow = lowestBadge(group.offers);
+  // The product searched for first ("HUAWEI GT 5 Pro" showed the GT 6 Pro, 7 Pro and 2 Pro above it, 2026-11-26): each product's
+  // relevance to the search, the results page's default order (frontend lib/filters.js sortGroups), then the most offers.
+  for (const group of groups) group.relevance = groupRelevance(group, found.searchedFor || trimmedQuery);
+  groups.sort((a, b) => b.relevance - a.relevance || storeCount(b) - storeCount(a) || b.offerCount - a.offerCount);
 
   const recommendedListings =
     createRecommendedListingArray(

@@ -61,8 +61,12 @@ export function getSimilarityPercentage(textA = "", textB = "") {
  */
 const PLUS_AFTER_MODEL = new RegExp("\\b(pro|max|ultra|mini|air|lite|fe|se|edge|[sa]\\d{2,3}|note\\s?\\d{1,2})\\s?\\+(?![\\w])", "gi");
 
+// "Ultra Slim", "Ultra-Thin", "Ultra Light" describe the case, not the Ultra model: eezepc's "HUAWEI WATCH FIT 4 Smartwatch for Men
+// Women, Ultra Slim, ..." was kept apart from every other store's Watch Fit 4 as if it were an Ultra (2026-11-26).
+const ULTRA_DESCRIPTION = /\bultra[\s-]+(slim|thin|light(weight)?)\b/gi;
+
 function extractVariantsUncached(text = "") {
-  const written = String(text).replace(PLUS_AFTER_MODEL, "$1 plus");
+  const written = String(text).replace(ULTRA_DESCRIPTION, "$1").replace(PLUS_AFTER_MODEL, "$1 plus");
   return new Set(tokenize(modelTokens(written)).filter((t) => VARIANT_TOKENS.has(t)));
 }
 
@@ -222,8 +226,18 @@ export function applianceConflict(textA, textB) {
 // (2026-11-18).
 const NOT_A_LINE = /\bsports?\s+(band|loop|strap)s?\b|\bpower\s+(adapter|supply|delivery)\b/gi;
 
+// A line word with its number glued on is the line word: Huawei's "GT6 Pro" is the "GT 6 Pro", and the two were kept apart as if
+// one were a GT model and the other not (2026-11-26). Only with a number of one or two digits, so a code like "GT1030" stays a code.
+const GLUED_LINE = new RegExp(`^(${[...LINE_WORDS].join("|")})\\d{1,2}$`);
+const GLUED_LINE_IN_TEXT = new RegExp(`\\b(${[...LINE_WORDS].join("|")})(\\d{1,2})\\b`, "gi");
+// A generation written as an ordinal after the model's name is its number: AlfaMall's "Apple Airpods Pro 2nd gen" and "Apple Airpods
+// Pro 3" sat in one product (audit A-03, 2026-11-26). Not a processor's ("Laptop 13th Gen Core i5"), and only after a word of letters.
+const ORDINAL_GENERATION = /\b([a-z]{2,})\s+(\d{1,2})(?:st|nd|rd|th)\s+gen(?:eration)?\b(?!\s*(?:intel|core|i[3579]|ryzen|amd|processor))/gi;
+
 function lineWordsUncached(text = "") {
-  return new Set(tokenize(modelTokens(String(text).replace(NOT_A_LINE, " "))).filter((t) => LINE_WORDS.has(t)));
+  return new Set(tokenize(modelTokens(String(text).replace(NOT_A_LINE, " ")))
+    .map((t) => t.match(GLUED_LINE)?.[1] ?? t)
+    .filter((t) => LINE_WORDS.has(t)));
 }
 
 // A trailing letter that is a unit or a connectivity/resolution marker, not part of
@@ -336,8 +350,10 @@ export function sameSet(a, b) {
  * differ, they are different products whatever their similarity score.
  */
 export function attributeConflict(rawA, rawB, { ignoreUnstatedStorage = false } = {}) {
-  const textA = withoutSellerTag(rawA);
-  const textB = withoutSellerTag(rawB);
+  // "GT6", "Note9" read as "GT 6", "Note 9", so the line word and its number are compared like a spaced title's (GLUED_LINE); and
+  // "Pro 2nd gen" as "Pro 2" (ORDINAL_GENERATION).
+  const textA = withoutSellerTag(rawA).replace(GLUED_LINE_IN_TEXT, "$1 $2").replace(ORDINAL_GENERATION, "$1 $2");
+  const textB = withoutSellerTag(rawB).replace(GLUED_LINE_IN_TEXT, "$1 $2").replace(ORDINAL_GENERATION, "$1 $2");
   // Capacity blocks a match when both sides state it and the values differ.
   // When exactly one side states it equivalence is unproven, which is what
   // stopped a bare "iPhone 16 Pro Max" being compared against a 256GB unit at

@@ -12,6 +12,8 @@
 //
 // frontend/src/lib/freshness.js applies the same rule with the same number; tests on both sides pin it to 7.
 
+import { isPlaceholderPrice } from "./priceSanity.service.js";
+
 export const STALE_AFTER_DAYS = 7; // was 14 until 2026-11-18: with the catalogues read nightly, a week-old price is no longer "the lowest price"
 
 const DAY_MS = 24 * 3600 * 1000;
@@ -31,7 +33,8 @@ export function currentOffers(offers, now = Date.now()) {
 }
 
 const PRE_OWNED = new Set(["used", "refurbished", "open_box"]);
-const isSuspect = (offer) => String(offer?.priceCheck?.status ?? "").startsWith("suspect");
+// A placeholder price (PKR 99,999,999: priceSanity.service.js) is never a headline price, checked or not yet.
+const isSuspect = (offer) => String(offer?.priceCheck?.status ?? "").startsWith("suspect") || isPlaceholderPrice(offer?.price);
 
 /**
  * The offers a product's headline numbers come from (its lowest and highest price, its best deal): the rule the site's pages apply

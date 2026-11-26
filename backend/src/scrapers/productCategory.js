@@ -714,6 +714,14 @@ const NOT_A_FRIDGE = /\bwater dispenser\b/;
 // Makers of accessories only (cases, protectors, straps): "Spigen Apple AirPods Pro Case Rugged Armor", "ESR AirPods Pro 3 Pulse
 // FlickLock Magnetic Case", "UAG AirPods Pro 2" were headphones on the live site (review, 2026-11-18).
 const ACCESSORY_MAKER = /^(spigen|esr|uniq|uag|ringke|otterbox|nillkin|torras|pitaka|zagg|mous)\b/;
+// Further on in the title, with the thing it makes: "AirPods 4 Spigen Case", "WIWU Mecha Airpods Pro 3 Case" were headphones, the
+// case second among the products for "airpods 4" (audit A-06, 2026-11-26). WiWU also makes earbuds, so only with "case" or "cover".
+const MAKER_CASE = /\b(spigen|esr|uniq|uag|ringke|otterbox|nillkin|torras|pitaka|zagg|mous|wiwu|baseus|joyroom)\b.*\b(case|cover)\b/;
+// A title that ends with what it is: "… Case", "… Cover", a colour after it allowed. Not the case a device comes in ("with Wireless
+// Charging Case", a watch's "Aluminum Case") nor one given free.
+const ENDS_IN_CASE = /\b(case|cover)\s*(?:[-–|,(]\s*[a-z ]{0,20}\)?)?$/;
+// (a watch's case size, "46mm … Case", and stores' spellings: "Apple Watch Series 11 46mm Aliminium Case")
+const PART_OF_DEVICE = /\b(charging|magsafe|al[iu]min[iu]*u?m|titanium|steel|stainless steel|ceramic|carbon|resin|gold)\s+case\b|\bwith\b[^|]*\bcase\b|\b\d{2}\s?mm\b[^|]*\bcase\b/;
 // A described case is the accessory; Apple's "with MagSafe Charging Case" is part of the AirPods.
 const DESCRIBED_CASE = /\b(rugged|armou?r|leather|silicone|magnetic|protective|clear|hard|soft|shockproof|flicklock|flip)\b[^|]*\bcase\b|\bcase\b[^|]*\b(rugged|armou?r)\b/;
 // "AirPods" used for any earbuds: "A9 Pro Airpods", "Lunar Airpods Pro Wireless Earbuds", "Shoppingway Airpods Pro With Display" at
@@ -739,7 +747,8 @@ function detectCategory(title) {
     // in a TV product; Fable's final check, 2026-11-12).
     if (/^(test|testing|dummy)\b/.test(text)) return { category: "other", confidence: 0 };
     if (REPLICA.test(text) || GENERIC_AIRPODS(text)) return { category: "other", confidence: 0 };
-    if (MADE_FOR.test(text) || ACCESSORY_THING.test(text) || ACCESSORY_MAKER.test(text)
+    if (MADE_FOR.test(text) || ACCESSORY_THING.test(text) || ACCESSORY_MAKER.test(text) || MAKER_CASE.test(text)
+        || (ENDS_IN_CASE.test(text) && !PART_OF_DEVICE.test(text))
         || (DESCRIBED_CASE.test(text) && !/\bcharging case\b/.test(text))) return { category: "accessory", confidence: 1 };
     // "Samsung 635L SBS Refrigerator with Water Dispenser" is a fridge that has one; "PEL Water Dispenser (Without Ref)" is not a fridge.
     if (NOT_A_FRIDGE.test(text) && !/\b(with|and|plus|\+) water dispenser\b/.test(text)) return { category: "appliance", confidence: 1 };

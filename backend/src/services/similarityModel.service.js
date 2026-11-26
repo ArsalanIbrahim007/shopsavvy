@@ -16,6 +16,7 @@ import { predictProba } from "../ml/logisticRegression.js";
 import { attributeConflict, tokenize, sameSet, sharedApplianceCode, statedSizes, withoutSizePrefix } from "./similarity.service.js";
 import { modelTokens, extractStorage, extractPtaStatus, extractModelCodes, extractScreenInches } from "./normalizeTitle.service.js";
 import { COLOURS, extractBrand, extractRamGb } from "./productAttributes.service.js";
+import { detectCategory } from "../scrapers/productCategory.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // The live model. SHOPSAVVY_MATCH_MODEL names another artifact in src/ml/ to try a
@@ -93,7 +94,106 @@ export function sharedModelCode(itemA, itemB, { shortTvCode = false } = {}) {
   const yearless = sameTvWithoutYearLetter(itemA.title, itemB.title, sizes) ?? (shortTvCode ? sameTvShortCode(itemA.title, itemB.title) : null);
   if (yearless && gap <= YEAR_LETTER_PRICE_GAP) return yearless;
   const line = sameLineNumber(itemA.title, itemB.title);
-  return line && gap <= LINE_NUMBER_PRICE_GAP ? line : null;
+  if (line && gap <= LINE_NUMBER_PRICE_GAP) return line;
+  const wearable = sameWearableModel(itemA.title, itemB.title);
+  return wearable && gap <= SHARED_CODE_PRICE_GAP ? wearable : null;
+}
+
+// A smartwatch's or an earbud's model, named by its line and a short number: "GT 6 Pro", "Fit 4", "Buds3 Pro" (2026-11-26). Stores
+// word the rest their own way ("Huawei Watch GT 6 Pro 46mm SmartWatch" / "HUAWEI GT 6 Pro 46mm Smart Watch Black"; "Huawei Watch
+// Fit 4" / "HUAWEI WATCH FIT 4 Smartwatch for Men Women, Ultra Slim, ... Black"), and a one-digit number is no model code for the
+// rules above, so each wording made a product of its own. The model key is the words before the first short number (the brand and
+// generic words like "watch" and "smart" left out), the number, and the words right after it up to a size, a colour, a generic
+// word or a punctuation mark ("pro", "active", "classic", "unity": all must agree). Both titles must be the same maker's smartwatch
+// or headphones. The veto runs first (classifyPairML; mergeSameModelGroups' member checks), so a GT 6 and a GT 7, or a 42mm and a
+// 46mm, still differ; the prices must be within SHARED_CODE_PRICE_GAP.
+const WEARABLE_CATEGORIES = new Set(["smartwatch", "headphones"]);
+const WEARABLE_GENERIC = new Set([
+  "watch", "watches", "smartwatch", "smart", "smartband", "fitness", "tracker", "sport", "sports", "new", "original", "official", "the",
+  "wireless", "bluetooth", "true", "tws", "earbud", "earphone", "headphone", "headset", "handsfree", "in", "ear", "gps", "amoled",
+  "display", "call", "calling", "edition", "version", "global", "for", "with", "and", "by", "of", "men", "women", "black", "white",
+  // a store's wording after the model ("Airpods 4 Brand New ...", "AIRPODS 4 On Easy Installment By ...")
+  "brand", "on", "easy", "installment", "installments", "box", "pack", "packed", "sealed", "stock", "at", "upto", "warranty", "free",
+  "only", "price", "pakistan", "genuine", "authentic",
+]);
+// A copy is not the model it copies ("AirPods Pro 2 Master Copy"): such titles get no key.
+const NOT_THE_MODEL = /\b(copy|replica|clone|aaa|compatible)\b/i;
+const KNOWN_COLOUR_WORD = new RegExp(`^(?:${COLOURS.map((c) => c.replace(/ /g, "|")).join("|")})$`, "i");
+const ANC = /\b(anc|active\s+noise|noise[\s-]+cancel+(ing|ation|lation)?|hybrid\s+noise)\b/i;
+const categoryCache = new Map();
+const wearableCategory = (title) => {
+  if (!categoryCache.has(title)) {
+    if (categoryCache.size > 20000) categoryCache.clear();
+    const { category } = detectCategory(title) ?? {};
+    categoryCache.set(title, WEARABLE_CATEGORIES.has(category) ? category : null);
+  }
+  return categoryCache.get(title);
+};
+export function wearableModelKey(title) {
+  if (process.env.SHOPSAVVY_NO_WEARABLE_MODEL) return null; // to measure the grouping without this rule
+  const text = String(title || "");
+  const category = wearableCategory(text);
+  if (!category || NOT_THE_MODEL.test(text.split(/\s+/).slice(0, 8).join(" "))) return null;
+  const brand = extractBrand(text);
+  if (!brand) return null;
+  // Words with what follows each: a punctuation mark ends the words after the number. "Buds3" and "GT6" are read as "buds 3", "gt 6";
+  // a plural s goes ("Airbuds" / "Airbud").
+  const words = [];
+  for (const m of text.toLowerCase().matchAll(/([a-z0-9]+)([^a-z0-9]*)/g)) {
+    const [, word, after] = m;
+    const glued = word.match(/^([a-z]{2,})(\d{1,2})$/);
+    const parts = glued ? [glued[1], glued[2]] : [word];
+    parts.forEach((part, i) => {
+      const last = i === parts.length - 1;
+      // "7.1" surround and "5.3" Bluetooth are no model numbers: a number with a decimal point on either side is skipped
+      const dotAfter = last && after === ".";
+      const afterDot = i === 0 && words.at(-1)?.dotAfter === true;
+      words.push({ word: part.replace(/^([a-z]{3,}[^s])s$/, "$1"), stop: last && /[^\s]/.test(after), dotAfter, decimal: dotAfter || afterDot });
+    });
+  }
+  // The model number: one to four digits, not a decimal, not a year ("Watch Ultra 2025"), not a measure ("46 mm", "10 Days").
+  const at = words.findIndex(({ word, decimal }, i) => /^\d{1,4}$/.test(word) && !decimal && !/^(19|20)\d\d$/.test(word) && i > 0
+    && !/^(mm|gb|mah|hours?|hrs?|days?|h|hz|db|mic)$/.test(words[i + 1]?.word ?? ""));
+  if (at < 1) return null;
+  const allBefore = words.slice(0, at).map(({ word }) => word);
+  // A model code before the number ("A4tech Bloody G521 7.1", "GR520 ... 2.4G") is the model, left to the code rules.
+  if (allBefore.some((w) => /\d/.test(w))) return null;
+  let before = allBefore.filter((w) => w !== brand && !WEARABLE_GENERIC.has(w));
+  // "Huawei Watch 5": the watch is the line's name. Not "Smart Watch 5" or any other generic word alone.
+  if (before.length === 0 && allBefore.at(-1) === "watch" && allBefore.at(-2) !== "smart") before = ["watch"];
+  if (before.length === 0 || before.length > 3) return null; // no line named; a long run before the number is a description
+  const variant = [];
+  // Earbuds sold with and without noise cancelling: "AirPods 4 with ANC", "AIRPODS 4 (ANC)" and "AirPods 4 - ANC" are the "AirPods 4
+  // ANC". Only right after the number: a model that always has it is often described so further on ("AirPods 5 True Wireless Active
+  // Noise Cancelling Earbuds").
+  const next = (from) => words.slice(from, from + 3).map(({ word }) => word).join(" ");
+  if (ANC.test(next(at + 1)) && /^(anc|nc|active|noise|hybrid)\b/.test(next(at + 1))
+    || (words[at + 1]?.word === "with" && ANC.test(next(at + 2)) && /^(anc|nc|active|noise|hybrid)\b/.test(next(at + 2)))) variant.push("anc");
+  // "AirPods 4 Without ANC" is the plain AirPods 4.
+  if (/^(without|non|no)$/.test(words[at + 1]?.word ?? "")) return `${category}:${brand}:${before.join(" ")} ${words[at].word}`;
+  if (!words[at].stop) {
+    let from = at + 1;
+    if (words[from]?.word === "with" && variant.includes("anc")) from += 1;
+    for (const { word, stop } of words.slice(from, from + 2)) {
+      if (WEARABLE_GENERIC.has(word) || KNOWN_COLOUR_WORD.test(word) || /\d/.test(word)) break;
+      variant.push(word);
+      if (stop) break;
+    }
+  }
+  // Every way of writing it ("ANC", "NC", "Active Noise Cancellation") is the one word "anc".
+  // ("Active" alone is a model name: the Redmi Watch 5 Active.)
+  const noise = variant.includes("noise");
+  const tier = variant.filter((w) => !/^(anc|nc|noise|cancel+(ing|ation|lation)?|hybrid)$/.test(w) && !(w === "active" && noise));
+  if (noise || variant.some((w) => /^(anc|nc)$/.test(w))) tier.push("anc");
+  return `${category}:${brand}:${before.join(" ")} ${words[at].word}${tier.length ? ` ${tier.join(" ")}` : ""}`;
+}
+// The case size a title states ("46mm", "42 MM"); two that both state one must agree (the veto checks this too).
+const caseSize = (title) => String(title).match(/\b(\d{2})\s?mm\b/i)?.[1] ?? null;
+function sameWearableModel(titleA, titleB) {
+  const a = wearableModelKey(titleA);
+  if (!a || a !== wearableModelKey(titleB)) return null;
+  const [sizeA, sizeB] = [caseSize(titleA), caseSize(titleB)];
+  return sizeA && sizeB && sizeA !== sizeB ? null : a.split(":").pop();
 }
 
 // A product line's name and number, written apart: "Airbud 425", "Trance Airbud 850" (2026-11-24). Stores word the rest their own

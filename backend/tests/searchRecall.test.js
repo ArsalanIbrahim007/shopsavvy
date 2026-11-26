@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { fuzzyTokenScore, joinedWordPattern, splitCategoryWords } from "../src/services/searchMatching.service.js";
+import { fuzzyTokenScore, joinedWordPattern, modelNumberWords, searchWordPattern, splitCategoryWords } from "../src/services/searchMatching.service.js";
 
 describe("search recall (audit S-001, 2026-11-18)", () => {
   it("takes a category word as the category, not a title word", () => {
@@ -55,5 +55,30 @@ describe("a model code searched with its size (audit S-006)", () => {
     expect(re.test("Samsung 43U8000F")).toBe(false);
     expect(sizedModelCode("iphone17")).toBe(null);
     expect(sizedModelCode("55c6k")).toEqual({ size: 55, code: "c6k" });
+  });
+});
+
+// "HUAWEI GT 5 Pro" was searched as "huawei gt pro": a one-character word was dropped, and the GT 2, 6 and 7 Pro came up too (2026-11-26).
+describe("a model's one-digit number is searched with its word", () => {
+  const isBrand = (word) => ["huawei", "haier", "samsung", "dawlance"].includes(word.toLowerCase());
+  it("keeps the number on a model word, not on a brand or before a unit", () => {
+    expect(modelNumberWords(["HUAWEI", "GT", "5", "Pro"], isBrand)).toEqual(["HUAWEI", "GT 5", "Pro"]);
+    expect(modelNumberWords(["galaxy", "buds", "3", "pro"], isBrand)).toEqual(["galaxy", "buds 3", "pro"]);
+    expect(modelNumberWords(["haier", "1", "ton", "inverter"], isBrand)).toEqual(["haier", "ton", "inverter"]);
+    expect(modelNumberWords(["dawlance", "9", "kg"], isBrand)).toEqual(["dawlance", "kg"]);
+    expect(modelNumberWords(["iphone", "17", "pro"], isBrand)).toEqual(["iphone", "17", "pro"]);
+    // a brand word that is a product line keeps its number before a word ("pixel" reads as a brand); a rating does not
+    expect(modelNumberWords(["pixel", "9", "pro"], (w) => w === "pixel")).toEqual(["pixel 9", "pro"]);
+    expect(modelNumberWords(["samsung", "5", "star"], isBrand)).toEqual(["samsung", "star"]);
+  });
+  it("finds the model glued, spaced or hyphenated, and not a number elsewhere in the title", () => {
+    const finds = (word, title) => new RegExp(searchWordPattern(word), "i").test(title);
+    for (const title of ["Huawei Watch GT5 Pro 46mm", "HUAWEI Watch GT 5 Pro", "Huawei GT-5"]) {
+      expect(finds("gt 5", title)).toBe(true);
+      expect(finds("gt5", title)).toBe(true);
+    }
+    expect(finds("gt 5", "HUAWEI Watch GT 2 Pro 5 ATM")).toBe(false);
+    expect(finds("gt 5", "GT 52")).toBe(false);
+    expect(finds("s23", "Dawlance DWGS 2316")).toBe(false); // a one-letter code stays as it was
   });
 });

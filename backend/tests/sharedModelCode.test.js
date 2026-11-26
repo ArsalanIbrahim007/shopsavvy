@@ -3,7 +3,8 @@
 // of live titles from the 2026-11-08 measurement (09-recheck-group-merges.js, 12-recheck-recall.js).
 import { describe, it, expect } from "vitest";
 
-import { sharedModelCode, sameBrand, prefixConflict, classifyPairML, mlMatchStrategy, samePlainTitles, withoutStoreWording } from "../src/services/similarityModel.service.js";
+import { sharedModelCode, sameBrand, prefixConflict, classifyPairML, mlMatchStrategy, samePlainTitles, withoutStoreWording, wearableModelKey } from "../src/services/similarityModel.service.js";
+import { attributeConflict } from "../src/services/similarity.service.js";
 import { extractStorage, ramStorageShorthand } from "../src/services/normalizeTitle.service.js";
 import { groupListingsByProduct } from "../src/services/productGrouping.service.js";
 
@@ -225,5 +226,94 @@ describe("a TV that names its processor, and a store's UE reference (2026-11-09,
       item("TCL 65-Inch 65P6L 4K Google TV – Smart UHD Google TV with AiPQ Processor (Latest 2026 Model) 0% Markup 0% Processing ON INSTALLMENTS-UE001", 199990),
       item("TCL 65T6D 65 Inch 4K QLED Smart Google TV 0% Markup 0% Processing ON INSTALLMENTS-UE001", 217399),
     )).toBeNull();
+  });
+});
+
+// Live titles from the results page, 2026-11-26: one watch shown twice, once in a group and once alone ("Huawei Watch GT 6 Pro").
+describe("a smartwatch's or earbud's line and short number (wearableModelKey, 2026-11-26)", () => {
+  it.each([
+    ["Huawei Watch GT 6 Pro 46mm SmartWatch", 71999, "HUAWEI GT 6 Pro 46mm Smart Watch Black", 77990],
+    ["Huawei Watch GT 7 Pro Smartwatch", 89999, "Huawei Watch GT 7 Pro 46mm", 90990],
+    ["Huawei Watch Fit 4", 33499, "HUAWEI WATCH FIT 4 Smartwatch for Men Women, Ultra Slim, iOS & Android, up to 10 Days Battery Life, Bluetooth Call, GPS Running Smartwatch, Aluminum Case, AMOLED Display, Fitness Tracker, Black", 30890],
+    ["Huawei Watch Gt6 Pro", 108995, "HUAWEI Watch GT 6 Pro 46mm – Titanium", 108990],
+    ["Samsung Galaxy Buds3 Pro", 41999, "Samsung Galaxy Buds 3 Pro - Silver", 43999],
+    ["Apple AirPods 4 with ANC – Powerful Sound with Smart Noise Control", 55000, "APPLE AIRPODS 4 (ANC) ON Easy Installment By Ali's Electronic", 58799],
+  ])("joins %s and %s", (a, pa, b, pb) => {
+    expect(classifyPairML(item(a, pa), item(b, pb))).toMatchObject({ isMatch: true, reason: "shared model code" });
+  });
+
+  it.each([
+    ["another generation", "Huawei Watch GT 6 Pro 46mm", 77990, "Huawei Watch GT 7 Pro 46mm", 80000],
+    ["another generation, glued", "Huawei Watch GT5 Pro 46mm", 81999, "Huawei Watch GT6 Pro 46mm", 85000],
+    ["another case size", "Huawei Watch GT 6 42mm", 50000, "Huawei Watch GT 6 46mm", 52000],
+    ["a Pro beside the plain model", "Huawei Watch Fit 4", 33000, "Huawei Watch Fit 4 Pro", 36000],
+    ["another line of the maker", "Xiaomi Redmi Watch 5 Active", 12000, "Xiaomi Redmi Watch 5 Lite", 12500],
+    ["a Classic beside the plain model", "Samsung Galaxy Watch 8 Classic 46mm", 80000, "Samsung Galaxy Watch 8 46mm", 75000],
+    ["noise cancelling beside the plain earbuds", "Apple AirPods 4 Active Noise Cancellation", 48000, "Apple AirPods 4 With Type C Charging (White)", 42000],
+    ["prices far apart (another edition or a knock-off)", "Huawei Watch GT 6 Pro 46mm – Black", 77990, "Huawei GT6 Pro 46mm Titanium", 127999],
+  ])("keeps apart %s: %s / %s", (_, a, pa, b, pb) => {
+    expect(classifyPairML(item(a, pa), item(b, pb)).reason).not.toBe("shared model code");
+    expect(sharedModelCode(item(a, pa), item(b, pb))).toBeNull();
+  });
+
+  it("reads the model, not a decimal, a year, a measure, a model code or a copy", () => {
+    expect(wearableModelKey("Huawei Watch GT 6 Pro 46mm SmartWatch")).toBe("smartwatch:huawei:gt 6 pro");
+    expect(wearableModelKey("HUAWEI GT 6 Pro 46mm Smart Watch Black")).toBe("smartwatch:huawei:gt 6 pro");
+    expect(wearableModelKey("Huawei Watch 5 42mm Smart Watch")).toBe("smartwatch:huawei:watch 5");
+    expect(wearableModelKey("Apple AirPods 4 WithOut Active Noise Cancellation")).toBe("headphones:apple:airpod 4");
+    expect(wearableModelKey("Apple Airpods 4 Brand New With FREE Silicone Cover 100% Original Sealed Pack By Tech House26")).toBe("headphones:apple:airpod 4");
+    // "AirPods 5 ... Active Noise Cancelling" further on describes a model that always has it
+    expect(wearableModelKey("Apple AirPods 5 True Wireless Active Noise Cancelling Earbuds")).toBe("headphones:apple:airpod 5");
+    expect(wearableModelKey("A4tech Bloody G521 7.1 Gaming Headset -Black")).toBeNull(); // "7.1" surround; the code G521 is the model
+    expect(wearableModelKey("Samsung Galaxy Watch Ultra 2025 Titanium Blue")).toBeNull(); // a year
+    expect(wearableModelKey("Strap for Huawei Watch GT 6 Pro")).toBeNull(); // an accessory
+    expect(wearableModelKey("Apple AirPods Pro 2 Master Copy")).toBeNull();
+    expect(wearableModelKey("Samsung Galaxy S25 Ultra 12GB 256GB")).toBeNull(); // not a watch or earbuds
+  });
+
+  it("joins the groups of one watch on the results page, and keeps another edition and a knock-off apart", () => {
+    const watch = (id, platform, title, price) => ({ _id: id, platform, title, price, productCategory: "smartwatch", inStock: true });
+    const groups = groupListingsByProduct(
+      [
+        watch("x1", "xcessorieshub", "Huawei Watch GT 6 Pro 46mm SmartWatch", 71999),
+        watch("e1", "eezepc", "HUAWEI Watch GT 6 Pro 46mm – Black", 77990),
+        watch("e2", "eezepc", "HUAWEI GT 6 Pro 46mm Smart Watch Black", 77990),
+        watch("e3", "eezepc", "HUAWEI GT 6 Pro 46mm Smart Watch Brown", 77990),
+        watch("t1", "telemart", "Huawei Watch GT 6 Pro 46mm Smart Watch - Black", 76499),
+        watch("m1", "mega", "Huawei GT6 Pro 46mm Titanium", 127999),
+        watch("k1", "priceoye", "GT6 Pro Round Screen Sport Smart Watch", 3199),
+        watch("g7", "eezepc", "Huawei Watch GT 7 Pro 46mm", 90990),
+        watch("x7", "xcessorieshub", "Huawei Watch GT 7 Pro Smartwatch", 89999),
+      ],
+      { matchStrategy: mlMatchStrategy },
+    );
+    const holding = (id) => groups.find((g) => g.offers.some((o) => o._id === id));
+    for (const id of ["e1", "e2", "e3", "t1"]) expect(holding(id)).toBe(holding("x1"));
+    expect(holding("g7")).toBe(holding("x7"));
+    expect(holding("g7")).not.toBe(holding("x1"));
+    expect(holding("m1")).not.toBe(holding("x1"));
+    expect(holding("k1")).not.toBe(holding("x1"));
+  });
+
+  it("is switched off by SHOPSAVVY_NO_WEARABLE_MODEL, to measure the grouping without it", () => {
+    process.env.SHOPSAVVY_NO_WEARABLE_MODEL = "1";
+    try {
+      expect(wearableModelKey("Huawei Watch Fit 4")).toBeNull();
+    } finally {
+      delete process.env.SHOPSAVVY_NO_WEARABLE_MODEL;
+    }
+  });
+});
+
+describe("the veto reads a glued line number and 'Ultra Slim' (2026-11-26)", () => {
+  it("'GT6' is the 'GT 6', and still not the 'GT 5'; 'Ultra Slim' is not the Ultra", () => {
+    const veto = (a, b) => attributeConflict(a, b, { ignoreUnstatedStorage: true });
+    expect(veto("Huawei Watch GT 6 Pro", "Huawei Watch Gt6 Pro")).toBe(false);
+    expect(veto("Huawei Watch GT 5", "Huawei Watch GT6")).toBe(true);
+    expect(veto("Galaxy Note 8", "Galaxy Note9")).toBe(true);
+    expect(veto("Honor 10 GT", "Honor 10")).toBe(true);
+    expect(veto("Huawei Watch Fit 4", "HUAWEI WATCH FIT 4 Smartwatch, Ultra Slim, Black")).toBe(false);
+    expect(veto("Huawei Watch Fit 4", "HUAWEI WATCH FIT 4 Ultra-Thin")).toBe(false);
+    expect(veto("Apple Watch Ultra 2", "Apple Watch 2")).toBe(true);
   });
 });

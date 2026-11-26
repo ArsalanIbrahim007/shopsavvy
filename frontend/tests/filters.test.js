@@ -188,6 +188,17 @@ describe("groups", () => {
     expect(sortGroups(groups, "bestScore")[0].productName).toBe("Phone C"); // highest score first
   });
 
+  it("puts the product the search names first under 'Best deal', then the most offers (2026-11-26)", () => {
+    const offer = (id) => ({ _id: id, price: 1000, platform: "priceoye" });
+    const searched = [
+      { productName: "GT 6 Pro", relevance: 6, offers: [offer("1"), offer("2"), offer("3")] },
+      { productName: "GT 5 Pro", relevance: 17, offers: [offer("4")] },
+      { productName: "GT 7 Pro", relevance: 6, offers: [offer("5"), offer("6")] },
+    ];
+    expect(sortGroups(searched, "recommended").map((g) => g.productName)).toEqual(["GT 5 Pro", "GT 6 Pro", "GT 7 Pro"]);
+    expect(sortGroups(searched, "lowestPrice")[0].productName).toBe("GT 6 Pro"); // the other sorts are unchanged
+  });
+
   it("gives a group a stable key that does not depend on its name", () => {
     expect(groupKey(groups[0])).toBe("a");
     expect(groupKey({ productName: "X", offers: [] })).toBe("X");

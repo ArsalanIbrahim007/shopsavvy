@@ -10,11 +10,73 @@
 // (and not an accessory, unless asked for), a product more stores sell (most compared first, as the category pages), a current
 // price (checked within 14 days), in stock. Ties keep the order the database gave (cheapest first), as does the final list.
 
+import { extractBrand } from "./productAttributes.service.js";
+
 export const MAX_SEARCH_LISTINGS = 500;
 
 const CURRENT_MS = 14 * 24 * 60 * 60 * 1000;
 
 const words = (text) => String(text ?? "").toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+
+// Words as groupRelevance compares them: a model word and its number apart ("gt5" -> "gt", "5"), a plural s dropped.
+const modelWords = (text) => words(String(text ?? "").replace(/\bultra[\s-]+(slim|thin|light)/gi, "$1"))
+  .flatMap((w) => w.match(/^([a-z]{2,})(\d{1,2})$/)?.slice(1) ?? [w])
+  .map((w) => w.replace(/^([a-z]{3,}[^s])s$/, "$1"));
+// A word that makes another version of a model: a product with one the search does not ask for is a step further from it
+// ("Galaxy Watch 8" and the "Watch 8 Classic", "AirPods 4" and the "AirPods 4 ANC").
+const VERSION_WORDS = new Set(["pro", "max", "plus", "ultra", "mini", "lite", "classic", "fe", "se", "active", "anc", "nc", "edge", "prime", "neo", "slide", "fold", "flip"]);
+const TITLES_COMPARED = 20;
+
+/**
+ * How closely a product (a group of offers) matches what was searched, for the order of the results: the best of its titles. Every
+ * searched word in the title counts, all of them more; a searched number right after its word ("GT 5", so the GT 5 Pro, not a
+ * "GT 2 Pro" that also says "5 ATM") more again, and each version word the search did not ask for counts against it. "HUAWEI GT 5
+ * Pro" showed the GT 6 Pro, 7 Pro and 2 Pro above the GT 5 Pro, ordered only by their number of offers (2026-11-26).
+ * @returns {number}
+ */
+// What the audit of 26 Nov found ranked level with the product searched for: a used or like-new unit ("Galaxy S25 Ultra ... Like a
+// New" first for "galaxy s25 ultra"), another maker's product ("Samsung Galaxy Watch Ultra 2" for "apple watch ultra 2"), and a
+// case or strap for it ("AirPods 4 Spigen Case", second for "airpods 4"). Each goes below the product unless the search asks for it.
+const SECOND_HAND = /\b(used|refurbished|renewed|open box|pre-?owned|like (a )?new|box ?open|non[- ]?active)\b/i;
+const ACCESSORY = /\b(case|cover|strap|straps|protector|tempered|glass|skin|holder|ear ?tips|charger|cable)\b/i;
+// a case or glass that is part of the product's own description ("Aluminum Case", "Charging Case", "Glass Door")
+const PRODUCT_PARTS = /\b(aluminium|aluminum|titanium|steel|ceramic|charging|wireless charging|magsafe|glass door)\s+(case|glass)\b|\bglass door\b|\bwith\s+(free\s+)?\w*\s*(case|cover|strap)/gi;
+const AWAY = 8;
+
+export function groupRelevance(group, query) {
+  const searched = modelWords(query);
+  if (searched.length === 0) return 0;
+  const asked = new Set(searched);
+  const wantsSecondHand = SECOND_HAND.test(query);
+  const wantsAccessory = ACCESSORY.test(query);
+  const searchedBrand = extractBrand(String(query).split(/\s+/)[0] ?? "");
+  const titles = [...new Set([group.rawGroupKey, group.productName, ...(group.offers ?? []).map((o) => o.title)].filter(Boolean))].slice(0, TITLES_COMPARED);
+  let best = -Infinity;
+  for (const title of titles) {
+    const own = modelWords(title);
+    const set = new Set(own);
+    const matched = searched.filter((w) => set.has(w)).length;
+    let score = matched * 2 + (matched === searched.length ? 5 : 0);
+    // each searched number right after the word before it, as searched
+    const numbers = searched.map((w, i) => [searched[i - 1], w]).filter(([before, w]) => before && /^\d{1,4}$/.test(w));
+    const adjacent = numbers.filter(([before, n]) => own.some((w, i) => w === n && own[i - 1] === before)).length;
+    if (numbers.length && adjacent === numbers.length) score += 4;
+    score -= 3 * [...new Set(own.filter((w) => VERSION_WORDS.has(w) && !asked.has(w)))].length;
+    best = Math.max(best, score);
+  }
+  if (best === -Infinity) return 0;
+  // A product most of whose offers are used, another maker's, or an accessory: below the product searched for.
+  const offerTitles = (group.offers ?? []).map((o) => String(o.title ?? "")).filter(Boolean);
+  const most = (test) => offerTitles.length > 0 && offerTitles.filter(test).length * 2 > offerTitles.length;
+  if (!wantsSecondHand && most((t) => SECOND_HAND.test(t))) best -= AWAY;
+  if (!wantsAccessory && most((t) => ACCESSORY.test(t.replace(PRODUCT_PARTS, " ")))) best -= AWAY;
+  if (searchedBrand && most((t) => { const b = extractBrand(t); return b !== null && b !== searchedBrand; })) best -= AWAY;
+  return best;
+}
+
+/** How many stores sell a product: the tie-break after relevance, before the number of offers (one seller listing a phone six
+ * times put it above the same phone at three stores, 2026-11-26). */
+export const storeCount = (group) => new Set((group.offers ?? []).map((o) => o.platform).filter(Boolean)).size;
 
 /**
  * True when a search that found nothing stored is worth asking every store about. A link, markup, a very long text or one endless

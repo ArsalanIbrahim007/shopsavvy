@@ -1,7 +1,7 @@
 import { normalizeTitle, extractStorage, modelTokens, extractModelCodes, extractScreenInches, ramStorageShorthand } from "./normalizeTitle.service.js";
 import { isSimilarProduct, applianceCodeKeys, attributeConflict, tokenize, VARIANT_TOKENS } from "./similarity.service.js";
 import { calculateDealScores } from "../ranking/dealScore.js";
-import { SHARED_CODE_LENGTH, SHARED_CODE_PRICE_GAP, brandOf, prefixConflict, sameBrand, withoutStoreWording } from "./similarityModel.service.js";
+import { SHARED_CODE_LENGTH, SHARED_CODE_PRICE_GAP, brandOf, prefixConflict, sameBrand, wearableModelKey, withoutStoreWording } from "./similarityModel.service.js";
 import { headlineOffers, isOutOfDate } from "./offerFreshness.service.js";
 import { COLOURS, extractBrand, extractNetworkGeneration, extractPtaStatus, networkFamilyKey } from "./productAttributes.service.js";
 
@@ -421,7 +421,9 @@ function mergeSameModelGroups(groups, sameModel, networkFamilies) {
     const short = extractScreenInches(title) !== null ? [...extractModelCodes(title, { minCodeLength: 3 })].filter((code) => code.length === 3) : [];
     // and an appliance's hyphenated code as the veto reads it ("80-1217" for "HWM 80-1217E"), so such products are compared at all
     const appliance = [...applianceCodeKeys(title)].map((key) => `appliance:${key}`);
-    return [...codes, ...codes.map((code) => code.replace(/^\d{2,3}(?=[a-z][a-z0-9]{2,}$)/, "")), ...short, ...appliance];
+    // and a smartwatch's or earbud's line and short number ("GT 6 Pro", "Fit 4"), which carry no code (sharedModelCode's wearable rule)
+    const wearable = wearableModelKey(title);
+    return [...codes, ...codes.map((code) => code.replace(/^\d{2,3}(?=[a-z][a-z0-9]{2,}$)/, "")), ...short, ...appliance, ...(wearable ? [`wearable:${wearable}`] : [])];
   };
   // One offer per distinct title and price is enough to ask the rule about (a store lists one TV many times).
   const distinctOffers = (group) => [...new Map(group.offers.map((o) => [`${titleOf(o)}|${o.price}`, o])).values()];
@@ -455,6 +457,10 @@ function mergeSameModelGroups(groups, sameModel, networkFamilies) {
         if (named) break;
       }
       if (!named) continue;
+      // A smartwatch's or earbud's line and number (sharedModelCode's wearable rule) must name the groups themselves too: through one
+      // AlfaMall group that held both, the AirPods 4 and the AirPods 4 ANC were joined (2026-11-26).
+      const wearableJoin = mine.some((a) => wearableModelKey(titleOf(a))?.endsWith(`:${named}`));
+      if (wearableJoin && wearableModelKey(group.rawGroupKey) !== wearableModelKey(other.rawGroupKey)) continue;
       // A three-character TV code ("55Q7F" / "Q7F", sameTvShortCode) must name the groups themselves too: through one offer it joined
       // a group of Dawlance KORE TVs that also held two E3A offers to the E3A's group, and a TCL C6 to a P6K (2026-11-09).
       if (named.length < SHARED_CODE_LENGTH &&
@@ -595,10 +601,22 @@ const NON_PTA_PRICE_RATIO = 1 - PRICE_PROXIMITY;
  * card said "1 offer from 1 store" beside a table of two (2026-11-18). Each condition other than the group's first offer's moves to a
  * group of its own, next to it.
  */
+// The condition a seller states in the title, which the store's own field may not carry: AlfaMall's "Samsung Galaxy S25 Ultra 12GB
+// 512GB PTA Approved - 3 Month Warranty Like a New" has condition "new", and sat in the new phone's group as its best deal at PKR
+// 322,000 beside new ones from 354,999 (audit A-02, 2026-11-26). "Brand New" and "Non Active, Sealed" are new.
+const TITLE_CONDITIONS = [
+  [/\b(refurbished|renewed)\b/i, "refurbished"],
+  [/\b(open[- ]?box|box[- ]?open(ed)?)\b/i, "open_box"],
+  [/\b(used|pre-?owned|second[- ]?hand|like (a )?new)\b/i, "used"],
+];
+export function titleCondition(title) {
+  return TITLE_CONDITIONS.find(([pattern]) => pattern.test(String(title || "")))?.[1] ?? null;
+}
+
 export function separateByCondition(groups) {
   const out = [];
   for (const group of groups) {
-    const conditionOf = (o) => (PRE_OWNED_CONDITIONS.has(o.condition) ? o.condition : "new");
+    const conditionOf = (o) => (PRE_OWNED_CONDITIONS.has(o.condition) ? o.condition : titleCondition(o.title) ?? "new");
     const kinds = [...new Set(group.offers.map(conditionOf))];
     if (kinds.length < 2) {
       out.push(group);

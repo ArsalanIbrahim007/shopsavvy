@@ -17,6 +17,11 @@
 // real is the job of the discount checks, and this must not hide a fake one.
 
 export const MIN_PLAUSIBLE_PRICE = 100;
+// A price this high is a seller's placeholder, not a price: AlfaMall listed an iPad 11, an iPhone 17 Pro Max 512GB and a Galaxy A36
+// at PKR 99,999,999, and they showed in their products' price ranges (audit A-04, 2026-11-26). The dearest real listings seen are
+// large TVs at a few million.
+export const MAX_PLAUSIBLE_PRICE = 10_000_000;
+export const isPlaceholderPrice = (price) => Number(price) >= MAX_PLAUSIBLE_PRICE;
 
 /**
  * @param {{price:number, originalPrice?:number|null}} scraped
@@ -27,6 +32,9 @@ export function sanitizePrices({ price, originalPrice } = {}) {
 
   if (!Number.isFinite(current) || current < MIN_PLAUSIBLE_PRICE) {
     return { ok: false, reason: `price ${price} is below the minimum plausible price (PKR ${MIN_PLAUSIBLE_PRICE})` };
+  }
+  if (isPlaceholderPrice(current)) {
+    return { ok: false, reason: `price ${price} is a placeholder (PKR ${MAX_PLAUSIBLE_PRICE.toLocaleString()} or more)` };
   }
 
   const changes = [];

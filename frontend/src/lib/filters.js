@@ -217,7 +217,13 @@ export function sortGroups(groups, sort) {
   if (sort === "lowestPrice") sorted.sort((a, b) => cheapest(a) - cheapest(b));
   else if (sort === "bestScore") sorted.sort((a, b) => bestScore(b) - bestScore(a));
   else if (sort === "highestDiscount") sorted.sort((a, b) => bestDiscount(b) - bestDiscount(a) || cheapest(a) - cheapest(b));
-  else sorted.sort((a, b) => b.offers.length - a.offers.length);
+  // "Best deal" (the default): the product searched for first (the API's `relevance`; "HUAWEI GT 5 Pro" showed the GT 6 Pro first,
+  // 2026-11-26), then the most compared. A page without relevance (the category pages) keeps ordering by offers alone.
+  else {
+    // then the most stores (one seller listing a phone six times is not six stores), then the most offers
+    const stores = (g) => new Set(g.offers.map((o) => o.platform)).size;
+    sorted.sort((a, b) => (b.relevance ?? 0) - (a.relevance ?? 0) || stores(b) - stores(a) || b.offers.length - a.offers.length);
+  }
   // A product none of whose offers is current goes below every product with one, whatever the sort (2026-11-18).
   const allOld = (g) => g.offers.length > 0 && g.offers.every((o) => isOutOfDate(o));
   return sorted.sort((a, b) => Number(allOld(a)) - Number(allOld(b)));

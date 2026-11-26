@@ -19,6 +19,7 @@
 // other offers, or when those offers disagree with each other, it says so.
 
 import { pagePriceMismatch } from "./pagePrice.service.js";
+import { isPlaceholderPrice } from "./priceSanity.service.js";
 
 export const LOW_RATIO = 0.5;
 export const HIGH_RATIO = 2.0;
@@ -58,6 +59,10 @@ export function analyzePricePlausibility(offer, groupOffers = []) {
   });
 
   if (!Number.isFinite(price) || price <= 0) return abstain("This offer has no valid price to check.");
+  // A placeholder (PKR 99,999,999), whatever the other stores charge (priceSanity.service.js).
+  if (isPlaceholderPrice(price)) {
+    return { status: "suspect_high", ratio: null, referencePrice: null, comparators: others.length, reason: "This is a placeholder, not a price: the store has not priced it." };
+  }
   // The store's own product page charges another price than its listings show (pagePrice.service.js): a listing error at the store.
   const mismatch = pagePriceMismatch(offer);
   if (mismatch) {
