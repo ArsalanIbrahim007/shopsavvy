@@ -611,6 +611,11 @@ const CATEGORIES = {
             "top load",
             "twin tub",
             "automatic washer",
+            // a spinner (spin dryer) is laundry, and was "other": Super Asia's SD-550 in 10 listings, out of every washing-machine
+            // page and rule (2026-11-26)
+            "spin dryer",
+            "spin power", // "Spin Power Full Spinner 10KG" ("spinner" alone is also a fidget spinner)
+            "dryer machine",
         ],
         exclude: [
             "cover",

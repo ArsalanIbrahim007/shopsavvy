@@ -226,7 +226,10 @@ function extractApplianceTypeUncached(title = "") {
   const text = String(title).toLowerCase();
   const families = [
     [["split", /\bsplit\b/], ["window", /\bwindow\s*(?:ac|air)/], ["portable", /\bportable\b/], ["floor", /\bfloor\s*stand/]],
-    [["front", /\bfront[\s-]*load/], ["top", /\btop[\s-]*load/], ["twin", /\btwin[\s-]*tub|\bsemi[\s-]*auto/]],
+    // A single-tub washer is semi-automatic too: "Haier Semi Automatic Single Tub … (HWM-80-60)" read as a twin tub, so a Daraz twin
+    // tub (HWM 80 CS) was placed with it (2026-11-26). "Semi automatic" means twin only when the title names no single tub.
+    [["front", /\bfront[\s-]*load/], ["top", /\btop[\s-]*load/], ["twin", /\btwin[\s-]*tub|\bsemi[\s-]*auto(?![\s\S]*\bsingle[\s-]*tub)(?<!\bsingle[\s-]*tub[\s\S]*)/],
+      ["single", /\bsingle[\s-]*tub\b/]],
     [["side_by_side", /\bside[\s-]*by[\s-]*side\b/], ["double_door", /\b(?:double|two|2)[\s-]*door/], ["single_door", /\b(?:single|one|1)[\s-]*door/], ["freezer", /\b(?:deep|chest|upright)\s*freezer\b/]],
   ];
   for (const family of families) {

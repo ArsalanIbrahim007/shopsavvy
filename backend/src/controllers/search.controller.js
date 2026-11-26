@@ -10,7 +10,8 @@ import { detectQueryCategory } from "../scrapers/productCategory.js";
 import { hasAdminKey } from "../middleware/adminKey.middleware.js";
 import { groupListings } from "../services/grouping.service.js";
 import { attachPriceHistory } from "../services/historyEnrichment.service.js";
-import { extractScreenInches, normalizeTitle } from "../services/normalizeTitle.service.js";
+import { extractModelCodes, extractScreenInches, normalizeTitle } from "../services/normalizeTitle.service.js";
+import { prefixedModelCodes } from "../services/similarity.service.js";
 import { extractBrand } from "../services/productAttributes.service.js";
 import { currentOffers } from "../services/offerFreshness.service.js";
 import { lowestBadge } from "../services/priceOutlook.service.js";
@@ -224,6 +225,38 @@ export async function findSearchListings(trimmedQuery, searchFilter) {
   // run of leading words shown. At least two words are kept (the brand and model, never one loose word). The page says which
   // words were searched (`searchedFor`).
   let searchedFor = null;
+
+  // A model code in a pasted title, before its leading words (2026-11-26): Daraz's "Dawlance Top Load Fully Automatic Washing Machine
+  // / DWT 955-C/ 12 Years Brand Warranty Included" was searched as "Dawlance Top Load Fully Automatic DWT", 54 products, without the
+  // one part that names the machine, which DigiMall sells as "… Washing Machine DWT 955-C". The maker's code, written any way
+  // ("DWT 955-C", "DWT-955C", "DWT955"; similarity.service.js prefixedModelCodes) or a code like "65C6K", with the brand the text
+  // names; the page says what was searched for.
+  if (listings.length === 0 && queryTokens.length > 2) {
+    const brandWord = queryTokens.find((token) => extractBrand(token) !== null) ?? null;
+    const brandMatch = brandWord ? [{ title: { $regex: searchWordPattern(brandWord), $options: "i" } }] : [];
+    const tries = [
+      ...[...prefixedModelCodes(trimmedQuery).keys()].map((base) => {
+        const [, letters, number] = base.match(/^([a-z]+)(\d+)$/);
+        return `(?<![A-Za-z0-9])${letters}[\\s-]?${number}(?![0-9])`;
+      }),
+      ...[...extractModelCodes(trimmedQuery, { minCodeLength: 4 })]
+        .filter((code) => /[a-z]/.test(code) && /\d/.test(code) && !/^\d+[a-z]{1,4}$/.test(code))
+        .map((code) => searchWordPattern(code)),
+    ];
+    for (const pattern of tries) {
+      const codeFilter = { ...searchFilter, ...categoryFloor, $and: [{ title: { $regex: pattern, $options: "i" } }, ...brandMatch] };
+      delete codeFilter.$or;
+      const byCode = await Listing.find(codeFilter).sort({ price: 1, createdAt: -1 });
+      if (byCode.length) {
+        listings = byCode;
+        matchedBy = "fewer_words";
+        const written = trimmedQuery.match(new RegExp(pattern.replace(/\(\?!\[0-9\]\)$/, "(?:[\\s-]?[A-Za-z]{1,3}\\b)?"), "i"))?.[0] ?? "";
+        searchedFor = [brandWord, written.trim()].filter(Boolean).join(" ");
+        break;
+      }
+    }
+  }
+
   const cleanTokens = queryTokens.map((token) => token.replace(/^(\d{2,})[a-z]{4,}$/i, "$1"));
   const cleaned = cleanTokens.some((token, i) => token !== queryTokens[i]);
   if (listings.length === 0 && cleanTokens.length >= 2 && (cleanTokens.length > 2 || cleaned)) {

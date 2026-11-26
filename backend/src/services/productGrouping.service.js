@@ -1,5 +1,5 @@
 import { normalizeTitle, extractStorage, modelTokens, extractModelCodes, extractScreenInches, ramStorageShorthand } from "./normalizeTitle.service.js";
-import { isSimilarProduct, applianceCodeKeys, attributeConflict, tokenize, VARIANT_TOKENS } from "./similarity.service.js";
+import { isSimilarProduct, applianceCodeKeys, attributeConflict, prefixedModelCodes, sharedPrefixedCode, tokenize, VARIANT_TOKENS } from "./similarity.service.js";
 import { calculateDealScores } from "../ranking/dealScore.js";
 import { SHARED_CODE_LENGTH, SHARED_CODE_PRICE_GAP, brandOf, prefixConflict, sameBrand, wearableModelKey, withoutStoreWording } from "./similarityModel.service.js";
 import { headlineOffers, isOutOfDate } from "./offerFreshness.service.js";
@@ -294,6 +294,9 @@ const modelNumberConflict = (titleA, titleB) => {
   // the cheapest store's offer left its product. Likewise TCL's "55P6L" TVs.
   const codes = partNumbers(titleB);
   for (const code of partNumbers(titleA)) if (codes.has(code)) return false;
+  // or a maker's code both write, each its own way: iShopping's "Dawlance Airfryer Series Microwave 30 Ltr (DW-550-AF)" reads as
+  // model number 30 (its litres come before the code) against "… DW-550 AF …"'s 550 (2026-11-26)
+  if (sharedPrefixedCode(titleA, titleB)) return false;
   return true;
 };
 
@@ -421,9 +424,11 @@ function mergeSameModelGroups(groups, sameModel, networkFamilies) {
     const short = extractScreenInches(title) !== null ? [...extractModelCodes(title, { minCodeLength: 3 })].filter((code) => code.length === 3) : [];
     // and an appliance's hyphenated code as the veto reads it ("80-1217" for "HWM 80-1217E"), so such products are compared at all
     const appliance = [...applianceCodeKeys(title)].map((key) => `appliance:${key}`);
+    // and a maker's letters-and-number code as stores write it ("DW-550-AF", "DW550": similarity.service.js prefixedModelCodes)
+    const prefixed = [...prefixedModelCodes(title).keys()].map((base) => `prefixed:${base}`);
     // and a smartwatch's or earbud's line and short number ("GT 6 Pro", "Fit 4"), which carry no code (sharedModelCode's wearable rule)
     const wearable = wearableModelKey(title);
-    return [...codes, ...codes.map((code) => code.replace(/^\d{2,3}(?=[a-z][a-z0-9]{2,}$)/, "")), ...short, ...appliance, ...(wearable ? [`wearable:${wearable}`] : [])];
+    return [...codes, ...codes.map((code) => code.replace(/^\d{2,3}(?=[a-z][a-z0-9]{2,}$)/, "")), ...short, ...appliance, ...prefixed, ...(wearable ? [`wearable:${wearable}`] : [])];
   };
   // One offer per distinct title and price is enough to ask the rule about (a store lists one TV many times).
   const distinctOffers = (group) => [...new Map(group.offers.map((o) => [`${titleOf(o)}|${o.price}`, o])).values()];

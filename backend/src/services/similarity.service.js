@@ -10,7 +10,7 @@ import {
 import {
   extractRamGb, extractCondition, extractNetworkGeneration,
   extractTonnage, extractCapacityKg, extractVolumeLitres, extractInverter, extractApplianceType, extractAcSeries,
-  extractModelNumbers, isApplianceTitle, extractFridgeSeries, isFridgeTitle,
+  extractModelNumbers, isApplianceTitle, extractFridgeSeries, isFridgeTitle, extractBrand,
 } from "./productAttributes.service.js";
 
 /**
@@ -65,8 +65,15 @@ const PLUS_AFTER_MODEL = new RegExp("\\b(pro|max|ultra|mini|air|lite|fe|se|edge|
 // Women, Ultra Slim, ..." was kept apart from every other store's Watch Fit 4 as if it were an Ultra (2026-11-26).
 const ULTRA_DESCRIPTION = /\bultra[\s-]+(slim|thin|light(weight)?)\b/gi;
 
+// An appliance named with "air" is not an Air model: "Dawlance … Air Fryer Microwave" and "… Airfryer Series Microwave" were two
+// versions (an "Air" against none) of one DW-550-AF (2026-11-26).
+const AIR_APPLIANCE = /\bair[\s-]*(fryer|fry|conditioner|conditioning|purifier|cooler|curtain|flow|dryer)\b/gi;
+// ... nor any "air" in an appliance's description ("360° Hot Air Circulation" on a HAF-50MB fryer, 2026-11-26)
+const APPLIANCE_WORDS = /\b(fryer|airfryer|oven|microwave|conditioner|purifier|cooler|fan|dryer|dispenser|heater|geyser|refrigerator|fridge|washing|vacuum|iron|kettle|blender|juicer)\b/i;
+
 function extractVariantsUncached(text = "") {
-  const written = String(text).replace(ULTRA_DESCRIPTION, "$1").replace(PLUS_AFTER_MODEL, "$1 plus");
+  let written = String(text).replace(ULTRA_DESCRIPTION, "$1").replace(AIR_APPLIANCE, "$1").replace(PLUS_AFTER_MODEL, "$1 plus");
+  if (APPLIANCE_WORDS.test(written)) written = written.replace(/\bair\b/gi, " ");
   return new Set(tokenize(modelTokens(written)).filter((t) => VARIANT_TOKENS.has(t)));
 }
 
@@ -95,8 +102,10 @@ const NON_MODEL_NUMBER_PRECEDERS = new Set([
  * carry units ("256GB", "40mm") and are not pure numbers, so they are not
  * counted here.
  */
+// A percentage or a number with a unit is not the model's number: "0% Markup", "20 Ltr", "2 Taps", "3.5L Cold Tank" (2026-11-26).
+const NOT_A_SERIES_NUMBER = /\d+(\.\d+)?\s*%|\b\d+(\.\d+)?\s*(ltrs?|liters?|litres?|l|kg|kgs|w|watts?|taps?|doors?|years?|months?|days?|pcs|in\s*1|inch(es)?|cft|ton(s)?)\b/gi;
 function seriesNumbersUncached(text = "") {
-  const tokens = tokenize(modelTokens(text));
+  const tokens = tokenize(modelTokens(String(text).replace(NOT_A_SERIES_NUMBER, " ")));
   const found = new Set();
   tokens.forEach((token, i) => {
     if (/^\d{1,2}$/.test(token) && !NON_MODEL_NUMBER_PRECEDERS.has(tokens[i - 1])) found.add(token);
@@ -224,7 +233,9 @@ export function applianceConflict(textA, textB) {
 // A line word inside these phrases describes the box, not the model: a watch "With Green Sport Band", a "3 Pin Power Adapter" (the same
 // Samsung charger another store calls a "Travel Adapter"). Four same-product pairs of the labelled training set were split by them
 // (2026-11-18).
-const NOT_A_LINE = /\bsports?\s+(band|loop|strap)s?\b|\bpower\s+(adapter|supply|delivery)\b/gi;
+// ("Power Full Motor", "High Power", a "Power Bank" too, are the box's description: Super Asia's SD-550 spinner "Spin Power Full …
+// Power Full Motor" was kept apart from its "Easy Spin" listings, 2026-11-26.)
+const NOT_A_LINE = /\bsports?\s+(band|loop|strap)s?\b|\bpower\s+(adapter|supply|delivery|full|ful|bank|saving|saver|cord|cable|button|motor|consumption)\b|\b(high|full|more|low|max|super)\s+power\b/gi;
 
 // A line word with its number glued on is the line word: Huawei's "GT6 Pro" is the "GT 6 Pro", and the two were kept apart as if
 // one were a GT model and the other not (2026-11-26). Only with a number of one or two digits, so a code like "GT1030" stays a code.
@@ -308,10 +319,15 @@ const codeParts = (code) => {
  * One model when the parts agree, when one code only adds parts at the end (a unit version: "TAC-18T3B" / "TAC-18T3B-2"), or when
  * its last part only adds letters ("HDF-465" / "HDF-465INV", "DWT-1470" / "DWT-1470PL": stores drop the suffix or space it off).
  */
+// (Either code's last part may be the longer one: "DW-550AF" against "DW-550" was a conflict only in that order, and split Dawlance's
+// air-fryer microwave into 10 products, 2026-11-26.)
+const onlyAddsLetters = (x, y) => {
+  const [shorter, longer] = x.length <= y.length ? [x, y] : [y, x];
+  return longer.startsWith(shorter) && /^[a-z]+$/.test(longer.slice(shorter.length));
+};
 function sameHyphenCode(a, b) {
   const [short, long] = [codeParts(a), codeParts(b)].sort((x, y) => x.length - y.length);
-  return short.every((part, i) => part === long[i] || (i === short.length - 1 && /^[a-z]+$/.test(long[i].slice(part.length))
-    && long[i].startsWith(part)));
+  return short.every((part, i) => part === long[i] || (i === short.length - 1 && onlyAddsLetters(part, long[i])));
 }
 
 /**
@@ -354,6 +370,11 @@ export function attributeConflict(rawA, rawB, { ignoreUnstatedStorage = false } 
   // "Pro 2nd gen" as "Pro 2" (ORDINAL_GENERATION).
   const textA = withoutSellerTag(rawA).replace(GLUED_LINE_IN_TEXT, "$1 $2").replace(ORDINAL_GENERATION, "$1 $2");
   const textB = withoutSellerTag(rawB).replace(GLUED_LINE_IN_TEXT, "$1 $2").replace(ORDINAL_GENERATION, "$1 $2");
+  // The same maker's code with the same suffix on both, however written ("HMW20DGS" / "HMW-20DGS", "HWM 80CS" / "HWM80-CS"): the
+  // weaker number readings below give way to it. They split one product on "0% Markup", "2 Taps", tank sizes, a seller's
+  // "(SNS36)" or "INSTALLMENT-UE002" (2026-11-26: the HMW-20DGS microwave, HAF-50MB fryer, WD-1051 HC dispenser and HWM 80-CS
+  // washer were each several products). Capacity, tonnage, volume, kind, a code going on differently and condition still count.
+  const sameMakerCode = sharedPrefixedCode(textA, textB, { withExactness: true })?.exact === true;
   // Capacity blocks a match when both sides state it and the values differ.
   // When exactly one side states it equivalence is unproven, which is what
   // stopped a bare "iPhone 16 Pro Max" being compared against a 256GB unit at
@@ -399,6 +420,7 @@ export function attributeConflict(rawA, rawB, { ignoreUnstatedStorage = false } 
   const codesA = withoutSizePrefix(extractModelCodes(textA), sizes);
   const codesB = withoutSizePrefix(extractModelCodes(textB), sizes);
   if (
+    !sameMakerCode &&
     codesA.size > 0 &&
     codesB.size > 0 &&
     ![...codesA].some((a) => [...codesB].some((b) => sameModelCode(a, b)))
@@ -407,7 +429,10 @@ export function attributeConflict(rawA, rawB, { ignoreUnstatedStorage = false } 
   // The same for hyphenated codes, which the check above never sees (see hyphenModelCodes).
   const hyphenA = hyphenModelCodes(textA);
   const hyphenB = hyphenModelCodes(textB);
-  if (hyphenA.size > 0 && hyphenB.size > 0 && ![...hyphenA].some((a) => [...hyphenB].some((b) => sameHyphenCode(a, b)))) return true;
+  if (!sameMakerCode && hyphenA.size > 0 && hyphenB.size > 0 && ![...hyphenA].some((a) => [...hyphenB].some((b) => sameHyphenCode(a, b)))) return true;
+  // and a maker's code going on differently however it is written ("HWM 80 CS" / "HWM-80-60"; codeTailConflict), the same maker's
+  // letters on different numbers ("WF-103" / "WF 5254"; codeNumberConflict), and a combo against the product alone
+  if (codeTailConflict(textA, textB) || codeNumberConflict(textA, textB) || comboConflict(textA, textB)) return true;
 
   // A specification both titles state must share a value: a 40mm and a 44mm
   // watch, or a 12th- and 13th-gen laptop, are different products. Disjoint
@@ -429,6 +454,7 @@ export function attributeConflict(rawA, rawB, { ignoreUnstatedStorage = false } 
   const numbersA = seriesNumbers(textA);
   const numbersB = seriesNumbers(textB);
   if (
+    !sameMakerCode &&
     numbersA.size > 0 &&
     numbersB.size > 0 &&
     ![...numbersA].some((n) => numbersB.has(n))
@@ -440,7 +466,7 @@ export function attributeConflict(rawA, rawB, { ignoreUnstatedStorage = false } 
   // "16 G9" both say 16), which would hide the difference.
   const idsA = shortModelIds(textA);
   const idsB = shortModelIds(textB);
-  for (const [slot, valuesA] of idsA) {
+  for (const [slot, valuesA] of sameMakerCode ? [] : idsA) {
     const valuesB = idsB.get(slot);
     if (valuesB && ![...valuesA].some((v) => valuesB.has(v))) return true;
   }
@@ -448,11 +474,11 @@ export function attributeConflict(rawA, rawB, { ignoreUnstatedStorage = false } 
   // The same word followed by different numbers (see numberSlots), and a first generation against a numbered one.
   const slotsA = numberSlots(textA);
   const slotsB = numberSlots(textB);
-  for (const [word, valuesA] of slotsA) {
+  for (const [word, valuesA] of sameMakerCode ? [] : slotsA) {
     const valuesB = slotsB.get(word);
     if (valuesB && ![...valuesA].some((v) => valuesB.has(v))) return true;
   }
-  if (unnumberedGeneration(textA, textB)) return true;
+  if (!sameMakerCode && unnumberedGeneration(textA, textB)) return true;
 
   if (!sameSet(lineWords(textA), lineWords(textB))) return true;
 
@@ -529,6 +555,140 @@ export function sharedApplianceCode(titleA, titleB) {
   if (prefixesA.size > 0 && prefixesB.size > 0 && ![...prefixesA].some((p) => prefixesB.has(p))) return null;
   return shared;
 }
+
+/**
+ * A maker's model code of letters and a number, however a store writes it: Dawlance's air-fryer microwave as "DW-550-AF",
+ * "DW-550 AF", "DW550", "Dw 550 Af" and "DW-550AF", Super Asia's spinner as "SD-550" and "Model SD-550" (2026-11-26: 27 listings of
+ * the one microwave in 10 products, the spinner in 3). Read as base "dw550" and suffix "af" (or null). The letters are a code's,
+ * not a word, unit, brand or colour ("Ltr 30", "Model", "LED 43", "Haier 55"); a suffix is a few letters right after the number
+ * that are not a word ("SD-550 Easy" has none). Map of base -> suffix.
+ */
+const CODE_WORDS = new Set([
+  "ltr", "ltrs", "liter", "liters", "litre", "litres", "kg", "kgs", "inch", "inches", "model", "series", "gen", "core", "with", "upto",
+  "and", "the", "for", "by", "led", "tv", "ac", "ton", "tons", "cft", "mah", "hz", "watt", "watts", "mm", "cm", "year", "years", "month",
+  "months", "pcs", "pack", "size", "no", "of", "in", "on", "at", "up", "gb", "tb", "ram", "rom", "ssd", "hdd", "usb", "wifi", "ip",
+  "hdr", "dolby", "ddr", "version", "edition", "warranty", "plus", "pro", "max", "ultra", "mini", "air", "lite", "note", "only", "free",
+  "new", "box", "uhd", "fhd", "hd", "qled", "oled", "smart", "android", "google", "web", "os", "rs", "pkr", "off", "sale", "set", "dc",
+  "inverter", "split", "window", "floor", "top", "front", "load", "door", "doors", "glass", "easy", "spin", "spinner", "dryer", "auto",
+  "fully", "semi", "twin", "tub", "single", "double", "digital", "manual", "grill", "oven", "microwave", "fryer", "airfryer", "black",
+  "white", "silver", "grey", "gray", "gold", "blue", "red", "green", "brown", "steel", "chrome", "mirror", "matte", "deluxe", "classic",
+  "star", "energy", "saver", "heat", "cool", "cooling", "heating", "and", "cu", "ft", "w", "l", "v", "a", "x",
+  // the words most often written after such a code in the stored titles (counted 2026-11-26), which are the title going on
+  "anex", "ml", "hair", "brand", "type", "fast", "power", "gd", "gm", "g", "dual", "basic", "c", "dpi", "hand", "super", "inv", "pc",
+  "multi", "solar", "water", "all", "rgb", "atx", "cubic", "food", "ss", "pd", "wired", "i", "b", "es", "high", "best", "micro",
+  "argb", "sound", "life", "gan", "cuft", "non", "ex", "ai", "hdmi", "d", "full", "dry", "fan", "solo", "wet", "tower", "iot", "inox",
+  "whole", "keys", "built", "beard", "iron", "graze", "dlx", "lpg", "kit", "nano", "car", "mesh", "range", "rpm", "wall", "acce",
+  "enova", "jumbo", "mega", "m", "men", "delux", "body", "egg", "nose", "turbo", "baby", "pure", "big", "room", "clear", "drum", "pop",
+  "steam", "s", "p", "quick", "pearl", "home", "kids", "rice", "cooker", "kettle", "toaster", "blender", "juicer", "fridge", "lcd",
+  // a store's or seller's own reference, on every product it lists ("ISPK-0509" on 129 VGR products at AlfaMall, "SNS70", "UE010",
+  // "Tech House26"): never a model
+  "ispk", "sns", "ns", "ue", "house", "tech", "cell", "mall", "hub", "store", "shop", "et", "ref", "sku", "id", "code", "item", "art",
+]);
+const UNIT_AFTER = /^(kg|kgs|l|ltr|ltrs|w|mm|cm|inch|in|gb|tb|mah|hz|v|cft|ton|tons|years?|months?|pcs)$/;
+function prefixedModelCodesUncached(title = "") {
+  const text = String(title).toLowerCase();
+  const codes = new Map();
+  // (a number followed by "-" or "." and digits is part of a longer code or a decimal: "HWM 80-1217E" is the appliance rule's)
+  // A one-letter code ("L-204", "L206", "R-7140", "G521s") only with the letter glued or hyphened to three digits or more: LOGIN's
+  // L-204, L206 and L207 earbuds were one product (2026-11-26).
+  const pattern = /(?<![a-z0-9])([a-z]{1,5})([\s-]?)(\d{2,5})(?![-.]\d)(?:([\s-]?)([a-z]{1,5}\d{0,2}))?(?![a-z0-9])/g;
+  for (const m of text.matchAll(pattern)) {
+    const [, prefix, joint, number, gap = "", rawSuffix] = m;
+    if (prefix.length === 1 && (joint === " " || number.length < 3)) continue;
+    if ((prefix.length > 1 && CODE_WORDS.has(prefix)) || extractBrandWord(prefix)) continue;
+    if (rawSuffix && UNIT_AFTER.test(rawSuffix)) continue; // "Haier 10kg": a capacity, not a code
+    // the letters after the number, glued, hyphened or spaced ("HRF-538 IFPA"), unless they are a word ("SD-550 Easy")
+    const suffix = rawSuffix && !CODE_WORDS.has(rawSuffix) ? rawSuffix : null;
+    const base = `${prefix}${number}`;
+    if (!codes.has(base) || (suffix && !codes.get(base))) codes.set(base, suffix);
+  }
+  return codes;
+}
+export const prefixedModelCodes = memoize(prefixedModelCodesUncached);
+// a brand named as a code's letters is no code ("Haier 55", "Dawlance 9178" are the brand and a number)
+const extractBrandWord = (word) => extractBrand(word) !== null;
+
+/**
+ * The base of a prefixed model code two titles share, its suffixes agreeing or one left out ("dw550": "DW-550-AF" / "DW550"), or
+ * null. `{ exact }` says whether both titles wrote the same suffix (or neither any): a code without its suffix could be any of the
+ * model's versions (Haier's HRF-538 comes as IFPA, IAPA, IPRA …), so the caller asks the prices to agree more closely then.
+ */
+export function sharedPrefixedCode(titleA, titleB, { withExactness = false } = {}) {
+  const a = prefixedModelCodes(titleA);
+  if (a.size === 0) return null;
+  const b = prefixedModelCodes(titleB);
+  let loose = null;
+  for (const [base, suffixA] of a) {
+    if (!b.has(base)) continue;
+    const suffixB = b.get(base);
+    if (suffixA === suffixB) return withExactness ? { base, exact: true } : base;
+    if (suffixA === null || suffixB === null) loose ??= base;
+  }
+  if (!loose) return null;
+  return withExactness ? { base: loose, exact: false } : loose;
+}
+
+/**
+ * What follows a maker's code, by its base: "HWM 80 CS" -> hwm80: {cs}, "HWM-80-60" -> hwm80: {60}, "HRF-538 IFPA" -> hrf538:
+ * {ifpa}. Two titles whose codes share a base but go on differently name two models: Daraz's "Haier … Twin Tub … HWM 80 CS" was
+ * placed with "Haier … Single Tub … (HWM-80-60)", and the extension showed the wrong washer (2026-11-26). A spaced word counts only
+ * when it holds a digit or is a short non-word ("CS", "IFPA", "AF"), not "Easy" or "Royal".
+ */
+function codeTailsUncached(title = "") {
+  const text = String(title).toLowerCase();
+  const tails = new Map();
+  for (const m of text.matchAll(/(?<![a-z0-9])([a-z]{1,5})([\s-]?)(\d{2,5})(?:([\s-]?)([a-z0-9]{1,6}))?(?![a-z0-9.])/g)) {
+    const [, prefix, joint, number, gap = "", tail] = m;
+    if (prefix.length === 1 && (joint === " " || number.length < 3)) continue;
+    if ((prefix.length > 1 && CODE_WORDS.has(prefix)) || extractBrandWord(prefix)) continue;
+    if (!tail || UNIT_AFTER.test(tail) || CODE_WORDS.has(tail)) continue;
+    if (gap === " " && !/\d/.test(tail) && tail.length > 4) continue;
+    const base = `${prefix}${number}`;
+    if (!tails.has(base)) tails.set(base, new Set());
+    tails.get(base).add(tail);
+  }
+  return tails;
+}
+const codeTails = memoize(codeTailsUncached);
+
+/** True when two titles' codes share a base but go on differently ("HWM 80 CS" / "HWM-80-60", "HRF-538 IFPA" / "HRF-538IAPA"). */
+export function codeTailConflict(titleA, titleB) {
+  const a = codeTails(titleA);
+  if (a.size === 0) return false;
+  const b = codeTails(titleB);
+  for (const [base, tailsA] of a) {
+    const tailsB = b.get(base);
+    if (!tailsB) continue;
+    const agree = [...tailsA].some((x) => [...tailsB].some((y) => x === y || onlyAddsLetters(x, y)));
+    if (!agree) return true;
+  }
+  return false;
+}
+
+/**
+ * True when both titles carry a maker's codes with the same letters and share none: "Westpoint … WF-103" (a vacuum cleaner) and
+ * "Westpoint … WF 5254" (an air fryer) were one product because an AlfaMall seller's wording ("0% PROCESSING FEES 0% MARKUP …
+ * UE003") was most of both titles; Haier's "HW120-BP12357S8" (12 kg) held "HW-90-BP12357-S8" (9 kg) (2026-11-26). A title that
+ * lists several codes ("GN-8224/GN-8324") agrees with any of them.
+ */
+export function codeNumberConflict(titleA, titleB) {
+  const a = prefixedModelCodes(titleA);
+  if (a.size === 0) return false;
+  const b = prefixedModelCodes(titleB);
+  if (b.size === 0) return false;
+  const letters = (base) => base.replace(/\d+$/, "");
+  for (const prefix of new Set([...a.keys()].map(letters))) {
+    const basesA = [...a.keys()].filter((base) => letters(base) === prefix);
+    const basesB = [...b.keys()].filter((base) => letters(base) === prefix);
+    if (basesB.length && !basesA.some((base) => b.has(base))) return true;
+  }
+  return false;
+}
+
+// A combo or bundle is not the product alone: "Westpoint WF-142 Ceramic Cooker + WF-5350 Rice Cooker 11.11 Combo Deal" sat with the
+// WF-5350 (2026-11-26).
+const COMBO = /\b(combo|bundle)\b|\b[a-z]{2,5}[\s-]?\d{2,5}[a-z0-9-]*\s*\+\s*[a-z ]{0,20}?[a-z]{2,5}[\s-]?\d{2,5}/i;
+export const comboConflict = (titleA, titleB) => COMBO.test(String(titleA)) !== COMBO.test(String(titleB));
 
 /** The letter prefixes a title writes before a code ("pdin" in "PDIN70-100", "hwm" in "HWM 80-1217E"). */
 function codePrefixes(title, key) {

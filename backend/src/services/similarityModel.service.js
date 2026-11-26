@@ -13,7 +13,7 @@ import { dirname, join } from "path";
 import { buildFeatureVector } from "../ml/features.js";
 import { FILLER_WORDS } from "../ml/fillerWords.js";
 import { predictProba } from "../ml/logisticRegression.js";
-import { attributeConflict, tokenize, sameSet, sharedApplianceCode, statedSizes, withoutSizePrefix } from "./similarity.service.js";
+import { attributeConflict, tokenize, sameSet, sharedApplianceCode, sharedPrefixedCode, statedSizes, withoutSizePrefix } from "./similarity.service.js";
 import { modelTokens, extractStorage, extractPtaStatus, extractModelCodes, extractScreenInches } from "./normalizeTitle.service.js";
 import { COLOURS, extractBrand, extractRamGb } from "./productAttributes.service.js";
 import { detectCategory } from "../scrapers/productCategory.js";
@@ -52,13 +52,14 @@ function loadModel() {
 // a router's speed class "BE3600") or a store's own reference ("ISPK-0545", "SNS65", "ON INSTALLMENTS-UE001").
 export const SHARED_CODE_LENGTH = 4;
 export const SHARED_CODE_PRICE_GAP = 0.25;
+export const LOOSE_CODE_PRICE_GAP = 0.1;
 const COMPUTER =
   /\b(laptop|notebook|macbook|chromebook|ultrabook|thinkpad|thinkbook|core\s*(i[3579]|ultra)|ryzen|intel|amd|celeron|pentium|cpu|gpu|rtx|gtx|ddr\d)\b/i;
 // "Processor" alone marks a computer, but not in a TV's title: Samsung's "Q7F QLED 4K Vision AI Smart TV (Q4 AI Processor ...)" and TCL's
 // "AiPQ Processor" were left out of the rule (2026-11-09, labelled pair r287).
 const TV_TITLE = /\b(tv|television|qled|oled)\b/i;
 const isComputer = (title) => COMPUTER.test(title) || (/\bprocessor\b/i.test(title) && !TV_TITLE.test(title));
-const NOT_A_MODEL = /^(\d+(years?|yrs?|months?|days?)|hdr\d+|ddr\d+|lpddr\d+[a-z]?|wifi\d+|usb\d+|be\d{4}|ax\d{4}|ac\d{4}|ispk\d*|sns\d+|ue\d{3})$/;
+const NOT_A_MODEL = /^(\d+(years?|yrs?|months?|days?)|hdr\d+|ddr\d+|lpddr\d+[a-z]?|wifi\d+|usb\d+|be\d{4}|ax\d{4}|ac\d{4}|ispk\d*|sns\d+|ue\d{3}|house\d+|tech\d+|cell\d+)$/;
 export const brandOf = (title) => (String(title).toLowerCase().match(/[a-z0-9]+/) ?? [""])[0];
 // The brand as one store writes it, or the line a store names alone: "A4tech Bloody MR710" and "Bloody MR710" are one maker's
 // (2026-11-09, labelled pair r020). The second word counts only when it is a word of letters, four or more, so "Haier LED 55..."
@@ -91,6 +92,13 @@ export function sharedModelCode(itemA, itemB, { shortTvCode = false } = {}) {
   // An appliance's hyphenated code, as the veto reads it ("HWM 80-1217E" / "HWM-80-1217"; similarity.service.js sharedApplianceCode)
   const appliance = sharedApplianceCode(itemA.title, itemB.title);
   if (appliance) return gap <= SHARED_CODE_PRICE_GAP ? appliance : null;
+  // A maker's code of letters and a number however a store writes it ("DW-550-AF", "DW-550 AF", "DW550"; similarity.service.js
+  // prefixedModelCodes). Not for phones, tablets, laptops, watches and earbuds, which have rules of their own.
+  if (!process.env.SHOPSAVVY_NO_PREFIXED_CODE && !PERSONAL_DEVICES.has(categoryOf(itemA.title)) && !PERSONAL_DEVICES.has(categoryOf(itemB.title))) {
+    const prefixed = sharedPrefixedCode(itemA.title, itemB.title, { withExactness: true });
+    // a code without its suffix ("HRF-538" against "HRF-538 IFPA") within 10% only: it could be another version of the model
+    if (prefixed) return gap <= (prefixed.exact ? SHARED_CODE_PRICE_GAP : LOOSE_CODE_PRICE_GAP) ? prefixed.base : null;
+  }
   const yearless = sameTvWithoutYearLetter(itemA.title, itemB.title, sizes) ?? (shortTvCode ? sameTvShortCode(itemA.title, itemB.title) : null);
   if (yearless && gap <= YEAR_LETTER_PRICE_GAP) return yearless;
   const line = sameLineNumber(itemA.title, itemB.title);
@@ -121,13 +129,19 @@ const NOT_THE_MODEL = /\b(copy|replica|clone|aaa|compatible)\b/i;
 const KNOWN_COLOUR_WORD = new RegExp(`^(?:${COLOURS.map((c) => c.replace(/ /g, "|")).join("|")})$`, "i");
 const ANC = /\b(anc|active\s+noise|noise[\s-]+cancel+(ing|ation|lation)?|hybrid\s+noise)\b/i;
 const categoryCache = new Map();
-const wearableCategory = (title) => {
-  if (!categoryCache.has(title)) {
+// A title's category as the category reader gives it, kept (grouping asks for the same titles again and again).
+export const categoryOf = (title) => {
+  const key = String(title ?? "");
+  if (!categoryCache.has(key)) {
     if (categoryCache.size > 20000) categoryCache.clear();
-    const { category } = detectCategory(title) ?? {};
-    categoryCache.set(title, WEARABLE_CATEGORIES.has(category) ? category : null);
+    categoryCache.set(key, detectCategory(key)?.category ?? null);
   }
-  return categoryCache.get(title);
+  return categoryCache.get(key);
+};
+const PERSONAL_DEVICES = new Set(["smartphone", "tablet", "laptop", "smartwatch"]);
+const wearableCategory = (title) => {
+  const category = categoryOf(title);
+  return WEARABLE_CATEGORIES.has(category) ? category : null;
 };
 export function wearableModelKey(title) {
   if (process.env.SHOPSAVVY_NO_WEARABLE_MODEL) return null; // to measure the grouping without this rule
