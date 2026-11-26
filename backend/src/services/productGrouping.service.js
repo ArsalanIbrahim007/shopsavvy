@@ -4,6 +4,7 @@ import { calculateDealScores } from "../ranking/dealScore.js";
 import { SHARED_CODE_LENGTH, SHARED_CODE_PRICE_GAP, brandOf, prefixConflict, sameBrand, wearableModelKey, withoutStoreWording } from "./similarityModel.service.js";
 import { headlineOffers, isOutOfDate } from "./offerFreshness.service.js";
 import { COLOURS, extractBrand, extractNetworkGeneration, extractPtaStatus, networkFamilyKey } from "./productAttributes.service.js";
+import { phoneKey, phoneModelKey, phoneNetwork } from "./phoneIdentity.service.js";
 
 /**
  * How far a listing's price may sit from a group's prices before it is treated
@@ -656,6 +657,124 @@ function joinBareModelNames(groups, networkFamilies) {
   return groups.filter((group) => !absorbed.has(group));
 }
 
+/**
+ * Phones of one identity in one product (2026-11-27): the same maker, model, 5G or not, RAM, storage and PTA wording
+ * (phoneIdentity.service.js phoneKey), however a store words the rest. The phone audit (scripts/ml/22-audit-phones.js) found 147
+ * phones shown as two products or more, 333 too many, mostly AlfaMall's sellers' copies ("Samsung A07 4/64 | PTA Approved | On Easy
+ * Monthly Installments …", "… Authentico.pk", "… ALI's Mobile") and one store's colour pages ("Oppo A6s Pro 256GB 8GB RAM Eclipse
+ * Blue"); the A17 5G 8GB 256GB was four products. Two products join when every offer of each that names its phone names the same
+ * one, and their prices are within PHONE_PRICE_GAP. Used units and non-PTA prices are taken apart again after this
+ * (separateByCondition, separateLikelyNonPta), as for any product.
+ */
+export const PHONE_PRICE_GAP = 0.2;
+// "5G" said by one product and not the other: one phone only when priced alike (the Galaxy A17 8GB 256GB is a 4G phone at PKR 80,000
+// and a 5G one at 97,000; the Vivo V70 FE, sold in one version, is called "5G" by some stores and not by others).
+export const PHONE_NETWORK_PRICE_GAP = 0.08;
+const isPhoneGroup = (group) => group.offers.some((o) => o.productCategory === "smartphone");
+const titleOfOffer = (o) => o.title || o.normalizedTitle || "";
+const middlePrice = (group) => (group.lowestPrice + group.highestPrice) / 2;
+
+/**
+ * A phone's product holding listings of another phone loses them to that phone (2026-11-27): the matcher joined close-priced
+ * variants ("Vivo Y500 8GB 128GB" with "Vivo Y500 8/256" at PKR 99,719 and 99,879), one model with another under one seller's wording
+ * (Oppo A6C and A6K "… | PTA Approved | With Official Warranty | On Installments By 3AZ Mart"), the Pixel 10 Pro XL with the 10 Pro.
+ * The phone most of a product's offers name stays; an offer naming another phone (maker, model, RAM, storage, PTA wording) goes to
+ * a product of its own, which mergeSamePhones then joins with that phone's. An offer naming no phone stays where it is.
+ */
+function splitMixedPhones(groups) {
+  if (process.env.SHOPSAVVY_NO_PHONE_KEY) return groups;
+  const out = [];
+  for (const group of groups) {
+    out.push(group);
+    if (!isPhoneGroup(group)) continue;
+    const keys = new Map();
+    for (const o of group.offers) { const k = phoneModelKey(titleOfOffer(o)); if (k) keys.set(k, (keys.get(k) ?? 0) + 1); }
+    const kept = keys.size ? [...keys].sort((a, b) => b[1] - a[1])[0][0] : null;
+    const moved = new Map();
+    const away = (o, k) => { if (!moved.has(k)) moved.set(k, []); moved.get(k).push(o); return false; };
+    group.offers = group.offers.filter((o) => {
+      const k = phoneModelKey(titleOfOffer(o));
+      return !k || k === kept ? true : away(o, k);
+    });
+    // The 4G and 5G phones of one model at different prices (Galaxy A17 8GB 256GB: PKR 80,000 and 97,000): the offers that say 5G
+    // leave a product most of whose offers do not, or the other way round, when the two are priced more than
+    // PHONE_NETWORK_PRICE_GAP apart (medians). A phone sold in one version, called "5G" by some stores, is priced alike and stays.
+    const median = (xs) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
+    const fiveG = group.offers.filter((o) => phoneNetwork(titleOfOffer(o)) === "5g");
+    const other = group.offers.filter((o) => phoneNetwork(titleOfOffer(o)) !== "5g");
+    if (fiveG.length && other.length) {
+      const [a, b] = [median(fiveG.map((o) => o.price)), median(other.map((o) => o.price))];
+      if (Math.abs(a - b) / Math.max(a, b) > PHONE_NETWORK_PRICE_GAP) {
+        const minority = fiveG.length < other.length ? fiveG : other;
+        const leaving = new Set(minority);
+        group.offers = group.offers.filter((o) => !leaving.has(o) || away(o, `net:${phoneNetwork(titleOfOffer(o))}`));
+      }
+    }
+    if (moved.size === 0) continue;
+    recount(group);
+    if (!group.offers.some((o) => titleOfOffer(o) === group.productName)) {
+      const own = titleOfOffer(group.offers[0]) || group.productName;
+      Object.assign(group, { productName: own, rawGroupKey: own, normalizedGroupKey: normalizeTitle(own) });
+    }
+    for (const offers of moved.values()) {
+      const rawTitle = titleOfOffer(offers[0]);
+      const split = newGroup(offers[0], rawTitle, extractStorage(rawTitle));
+      for (const o of offers) addOffer(split, o);
+      out.push(split);
+    }
+  }
+  return out;
+}
+
+/**
+ * Phones of one identity in one product (2026-11-27): the same maker, model, RAM, storage and PTA wording (phoneIdentity.service.js
+ * phoneKey), however a store words the rest. The phone audit (scripts/ml/22-audit-phones.js) found 152 phones shown as two products
+ * or more, 314 too many, mostly AlfaMall's sellers' copies ("Samsung A07 4/64 | PTA Approved | On Easy Monthly Installments …",
+ * "… Authentico.pk", "… ALI's Mobile") and one store's colour pages ("Oppo A6s Pro 256GB 8GB RAM Eclipse Blue"); the A17 5G 8GB
+ * 256GB was four products. Two products join when every offer of each that names its phone names the same one and their prices are
+ * within PHONE_PRICE_GAP (PHONE_NETWORK_PRICE_GAP when one says 5G and the other does not). Used units and non-PTA prices are taken
+ * apart again after this (separateByCondition, separateLikelyNonPta), as for any product.
+ */
+function mergeSamePhones(groups) {
+  if (process.env.SHOPSAVVY_NO_PHONE_KEY) return groups; // to measure the grouping without this pass
+  const keyOf = (group) => {
+    const keys = new Set(group.offers.map((o) => phoneKey(titleOfOffer(o))).filter(Boolean));
+    return keys.size === 1 ? [...keys][0] : null; // a product naming two phones is left as it is
+  };
+  // the network most of a product's offers state ("5g" or "")
+  const networkOf = (group) => {
+    const fiveG = group.offers.filter((o) => phoneNetwork(titleOfOffer(o)) === "5g").length;
+    return fiveG * 2 >= group.offers.length ? "5g" : "";
+  };
+  const byKey = new Map();
+  for (const group of groups) {
+    if (!isPhoneGroup(group)) continue;
+    const key = keyOf(group);
+    if (!key) continue;
+    if (!byKey.has(key)) byKey.set(key, []);
+    byKey.get(key).push(group);
+  }
+  const absorbed = new Set();
+  for (const list of byKey.values()) {
+    if (list.length < 2) continue;
+    list.sort((a, b) => b.offers.length - a.offers.length);
+    for (const target of list) {
+      if (absorbed.has(target)) continue;
+      for (const other of list) {
+        if (other === target || absorbed.has(other)) continue;
+        const ptas = (group) => new Set(group.offers.map(ptaOf).filter((p) => p === "pta_approved" || p === "non_pta"));
+        const [pa, pb] = [ptas(target), ptas(other)];
+        if ((pa.has("non_pta") && pb.has("pta_approved")) || (pa.has("pta_approved") && pb.has("non_pta"))) continue;
+        const gap = Math.abs(middlePrice(target) - middlePrice(other)) / Math.max(middlePrice(target), middlePrice(other));
+        if (gap > (networkOf(target) === networkOf(other) ? PHONE_PRICE_GAP : PHONE_NETWORK_PRICE_GAP)) continue;
+        for (const listing of other.offers) addOffer(target, listing);
+        absorbed.add(other);
+      }
+    }
+  }
+  return groups.filter((group) => !absorbed.has(group));
+}
+
 // The condition a seller states in the title, which the store's own field may not carry: AlfaMall's "Samsung Galaxy S25 Ultra 12GB
 // 512GB PTA Approved - 3 Month Warranty Like a New" has condition "new", and sat in the new phone's group as its best deal at PKR
 // 322,000 beside new ones from 354,999 (audit A-02, 2026-11-26). "Brand New" and "Non Active, Sealed" are new.
@@ -827,6 +946,7 @@ export function groupListingsByProduct(listings = [], { matchStrategy = ruleMatc
   if (sameModel) groups = mergeSameModelGroups(groups, sameModel, networkFamilies);
   if (sameModel) groups = joinBareModelNames(groups, networkFamilies);
   if (matchStrategy.samePlainTitles) groups = mergeStoreWordedGroups(groups, matchStrategy.samePlainTitles, networkFamilies);
+  if (sameModel) groups = mergeSamePhones(splitMixedPhones(groups));
   // before the non-PTA check: a used unit's lower price is not a sign that it is non-PTA
   groups = separateByCondition(groups);
   groups = separateLikelyNonPta(groups, matchStrategy, networkFamilies);
