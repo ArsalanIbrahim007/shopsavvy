@@ -43,10 +43,14 @@ export function variantOf(group) {
   // product's name may be any store's ("Redmi 14C (6GB -128GB) Midnight Black"), and its 4GB page offered no 6GB (2026-11-27).
   const phone = group.phone?.model ? group.phone : null;
   return {
-    group, lowest, price: lowest.price, model: phone?.model ?? modelKey(name), category: lowest.productCategory,
+    group, lowest, price: lowest.price, model: phone?.model ?? modelKey(name), nameModel: modelKey(name), category: lowest.productCategory,
     storage: phone?.storage ?? storage, ram: phone?.ram ?? ram, pta,
   };
 }
+
+// One model: by the phone the server read when both products carry it, else by the name (a product without it, from an older answer
+// or a page that dropped it, still finds its versions: the Redmi 14C's pages lost theirs, 2026-11-27).
+const sameModel = (a, b) => (a.group.phone?.model && b.group.phone?.model ? a.model === b.model : a.nameModel === b.nameModel);
 
 const label = {
   storage: (gb) => (gb >= 1024 ? `${gb / 1024}TB` : `${gb}GB`),
@@ -63,7 +67,7 @@ const label = {
 export function variantRows(current, groups) {
   const self = variantOf(current);
   if (!self || !self.model) return [];
-  const siblings = groups.map(variantOf).filter((v) => v && v.model === self.model && v.category === self.category && v.price > 0);
+  const siblings = groups.map(variantOf).filter((v) => v && sameModel(v, self) && v.category === self.category && v.price > 0);
   if (!siblings.some((v) => v.lowest._id === self.lowest._id)) siblings.push(self);
 
   const rows = [];

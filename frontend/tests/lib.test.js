@@ -304,3 +304,14 @@ describe("a phone's versions on its product page, whatever store named each (202
     expect(modelKey("Apple iPhone 17 Pro Max (Blue) 512 GB")).toBe("iphone 17 pro max");
   });
 });
+
+describe("a product page that carries no phone still finds its versions (2026-11-27)", () => {
+  it("matches by name when only the search's products carry the phone", async () => {
+    const { variantRows } = await import("../src/lib/variants.js");
+    const offer = (id, price) => ({ _id: id, price, platform: "techroid", productCategory: "smartphone", inStock: true });
+    const page = { productName: "Redmi 14C 4GB – 128GB", offers: [offer("a", 27499)] }; // no phone
+    const six = { productName: "Redmi 14C (6GB -128GB) Midnight Black", phone: { model: "xiaomi|redmi14c", ram: 6, storage: 128 }, offers: [offer("b", 35999)] };
+    const four = { productName: "Redmi 14C 4GB – 128GB", phone: { model: "xiaomi|redmi14c", ram: 4, storage: 128 }, offers: [offer("a", 27499)] };
+    expect(variantRows(page, [six, four]).find((r) => r.key === "ram")?.options.map((o) => o.label)).toEqual(["4GB", "6GB"]);
+  });
+});

@@ -133,7 +133,8 @@ export default function Product() {
 
   const { listing, outlook, dropChances, specs } = product.data;
   const allOffers = offersOf(product.data);
-  const group = { productName: productName(product.data, state), offers: allOffers };
+  // with the phone the server read from the offers (model, RAM, storage), which the storage / RAM choices go by (2026-11-27)
+  const group = { productName: productName(product.data, state), offers: allOffers, phone: product.data.productGroup?.phone ?? null };
   const shared = summarizeOffers(allOffers).lowest ?? listing; // the share page opens the product at its canonical offer
 
   return (
