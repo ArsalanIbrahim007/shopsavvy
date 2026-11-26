@@ -51,7 +51,9 @@ function phoneIdentityUncached(title = "") {
   if (!brand) return null;
   // A bracket without digits is a colour or the box's contents, and may come before the version: "Apple iPhone 13 (Sierra Blue) PRO
   // 128 GB" is the 13 Pro, and was read as the 13 (2026-11-27).
-  const text = withoutStoreWording(raw).replace(/\([^()\d]*\)/g, " ").replace(/\b(pro|max|ultra|note)\s*\+/gi, "$1 plus").toLowerCase();
+  const text = withoutStoreWording(raw).replace(/\([^()\d]*\)/g, " ").replace(/\b(pro|max|ultra|note)\s*\+/gi, "$1 plus")
+    // a model code with a "+" is the Plus: "Galaxy S26+" (was read as the S26, 2026-11-27); not "8+256" or "12GB+ 256GB"
+    .replace(/\b([a-z]+\d+[a-z]?)\+/gi, (m, code) => (/^\d|gb$|tb$/i.test(code) ? m : `${code} plus`)).toLowerCase();
   const words = text.match(/[a-z0-9]+/g) ?? [];
   const model = [];
   let numbered = false;
@@ -138,6 +140,17 @@ function macbookKeyUncached(title = "") {
   return `apple|macbook ${line}|${size}|m${chip[1]}${chip[2] ?? ""}|${ram}|${storage}`;
 }
 export const macbookKey = memoize(macbookKeyUncached);
+
+/**
+ * Maker and model, for a title that states neither RAM nor storage ("Samsung A17 by EasyPay", "Samsung Galaxy A17 6.7 Inches Display
+ * On Installment By OneStop"): its version is then told by its price alone (productGrouping placeStoragelessPhones). Null otherwise,
+ * and for iPhones (several storages at overlapping prices).
+ */
+export function phoneModelOnlyKey(title) {
+  const id = phoneIdentity(title);
+  if (!id || id.storage !== null || id.ram !== null || id.brand === "apple") return null;
+  return `${id.brand}|${id.model}`;
+}
 
 /** The key without its PTA wording: maker, model, RAM, storage. A product splits only on these (PTA has its own rules). */
 export const phoneModelKey = (title) => phoneKey(title)?.replace(/\|(nonpta)?$/, "") ?? null;

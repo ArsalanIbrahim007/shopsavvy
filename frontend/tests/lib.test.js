@@ -284,3 +284,23 @@ describe("a product's storage on the product page (2026-11-27)", () => {
     expect(variantOf({ productName: "Samsung Galaxy A17 8GB RAM 256GB Storage", offers: [offer] }).storage).toBe(256);
   });
 });
+
+describe("a phone's versions on its product page, whatever store named each (2026-11-27)", () => {
+  const offer = (id, price) => ({ _id: id, price, platform: "techroid", productCategory: "smartphone", inStock: true });
+  const four = { productName: "Redmi 14C 4GB – 128GB", phone: { model: "xiaomi|redmi14c", ram: 4, storage: 128 }, offers: [offer("a", 27499)] };
+  const six = { productName: "Redmi 14C (6GB -128GB) Midnight Black", phone: { model: "xiaomi|redmi14c", ram: 6, storage: 128 }, offers: [offer("b", 29999)] };
+
+  it("offers the 6GB on the 4GB page and the 4GB on the 6GB page", async () => {
+    const { variantRows } = await import("../src/lib/variants.js");
+    const ramOf = (rows) => rows.find((r) => r.key === "ram")?.options.map((o) => o.label);
+    expect(ramOf(variantRows(four, [four, six]))).toEqual(["4GB", "6GB"]);
+    expect(ramOf(variantRows(six, [four, six]))).toEqual(["4GB", "6GB"]);
+  });
+
+  it("reads the model from names that write the memory in brackets, as 6/128, or before a '|'", async () => {
+    const { modelKey } = await import("../src/lib/variants.js");
+    expect(modelKey("Redmi 14C (6GB -128GB) Midnight Black")).toBe("redmi 14c");
+    expect(modelKey("Xiaomi Redmi 14C 6/128 | PTA Approved | On Easy Monthly Installments")).toBe("redmi 14c");
+    expect(modelKey("Apple iPhone 17 Pro Max (Blue) 512 GB")).toBe("iphone 17 pro max");
+  });
+});

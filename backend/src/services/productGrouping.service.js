@@ -4,7 +4,7 @@ import { calculateDealScores } from "../ranking/dealScore.js";
 import { SHARED_CODE_LENGTH, SHARED_CODE_PRICE_GAP, brandOf, prefixConflict, sameBrand, wearableModelKey, withoutStoreWording } from "./similarityModel.service.js";
 import { headlineOffers, isOutOfDate } from "./offerFreshness.service.js";
 import { COLOURS, extractBrand, extractNetworkGeneration, extractPtaStatus, networkFamilyKey } from "./productAttributes.service.js";
-import { macbookKey, phoneKey, phoneModelKey, phoneNetwork, phonePartialKey } from "./phoneIdentity.service.js";
+import { macbookKey, phoneIdentity, phoneKey, phoneModelKey, phoneModelOnlyKey, phoneNetwork, phonePartialKey } from "./phoneIdentity.service.js";
 
 /**
  * How far a listing's price may sit from a group's prices before it is treated
@@ -672,16 +672,45 @@ export const PHONE_PRICE_GAP = 0.2;
 export const PHONE_NETWORK_PRICE_GAP = 0.08;
 const isPhoneGroup = (group) => group.offers.some((o) => o.productCategory === "smartphone");
 const titleOfOffer = (o) => o.title || o.normalizedTitle || "";
+// A phone's title as the phone passes read it: with the RAM and storage its store's page sells it in when the title names neither
+// and the listing still has the price the page gave that variant (pageEnrichment pageVariant): iShopping's "Samsung Galaxy A17" at
+// PKR 65,999 is its 6GB 128GB one (2026-11-27).
+const phoneTitleOf = (o) => {
+  const title = titleOfOffer(o);
+  const v = o.pageVariant;
+  if (!v?.storageGb || !v?.ramGb || Math.abs(Number(v.price) - Number(o.price)) >= 1 || !phoneModelOnlyKey(title)) return title;
+  return `${title} ${v.ramGb}GB RAM ${v.storageGb}GB`;
+};
 const middlePrice = (group) => (group.lowestPrice + group.highestPrice) / 2;
+
+/**
+ * The phone a product is, for the product page's storage / RAM choices (frontend lib/variants.js): { model: "xiaomi|redmi14c",
+ * ram, storage }, the model most of its offers name, RAM and storage those naming the full phone agree on (null when none). The page
+ * guessed the model from the product's name, and "Redmi 14C (6GB -128GB) Midnight Black" and "Xiaomi Redmi 14C 6/128 | PTA Approved"
+ * were not the Redmi 14C: its 4GB page offered no 6GB (2026-11-27). Null when no offer names a model.
+ */
+export function phoneOfGroup(group) {
+  const most = (values) => {
+    const counts = new Map();
+    for (const v of values) counts.set(v, (counts.get(v) ?? 0) + 1);
+    return [...counts].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+  };
+  const models = group.offers.map((o) => phoneIdentity(phoneTitleOf(o))).filter(Boolean).map((id) => `${id.brand}|${id.model}`);
+  const model = most(models);
+  if (!model) return null;
+  const full = most(group.offers.map((o) => phoneModelKey(phoneTitleOf(o))).filter((k) => k?.startsWith(`${model}|`)));
+  const [, , ram, storage] = full ? full.split("|") : [];
+  return { model, ram: Number(ram) || null, storage: Number(storage) || null };
+}
 // The offers of a product that name a phone (phoneKey), and from them its price (median) and network: offers naming none (DigiMall's
 // "Samsung Galaxy A17 8GB RAM", no storage, no 5G) had pulled a 5G product's price and network to the 4G one's (2026-11-27).
-const namedOffers = (group) => group.offers.filter((o) => phoneKey(titleOfOffer(o)));
+const namedOffers = (group) => group.offers.filter((o) => phoneKey(phoneTitleOf(o)));
 const medianOf = (xs) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
 const phonePrice = (group) => { const named = namedOffers(group); return named.length ? medianOf(named.map((o) => o.price)) : middlePrice(group); };
 const phoneNetworkOf = (group) => {
   const named = namedOffers(group);
   const list = named.length ? named : group.offers;
-  return list.filter((o) => phoneNetwork(titleOfOffer(o)) === "5g").length * 2 >= list.length ? "5g" : "";
+  return list.filter((o) => phoneNetwork(phoneTitleOf(o)) === "5g").length * 2 >= list.length ? "5g" : "";
 };
 
 /**
@@ -698,12 +727,12 @@ function splitMixedPhones(groups) {
     out.push(group);
     if (!isPhoneGroup(group)) continue;
     const keys = new Map();
-    for (const o of group.offers) { const k = phoneModelKey(titleOfOffer(o)); if (k) keys.set(k, (keys.get(k) ?? 0) + 1); }
+    for (const o of group.offers) { const k = phoneModelKey(phoneTitleOf(o)); if (k) keys.set(k, (keys.get(k) ?? 0) + 1); }
     const kept = keys.size ? [...keys].sort((a, b) => b[1] - a[1])[0][0] : null;
     const moved = new Map();
     const away = (o, k) => { if (!moved.has(k)) moved.set(k, []); moved.get(k).push(o); return false; };
     group.offers = group.offers.filter((o) => {
-      const k = phoneModelKey(titleOfOffer(o));
+      const k = phoneModelKey(phoneTitleOf(o));
       return !k || k === kept ? true : away(o, k);
     });
     // The 4G and 5G phones of one model at different prices (Galaxy A17 8GB 256GB: PKR 80,000 and 97,000): the offers that say 5G
@@ -711,14 +740,14 @@ function splitMixedPhones(groups) {
     // PHONE_NETWORK_PRICE_GAP apart (medians). A phone sold in one version, called "5G" by some stores, is priced alike and stays.
     const median = (xs) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
     const named = namedOffers(group);
-    const fiveG = named.filter((o) => phoneNetwork(titleOfOffer(o)) === "5g");
-    const other = named.filter((o) => phoneNetwork(titleOfOffer(o)) !== "5g");
+    const fiveG = named.filter((o) => phoneNetwork(phoneTitleOf(o)) === "5g");
+    const other = named.filter((o) => phoneNetwork(phoneTitleOf(o)) !== "5g");
     if (fiveG.length && other.length) {
       const [a, b] = [median(fiveG.map((o) => o.price)), median(other.map((o) => o.price))];
       if (Math.abs(a - b) / Math.max(a, b) > PHONE_NETWORK_PRICE_GAP) {
         const minority = fiveG.length < other.length ? fiveG : other;
         const leaving = new Set(minority);
-        group.offers = group.offers.filter((o) => !leaving.has(o) || away(o, `net:${phoneNetwork(titleOfOffer(o))}`));
+        group.offers = group.offers.filter((o) => !leaving.has(o) || away(o, `net:${phoneNetwork(phoneTitleOf(o))}`));
       }
     }
     if (moved.size === 0) continue;
@@ -746,10 +775,30 @@ function splitMixedPhones(groups) {
  * within PHONE_PRICE_GAP (PHONE_NETWORK_PRICE_GAP when one says 5G and the other does not). Used units and non-PTA prices are taken
  * apart again after this (separateByCondition, separateLikelyNonPta), as for any product.
  */
+// How far a price is from the range of a product's offers naming the phone (0 inside it).
+function gapToRange(price, group) {
+  const prices = (namedOffers(group).length ? namedOffers(group) : group.offers).map((o) => o.price);
+  const [lo, hi] = [Math.min(...prices), Math.max(...prices)];
+  if (price >= lo && price <= hi) return 0;
+  return price < lo ? (lo - price) / lo : (price - hi) / price;
+}
+
+// How far apart two products' nearest prices are (0 when their price ranges overlap), among the offers naming the phone.
+function nearestPriceGap(a, b) {
+  const range = (group) => {
+    const prices = (namedOffers(group).length ? namedOffers(group) : group.offers).map((o) => o.price);
+    return [Math.min(...prices), Math.max(...prices)];
+  };
+  const [[loA, hiA], [loB, hiB]] = [range(a), range(b)];
+  if (loA <= hiB && loB <= hiA) return 0;
+  const [low, high] = hiA < loB ? [hiA, loB] : [hiB, loA];
+  return (high - low) / high;
+}
+
 function mergeSamePhones(groups) {
   if (process.env.SHOPSAVVY_NO_PHONE_KEY) return groups; // to measure the grouping without this pass
   const keyOf = (group) => {
-    const keys = new Set(group.offers.map((o) => phoneKey(titleOfOffer(o))).filter(Boolean));
+    const keys = new Set(group.offers.map((o) => phoneKey(phoneTitleOf(o))).filter(Boolean));
     return keys.size === 1 ? [...keys][0] : null; // a product naming two phones is left as it is
   };
   const byKey = new Map();
@@ -771,8 +820,13 @@ function mergeSamePhones(groups) {
         const ptas = (group) => new Set(group.offers.map(ptaOf).filter((p) => p === "pta_approved" || p === "non_pta"));
         const [pa, pb] = [ptas(target), ptas(other)];
         if ((pa.has("non_pta") && pb.has("pta_approved")) || (pa.has("pta_approved") && pb.has("non_pta"))) continue;
-        const gap = Math.abs(phonePrice(target) - phonePrice(other)) / Math.max(phonePrice(target), phonePrice(other));
-        if (gap > (phoneNetworkOf(target) === phoneNetworkOf(other) ? PHONE_PRICE_GAP : PHONE_NETWORK_PRICE_GAP)) continue;
+        const medianGap = Math.abs(phonePrice(target) - phonePrice(other)) / Math.max(phonePrice(target), phonePrice(other));
+        const sameNetwork = phoneNetworkOf(target) === phoneNetworkOf(other);
+        // One phone in one network: the nearest prices of the two (2026-11-27). AlfaMall's instalment sellers ask ~70% more for the
+        // Redmi 14C 6/128 (PKR 51,000) than Techroid (29,999), and one of them 35,999: medians 41% apart kept it two products.
+        // Between a 4G and a 5G product the medians still decide (the A17 8GB 256GB at PKR 80,000 and 97,000 overlap at the ends).
+        const gap = sameNetwork ? Math.min(medianGap, nearestPriceGap(target, other)) : medianGap;
+        if (gap > (sameNetwork ? PHONE_PRICE_GAP : PHONE_NETWORK_PRICE_GAP)) continue;
         for (const listing of other.offers) addOffer(target, listing);
         absorbed.add(other);
       }
@@ -859,33 +913,96 @@ function mergeSameMacbooks(groups) {
 }
 
 export const STORAGELESS_PRICE_GAP = 0.1;
+export const MODEL_ONLY_PRICE_GAP = 0.06;
+export const MODEL_ONLY_MARGIN = 0.03;
+export const MODEL_ONLY_MISFIT = 0.1;
 // Stores where many sellers list one product (each at its own price)
 const MARKETPLACES = new Set(["alfamall", "digimall", "daraz"]);
+// A title naming the model only ("Samsung Galaxy A17", PKR 64,299) that the matcher put beside another version (the A17 8GB 256GB,
+// about PKR 82,000) leaves when priced more than MODEL_ONLY_MISFIT from the offers that name the version: it is some other one, and
+// was the product's lowest price (2026-11-27). Run after the phone passes, which join products.
+function takeOutMisfitModelOnly(groups) {
+  if (process.env.SHOPSAVVY_NO_PHONE_KEY) return groups;
+  const out = [];
+  for (const group of groups) {
+    out.push(group);
+    if (!isPhoneGroup(group)) continue;
+    const named = namedOffers(group).map((o) => o.price).sort((a, b) => a - b);
+    if (!named.length) continue;
+    const typical = named[Math.floor(named.length / 2)];
+    const leaving = new Map();
+    group.offers = group.offers.filter((o) => {
+      const k = phoneModelOnlyKey(phoneTitleOf(o));
+      if (!k || Math.abs(o.price - typical) / Math.max(o.price, typical) <= MODEL_ONLY_MISFIT) return true;
+      if (!leaving.has(k)) leaving.set(k, []);
+      leaving.get(k).push(o);
+      return false;
+    });
+    if (!leaving.size) continue;
+    recount(group);
+    for (const offers of leaving.values()) {
+      const rawTitle = titleOfOffer(offers[0]);
+      const split = newGroup(offers[0], rawTitle, extractStorage(rawTitle));
+      for (const o of offers) addOffer(split, o);
+      out.push(split);
+    }
+  }
+  return out;
+}
+
 function placeStoragelessPhones(groups) {
   if (process.env.SHOPSAVVY_NO_PHONE_KEY) return groups;
   const products = new Map(); // brand|model|ram -> [{ group, storage, network, price }]
+  const byModel = new Map(); // brand|model -> the same entries, every RAM and storage
   for (const group of groups) {
     if (!isPhoneGroup(group)) continue;
-    const keys = new Set(group.offers.map((o) => phoneModelKey(titleOfOffer(o))).filter(Boolean));
+    const keys = new Set(group.offers.map((o) => phoneModelKey(phoneTitleOf(o))).filter(Boolean));
     if (keys.size !== 1) continue;
     const [key] = keys;
     const parts = key.split("|");
     const partial = parts.slice(0, 3).join("|");
     if (!products.has(partial)) products.set(partial, []);
-    products.get(partial).push({ group, storage: parts[3], network: phoneNetworkOf(group), price: phonePrice(group) });
+    const entry = { group, storage: parts[3], network: phoneNetworkOf(group), price: phonePrice(group), size: group.offers.length };
+    products.get(partial).push(entry);
+    const model = parts.slice(0, 2).join("|");
+    if (!byModel.has(model)) byModel.set(model, []);
+    byModel.get(model).push(entry);
   }
   const moves = [];
   for (const group of groups) {
     if (!isPhoneGroup(group)) continue;
     for (const offer of group.offers) {
-      const partial = phonePartialKey(titleOfOffer(offer));
+      // A title naming the model only ("Samsung A17 by EasyPay", PKR 100,000): the version its price clearly points to, within
+      // MODEL_ONLY_PRICE_GAP of that version's price and nearer it by MODEL_ONLY_MARGIN than any other, among the products of at
+      // least two offers (one seller's lone page sets no price). The 5G one when it says 5G.
+      const modelOnly = phoneModelOnlyKey(phoneTitleOf(offer));
+      if (modelOnly) {
+        let versions = (byModel.get(modelOnly) ?? []).filter((c) => c.size >= 2);
+        if (phoneNetwork(phoneTitleOf(offer)) === "5g") versions = versions.filter((c) => c.network === "5g");
+        const ranked = versions
+          .map((c) => ({ c, gap: Math.abs(c.price - offer.price) / Math.max(c.price, offer.price) }))
+          .sort((a, b) => a.gap - b.gap);
+        const [best, next] = ranked;
+        if (best && best.c.group !== group && best.gap <= MODEL_ONLY_PRICE_GAP && (!next || next.gap - best.gap >= MODEL_ONLY_MARGIN)) {
+          moves.push({ offer, from: group, to: best.c.group });
+        }
+        continue;
+      }
+      const partial = phonePartialKey(phoneTitleOf(offer));
       if (!partial) continue;
       let candidates = (products.get(partial) ?? []).filter((c) => c.group !== group);
       if (new Set((products.get(partial) ?? []).map((c) => c.storage)).size !== 1) continue; // several storages sold: unknown
-      const stated = phoneNetwork(titleOfOffer(offer));
+      const stated = phoneNetwork(phoneTitleOf(offer));
       if (stated === "5g") candidates = candidates.filter((c) => c.network === "5g");
+      // its price beside the product's typical price; when that phone is one product, also within the range its offers naming the
+      // phone span (DigiMall's "Xiaomi Redmi 14C 6GB RAM" at PKR 50,899 beside AlfaMall's instalment sellers of the 6/128,
+      // 2026-11-27). Not between a 4G and a 5G product: the A17 8GB 256GB's ranges overlap, and the typical prices tell them apart.
+      const only = (products.get(partial) ?? []).length === 1;
       const nearest = candidates
-        .map((c) => ({ c, gap: Math.abs(c.price - offer.price) / Math.max(c.price, offer.price) }))
+        .map((c) => {
+          const typical = Math.abs(c.price - offer.price) / Math.max(c.price, offer.price);
+          return { c, gap: only ? Math.min(typical, gapToRange(offer.price, c.group)) : typical };
+        })
         .sort((a, b) => a.gap - b.gap)[0];
       if (!nearest || nearest.gap > STORAGELESS_PRICE_GAP) continue;
       // Not an iPhone (every model is sold in several storages, whatever is stored), and not beside the same store's page of that
@@ -1079,7 +1196,7 @@ export function groupListingsByProduct(listings = [], { matchStrategy = ruleMatc
   if (sameModel) groups = mergeSameModelGroups(groups, sameModel, networkFamilies);
   if (sameModel) groups = joinBareModelNames(groups, networkFamilies);
   if (matchStrategy.samePlainTitles) groups = mergeStoreWordedGroups(groups, matchStrategy.samePlainTitles, networkFamilies);
-  if (sameModel) groups = placeStoragelessPhones(mergeSamePhones(splitMixedPhones(groups)));
+  if (sameModel) groups = takeOutMisfitModelOnly(placeStoragelessPhones(mergeSamePhones(splitMixedPhones(groups))));
   if (sameModel) groups = mergeSameMacbooks(groups);
   // before the non-PTA check: a used unit's lower price is not a sign that it is non-PTA
   groups = separateByCondition(groups);
@@ -1100,8 +1217,10 @@ export function groupListingsByProduct(listings = [], { matchStrategy = ruleMatc
         : candidates[0];
       const prices = candidates.map((offer) => Number(offer.price)).filter((price) => price > 0);
 
+      const phone = isPhoneGroup(group) ? phoneOfGroup(group) : null;
       return {
         ...group,
+        ...(phone && { phone }),
         ...(prices.length && { lowestPrice: Math.min(...prices), highestPrice: Math.max(...prices) }),
         bestDeal: bestDeal || null,
         offers: rankedOffers,

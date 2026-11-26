@@ -20,6 +20,8 @@ describe("a phone's identity, however a store words it", () => {
     ["Infinix Hot 50 Pro 8GB 128GB", "infinix|hot50pro|8|128|"],
     ["Tecno Spark 40 Pro+ 8/256", "tecno|spark40proplus|8|256|"],
     ["Samsung Galaxy Fold 5 12GB 512GB", "samsung|zfold5|12|512|"],
+    ["Samsung Galaxy S26+ 12GB 256GB", "samsung|s26plus|12|256|"],
+    ["Samsung Galaxy S26 Plus 12GB+ 256GB", "samsung|s26plus|12|256|"],
     ["Apple iPhone 17 Air 256GB", "apple|iphoneair||256|"],
     ["Apple iPhone Air Sky Blue 256GB", "apple|iphoneair||256|"],
     ["Apple iPhone 13 (Sierra Blue) PRO 128 GB Factory Unlocked PTA Approved(FREE CHARGER AND COVER)", "apple|iphone13pro||128|"],
@@ -53,6 +55,22 @@ describe("grouping phones by identity", () => {
     for (const id of ["b", "c", "d"]) expect(holding(groups, id)).toBe(holding(groups, "a"));
     expect(holding(groups, "e")).toBe(holding(groups, "f"));
     expect(holding(groups, "e")).not.toBe(holding(groups, "a"));
+  });
+
+  it("joins one phone's cheap stores and instalment sellers, judged by their nearest prices, and says which phone it is", () => {
+    const groups = groupListingsByProduct([
+      phone("t", "techroid", "Redmi 14C (6GB – 128GB)", 29999),
+      phone("m", "mistore", "Redmi 14C (6GB -128GB)", 32499),
+      phone("x", "xcessorieshub", "Redmi 14C (6GB -128GB) Midnight Black", 27799),
+      phone("a1", "alfamall", "Xiaomi Redmi 14C 6/128 | PTA Approved | On Easy Monthly Installments | Electronix Hub", 35999),
+      phone("a2", "alfamall", "Xiaomi Redmi 14C 6/128 | PTA Approved | With Official Warranty", 51509),
+      phone("a3", "alfamall", "Xiaomi Redmi 14C 6/128 | PTA Approved | On Easy Monthly Installments | Other Seller", 51499),
+      phone("f", "techroid", "Redmi 14C 4GB – 128GB", 25999),
+    ], { matchStrategy: mlMatchStrategy });
+    for (const id of ["m", "x", "a1"]) expect(holding(groups, id)).toBe(holding(groups, "t"));
+    expect(holding(groups, "a2").phone).toEqual({ model: "xiaomi|redmi14c", ram: 6, storage: 128 });
+    expect(holding(groups, "t").phone).toEqual({ model: "xiaomi|redmi14c", ram: 6, storage: 128 });
+    expect(holding(groups, "f").phone).toEqual({ model: "xiaomi|redmi14c", ram: 4, storage: 128 });
   });
 
   it("joins one phone that some stores call 5G and others do not, when priced alike", () => {
@@ -92,6 +110,19 @@ describe("a listing that states no storage (DigiMall's way, 2026-11-27)", () => 
     expect(holding(groups, "4a")).not.toBe(holding(groups, "5a"));
   });
 
+  it("keeps the 4G and 5G apart when their price ranges overlap", () => {
+    const groups = groupListingsByProduct([
+      phone("4a", "techroid", "Samsung Galaxy A17 8GB – 256GB", 79999),
+      phone("4b", "eezepc", "Samsung Galaxy A17 8GB – 256GB", 80490),
+      phone("4c", "alfamall", "Samsung Galaxy A17 8GB 256GB | PTA Approved | By Some Seller", 86999),
+      phone("5a", "mega", "Samsung Galaxy A17 8GB RAM 256GB Storage PTA Approved 5G", 96999),
+      phone("5b", "alfamall", "Samsung A17 5G 8GB RAM 256GB ROM | PTA Approved | One Year Brand Warranty | Authentico.pk", 96799),
+      phone("5c", "alfamall", "Samsung A17 5G 8GB 256GB | PTA Approved | Cheap Seller", 82999),
+      phone("d", "digimall", "Samsung Galaxy A17 8GB RAM", 84900),
+    ], { matchStrategy: mlMatchStrategy });
+    expect(holding(groups, "d")).toBe(holding(groups, "4a"));
+  });
+
   it("stays where it is when several storages are sold", () => {
     const groups = groupListingsByProduct([
       phone("a", "techroid", "Samsung Galaxy A17 8GB – 256GB", 79999),
@@ -99,6 +130,50 @@ describe("a listing that states no storage (DigiMall's way, 2026-11-27)", () => 
       phone("c", "digimall", "Samsung Galaxy A17 8GB RAM", 77000),
     ], { matchStrategy: mlMatchStrategy });
     expect(holding(groups, "c")).not.toBe(holding(groups, "a"));
+  });
+});
+
+describe("a listing that names the model only (AlfaMall's sellers, 2026-11-27)", () => {
+  const a17 = () => [
+    phone("6a", "techroid", "Samsung Galaxy A17 6GB – 128GB", 71999),
+    phone("6b", "eezepc", "Samsung Galaxy A17 6GB – 128GB", 72499),
+    phone("4a", "techroid", "Samsung Galaxy A17 8GB – 256GB", 81999),
+    phone("4b", "eezepc", "Samsung Galaxy A17 8GB – 256GB", 81899),
+    phone("5a", "mega", "Samsung Galaxy A17 8GB RAM 256GB Storage PTA Approved 5G", 96999),
+    phone("5b", "alfamall", "Samsung A17 5G 8GB RAM 256GB ROM | PTA Approved | One Year Brand Warranty | Authentico.pk", 97299),
+  ];
+
+  it("joins the version its price clearly points to", () => {
+    const groups = groupListingsByProduct([
+      ...a17(),
+      phone("one", "alfamall", "Samsung Galaxy A17 6.7 Inches Display On Installment By OneStop Naya Nazimabad", 78499),
+      phone("easy", "alfamall", "Samsung A17 by EasyPay", 100000),
+    ], { matchStrategy: mlMatchStrategy });
+    expect(holding(groups, "one")).toBe(holding(groups, "4a"));
+    expect(holding(groups, "easy")).toBe(holding(groups, "5a"));
+  });
+
+  it("joins the variant its store's page sells it as, while the price is still that variant's", () => {
+    const variant = { ramGb: 6, storageGb: 128, label: "128GB - 6GB RAM", price: 65999 };
+    const groups = groupListingsByProduct([
+      ...a17(),
+      { ...phone("ish", "ishopping", "Samsung Galaxy A17", 65999), pageVariant: variant },
+      { ...phone("old", "ishopping", "Samsung Galaxy A17", 64299), pageVariant: { ...variant, price: 61000 } },
+    ], { matchStrategy: mlMatchStrategy });
+    expect(holding(groups, "ish")).toBe(holding(groups, "6a"));
+    expect(holding(groups, "old")).not.toBe(holding(groups, "6a")); // price changed since the page was read
+  });
+
+  it("stays apart when its price sits between two versions, or far from all", () => {
+    const groups = groupListingsByProduct([
+      ...a17(),
+      phone("mid", "alfamall", "Samsung Galaxy A17 By Some Store", 76900),
+      phone("low", "alfamall", "Samsung Galaxy A17", 64299),
+    ], { matchStrategy: mlMatchStrategy });
+    for (const id of ["6a", "4a", "5a"]) {
+      expect(holding(groups, "mid")).not.toBe(holding(groups, id));
+      expect(holding(groups, "low")).not.toBe(holding(groups, id));
+    }
   });
 });
 

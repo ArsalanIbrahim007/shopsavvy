@@ -8,8 +8,10 @@ import { summarizeOffers } from "./summary.js";
 /** "Samsung Galaxy A17 6GB RAM 128GB Storage PTA Approved" -> "Samsung Galaxy A17": the name up to its first capacity. */
 export function modelName(name) {
   // a colour or note in brackets is not the model: "Apple iPhone 17 Pro Max (Blue) 512 GB" is "Apple iPhone 17 Pro Max"
-  const text = String(name ?? "").replace(/\([^)]*\)/g, " ").replace(/\s+/g, " ").trim();
-  const cut = text.split(/\s(?=\d+\s?(?:gb|tb)\b)/i)[0];
+  // (a bracket holding the memory ends the model like any capacity: "Redmi 14C (6GB -128GB) Midnight Black"; so do "6/128" and a
+  // "|": "Xiaomi Redmi 14C 6/128 | PTA Approved", 2026-11-27)
+  const text = String(name ?? "").replace(/\([^)\d]*\)/g, " ").replace(/\s+/g, " ").trim();
+  const cut = text.split(/\s\(?(?=\d+\s?(?:gb|tb)\b)|\s(?=\d{1,2}\s?[/+]\s?\d{2,4}\b)|\s*\|/i)[0].replace(/\s*\([^)]*$/, "");
   return cut.replace(/\b(pta|non[- ]?pta|approved|official|warranty)\b.*$/i, "").replace(/[\s,(–-]+$/, "").trim();
 }
 
@@ -37,7 +39,13 @@ export function variantOf(group) {
   const storage = Number(lowest.storageGb) || (sizes.length ? Math.max(...sizes) : null);
   const ram = Number(lowest.ramGb) || (ramInName && ramInName !== storage ? ramInName : null);
   const pta = lowest.ptaStatus === "non_pta" || /\bnon[- ]?pta\b/i.test(name) ? "non_pta" : lowest.ptaStatus === "pta_approved" ? "pta_approved" : null;
-  return { group, lowest, price: lowest.price, model: modelKey(name), category: lowest.productCategory, storage, ram, pta };
+  // A phone the server has read (productGrouping phoneOfGroup: model, RAM and storage from its offers' titles) is taken as read: the
+  // product's name may be any store's ("Redmi 14C (6GB -128GB) Midnight Black"), and its 4GB page offered no 6GB (2026-11-27).
+  const phone = group.phone?.model ? group.phone : null;
+  return {
+    group, lowest, price: lowest.price, model: phone?.model ?? modelKey(name), category: lowest.productCategory,
+    storage: phone?.storage ?? storage, ram: phone?.ram ?? ram, pta,
+  };
 }
 
 const label = {

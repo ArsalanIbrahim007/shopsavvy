@@ -17,6 +17,7 @@ import { extractPagePrices } from "./pagePrice.service.js";
 import { extractPtaFromPage } from "./ptaPage.service.js";
 import { extractJudgeMeRating, extractPriceOyeRating } from "./ratingPage.service.js";
 import { readSpecSheet, SPEC_CATEGORIES } from "./specsEngine.service.js";
+import { listedVariant, memoryVariants } from "./variantPage.service.js";
 
 // Where a colour choice is useful. PTA only applies to the first two.
 export const PAGE_CATEGORIES = ["smartphone", "tablet", "smartwatch", "headphones", "laptop"];
@@ -147,6 +148,7 @@ export async function enrichFromPages({
     let sheet = null;
     let used = { condition: null, evidence: [] };
     let pagePrices; // set below, or the listing is skipped by the catch
+    let variant = null;
     try {
       const html = await fetchPage(listing);
       pta = extractPtaFromPage(html, { productName: listing.title });
@@ -162,6 +164,7 @@ export async function enrichFromPages({
       rated = RATING_READERS.get(String(listing.platform).toLowerCase())?.(html) ?? null;
       // The Specs engine guards itself: a parser error is logged and gives null, never a failed page.
       if (SPEC_CATEGORIES.includes(listing.productCategory)) sheet = await readSpecs(listing.platform, html, { log });
+      if (PTA_CATEGORIES.includes(listing.productCategory) && listing.storageGb == null) variant = listedVariant(memoryVariants(html), listing.price);
     } catch (err) {
       summary.failed += 1;
       log(`[pages] ${listing.platform} "${listing.title}": ${err.message}`);
@@ -194,6 +197,9 @@ export async function enrichFromPages({
     if (colours.length > 0) set.colourOptions = colours; // a page that says nothing leaves an earlier answer alone
     if (rated) Object.assign(set, rated);
     if (sheet) set.specSheet = sheet; // likewise: a page whose specifications could not be read keeps the earlier sheet
+    // A phone whose title names no RAM or storage: the variant its price is, from the page's memory choice (variantPage.service.js),
+    // with the price it was read at (productGrouping uses it only while the listing still has that price).
+    if (variant) set.pageVariant = { ramGb: variant.ramGb, storageGb: variant.storageGb, label: variant.label, price: variant.price, readAt: new Date(now) };
     // The condition the page shows: a used phone becomes "used"; one the page earlier called used and now shows as new goes back.
     // A condition the title itself states ("Used", "Refurbished") is never touched (conditionSource "title" or none).
     // with the price the listing showed then: a later price change makes this read out of date (pagePriceMismatch)

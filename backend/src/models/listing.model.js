@@ -117,6 +117,9 @@ const listingSchema = new mongoose.Schema(
     pagePriceAt: { type: Date, default: null },
     pagePrices: { type: [Number], default: undefined }, // every option's price on that page (colours, capacities)
     pagePriceListed: { type: Number, default: null }, // the listing's price when the page was read
+    // The RAM and storage the page sells the listed phone in, when the title names neither (variantPage.service.js, 2026-11-27):
+    // { ramGb, storageGb, label, price, readAt }. Its own field: the nightly scrape rewrites storageGb and ramGb from the title.
+    pageVariant:     { type: mongoose.Schema.Types.Mixed, default: null },
     screenInches:    { type: Number, default: null },
     resolution: { type: String, default: null, index: true },
     // Optional fields a scraper may send (validated by scrapedExtras.service).
