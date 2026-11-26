@@ -132,3 +132,15 @@ describe("one product page and card, and other models after the one searched for
     expect(namesSearch(g("Anything"), "")).toBe(true);
   });
 });
+
+describe("a phone's memory written short in a search (2026-11-26)", () => {
+  it("reads 8/256, 6+128, 8gb/256gb as a storage filter, and leaves other fractions", async () => {
+    const { memoryShorthand } = await import("../src/controllers/search.controller.js");
+    expect(memoryShorthand("samsung a17 8/256")).toEqual({ text: "samsung a17", storage: 256 });
+    expect(memoryShorthand("redmi 15c 6+128")).toEqual({ text: "redmi 15c", storage: 128 });
+    expect(memoryShorthand("galaxy a57 8gb/256gb")).toEqual({ text: "galaxy a57", storage: 256 });
+    expect(memoryShorthand("haier 1/2 ton").storage).toBeNull();
+    expect(memoryShorthand("20/20 vision").storage).toBeNull();
+    expect(memoryShorthand("8/256").storage).toBeNull(); // nothing else to search for
+  });
+});

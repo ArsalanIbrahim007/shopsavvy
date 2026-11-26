@@ -1,4 +1,5 @@
 import { MEMO_LIMIT, memoize } from "./memoize.js";
+import { detectCategory } from "../scrapers/productCategory.js";
 import {
   extractStorage,
   modelTokens,
@@ -374,7 +375,10 @@ export function attributeConflict(rawA, rawB, { ignoreUnstatedStorage = false } 
   // weaker number readings below give way to it. They split one product on "0% Markup", "2 Taps", tank sizes, a seller's
   // "(SNS36)" or "INSTALLMENT-UE002" (2026-11-26: the HMW-20DGS microwave, HAF-50MB fryer, WD-1051 HC dispenser and HWM 80-CS
   // washer were each several products). Capacity, tonnage, volume, kind, a code going on differently and condition still count.
-  const sameMakerCode = sharedPrefixedCode(textA, textB, { withExactness: true })?.exact === true;
+  // Not for phones, tablets, laptops and watches, whose names read as such codes ("Hot 50", "Spark 30") and which have rules of their
+  // own: "Infinix Hot 50 Saga Green 8GB 128GB" was split from "Infinix Hot 50 8GB – 128GB" on its "Saga" (2026-11-26).
+  const makerCodes = !isPersonalDevice(textA) && !isPersonalDevice(textB);
+  const sameMakerCode = makerCodes && sharedPrefixedCode(textA, textB, { withExactness: true })?.exact === true;
   // Capacity blocks a match when both sides state it and the values differ.
   // When exactly one side states it equivalence is unproven, which is what
   // stopped a bare "iPhone 16 Pro Max" being compared against a 256GB unit at
@@ -432,7 +436,8 @@ export function attributeConflict(rawA, rawB, { ignoreUnstatedStorage = false } 
   if (!sameMakerCode && hyphenA.size > 0 && hyphenB.size > 0 && ![...hyphenA].some((a) => [...hyphenB].some((b) => sameHyphenCode(a, b)))) return true;
   // and a maker's code going on differently however it is written ("HWM 80 CS" / "HWM-80-60"; codeTailConflict), the same maker's
   // letters on different numbers ("WF-103" / "WF 5254"; codeNumberConflict), and a combo against the product alone
-  if (codeTailConflict(textA, textB) || codeNumberConflict(textA, textB) || comboConflict(textA, textB)) return true;
+  if (makerCodes && (codeTailConflict(textA, textB) || codeNumberConflict(textA, textB))) return true;
+  if (comboConflict(textA, textB)) return true;
 
   // A specification both titles state must share a value: a 40mm and a 44mm
   // watch, or a 12th- and 13th-gen laptop, are different products. Disjoint
@@ -593,7 +598,7 @@ function prefixedModelCodesUncached(title = "") {
   // L-204, L206 and L207 earbuds were one product (2026-11-26).
   const pattern = /(?<![a-z0-9])([a-z]{1,5})([\s-]?)(\d{2,5})(?![-.]\d)(?:([\s-]?)([a-z]{1,5}\d{0,2}))?(?![a-z0-9])/g;
   for (const m of text.matchAll(pattern)) {
-    const [, prefix, joint, number, gap = "", rawSuffix] = m;
+    const [, prefix, joint, number, , rawSuffix] = m;
     if (prefix.length === 1 && (joint === " " || number.length < 3)) continue;
     if ((prefix.length > 1 && CODE_WORDS.has(prefix)) || extractBrandWord(prefix)) continue;
     if (rawSuffix && UNIT_AFTER.test(rawSuffix)) continue; // "Haier 10kg": a capacity, not a code
@@ -664,6 +669,10 @@ export function codeTailConflict(titleA, titleB) {
   }
   return false;
 }
+
+// Phones, tablets, laptops and watches: the maker's-code checks above leave them to their own rules (attributeConflict).
+const PERSONAL = new Set(["smartphone", "tablet", "laptop", "smartwatch"]);
+export const isPersonalDevice = memoize((title) => PERSONAL.has(detectCategory(String(title ?? ""))?.category));
 
 /**
  * True when both titles carry a maker's codes with the same letters and share none: "Westpoint … WF-103" (a vacuum cleaner) and

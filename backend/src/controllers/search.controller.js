@@ -294,6 +294,19 @@ export async function findSearchListings(trimmedQuery, searchFilter) {
   return { listings, matchedBy, searchedFor, relatedIds };
 }
 
+/**
+ * "8/256", "8+256", "8gb/256gb", "8-256GB" in a search: RAM and storage. Returns the text without it and the storage in GB (or
+ * null when there is none). Only a RAM of 1-24 and a storage of 16-2048, so "1/2 ton" or "20/20" are left as they are.
+ */
+export function memoryShorthand(text) {
+  const m = String(text).match(/(?<![\w.])(\d{1,2})\s*(?:gb)?\s*[/+-]\s*(\d{2,4})\s*(?:gb|tb)?(?![\w.])/i);
+  if (!m) return { text, storage: null };
+  const [ram, storage] = [Number(m[1]), Number(m[2])];
+  if (ram < 1 || ram > 24 || storage < 16 || storage > 2048 || storage <= ram) return { text, storage: null };
+  const rest = String(text).replace(m[0], " ").replace(/\s+/g, " ").trim();
+  return rest ? { text: rest, storage } : { text, storage: null };
+}
+
 export async function searchListings(req, res) {
   const q = textParam(req.query.q);
 
@@ -306,7 +319,11 @@ export async function searchListings(req, res) {
   if (q.length > MAX_PASTED_TITLE) {
     throw AppError.badRequest(`Search query is too long (maximum ${MAX_PASTED_TITLE} characters).`);
   }
-  const trimmedQuery = searchableText(q, MAX_QUERY_LENGTH);
+  // A phone's memory written short, as shoppers type it ("samsung a17 8/256", "redmi 15c 6+128", "8gb/256gb"): the storage is a
+  // filter, not words to find in titles. "samsung a17 8/256" found one AlfaMall seller's 3 listings, the only titles with "256" as
+  // a word, while 7 stores sell the A17 8GB 256GB (2026-11-26).
+  const { text: queryText, storage: shortStorage } = memoryShorthand(searchableText(q, MAX_QUERY_LENGTH));
+  const trimmedQuery = queryText;
 
   // "a", "1" or "?+" names nothing: it matched most of the catalogue (16,600 listings for "a") and ran into the worker's time
   // limit, and one that matched nothing would have sent every store a search for it.
@@ -363,7 +380,7 @@ export async function searchListings(req, res) {
   }
 
   // Optional filters supplied by the user
-  const storage = numberParam(req.query.storage);
+  const storage = numberParam(req.query.storage) ?? shortStorage;
   if (storage) searchFilter.storageGb = storage;
   const colour = textParam(req.query.colour);
   const condition = textParam(req.query.condition);
