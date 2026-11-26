@@ -22,7 +22,9 @@ export const modelKey = (name) => {
   return bare.split(" ").length >= 2 ? bare : key; // "Xiaomi 15": keep the maker when one word would be left
 };
 
-const capacities = (text) => [...String(text ?? "").matchAll(/(\d+)\s?(gb|tb)\b/gi)].map((m) => Number(m[1]) * (m[2].toLowerCase() === "tb" ? 1024 : 1));
+// Storage sizes only: a size followed by "RAM" is the RAM ("Samsung A17 5G 8GB RAM" states no storage, and its 8GB showed as a storage
+// option beside 256GB, 2026-11-27).
+const capacities = (text) => [...String(text ?? "").matchAll(/(\d+)\s?(gb|tb)\b(?!\s*ram\b)/gi)].map((m) => Number(m[1]) * (m[2].toLowerCase() === "tb" ? 1024 : 1));
 
 /** A product's storage, RAM and PTA status, from its lowest offer's fields, else its name. */
 export function variantOf(group) {
@@ -31,6 +33,7 @@ export function variantOf(group) {
   const name = group.productName ?? lowest.title ?? "";
   const sizes = capacities(name);
   const ramInName = Number(name.match(/(\d+)\s?gb\s?ram\b/i)?.[1]) || (sizes.length >= 2 ? Math.min(...sizes) : null);
+  // (with RAM named, the sizes left are storage; with two sizes and no "RAM", the smaller is the RAM as before)
   const storage = Number(lowest.storageGb) || (sizes.length ? Math.max(...sizes) : null);
   const ram = Number(lowest.ramGb) || (ramInName && ramInName !== storage ? ramInName : null);
   const pta = lowest.ptaStatus === "non_pta" || /\bnon[- ]?pta\b/i.test(name) ? "non_pta" : lowest.ptaStatus === "pta_approved" ? "pta_approved" : null;

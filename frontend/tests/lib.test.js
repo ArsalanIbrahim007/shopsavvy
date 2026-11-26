@@ -274,3 +274,13 @@ describe("swiping a carousel on a phone (2026-11-19)", () => {
     expect(swipeDirection(-60, 120)).toBe(null); // a scroll
   });
 });
+
+describe("a product's storage on the product page (2026-11-27)", () => {
+  it("does not take the RAM for the storage: 'Samsung A17 5G 8GB RAM' states no storage", async () => {
+    const { variantOf } = await import("../src/lib/variants.js");
+    const offer = { _id: "x", price: 96799, platform: "digimall", productCategory: "smartphone", inStock: true };
+    expect(variantOf({ productName: "Samsung A17 5G 8GB RAM", offers: [offer] }).storage).toBeNull();
+    expect(variantOf({ productName: "Samsung A17 5G 8GB RAM", offers: [offer] }).ram).toBe(8);
+    expect(variantOf({ productName: "Samsung Galaxy A17 8GB RAM 256GB Storage", offers: [offer] }).storage).toBe(256);
+  });
+});

@@ -100,5 +100,44 @@ export function phoneKey(title) {
  */
 export const phoneNetwork = (title) => phoneIdentity(title)?.network ?? "";
 
+/**
+ * Maker, model and RAM, for a title that states no storage ("Samsung A17 5G 8GB RAM", DigiMall's way): the phone is known when only
+ * one storage of that model and RAM is sold (productGrouping placeStoragelessPhones). Apple's need no RAM. Null otherwise.
+ */
+export function phonePartialKey(title) {
+  const id = phoneIdentity(title);
+  if (!id || id.storage !== null || (id.ram === null && id.brand !== "apple")) return null;
+  return `${id.brand}|${id.model}|${id.ram ?? ""}`;
+}
+
+/**
+ * A MacBook as one product: line (Air, Pro), screen size (13.6" is a 13, 15.3" a 15), chip (M1-M5, Pro, Max), RAM and storage
+ * (2026-11-27). Apple gives every colour its own part number (the 13" M5 16GB 512GB is MDHH4 Sky Blue, MDHA4 Starlight, MDHE4
+ * Midnight, MDH74 Silver), and the grouping kept each code a product, with the titles that name none in another: the 13" M5 16GB
+ * 512GB was about fifteen products. Colours are one product (its colour picker chooses). The size is read from the title, else from
+ * an M5 part number (MDH… 13", MDV… 15"). Null when any part is missing.
+ */
+function macbookKeyUncached(title = "") {
+  const text = String(title).toLowerCase();
+  if (!/\bmacbook\b/.test(text)) return null;
+  const line = /\bmacbook\s*pro\b/.test(text) ? "pro" : /\bmacbook\s*air\b|\bair\b/.test(text) ? "air" : null;
+  const sizeText = text.match(/\b(1[3-6])(?:\.\d)?\s*(?:"|″|''|”|-?\s*inch(?:es)?\b|inch)/)?.[1]
+    ?? text.match(/\bmacbook\s+(?:air|pro)\s+(1[3-6])\b/)?.[1]
+    ?? text.match(/\b(?:air|pro)\s+(1[3-6])(?:\.\d)?\b/)?.[1];
+  const sizeCode = /\bmdh[a-z0-9]{2}\b/.test(text) ? "13" : /\bmdv[a-z0-9]{2}\b/.test(text) ? "15" : null;
+  const size = sizeText ?? sizeCode;
+  const chip = text.match(/\bm([1-5])(?:\s*(pro|max))?\b/);
+  // memory: "16GB/512GB", "16GB – 512GB", "16GB RAM 512GB SSD", "16/512", "(16GB-512GB SSD)", "1TB"
+  // (Paklap writes "16-GB RAM 512-GB SSD"; AlfaMall's sellers "M5 CHIP-16/1TB")
+  const sizes = [...text.matchAll(/(\d{1,4})[\s-]*(gb|tb)\b/g)].map((m) => Number(m[1]) * (m[2] === "tb" ? 1024 : 1));
+  const short = text.match(/\b(8|16|18|24|32|36|48|64)\s*\/\s*(256|512|1024|2048|1\s*tb|2\s*tb)\b/);
+  const shortStorage = short ? (/tb/.test(short[2]) ? Number(short[2].match(/\d/)[0]) * 1024 : Number(short[2])) : null;
+  const ram = short ? Number(short[1]) : sizes.filter((n) => n <= 64).sort((a, b) => a - b)[0] ?? null;
+  const storage = short ? shortStorage : sizes.filter((n) => n >= 128).sort((a, b) => b - a)[0] ?? null;
+  if (!line || !size || !chip || !ram || !storage) return null;
+  return `apple|macbook ${line}|${size}|m${chip[1]}${chip[2] ?? ""}|${ram}|${storage}`;
+}
+export const macbookKey = memoize(macbookKeyUncached);
+
 /** The key without its PTA wording: maker, model, RAM, storage. A product splits only on these (PTA has its own rules). */
 export const phoneModelKey = (title) => phoneKey(title)?.replace(/\|(nonpta)?$/, "") ?? null;
