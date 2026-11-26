@@ -139,10 +139,11 @@
       status.textContent = "That is the website's address; the extension needs the API's, so the API address was saved instead.";
       return;
     }
-    // A new address needs the shopper's permission to be called (the manifest grants only the local server).
-    const granted = await chrome.permissions.request({ origins: [`${origin}/*`] }).catch(() => false);
-    if (!granted) {
-      status.textContent = "Permission was not given, so the address was not saved.";
+    // Only the servers the manifest names can be called: ShopSavvy's and a local one (since 1.1.0, 2026-11-27, the extension no
+    // longer asks for access to any website, which the Chrome Web Store reviews at length).
+    const allowed = chrome.runtime.getManifest().host_permissions.map((p) => new URL(p.replace(/\/\*$/, "")).origin);
+    if (!allowed.includes(origin)) {
+      status.textContent = `Only ShopSavvy's server or a local one (${allowed.filter((o) => o.startsWith("http:")).join(", ")}) can be used.`;
       return;
     }
     await chrome.storage.sync.set({ apiBase: origin, showPanel: panelInput.checked });

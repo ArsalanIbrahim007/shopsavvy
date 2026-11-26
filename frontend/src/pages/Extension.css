@@ -1,0 +1,18 @@
+/* Extension.css — the browser extension's page. */
+.extension-page__cta { margin-top: var(--space-4); }
+.extension-page__button { font-size: 1rem; padding-inline: var(--space-4); }
+.extension-page__installed { margin: 0; color: var(--good); font-weight: 600; }
+.extension-page__unsupported { margin: 0; color: var(--ink-soft); }
+
+.extension-page__benefits { list-style: none; padding: 0; display: grid; gap: var(--space-3); }
+.extension-page__benefits li {
+  display: grid; gap: 4px; align-content: start; padding: var(--space-4);
+  border: 1px solid var(--line); border-radius: var(--radius-card); background: var(--paper);
+}
+.extension-page__benefits span { color: var(--ink-soft); }
+@media (min-width: 900px) { .extension-page__benefits { grid-template-columns: repeat(3, 1fr); } }
+
+.extension-page__steps { display: grid; gap: var(--space-3); padding-left: 1.25rem; }
+.extension-page__steps li { padding-left: 4px; line-height: 1.6; }
+.extension-page__address { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.extension-page__copy { padding: 2px 10px; min-height: 0; font-size: 0.8125rem; }

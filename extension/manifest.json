@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "ShopSavvy: compare prices in Pakistan",
   "short_name": "ShopSavvy",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "On a store's product page, see the same product's price at other Pakistani stores, and whether its discount is real.",
   "permissions": [
     "storage",
@@ -12,10 +12,6 @@
     "https://cranium-espresso-sway.ngrok-free.dev/*",
     "http://localhost:5000/*",
     "http://127.0.0.1:5000/*"
-  ],
-  "optional_host_permissions": [
-    "https://*/*",
-    "http://*/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -75,6 +71,16 @@
         "https://*.amazon.ca/*",
         "https://*.amazon.com.au/*"
       ]
+    },
+    {
+      "matches": [
+        "https://shopsavvy.pages.dev/*",
+        "http://localhost:5173/*"
+      ],
+      "js": [
+        "site.js"
+      ],
+      "run_at": "document_start"
     }
   ],
   "action": {

@@ -21,4 +21,9 @@ export default [
       },
     },
   },
+  // pack.mjs builds the .zip: a Node module, not part of the extension
+  {
+    files: ["pack.mjs"],
+    languageOptions: { ecmaVersion: 2024, sourceType: "module", globals: globals.node },
+  },
 ];

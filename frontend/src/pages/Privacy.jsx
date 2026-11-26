@@ -7,6 +7,8 @@
 //   - abuse limits: middleware/rateLimit.middleware.js (counts per address, in memory, 15-minute windows)
 //   - this browser: lib/theme.js and lib/recentSearches.js (localStorage, never sent)
 //   - the usability test: backend/src/models/uatResponse.model.js (no name, email or address), pages/TryShopSavvy.jsx
+//   - the browser extension: extension/background.js (sends a product page's address, name and price to /api/listings/match),
+//     extension/site.js (marks this site's page, sends nothing), lib/extension.js (the invitation's "not now", localStorage)
 
 import { Link } from "react-router-dom";
 
@@ -14,7 +16,7 @@ import { usePageDescription, usePageTitle } from "../hooks/usePageTitle.js";
 import PageHero from "../components/PageHero.jsx";
 import "./HowItWorks.css";
 
-export const PRIVACY_UPDATED = "9 November 2026";
+export const PRIVACY_UPDATED = "27 November 2026";
 const ISSUES_URL = "https://github.com/ArsalanIbrahim007/shopsavvy/issues";
 
 const KEPT = [
@@ -25,6 +27,7 @@ const KEPT = [
   ["Server logs", "As long as the hosting service keeps its logs; they hold no name, email or address"],
   ["Answers to the usability test", "With the project's results; they hold no name, email or address"],
   ["Theme and recent searches", "In your browser, until you clear its site data"],
+  ["The extension's settings, and the product of each open tab", "In your browser; a tab's product is forgotten when the tab closes"],
 ];
 
 export default function Privacy() {
@@ -57,9 +60,15 @@ export default function Privacy() {
             <strong>The usability test</strong>, only if you take it (<Link to="/try">Help us test ShopSavvy</Link>): your answers
             to its tasks and statements, and the optional facts and comment you choose to give. It never asks your name or email.
           </li>
+          <li id="extension">
+            <strong>The browser extension</strong>, only if you add it. On a store's product page it sends our server that page's
+            address, product name and price, to find the same product at other stores; the server's log records which page was asked
+            for, not these. It reads no other website, nothing you type and not your browsing history, and on this website it only
+            marks the page so that we do not invite you to add it again.
+          </li>
           <li>
-            <strong>In your browser only:</strong> your light or dark theme choice and your last few searches, so the site can
-            remember them. They stay on your device and are never sent to us.
+            <strong>In your browser only:</strong> your light or dark theme choice, your last few searches and whether you closed
+            the invitation to add the extension, so the site can remember them. They stay on your device and are never sent to us.
           </li>
         </ul>
       </section>

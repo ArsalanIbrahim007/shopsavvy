@@ -18,6 +18,7 @@ const Privacy = lazy(() => import("./pages/Privacy.jsx"));
 const Help = lazy(() => import("./pages/Help.jsx"));
 const TryShopSavvy = lazy(() => import("./pages/TryShopSavvy.jsx"));
 const Compare = lazy(() => import("./pages/Compare.jsx"));
+const Extension = lazy(() => import("./pages/Extension.jsx"));
 
 function Loading() {
   return (
@@ -46,6 +47,7 @@ export default function App() {
             <Route path="help" element={<Suspense fallback={<Loading />}><Help /></Suspense>} />
             <Route path="try" element={<Suspense fallback={<Loading />}><TryShopSavvy /></Suspense>} />
             <Route path="compare" element={<Suspense fallback={<Loading />}><Compare /></Suspense>} />
+            <Route path="extension" element={<Suspense fallback={<Loading />}><Extension /></Suspense>} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

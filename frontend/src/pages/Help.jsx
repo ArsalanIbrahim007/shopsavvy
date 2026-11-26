@@ -151,9 +151,8 @@ export default function Help() {
             cheapest.</li>
           <li><strong>The popup</strong> lists every store's price, cheapest first, and holds the settings.</li>
         </ul>
-        <p className="muted">
-          To install it before it is in the Chrome Web Store: open <code>chrome://extensions</code>, switch on Developer mode, press
-          Load unpacked and choose the <code>extension</code> folder of the project.
+        <p>
+          <Link to="/extension">Get the extension</Link>: it is free, for Chrome and Edge on a computer.
         </p>
       </section>
 

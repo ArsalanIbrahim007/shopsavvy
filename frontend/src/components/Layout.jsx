@@ -13,6 +13,7 @@ import SearchBox from "./SearchBox.jsx";
 import { StoreMark } from "./StoreLogo.jsx";
 import ThemeToggle from "./ThemeToggle.jsx";
 import CompareTray from "./CompareTray.jsx";
+import ExtensionPrompt from "./ExtensionPrompt.jsx";
 import MobileTabBar from "./MobileTabBar.jsx";
 import "./Layout.css";
 
@@ -116,6 +117,7 @@ function Footer() {
           <Link to="/how-it-works">How it works</Link>
           <Link to="/help">How to compare prices</Link>
           <Link to="/drops">Price drops</Link>
+          <Link to="/extension">Browser extension</Link>
         </nav>
         <nav className="site-footer__col" aria-labelledby="footer-about">
           <h2 id="footer-about" className="site-footer__heading">About ShopSavvy</h2>
@@ -143,6 +145,7 @@ export default function Layout() {
         </ErrorBoundary>
       </main>
       <CompareTray />
+      <ExtensionPrompt />
       <Footer />
       <MobileTabBar />
     </>

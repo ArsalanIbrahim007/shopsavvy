@@ -6,6 +6,16 @@ Edge (Manifest V3).
 
 Started by Abuzar (`abuzar/Z4-extension`: the first manifest, popup layout and icons); finished and tested on 2026-11-07.
 
+## Packing and publishing
+
+`node extension/pack.mjs` writes `extension/dist/shopsavvy-extension-<version>.zip` (to upload to the Chrome Web Store and Edge
+Add-ons) and `frontend/public/shopsavvy-extension.zip` (the website's download at `/extension`). Run it after every change
+and commit the second file. Everything the store forms ask for is in `STORE_LISTING.md`.
+
+Visitors find it at https://shopsavvy.pages.dev/extension, and the site invites them in a corner card ("Never overpay again",
+`frontend/src/components/ExtensionPrompt.jsx`) on a computer's Chrome or Edge. `site.js` marks the website's page so someone who
+has the extension is not invited. Since 1.1.0 the extension asks for no access beyond ShopSavvy's server and the stores.
+
 ## Install (for a demonstration)
 
 1. Open `chrome://extensions` (or `edge://extensions`), switch on **Developer mode**, press **Load unpacked** and choose this

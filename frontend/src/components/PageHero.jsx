@@ -13,6 +13,7 @@ const ICONS = {
   privacy: <g {...ICON}><rect x="5" y="10.5" width="14" height="10" rx="2" /><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" /></g>,
   drops: <g {...ICON}><path d="M3 6.5 10 13.5l4-4 7 7" /><path d="M21 11v5.5h-5.5" /></g>,
   compare: <g {...ICON}><rect x="3.5" y="4.5" width="7" height="15" rx="1.5" /><rect x="13.5" y="4.5" width="7" height="15" rx="1.5" /></g>,
+  extension: <g {...ICON}><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z" /><circle cx="7.5" cy="7.5" r="1.5" /></g>,
 };
 
 /**

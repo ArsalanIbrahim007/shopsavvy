@@ -315,3 +315,34 @@ describe("a product page that carries no phone still finds its versions (2026-11
     expect(variantRows(page, [six, four]).find((r) => r.key === "ram")?.options.map((o) => o.label)).toEqual(["4GB", "6GB"]);
   });
 });
+
+describe("the browser extension's invitation (2026-11-27)", () => {
+  const nav = (userAgent, mobile) => ({ userAgent, ...(mobile === undefined ? {} : { userAgentData: { mobile } }) });
+  const CHROME = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+
+  it("is for Chrome and Edge on a computer only", async () => {
+    const { extensionBrowser } = await import("../src/lib/extension.js");
+    expect(extensionBrowser(nav(CHROME, false))).toBe("chrome");
+    expect(extensionBrowser(nav(`${CHROME} Edg/131.0.0.0`, false))).toBe("edge");
+    expect(extensionBrowser(nav("Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/131.0 Mobile Safari/537.36"))).toBeNull();
+    expect(extensionBrowser(nav("Mozilla/5.0 (Windows NT 10.0; rv:133.0) Gecko/20100101 Firefox/133.0"))).toBeNull();
+    expect(extensionBrowser(nav("Mozilla/5.0 (Macintosh; Intel Mac OS X 14_5) AppleWebKit/605.1.15 Version/18.1 Safari/605.1.15"))).toBeNull();
+  });
+
+  it("knows when the extension marked the page", async () => {
+    const { extensionInstalled } = await import("../src/lib/extension.js");
+    expect(extensionInstalled({ documentElement: { dataset: {} } })).toBe(false);
+    expect(extensionInstalled({ documentElement: { dataset: { shopsavvyExtension: "1.1.0" } } })).toBe(true);
+  });
+
+  it("stays away for the days 'Not now' asked", async () => {
+    const { promptSnoozed, snoozePrompt, NOT_NOW_DAYS } = await import("../src/lib/extension.js");
+    const store = new Map();
+    const storage = { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v) };
+    const now = Date.UTC(2026, 10, 27);
+    expect(promptSnoozed(now, storage)).toBe(false);
+    snoozePrompt(NOT_NOW_DAYS, now, storage);
+    expect(promptSnoozed(now + 13 * 86400000, storage)).toBe(true);
+    expect(promptSnoozed(now + 15 * 86400000, storage)).toBe(false);
+  });
+});
