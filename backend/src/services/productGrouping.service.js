@@ -601,6 +601,56 @@ const NON_PTA_PRICE_RATIO = 1 - PRICE_PROXIMITY;
  * card said "1 offer from 1 store" beside a table of two (2026-11-18). Each condition other than the group's first offer's moves to a
  * group of its own, next to it.
  */
+/**
+ * A watch's or earbuds' bare model name at one store is the model's one named version, when that version is the only one we hold:
+ * PriceOye's "Audionic Airbud 550" (PKR 3,895) is the "Airbud 550 Slide Earbuds" that Audionic's own store and five others sell
+ * (PKR 3,999-4,499), but the category's grouping kept it a product of its own, so its product page said 1 offer from 1 store while
+ * the search card, grouped from fewer listings, said 4 stores (2026-11-26). Only a bare group at one store; only when every other
+ * group of that line and number names the same version, held at 2+ stores; prices within BARE_NAME_PRICE_GAP; and no offer
+ * conflicting with the version's (the veto). "AirPods 4" stays apart from "AirPods 4 ANC": the plain one is at 8 stores.
+ */
+export const BARE_NAME_PRICE_GAP = 0.1;
+function joinBareModelNames(groups, networkFamilies) {
+  if (process.env.SHOPSAVVY_NO_BARE_NAME) return groups; // to measure the grouping without this pass
+  // the key most of a group's offers give (a maker's own title may name no brand: "Airbud 550 Slide Earbuds")
+  const keyOf = (group) => {
+    const counts = new Map();
+    for (const offer of group.offers) {
+      const key = wearableModelKey(offer.title || offer.normalizedTitle || "");
+      if (key) counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    return [...counts].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+  };
+  const base =(key) => key.replace(/^(.*:\S*(?: \S+)*? \d{1,4})(?: .*)?$/, "$1");
+  const stores = (group) => new Set(group.offers.map((o) => o.platform)).size;
+  const middle = (group) => (group.lowestPrice + group.highestPrice) / 2;
+  const byBase = new Map();
+  for (const group of groups) {
+    const key = keyOf(group);
+    if (!key) continue;
+    const b = base(key);
+    if (!byBase.has(b)) byBase.set(b, []);
+    byBase.get(b).push({ group, key });
+  }
+  const absorbed = new Set();
+  for (const [b, members] of byBase) {
+    const bare = members.filter((m) => m.key === b);
+    const named = members.filter((m) => m.key !== b);
+    if (bare.length === 0 || named.length === 0 || new Set(named.map((m) => m.key)).size !== 1) continue;
+    if (bare.some((m) => stores(m.group) > 1)) continue; // a bare name several stores use is a product of its own
+    const target = named.sort((x, y) => stores(y.group) - stores(x.group))[0].group;
+    if (stores(target) < 2) continue;
+    for (const { group } of bare) {
+      if (Math.abs(middle(group) - middle(target)) / Math.max(middle(group), middle(target)) > BARE_NAME_PRICE_GAP) continue;
+      const clash = group.offers.some((listing) => target.offers.some((member) => conflictsWithMember(listing, listing.title || listing.normalizedTitle || "", member, networkFamilies)));
+      if (clash) continue;
+      for (const listing of group.offers) addOffer(target, listing);
+      absorbed.add(group);
+    }
+  }
+  return groups.filter((group) => !absorbed.has(group));
+}
+
 // The condition a seller states in the title, which the store's own field may not carry: AlfaMall's "Samsung Galaxy S25 Ultra 12GB
 // 512GB PTA Approved - 3 Month Warranty Like a New" has condition "new", and sat in the new phone's group as its best deal at PKR
 // 322,000 beside new ones from 354,999 (audit A-02, 2026-11-26). "Brand New" and "Non Active, Sealed" are new.
@@ -770,6 +820,7 @@ export function groupListingsByProduct(listings = [], { matchStrategy = ruleMatc
   });
 
   if (sameModel) groups = mergeSameModelGroups(groups, sameModel, networkFamilies);
+  if (sameModel) groups = joinBareModelNames(groups, networkFamilies);
   if (matchStrategy.samePlainTitles) groups = mergeStoreWordedGroups(groups, matchStrategy.samePlainTitles, networkFamilies);
   // before the non-PTA check: a used unit's lower price is not a sign that it is non-PTA
   groups = separateByCondition(groups);

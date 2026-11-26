@@ -144,13 +144,20 @@ function ResultsView({ groups, total, refreshing = false, narrowed = null, spell
   const shown = sortGroups(filterGroups(groups, keptOffers), filters.sort);
   // Used, refurbished and open-box products get a section of their own and are left out of the summary (lib/condition.js).
   const { fresh, preOwned } = splitByCondition(shown);
-  const summary = summarizeOffers(keptOffers);
+  // The model searched for, and other models of its line the API added after it (`exact: false`, "gt 5" -> the GT 4, 6, 7):
+  // those get a section of their own below and stay out of the summary, as used products do. A page without the flag (the
+  // category pages) is not split.
+  const searched = fresh.filter((group) => group.exact !== false);
+  const otherModels = searched.length > 0 ? fresh.filter((group) => group.exact === false) : [];
+  const headlineIds = otherModels.length ? new Set(searched.flatMap((group) => group.offers.map((offer) => String(offer._id)))) : null;
+  const summaryOffers = headlineIds ? keptOffers.filter((offer) => headlineIds.has(String(offer._id))) : keptOffers;
+  const summary = summarizeOffers(summaryOffers);
   // The lowest price, best deal and biggest saving are about what was searched for (the biggest category in view): a search
   // for "iphone 17 pro" also finds cases, and a PKR 8,990 case is not the lowest price of an iPhone.
-  const mainOffers = inCategory(keptOffers, category);
-  const mixed = mainOffers.length < keptOffers.length;
+  const mainOffers = inCategory(summaryOffers, category);
+  const mixed = mainOffers.length < summaryOffers.length;
   const main = { ...(mixed ? summarizeOffers(mainOffers) : summary), ...headlinePrices(mainOffers) };
-  const saving = biggestSaving(fresh.map((group) => ({ ...group, offers: inCategory(group.offers, category) })));
+  const saving = biggestSaving((otherModels.length ? searched : fresh).map((group) => ({ ...group, offers: inCategory(group.offers, category) })));
   const updated = newestScrape(allOffers);
 
   // When browsing a category, the category itself is not a filter the shopper can undo.
@@ -225,7 +232,7 @@ function ResultsView({ groups, total, refreshing = false, narrowed = null, spell
           and "Biggest saving PKR 200" among them, above a single card. On a phone the boxes are left out (results.css) so the
           products come first. */}
       {allOffers.length > 0 && summary.platformCount >= 2 && (
-        <SummaryCards summary={summary} main={main} mainCategory={mixed ? categoryName(category) : null} saving={saving} platforms={[...new Set(keptOffers.map((offer) => offer.platform))]} />
+        <SummaryCards summary={summary} main={main} mainCategory={mixed ? categoryName(category) : null} saving={saving} platforms={[...new Set(summaryOffers.map((offer) => offer.platform))]} />
       )}
       <IntegrityStrip offers={keptOffers} />
 
@@ -272,8 +279,15 @@ function ResultsView({ groups, total, refreshing = false, narrowed = null, spell
                       Their prices are not counted in the summary above.
                     </p>
                   )}
-                  <GroupList key={searchParams.toString()} groups={fresh} />
+                  <GroupList key={searchParams.toString()} groups={searched.length ? searched : fresh} />
                 </>
+              )}
+              {searched.length > 0 && otherModels.length > 0 && (
+                <section className="other-models" aria-labelledby="other-models-heading">
+                  <h2 id="other-models-heading">Other models ({formatNumber(otherModels.length)})</h2>
+                  <p className="muted">Not the model you searched for, but the same line or maker. Their prices are not counted in the summary above.</p>
+                  <GroupList key={`other-${searchParams.toString()}`} groups={otherModels} />
+                </section>
               )}
               {preOwned.length > 0 && (
                 <section className="preowned" id="preowned" aria-labelledby="preowned-heading" tabIndex={-1}>

@@ -45,7 +45,7 @@
 /* page layout: filters beside the list on wide screens, above it on phones */
 .results-layout { display: grid; gap: var(--space-5); align-items: start; }
 @media (min-width: 900px) { .results-layout { grid-template-columns: 284px minmax(0, 1fr); } }
-.preowned { display: grid; gap: var(--space-3); margin-top: var(--space-5); padding-top: var(--space-5); border-top: 1px solid var(--line); }
+.preowned, .other-models { display: grid; gap: var(--space-3); margin-top: var(--space-5); padding-top: var(--space-5); border-top: 1px solid var(--line); }
 .preowned:focus { outline: none; }
 .preowned-note a { text-decoration: underline; } /* a link inside a sentence must not rely on colour alone */
 

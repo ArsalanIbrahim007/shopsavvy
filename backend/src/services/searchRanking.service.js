@@ -74,6 +74,22 @@ export function groupRelevance(group, query) {
   return best;
 }
 
+/**
+ * True when one of a product's titles names every searched word and each searched number right after its word ("GT 5" for "gt 5",
+ * also in "GT5 Pro"): the product searched for, as opposed to another model of the line shown after it.
+ */
+export function namesSearch(group, query) {
+  const searched = modelWords(query);
+  if (searched.length === 0) return true;
+  const numbers = searched.map((w, i) => [searched[i - 1], w]).filter(([before, w]) => before && /^\d{1,4}$/.test(w));
+  const titles = [group.rawGroupKey, group.productName, ...(group.offers ?? []).map((o) => o.title)].filter(Boolean).slice(0, TITLES_COMPARED);
+  return titles.some((title) => {
+    const own = modelWords(title);
+    const set = new Set(own);
+    return searched.every((w) => set.has(w)) && numbers.every(([before, n]) => own.some((w, i) => w === n && own[i - 1] === before));
+  });
+}
+
 /** How many stores sell a product: the tie-break after relevance, before the number of offers (one seller listing a phone six
  * times put it above the same phone at three stores, 2026-11-26). */
 export const storeCount = (group) => new Set((group.offers ?? []).map((o) => o.platform).filter(Boolean)).size;

@@ -20,7 +20,7 @@ import { attachRecommendation } from "../services/recommendation/recommendation.
 import { fetchAndRefreshListings } from "../services/scraper.service.js";
 import { resultsState } from "../services/searchFreshness.js";
 import { buildWholeWordPattern, fuzzyMatchIds, joinedWordPattern, modelNumberWords, searchWordPattern, sizedModelCode, splitCategoryWords } from "../services/searchMatching.service.js";
-import { groupRelevance, isSearchable, selectSearchListings, storeCount, worthAskingStores } from "../services/searchRanking.service.js";
+import { groupRelevance, isSearchable, namesSearch, selectSearchListings, storeCount, worthAskingStores } from "../services/searchRanking.service.js";
 import { getSuggestions } from "../services/suggestions.service.js";
 import { priceStats } from "./priceStats.js";
 import { resolveMatchStrategy } from "./matchStrategy.js";
@@ -30,6 +30,7 @@ import { resolveMatchStrategy } from "./matchStrategy.js";
 // regex-building and scraping.
 const MAX_QUERY_LENGTH = 100;
 const MAX_PASTED_TITLE = 300; // as the extension's lookup (productMatch LIMITS.title)
+const RELATED_LIMIT = 120; // other models of the searched line, shown after it
 
 /**
  * Creates a flat listing array from the recommended grouped offers.
@@ -169,6 +170,35 @@ export async function findSearchListings(trimmedQuery, searchFilter) {
     }
   }
 
+  // Other models of the same line, after the one searched for (2026-11-26: "gt 5" showed only the GT 5, and a shopper wants the GT 4,
+  // 6 and 7 too, below it). The search again without its model numbers ("huawei gt 5 pro" -> "huawei gt pro"), in the categories the
+  // model itself was found in, at most RELATED_LIMIT listings; groupRelevance ranks them below the model, and the results page puts
+  // them under "Other models". Not when the words left are only a brand ("samsung"), nor when the model was not found.
+  let relatedIds = null;
+  if (listings.length > 0 && queryTokens.some((token) => /\d/.test(token))) {
+    const looseTokens = queryTokens.map((token) => token.replace(/\s+\d{1,4}$/, "")).filter((token) => !/^\d+$/.test(token) && !sizedModelCode(token) && !/\d/.test(token));
+    const meaningful = looseTokens.filter((token) => extractBrand(token) === null);
+    const categories = [...new Set(listings.map((listing) => listing.productCategory).filter((c) => c && c !== "other" && c !== "accessory"))];
+    if (meaningful.length >= 1 && categories.length) {
+      const relatedFilter = {
+        ...searchFilter,
+        productCategory: { $in: categories },
+        $and: looseTokens.map((token) => ({ title: { $regex: searchWordPattern(token), $options: "i" } })),
+      };
+      delete relatedFilter.$or;
+      const have = new Set(listings.map((listing) => String(listing._id)));
+      const related = (await Listing.find(relatedFilter).sort({ price: 1, createdAt: -1 }))
+        .filter((listing) => !have.has(String(listing._id)))
+        .slice(0, RELATED_LIMIT);
+      if (related.length) {
+        // one whose own title names the model searched for is the model, not another one (a title the word search missed)
+        const isModel = (listing) => namesSearch({ offers: [{ title: listing.title }] }, trimmedQuery);
+        relatedIds = new Set(related.filter((listing) => !isModel(listing)).map((listing) => String(listing._id)));
+        listings = [...listings, ...related].sort((a, b) => a.price - b.price);
+      }
+    }
+  }
+
   // Joined words: a word may also be split by a space or hyphen anywhere in a title ("galaxytab a9" -> "Galaxy Tab A9").
   if (listings.length === 0 && queryTokens.length > 0) {
     const joinedFilter = { ...searchFilter, ...categoryFloor, $and: queryTokens.map((token) => ({ title: { $regex: joinedWordPattern(token), $options: "i" } })) };
@@ -228,7 +258,7 @@ export async function findSearchListings(trimmedQuery, searchFilter) {
     }
   }
 
-  return { listings, matchedBy, searchedFor };
+  return { listings, matchedBy, searchedFor, relatedIds };
 }
 
 export async function searchListings(req, res) {
@@ -353,14 +383,25 @@ export async function searchListings(req, res) {
     await attachPriceHistory(listings);
 
   // Runs in a worker thread when the result set is large (see grouping.service.js).
-  const groups =
-    await groupListings(enrichedListings, { strategy: resolveMatchStrategy(req) });
+  // The model searched for is grouped on its own, as without the other models: grouping depends on what it is given, and the
+  // related listings split an iPhone 17 and a MacBook Air M5 into more products when grouped with them (2026-11-26).
+  const isRelated = (listing) => found.relatedIds?.has(String(listing._id)) ?? false;
+  const strategy = resolveMatchStrategy(req);
+  const relatedListings = enrichedListings.filter(isRelated);
+  const groups = [
+    ...(await groupListings(enrichedListings.filter((listing) => !isRelated(listing)), { strategy })),
+    ...(relatedListings.length ? await groupListings(relatedListings, { strategy }) : []),
+  ];
 
   // "Lowest we have recorded" on a product's card: the same rule as its outlook (priceOutlook.service.js), from the history attached above.
   for (const group of groups) group.atLow = lowestBadge(group.offers);
   // The product searched for first ("HUAWEI GT 5 Pro" showed the GT 6 Pro, 7 Pro and 2 Pro above it, 2026-11-26): each product's
   // relevance to the search, the results page's default order (frontend lib/filters.js sortGroups), then the most offers.
-  for (const group of groups) group.relevance = groupRelevance(group, found.searchedFor || trimmedQuery);
+  for (const group of groups) {
+    group.relevance = groupRelevance(group, found.searchedFor || trimmedQuery);
+    // the product searched for, or another model shown after it (the results page heads those "Other models")
+    group.exact = namesSearch(group, found.searchedFor || trimmedQuery);
+  }
   groups.sort((a, b) => b.relevance - a.relevance || storeCount(b) - storeCount(a) || b.offerCount - a.offerCount);
 
   const recommendedListings =
@@ -369,8 +410,13 @@ export async function searchListings(req, res) {
       groups
     );
 
+  // The summary is the product searched for, not the other models shown after it (a GT 4's price is not the GT 5's lowest).
+  const headlineGroups = groups.some((group) => group.exact) ? groups.filter((group) => group.exact) : groups;
+  const headlineIds = new Set(headlineGroups.flatMap((group) => group.offers.map((offer) => String(offer._id))));
+  const headlineListings = recommendedListings.filter((listing) => headlineIds.has(String(listing._id)));
+
   // a price not checked for two weeks is not "the lowest price" (offerFreshness.service.js)
-  const prices = currentOffers(recommendedListings)
+  const prices = currentOffers(headlineListings)
     .map((listing) => Number(listing.price))
     .filter(
       (price) =>
@@ -381,7 +427,7 @@ export async function searchListings(req, res) {
 
   const platforms = [
     ...new Set(
-      recommendedListings
+      headlineListings
         .map((listing) => listing.platform)
         .filter(Boolean)
     ),
@@ -393,12 +439,12 @@ export async function searchListings(req, res) {
    * multi-offer group exists, which stops an unrelated one-off listing from
    * outranking a genuinely compared product.
    */
-  const comparableGroups = groups.filter(
+  const comparableGroups = headlineGroups.filter(
     (group) => (group.offerCount || 0) >= 2
   );
 
   const candidateGroups =
-    comparableGroups.length > 0 ? comparableGroups : groups;
+    comparableGroups.length > 0 ? comparableGroups : headlineGroups;
 
   const bestDeal =
     candidateGroups

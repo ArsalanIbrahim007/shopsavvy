@@ -1,7 +1,9 @@
 // The fixes of the search and grouping audit of 26 Nov 2026 (D:\FYP PROJECT\audit\AUDIT-REPORT-2026-11-26-search.md, A-02 to A-06).
 import { describe, it, expect } from "vitest";
 
-import { separateByCondition, titleCondition } from "../src/services/productGrouping.service.js";
+import { separateByCondition, titleCondition, groupListingsByProduct } from "../src/services/productGrouping.service.js";
+import { mlMatchStrategy } from "../src/services/similarityModel.service.js";
+import { namesSearch } from "../src/services/searchRanking.service.js";
 import { attributeConflict } from "../src/services/similarity.service.js";
 import { sanitizePrices, isPlaceholderPrice } from "../src/services/priceSanity.service.js";
 import { analyzePricePlausibility } from "../src/services/pricePlausibility.service.js";
@@ -84,5 +86,49 @@ describe("A-06: a case is an accessory, the case a device comes in is not", () =
     ["WiWU Airbuds Pro 2", "headphones"],
   ])("%s is %s", (title, category) => {
     expect(detectCategory(title).category).toBe(category);
+  });
+});
+
+describe("one product page and card, and other models after the one searched for (2026-11-26)", () => {
+  it("a bare model name at one store joins the one named version others sell (Airbud 550 / 550 Slide)", () => {
+    const e = (id, platform, title, price) => ({ _id: id, platform, title, price, productCategory: "headphones", inStock: true });
+    const groups = groupListingsByProduct([
+      e("p", "priceoye", "Audionic Airbud 550", 3895),
+      e("a", "audionic", "Airbud 550 Slide Earbuds", 3999),
+      e("i", "ishopping", "Audionic Airbud 550 Slide Earbuds", 3999),
+      e("d", "digimall", "Audionic Airbud 550 Slide Earbuds", 4299),
+      e("s", "shophive", "Airbud 550 Slide Earbuds", 4499),
+    ], { matchStrategy: mlMatchStrategy });
+    const holding = (id) => groups.find((g) => g.offers.some((o) => o._id === id));
+    expect(holding("p")).toBe(holding("i"));
+  });
+
+  it("but not when the bare name is sold at several stores, nor at prices more than 10% apart", () => {
+    // (whether the plain and ANC AirPods 4 join is the matcher's, audit A-11: the pass changes nothing here)
+    const e = (id, platform, title, price) => ({ _id: id, platform, title, price, productCategory: "headphones", inStock: true });
+    const parts = (listings) => groupListingsByProduct(listings, { matchStrategy: mlMatchStrategy }).map((g) => g.offers.map((o) => o._id).sort().join("+")).sort();
+    const without = (listings) => {
+      process.env.SHOPSAVVY_NO_BARE_NAME = "1";
+      try { return parts(listings); } finally { delete process.env.SHOPSAVVY_NO_BARE_NAME; }
+    };
+    const severalStores = [
+      e("p1", "priceoye", "Huawei Watch Fit 4", 33000), e("p2", "mega", "Huawei Watch Fit 4", 33500),
+      e("a1", "ishopping", "Huawei Watch Fit 4 Pro", 34000), e("a2", "digimall", "Huawei Watch Fit 4 Pro", 34500),
+    ];
+    expect(parts(severalStores)).toEqual(without(severalStores));
+    const priced = [
+      e("p", "priceoye", "Audionic Airbud 550", 2999),
+      e("a", "audionic", "Airbud 550 Slide Earbuds", 3999), e("i", "ishopping", "Audionic Airbud 550 Slide Earbuds", 3999),
+    ];
+    expect(parts(priced)).toEqual(without(priced));
+  });
+
+  it("tells the model searched for from other models of its line", () => {
+    const g = (name) => ({ rawGroupKey: name, productName: name, offers: [{ title: name }] });
+    expect(namesSearch(g("HUAWEI Watch GT 5 Pro 46mm"), "gt 5")).toBe(true);
+    expect(namesSearch(g("Huawei Watch GT5 46mm"), "huawei gt 5")).toBe(true);
+    expect(namesSearch(g("Huawei Watch GT 6 46mm"), "huawei gt 5")).toBe(false);
+    expect(namesSearch(g("HUAWEI Watch GT 2 Pro 5 ATM"), "gt 5")).toBe(false);
+    expect(namesSearch(g("Anything"), "")).toBe(true);
   });
 });
