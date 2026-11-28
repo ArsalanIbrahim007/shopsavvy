@@ -346,3 +346,75 @@ describe("the browser extension's invitation (2026-11-27)", () => {
     expect(promptSnoozed(now + 15 * 86400000, storage)).toBe(false);
   });
 });
+
+describe("gliding to a home-page section (2026-11-29)", () => {
+  // a page whose deals section starts 1,500 px down, with a 96 px header margin; animation frames are run by hand
+  const page = ({ reduce = false, exists = true, startAt = 0 } = {}) => {
+    const frames = [];
+    const listeners = {};
+    const win = {
+      scrollY: startAt,
+      matchMedia: () => ({ matches: reduce }),
+      getComputedStyle: () => ({ scrollMarginTop: "96px" }),
+      requestAnimationFrame: (fn) => frames.push(fn),
+      scrollTo: vi.fn((x, y) => { win.scrollY = y; }),
+      addEventListener: (name, fn) => { listeners[name] = fn; },
+      removeEventListener: (name) => { delete listeners[name]; },
+    };
+    const target = { scrollIntoView: vi.fn(), getBoundingClientRect: () => ({ top: 1500 - win.scrollY }) };
+    const doc = { getElementById: (id) => (exists && id === "deals" ? target : null) };
+    const run = (until) => { for (let t = 0; frames.length; t += 16) { frames.shift()(t); if (until && t > until) break; } };
+    return { win, doc, target, run, listeners };
+  };
+
+  it("glides down to the section's top below the header, easing in and out", async () => {
+    const { scrollToSection } = await import("../src/lib/scrollToSection.js");
+    const { win, doc, run } = page();
+    expect(scrollToSection("deals", { doc, win })).toBe(true);
+    run();
+    const ys = win.scrollTo.mock.calls.map(([, y]) => y);
+    expect(ys.at(-1)).toBe(1404); // 1,500 - 96
+    expect(ys.length).toBeGreaterThan(10); // many small steps, not one jump
+    expect(ys[1] - ys[0]).toBeLessThan(ys[Math.floor(ys.length / 2)] - ys[Math.floor(ys.length / 2) - 1]); // slow start
+  });
+
+  it("glides up when the reader is below the section", async () => {
+    const { scrollToSection } = await import("../src/lib/scrollToSection.js");
+    const { win, doc, run } = page({ startAt: 4000 });
+    scrollToSection("deals", { doc, win });
+    run();
+    expect(win.scrollY).toBe(1404);
+  });
+
+  it("stops when the reader scrolls themselves", async () => {
+    const { scrollToSection } = await import("../src/lib/scrollToSection.js");
+    const { win, doc, run, listeners } = page();
+    scrollToSection("deals", { doc, win });
+    run(100);
+    listeners.wheel();
+    const where = win.scrollY;
+    run();
+    expect(win.scrollY).toBe(where);
+    expect(where).toBeLessThan(1404);
+  });
+
+  it("jumps instead for someone who asked for less motion", async () => {
+    const { scrollToSection } = await import("../src/lib/scrollToSection.js");
+    const { win, doc, target } = page({ reduce: true });
+    scrollToSection("deals", { doc, win });
+    expect(target.scrollIntoView).toHaveBeenCalledWith({ behavior: "auto", block: "start" });
+  });
+
+  it("says when the page has no such section, so the link opens its page instead", async () => {
+    const { scrollToSection } = await import("../src/lib/scrollToSection.js");
+    const { win, doc } = page({ exists: false });
+    expect(scrollToSection("deals", { doc, win })).toBe(false);
+  });
+
+  it("takes longer for a longer way, within bounds", async () => {
+    const { glideDuration, GLIDE_MIN_MS, GLIDE_MAX_MS } = await import("../src/lib/scrollToSection.js");
+    expect(glideDuration(100)).toBeGreaterThanOrEqual(GLIDE_MIN_MS);
+    expect(glideDuration(1000)).toBeGreaterThan(glideDuration(100));
+    expect(glideDuration(9000)).toBe(GLIDE_MAX_MS);
+  });
+});

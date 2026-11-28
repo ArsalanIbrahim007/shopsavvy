@@ -15,6 +15,7 @@ import ThemeToggle from "./ThemeToggle.jsx";
 import CompareTray from "./CompareTray.jsx";
 import ExtensionPrompt from "./ExtensionPrompt.jsx";
 import MobileTabBar from "./MobileTabBar.jsx";
+import { scrollToSection } from "../lib/scrollToSection.js";
 import "./Layout.css";
 
 // The stores read every night (the final report's 21). Paklap (its bot check refuses our crawler) and W11Stop (dropped 19 Nov) are
@@ -28,7 +29,7 @@ const STORES = [
 // The header's shortcuts: the verified deals on the home page, price drops and the comparison. Every category is in the Categories
 // menu (CategoryMenu.jsx). "How it works" moved to the footer (2026-11-21): beside the search box it wrapped onto a second line.
 const NAV = [
-  { label: "Deals", to: "/#deals", hash: "#deals" },
+  { label: "Deals", to: "/deals", path: "/deals", homeSection: "deals" }, // a page of its own; on the home page, its section (2026-11-29)
   { label: "Price drops", to: "/drops", path: "/drops" },
   { label: "Compare", to: "/compare", path: "/compare" },
 ];
@@ -52,8 +53,12 @@ function MainNav({ pathname, category, hash }) {
       <CategoryMenu current={category} />
       {NAV.map((item) => {
         const current = item.path ? pathname === item.path : pathname === "/" && hash === item.hash;
+        // On the home page, "Deals" glides to its Verified deals section; elsewhere it opens the Deals page (2026-11-29).
+        const onClick = item.homeSection
+          ? (event) => { if (pathname === "/" && scrollToSection(item.homeSection)) event.preventDefault(); }
+          : undefined;
         return (
-          <Link key={item.label} to={item.to} aria-current={current ? "page" : undefined}>
+          <Link key={item.label} to={item.to} onClick={onClick} aria-current={current ? "page" : undefined}>
             {item.label}
           </Link>
         );

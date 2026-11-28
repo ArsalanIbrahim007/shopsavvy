@@ -40,9 +40,9 @@
   --accent-hover: #f5a623;
   --on-accent: #111827;
   --accent-ink: #8f5300;
-  /* the amber for a headline word: as bright as large text allows on the light page (3.15:1; large text needs 3:1). The home
-     page's "real" in --accent-ink looked brown beside the amber button and logo (2026-11-29). */
-  --accent-headline: #cc7700;
+  /* the amber for a headline word: the search button's and the logo's own amber, as asked (2026-11-29: "real" in a darker amber
+     did not match the button). Light on the light page (about 1.7:1), so only for very large headline text, never body text. */
+  --accent-headline: #feae2c;
   --accent-soft: #fdf4e3;
 
   /* verdicts: meaning, not decoration */

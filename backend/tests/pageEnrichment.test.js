@@ -312,3 +312,12 @@ describe("enrichFromPages", () => {
     expect(enrichPta).toBe(enrichFromPages);
   });
 });
+
+describe("Apple's 2025-26 colour names (2026-11-29)", () => {
+  it("keeps Burgundy, Glacier and Sage, which were dropped, and a name that says a plain colour as that colour", async () => {
+    const { colourOptionsFromList } = await import("../src/services/colourPage.service.js");
+    const names = colourOptionsFromList([{ name: "Black" }, { name: "Silver" }, { name: "Burgundy" }, { name: "Glacier" }, { name: "Sage" }, { name: "Glacier Blue" }])
+      .map((c) => c.colour);
+    expect(names).toEqual(["Black", "Silver", "Burgundy", "Glacier", "Sage", "Blue"]);
+  });
+});

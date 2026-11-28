@@ -9,7 +9,10 @@
 // 10,000 titles holds any one grouping (the largest category has about 3,300 listings) and keeps all the caches of one process
 // near 40 MB: grouping six categories (11,664 listings) with no limit kept 47 MB, and the API runs the main thread and two
 // grouping workers, each with its own caches, on hosts that may have 512 MB in all.
-export const MEMO_LIMIT = 10000;
+// 60,000 since 2026-11-29: the categories grew (8,991 air conditioners), and with each title's cleaned-up forms (no seller code,
+// no colour tail) the caches passed 10,000 entries, emptied themselves and read the same titles again and again: grouping the air
+// conditioners took 193-269 s and the deals feed timed out. The PC that runs the API has 32 GB.
+export const MEMO_LIMIT = 60000;
 
 /** fn(text), remembered per text. Extra arguments are not part of the key, so only wrap functions of the text alone. */
 export function memoize(fn, limit = MEMO_LIMIT) {

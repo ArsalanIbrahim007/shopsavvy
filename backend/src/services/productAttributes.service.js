@@ -16,6 +16,10 @@ export const COLOURS = [
   "lavender", "sky blue", "black", "white", "silver", "gold", "grey", "gray",
   "blue", "green", "red", "pink", "purple", "yellow", "orange",
   "teal", "cream", "beige", "bronze", "copper", "navy", "mint",
+  // Apple's 2025-26 colour names that name no colour above (2026-11-29): the iPhone 18 Pro Max's Burgundy and Glacier were dropped
+  // from every store's colour list, which keeps only the colours named here, so its colour picker showed only Black and Silver. Last,
+  // so a name that also says a plain colour keeps it ("Glacier Blue" is Blue, "Sage Green" Green, as "Cosmic Orange" is Orange).
+  "burgundy", "glacier", "sage",
 ];
 
 // A capacity followed by "RAM" or "memory" is RAM, never storage (see extractStorage in normalizeTitle.service.js): "Redmi Note 15

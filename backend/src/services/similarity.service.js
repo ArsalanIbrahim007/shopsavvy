@@ -245,6 +245,9 @@ const GLUED_LINE_IN_TEXT = new RegExp(`\\b(${[...LINE_WORDS].join("|")})(\\d{1,2
 // A generation written as an ordinal after the model's name is its number: AlfaMall's "Apple Airpods Pro 2nd gen" and "Apple Airpods
 // Pro 3" sat in one product (audit A-03, 2026-11-26). Not a processor's ("Laptop 13th Gen Core i5"), and only after a word of letters.
 const ORDINAL_GENERATION = /\b([a-z]{2,})\s+(\d{1,2})(?:st|nd|rd|th)\s+gen(?:eration)?\b(?!\s*(?:intel|core|i[3579]|ryzen|amd|processor))/gi;
+// A title as attributeConflict compares it: no seller tag, a glued line word spaced, an ordinal generation as its number.
+// Remembered per title (2026-11-29): it was read again for both titles of every comparison.
+const comparedText = memoize((raw) => withoutSellerTag(raw).replace(GLUED_LINE_IN_TEXT, "$1 $2").replace(ORDINAL_GENERATION, "$1 $2"));
 
 function lineWordsUncached(text = "") {
   return new Set(tokenize(modelTokens(String(text).replace(NOT_A_LINE, " ")))
@@ -369,8 +372,8 @@ export function sameSet(a, b) {
 export function attributeConflict(rawA, rawB, { ignoreUnstatedStorage = false } = {}) {
   // "GT6", "Note9" read as "GT 6", "Note 9", so the line word and its number are compared like a spaced title's (GLUED_LINE); and
   // "Pro 2nd gen" as "Pro 2" (ORDINAL_GENERATION).
-  const textA = withoutSellerTag(rawA).replace(GLUED_LINE_IN_TEXT, "$1 $2").replace(ORDINAL_GENERATION, "$1 $2");
-  const textB = withoutSellerTag(rawB).replace(GLUED_LINE_IN_TEXT, "$1 $2").replace(ORDINAL_GENERATION, "$1 $2");
+  const textA = comparedText(rawA);
+  const textB = comparedText(rawB);
   // The same maker's code with the same suffix on both, however written ("HMW20DGS" / "HMW-20DGS", "HWM 80CS" / "HWM80-CS"): the
   // weaker number readings below give way to it. They split one product on "0% Markup", "2 Taps", tank sizes, a seller's
   // "(SNS36)" or "INSTALLMENT-UE002" (2026-11-26: the HMW-20DGS microwave, HAF-50MB fryer, WD-1051 HC dispenser and HWM 80-CS
@@ -697,7 +700,8 @@ export function codeNumberConflict(titleA, titleB) {
 // A combo or bundle is not the product alone: "Westpoint WF-142 Ceramic Cooker + WF-5350 Rice Cooker 11.11 Combo Deal" sat with the
 // WF-5350 (2026-11-26).
 const COMBO = /\b(combo|bundle)\b|\b[a-z]{2,5}[\s-]?\d{2,5}[a-z0-9-]*\s*\+\s*[a-z ]{0,20}?[a-z]{2,5}[\s-]?\d{2,5}/i;
-export const comboConflict = (titleA, titleB) => COMBO.test(String(titleA)) !== COMBO.test(String(titleB));
+const isCombo = memoize((title) => COMBO.test(title));
+export const comboConflict = (titleA, titleB) => isCombo(String(titleA)) !== isCombo(String(titleB));
 
 /** The letter prefixes a title writes before a code ("pdin" in "PDIN70-100", "hwm" in "HWM 80-1217E"). */
 function codePrefixes(title, key) {

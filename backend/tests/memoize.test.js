@@ -33,7 +33,7 @@ describe("memoize", () => {
     id("d"); // empties, then keeps "d"
     id("a"); // recomputed
     expect(calls).toBe(5);
-    expect(MEMO_LIMIT).toBe(10000);
+    expect(MEMO_LIMIT).toBe(60000); // 10,000 until 2026-11-29: the caches emptied themselves while grouping 8,991 air conditioners
   });
 });
 

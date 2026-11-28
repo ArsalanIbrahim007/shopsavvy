@@ -18,6 +18,7 @@ import { showableExamples } from "../lib/caught.js";
 import { pickDeals, pickMostCompared } from "../lib/homePicks.js";
 import { formatNumber, timeAgo } from "../lib/format.js";
 import { clearRecentSearches, getRecentSearches } from "../lib/recentSearches.js";
+import { scrollToSection } from "../lib/scrollToSection.js";
 import CaughtCard from "../components/CaughtCard.jsx";
 import CategoryIcon from "../components/CategoryIcon.jsx";
 import HowWeCheck from "../components/HowWeCheck.jsx";
@@ -144,9 +145,10 @@ function Deals() {
 
   const { hash } = useLocation();
   const loaded = deals.status === "success";
-  // The header's "Deals" link is /#deals; the section only exists once the data has arrived, so scroll then.
+  // An old link to /#deals (shared before the header's "Deals" became the /deals page, 2026-11-29) still lands here: the section only
+  // exists once the data has arrived, so scroll then.
   useEffect(() => {
-    if (loaded && hash === "#deals") document.getElementById("deals")?.scrollIntoView();
+    if (loaded && hash === "#deals") scrollToSection("deals");
   }, [loaded, hash]);
 
   if (deals.status === "error") return null; // the section is a bonus; the rest of the page does not depend on it
@@ -155,12 +157,15 @@ function Deals() {
   return (
     <section id="deals" className="home-section container" aria-labelledby="deals-heading" aria-busy={deals.status === "loading"}>
       {/* the heading with one quiet line under it (2026-11-21: the right-aligned note floated far from the heading) */}
-      <div className="home-section__title">
-        <h2 id="deals-heading">Verified deals</h2>
-        <p className="muted home-section__sub">
-          Real savings, checked against each product's price history
-          {deals.status === "success" && deals.data.generatedAt && <span className="home-section__fresh"> · updated {timeAgo(deals.data.generatedAt)}</span>}
-        </p>
+      <div className="home-section__head">
+        <div className="home-section__title">
+          <h2 id="deals-heading">Verified deals</h2>
+          <p className="muted home-section__sub">
+            Real savings, checked against each product's price history
+            {deals.status === "success" && deals.data.generatedAt && <span className="home-section__fresh"> · updated {timeAgo(deals.data.generatedAt)}</span>}
+          </p>
+        </div>
+        <Link to="/deals">See all deals</Link>
       </div>
       <div className="card-grid">
         {deals.status === "loading"

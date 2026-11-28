@@ -6,6 +6,8 @@
 
 import { Link, useLocation } from "react-router-dom";
 
+import { scrollToSection } from "../lib/scrollToSection.js";
+
 import { useCompare } from "../lib/compare.js";
 
 const ICONS = {
@@ -18,9 +20,9 @@ const ICONS = {
 
 const TABS = [
   { id: "home", label: "Home", to: "/", isCurrent: (pathname, hash) => pathname === "/" && !hash },
-  { id: "categories", label: "Categories", to: "/#categories", // a category page is a category; a search is not (2026-11-21: the tab lit up on every search result)
+  { id: "categories", label: "Categories", to: "/#categories", homeSection: "categories", // a category page is a category; a search is not (2026-11-21: the tab lit up on every search result)
     isCurrent: (pathname, hash, search) => (pathname === "/" && hash === "#categories") || (pathname === "/results" && new URLSearchParams(search).has("category")) },
-  { id: "deals", label: "Deals", to: "/#deals", isCurrent: (pathname, hash) => pathname === "/" && hash === "#deals" },
+  { id: "deals", label: "Deals", to: "/deals", homeSection: "deals", isCurrent: (pathname) => pathname === "/deals" },
   { id: "drops", label: "Drops", to: "/drops", isCurrent: (pathname) => pathname === "/drops" },
   { id: "compare", label: "Compare", to: "/compare", isCurrent: (pathname) => pathname === "/compare" },
 ];
@@ -33,7 +35,9 @@ export default function MobileTabBar() {
       {TABS.map((tab) => {
         const current = tab.isCurrent(pathname, hash, search);
         return (
-          <Link key={tab.id} to={tab.to} className="tab-bar__tab" aria-current={current ? "page" : undefined}>
+          <Link key={tab.id} to={tab.to} className="tab-bar__tab" aria-current={current ? "page" : undefined}
+            // on the home page, a tab for one of its sections glides there (lib/scrollToSection.js, 2026-11-29)
+            onClick={tab.homeSection ? (event) => { if (pathname === "/" && scrollToSection(tab.homeSection)) event.preventDefault(); } : undefined}>
             <span className="tab-bar__icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 {ICONS[tab.id]}

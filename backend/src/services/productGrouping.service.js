@@ -373,6 +373,11 @@ function findMatchingGroup(listing, rawTitle, listingStorage, candidates, matchS
 
     if (capacityConflict) continue;
     if (listingStorage === null && group.storage !== null && belowStatedVariant(listing, group)) continue;
+    // Another maker than a member's can never join (conflictsWithMember below), so it is skipped before the costly strategy: the air
+    // conditioners' titles share "inverter" and "1.5 ton" across makers, and each new product was classified against every one of
+    // their groups (2026-11-29). The same answer, sooner.
+    const firstTitle = group.offers[0]?.title || group.offers[0]?.normalizedTitle || "";
+    if (firstTitle && makerConflict(rawTitle, firstTitle)) continue;
 
     /*
      * The match strategy only compares against the group's representative

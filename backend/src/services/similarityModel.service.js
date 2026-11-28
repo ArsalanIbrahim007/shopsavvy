@@ -17,6 +17,7 @@ import { attributeConflict, tokenize, sameSet, sharedApplianceCode, sharedPrefix
 import { modelTokens, extractStorage, extractPtaStatus, extractModelCodes, extractScreenInches } from "./normalizeTitle.service.js";
 import { COLOURS, extractBrand, extractRamGb } from "./productAttributes.service.js";
 import { detectCategory } from "../scrapers/productCategory.js";
+import { memoize } from "./memoize.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // The live model. SHOPSAVVY_MATCH_MODEL names another artifact in src/ml/ to try a
@@ -385,9 +386,9 @@ function sameButTheBrand(titleA, tokensA, titleB, tokensB) {
   return extra.length === 1 && extractBrand(extra[0]) === brand && [...shorter].every((token) => longer.has(token));
 }
 
-function fillerFreeTokens(title) {
-  return new Set(tokenize(modelTokens(title)).filter((t) => !FILLER_WORDS.has(t)));
-}
+// Remembered per title (2026-11-29): read again for every member of every group a listing is compared with, it was 40% of the time
+// grouping the air conditioners took. The set is shared between callers, which only read it.
+const fillerFreeTokens = memoize((title) => new Set(tokenize(modelTokens(title)).filter((t) => !FILLER_WORDS.has(t))));
 
 /**
  * Same signature as productGrouping.service.js's ruleMatchStrategy, so it
@@ -414,13 +415,18 @@ const COLOUR_TAIL = new RegExp(`\\s*[-–]\\s*(?:${COLOUR_WORDS})(?:\\s*(?:&|and
 // "– Obsidian Black"), no digits (2026-11-24: AlfaMall's Trance Airbuds 815 in those colours stayed apart).
 const COLOUR_NAME_TAIL = /\s*[-–]\s*([a-z]+(?:\s+[a-z]+){0,2})\s*$/i;
 const KNOWN_COLOUR = new RegExp(`\\b(?:${COLOUR_WORDS})\\b`, "i");
-export function withoutColourTail(title) {
+function withoutColourTailUncached(title) {
   const text = String(title || "").replace(COLOUR_TAIL, "").trim();
   return text.replace(COLOUR_NAME_TAIL, (whole, name) => (KNOWN_COLOUR.test(name) ? "" : whole)).trim();
 }
+// (this, withoutCode and singular are read for both titles of every comparison: remembered per title, 2026-11-29)
+export const withoutColourTail = memoize(withoutColourTailUncached);
+
+// A title without its seller code ("... - ISPK-0608").
+const withoutCode = memoize((title) => String(title || "").replace(STORE_CODE, " ").replace(/[\s|_([–-]+$/, "").replace(/\s+/g, " ").trim());
 
 // "Airbuds" and "Airbud", "Earbuds" and "Earbud": a plural s is dropped from both titles when they are compared again.
-const singular = (title) => title.replace(/\b([a-z]{3,}[^s\W])s\b/gi, "$1");
+const singular = memoize((title) => title.replace(/\b([a-z]{3,}[^s\W])s\b/gi, "$1"));
 
 export function mlMatchStrategy(rawTitle, group, listing) {
   const groupPrice = group.lowestPrice != null && group.highestPrice != null
@@ -448,7 +454,6 @@ export function mlMatchStrategy(rawTitle, group, listing) {
   // their own beside it on the results page. Colours of one product belong in one group (the colour picker chooses among them).
   // Only the code and the colour: the rest of the store's wording ("Installments (Pak Mobiles)") can go with a different price,
   // and is left to the price-checked last pass (mergeStoreWordedGroups).
-  const withoutCode = (title) => String(title || "").replace(STORE_CODE, " ").replace(/[\s|_([–-]+$/, "").replace(/\s+/g, " ").trim();
   const ownCode = withoutCode(rawTitle);
   const groupCode = withoutCode(group.rawGroupKey);
   const plainOwn = withoutColourTail(ownCode);

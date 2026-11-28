@@ -65,3 +65,6 @@
 .category-icon .ci-fill { fill: currentColor; stroke: none; }
 .tile:hover .tile__icon { color: var(--ink); transform: scale(1.06); }
 
+
+/* sections the header and tab bar glide to (lib/scrollToSection.js): they stop just below the sticky header, not under it */
+#deals, #categories { scroll-margin-top: 96px; }

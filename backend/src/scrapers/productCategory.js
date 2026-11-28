@@ -747,6 +747,11 @@ const GENERIC_AIRPODS = (text) => /\bairpods?\b/.test(text) && !/\bapple\b/.test
 // Replicas sold under the real product's name ("Apple AirPods Pro 2 Anc Hengxuan Wireless…" at Rs 3,300, 17 AlfaMall listings, the
 // first product for "AirPods Pro 2"; "Airpods Pro 2 With Slicon Pouch TWS Wireless Earbuds"): not the brand's product, so not in its
 // category; "other" keeps them findable by their own words but out of device results and best deals.
+// A title naming two phone models joined by "and", "&" or "+" is not one product: AlfaMall's "Apple iPhone 18 Pro max 256 and 17 Pro
+// 256 GB Special Delivery (AW)" sat among the iPhone 18 Pro Max 256GB offers (without a picture), DigiMall's "iPhone 13 Pro & 13 Pro
+// Max PTA Approved (Like New)" (2026-11-29; 4 of 11,722 phone, tablet and watch titles). Filed as "other", like a replica: findable
+// by its words, out of device results and deals.
+const TWO_MODELS = /\b\d{1,2}\s*(?:pro\s*max|pro|plus|max|mini|air|ultra|e)?\b[^&+|]{0,30}?\s(?:and|&|\+)\s+(?:apple\s+)?(?:iphone|galaxy|pixel)?\s*\d{1,2}\s*(?:pro\s*max|pro|plus|max|mini|air|ultra|fe|e)\b/i;
 const REPLICA = /\b(hengxuan|master copy|first copy|1st copy|high copy|copy master|replica|clone)\b|\bairpods?\b.*\btws\b|\btws\b.*\bairpods?\b/;
 
 // A free gift is not the product: "HP EliteBook 840 G3 Laptop … (Like New) Free Airpods & Bag" was filed as headphones and shown
@@ -760,7 +765,7 @@ function detectCategory(title) {
     // A store's test listing is no product ("Testing COD - Dawlance - Smart LED TV Canvas Series 55 Inch" at PKR 300,000, AlfaMall,
     // in a TV product; Fable's final check, 2026-11-12).
     if (/^(test|testing|dummy)\b/.test(text)) return { category: "other", confidence: 0 };
-    if (REPLICA.test(text) || GENERIC_AIRPODS(text)) return { category: "other", confidence: 0 };
+    if (REPLICA.test(text) || GENERIC_AIRPODS(text) || TWO_MODELS.test(text)) return { category: "other", confidence: 0 };
     if (MADE_FOR.test(text) || ACCESSORY_THING.test(text) || ACCESSORY_MAKER.test(text) || MAKER_CASE.test(text)
         || (ENDS_IN_CASE.test(text) && !PART_OF_DEVICE.test(text))
         || (DESCRIBED_CASE.test(text) && !/\bcharging case\b/.test(text))) return { category: "accessory", confidence: 1 };
