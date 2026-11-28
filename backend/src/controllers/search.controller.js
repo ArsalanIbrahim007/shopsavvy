@@ -532,6 +532,8 @@ export async function searchListings(req, res) {
         bestDeal?.recommendation?.action || null,
     },
     groups,
-    data: recommendedListings,
+    // The same offers as one flat list, on request only (?flat=true, 2026-11-28): the website and the extension read `groups`, and the
+    // flat copy was 40% of every answer (2.4 MB of 5.8 MB for "dawlance refrigerator"), sent through the tunnel for nothing.
+    ...(req.query.flat === "true" && { data: recommendedListings }),
   });
 }

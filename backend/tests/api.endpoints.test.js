@@ -105,8 +105,11 @@ describe("GET /api/listings/search", () => {
     expect(body).toMatchObject({ success: true, query: "galaxy a17", count: 3, groupCount: 1 });
     expect(body.groups[0]).toMatchObject({ offerCount: 3 });
     expect(body.summary).toMatchObject({ platforms: 3, lowestPrice: 60000, highestPrice: 63000 });
-    expect(body.data).toHaveLength(3);
-    expect(body.data.every((offer) => offer.recommendation)).toBe(true);
+    expect(body.data).toBeUndefined(); // the flat list only on request (2026-11-28): the site reads groups
+    expect(body.groups[0].offers.every((offer) => offer.recommendation)).toBe(true);
+    const flat = await json("/api/listings/search?q=galaxy%20a17&flat=true");
+    expect(flat.body.data).toHaveLength(3);
+    expect(flat.body.data.every((offer) => offer.recommendation)).toBe(true);
   });
 
   it("leaves a price that has not been checked for two weeks out of the lowest and highest price", async () => {
@@ -131,7 +134,7 @@ describe("GET /api/listings/search", () => {
 
     const { res, body } = await json("/api/listings/search?q=nothingmatchesthis");
     expect(res.status).toBe(200);
-    expect(body).toMatchObject({ success: true, count: 0, groupCount: 0, groups: [], data: [] });
+    expect(body).toMatchObject({ success: true, count: 0, groupCount: 0, groups: [] });
     expect(body.summary).toMatchObject({ lowestPrice: null, platforms: 0 });
   });
 
@@ -259,7 +262,7 @@ describe("GET /api/listings/search", () => {
     const accessory = row(1, "priceoye", 2000, "ESR Lenovo Legion Go Case", { productCategory: "accessory" });
     const device = row(2, "mega", 300000, "Lenovo Legion Go S Handheld", { productCategory: "other" });
     const find = vi.spyOn(Listing, "find").mockImplementation((filter) => chain(filter.$and ? [device] : [accessory]));
-    const { body } = await json("/api/listings/search?q=lenovo%20legion%20go");
+    const { body } = await json("/api/listings/search?q=lenovo%20legion%20go&flat=true");
     expect(body.data.map((o) => o.title).sort()).toEqual([accessory.title, device.title].sort());
     expect(body.matchedBy).toBe("exact");
     const words = find.mock.calls.map(([f]) => f).find((f) => f.$and);

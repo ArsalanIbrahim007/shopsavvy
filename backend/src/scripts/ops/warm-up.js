@@ -17,6 +17,14 @@ import { DEAL_CATEGORIES } from "../../services/dealsFeed.service.js";
 const HEALTH_WAIT_MS = 2 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 6 * 60 * 1000; // one category's full grouping may take minutes on a cold, busy PC
 
+/** Searches a demonstration or a first visitor is likely to make, one or two per category. */
+export const WARM_SEARCHES = [
+  "samsung galaxy a17", "iphone 17 pro max", "redmi note 15", "infinix hot 60",
+  "dell latitude", "hp elitebook", "macbook air m5",
+  "samsung 55 inch", "tcl led", "haier 1.5 ton inverter", "gree 1.5 ton", "dawlance refrigerator", "haier washing machine",
+  "airpods pro", "samsung galaxy watch", "ipad",
+];
+
 /** The pages to open once, in the order a demonstration needs them. */
 export function warmUpPaths(categories = DEAL_CATEGORIES) {
   return [
@@ -27,6 +35,8 @@ export function warmUpPaths(categories = DEAL_CATEGORIES) {
     ...categories.map((category) => `/api/listings/catalog?category=${category}&offset=60&limit=1`),
     "/api/integrity",
     "/api/listings/drops?limit=48",
+    // popular searches across the categories (2026-11-28): a search's first answer took 1-1.4 s, a repeat 0.25 s
+    ...WARM_SEARCHES.map((q) => `/api/listings/search?q=${encodeURIComponent(q)}`),
   ];
 }
 

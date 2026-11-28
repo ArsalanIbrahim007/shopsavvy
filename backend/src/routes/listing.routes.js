@@ -488,6 +488,11 @@ router.get("/suggest", suggestLimiter, suggestListings);
  *           type: string
  *         description: Restrict results to a specific product category instead of the one auto-detected from the query.
  *       - in: query
+ *         name: flat
+ *         schema:
+ *           type: boolean
+ *         description: Also return every offer as one flat list (data). Off by default since 2026-11-28 (the same offers are in groups).
+ *       - in: query
  *         name: storage
  *         schema:
  *           type: integer
@@ -542,6 +547,7 @@ router.get("/suggest", suggestLimiter, suggestListings);
  *                   description: Aggregate stats across all returned offers (lowest/average price, best deal, platforms compared).
  *                 data:
  *                   type: array
+ *                   description: Every offer as one flat list, only with flat=true (the same offers as in groups).
  *                   items:
  *                     $ref: '#/components/schemas/Listing'
  *       400:
