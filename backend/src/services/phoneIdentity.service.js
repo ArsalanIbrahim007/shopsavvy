@@ -167,5 +167,75 @@ export function phoneModelOnlyKey(title) {
   return `${id.brand}|${id.model}`;
 }
 
+/**
+ * A laptop other than a MacBook as one product (2026-11-28): maker, line and model ("latitude 5400", "elitebook 840 g8", "thinkpad
+ * e14 g7", "thinkbook 16 g8"), processor (tier and generation: "Core i5 8th Gen" and "i5-8350U" are both i5-g8; Core Ultra 7 255H
+ * is ultra7-s2; Ryzen 5 7533HS ryzen5-g7), RAM and storage. AlfaMall's sellers list one used laptop many times, each ending in a code
+ * ("… by Tech House502", "… Tech House504"), and the matcher read the codes as models: 21 "Dell Latitude 3490 Core i5 8th Gen 8GB
+ * 256GB" pages were 20 products. Null when any part is missing.
+ */
+function laptopIdentityUncached(title = "") {
+  const t = ` ${String(title).toLowerCase().replace(/[|,()–—[\]{}"”″]/g, " ").replace(/(\d)\s*-\s*(gb|tb)\b/g, "$1$2").replace(/\s+/g, " ")} `;
+  if (/\bmacbook\b/.test(t)) return null; // macbookKey
+  const maker = t.match(/\b(dell|hp|lenovo|asus|acer|msi|microsoft|samsung|huawei|infinix|toshiba|fujitsu|gigabyte|razer|xiaomi|honor|tecno)\b/)?.[1]
+    ?? (/\b(latitude|inspiron|vostro|xps|precision|alienware)\b/.test(t) ? "dell"
+      : /\b(elitebook|probook|zbook|pavilion|envy|spectre|victus|omen)\b/.test(t) ? "hp"
+        : /\b(thinkpad|ideapad|thinkbook|legion|yoga|loq)\b/.test(t) ? "lenovo" : null);
+  if (!maker) return null;
+  const gen = (s) => (s ? ` g${s}` : "");
+  let model = null;
+  let m;
+  if ((m = t.match(/\b(latitude|inspiron|vostro|precision|xps)\s+(?:1[2-7]\s+)?(e?\d{4})\b/))) model = `${m[1]} ${m[2]}`;
+  else if ((m = t.match(/\b(elitebook|probook|zbook)\s+(?:x360\s+)?(\d{3,4}[a-z]?)\s*(?:g(\d{1,2}))?\b/))) model = `${m[1]} ${m[2]}${gen(m[3])}`;
+  else if ((m = t.match(/\bthinkpad\s+(x1\s+(?:carbon|yoga)|[telpxw]\d{2,3}[a-z]?s?)\b(?:\s+(?:gen|g)\s*(\d{1,2}))?/))) model = `thinkpad ${m[1]}${gen(m[2])}`;
+  else if ((m = t.match(/\bthinkbook\s+(1[3-6])\b(?:\s+(?:gen\s*|g)(\d{1,2})\b)?/))) model = `thinkbook ${m[1]}${gen(m[2])}`;
+  // ("IdeaPad Slim 3 15IRH10": the 15 is its screen)
+  else if ((m = t.match(/\bideapad\s+(slim\s+|flex\s+|gaming\s+)?([1-7])i?\b(?:\s+(1[3-6])(?:[a-z]{2,4}\d{0,2})?\b)?/))) model = `ideapad ${m[1] ?? ""}${m[2]}${m[3] ? ` ${m[3]}` : ""}`;
+  else if ((m = t.match(/\blegion\s+(pro\s+|slim\s+)?([5-7])i?\b(?:\s+(?:gen|g)\s*(\d{1,2}))?/))) model = `legion ${m[1] ?? ""}${m[2]}${gen(m[3])}`;
+  else if ((m = t.match(/\bloq\s+(1[56])\b/))) model = `loq ${m[1]}`;
+  else if ((m = t.match(/\byoga\s+(slim\s+|pro\s+)?(\d{1,2})i?\b/))) model = `yoga ${m[1] ?? ""}${m[2]}`;
+  else if ((m = t.match(/\b(vivobook|zenbook|expertbook|tuf\s+gaming|rog\s+(?:strix|zephyrus|flow))\b[^0-9|]{0,24}?\b([a-z]{1,2}\d{3,4}[a-z]{0,3})\b/))) model = `${m[1]} ${m[2]}`;
+  else if ((m = t.match(/\b(aspire|nitro|swift|predator|travelmate|extensa)\s+(?:lite\s+|go\s+)?([a-z]{0,3}\d{1,3}(?:-\d{2})?)\b/))) model = `${m[1]} ${m[2]}`;
+  else if ((m = t.match(/\b(surface\s+(?:laptop|pro)(?:\s+go)?)\s+(\d{1,2})\b/))) model = `${m[1]} ${m[2]}`;
+  if (!model) return null;
+  model = model.replace(/\s+/g, " ").trim();
+
+  // processor: tier and generation, from the exact chip when it is given
+  let cpu = null;
+  let chip = null;
+  if ((m = t.match(/\b(?:core\s*)?(i[3579])\s*-?\s*(\d{4,5})([a-z]{0,2})\b/))) {
+    chip = `${m[1]}-${m[2]}${m[3]}`;
+    cpu = `${m[1]}-g${m[2].length === 5 ? m[2].slice(0, 2) : m[2][0]}`;
+  } else if ((m = t.match(/\bcore\s*ultra\s*([3579])\s*-?\s*(\d)(\d{2}[a-z]?)\b/))) {
+    chip = `ultra${m[1]}-${m[2]}${m[3]}`;
+    cpu = `ultra${m[1]}-s${m[2]}`;
+  } else if ((m = t.match(/\bryzen\s*([3579])\s*(?:pro\s*)?(\d)(\d{3}[a-z]{0,2})\b/))) {
+    chip = `ryzen${m[1]}-${m[2]}${m[3]}`;
+    cpu = `ryzen${m[1]}-g${m[2]}`;
+  } else {
+    const tier = t.match(/\b(?:core\s*-?\s*)?i\s?([3579])\b|\bci([3579])\b|\bcore\s*-?\s*([3579])\b(?!\s*(?:gb|tb|core))/);
+    const generation = t.match(/\b(\d{1,2})(?:st|nd|rd|th)\s*gen/);
+    if (tier && generation && !/\bultra\b/.test(t)) cpu = `i${tier[1] ?? tier[2] ?? tier[3]}-g${generation[1]}`;
+  }
+
+  // memory: "8GB RAM 256GB SSD", "8/256", "(8GB-512GB)", "8-GB 256-GB SSD", "250GB" HDD sizes as 256
+  const short = t.match(/\b(4|8|12|16|24|32|64)\s*\/\s*(128|256|512|1024|1\s*tb|2\s*tb)\b/);
+  const ramStated = t.match(/\b(\d{1,2})\s*gb\s*(?:ddr\d\w*\s*)?(?:ram|memory)\b|\bram\s*(\d{1,2})\s*gb\b/);
+  const sizes = [...t.matchAll(/\b(\d{1,4})\s*(gb|tb)\b/g)].map((x) => Number(x[1]) * (x[2] === "tb" ? 1024 : 1));
+  const ram = ramStated ? Number(ramStated[1] ?? ramStated[2]) : short ? Number(short[1]) : sizes.find((n) => n >= 2 && n <= 64) ?? null;
+  let storage = short ? (/tb/.test(short[2]) ? Number(short[2].match(/\d/)[0]) * 1024 : Number(short[2]))
+    : sizes.filter((n) => n >= 120 && n !== ram).sort((a, b) => b - a)[0] ?? null;
+  storage = { 250: 256, 500: 512, 1000: 1024, 2000: 2048 }[storage] ?? storage;
+  return { maker, model, cpu, chip, ram, storage };
+}
+export const laptopIdentity = memoize(laptopIdentityUncached);
+
+/** maker|model|processor|ram|storage, or null when the title does not say all of them. */
+export function laptopKey(title) {
+  const id = laptopIdentity(title);
+  if (!id || !id.cpu || !id.ram || !id.storage) return null;
+  return `${id.maker}|${id.model}|${id.cpu}|${id.ram}|${id.storage}`;
+}
+
 /** The key without its PTA wording: maker, model, RAM, storage. A product splits only on these (PTA has its own rules). */
 export const phoneModelKey = (title) => phoneKey(title)?.replace(/\|(nonpta)?$/, "") ?? null;

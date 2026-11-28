@@ -4,7 +4,7 @@ import { calculateDealScores } from "../ranking/dealScore.js";
 import { SHARED_CODE_LENGTH, SHARED_CODE_PRICE_GAP, brandOf, prefixConflict, sameBrand, wearableModelKey, withoutStoreWording } from "./similarityModel.service.js";
 import { headlineOffers, isOutOfDate } from "./offerFreshness.service.js";
 import { COLOURS, extractBrand, extractNetworkGeneration, extractPtaStatus, networkFamilyKey } from "./productAttributes.service.js";
-import { macbookKey, phoneIdentity, phoneKey, phoneModelKey, phoneModelOnlyKey, phoneNetwork, phonePartialKey } from "./phoneIdentity.service.js";
+import { laptopKey, macbookKey, phoneIdentity, phoneKey, phoneModelKey, phoneModelOnlyKey, phoneNetwork, phonePartialKey } from "./phoneIdentity.service.js";
 
 /**
  * How far a listing's price may sit from a group's prices before it is treated
@@ -961,6 +961,85 @@ function mergeSameMacbooks(groups) {
   return groups.filter((group) => !absorbed.has(group));
 }
 
+/**
+ * Laptops other than MacBooks as one product per maker, model, processor (tier and generation), RAM and storage (phoneIdentity
+ * laptopKey), 2026-11-28. AlfaMall's sellers list one used laptop many times, each title ending in a seller's code ("… by Tech
+ * House502", "… Tech House504"), and the matcher read the codes as models: 21 "Dell Latitude 3490 Core i5 8th Gen 8GB 256GB" pages
+ * were 20 products. A product holding two laptops (a Latitude 5480 i7 among i5s, a ThinkPad E16 Gen 4 with a Gen 3) first gives the
+ * minority a product of its own; then products of one laptop and one condition (used with used, new with new) join when their
+ * nearest prices are within LAPTOP_PRICE_GAP. Off with SHOPSAVVY_NO_LAPTOP_KEY.
+ */
+export const LAPTOP_PRICE_GAP = 0.25;
+function mergeSameLaptops(groups) {
+  if (process.env.SHOPSAVVY_NO_LAPTOP_KEY) return groups;
+  const isLaptop = (group) => group.offers.some((o) => o.productCategory === "laptop");
+  const keyOfOffer = (o) => laptopKey(titleOfOffer(o));
+  const used = (group) => group.offers.some((o) => PRE_OWNED_CONDITIONS.has(o.condition) || titleCondition(titleOfOffer(o)));
+  const split = [];
+  for (const group of groups) {
+    split.push(group);
+    if (!isLaptop(group)) continue;
+    const counts = new Map();
+    for (const o of group.offers) { const k = keyOfOffer(o); if (k) counts.set(k, (counts.get(k) ?? 0) + 1); }
+    if (counts.size < 2) continue;
+    const kept = [...counts].sort((a, b) => b[1] - a[1])[0][0];
+    const moved = new Map();
+    group.offers = group.offers.filter((o) => {
+      const k = keyOfOffer(o);
+      if (!k || k === kept) return true;
+      if (!moved.has(k)) moved.set(k, []);
+      moved.get(k).push(o);
+      return false;
+    });
+    recount(group);
+    if (!group.offers.some((o) => titleOfOffer(o) === group.productName)) {
+      const own = titleOfOffer(group.offers[0]) || group.productName;
+      Object.assign(group, { productName: own, rawGroupKey: own, normalizedGroupKey: normalizeTitle(own) });
+    }
+    for (const offers of moved.values()) {
+      const piece = newGroup(offers[0], titleOfOffer(offers[0]), extractStorage(titleOfOffer(offers[0])));
+      for (const o of offers) addOffer(piece, o);
+      split.push(piece);
+    }
+  }
+  groups = split;
+  const byKey = new Map();
+  for (const group of groups) {
+    if (!isLaptop(group)) continue;
+    const keys = new Set(group.offers.map(keyOfOffer).filter(Boolean));
+    if (keys.size !== 1) continue;
+    const key = `${[...keys][0]}|${used(group) ? "used" : "new"}`;
+    if (!byKey.has(key)) byKey.set(key, []);
+    byKey.get(key).push(group);
+  }
+  const range = (group) => {
+    const named = group.offers.filter(keyOfOffer);
+    const prices = (named.length ? named : group.offers).map((o) => o.price);
+    return [Math.min(...prices), Math.max(...prices)];
+  };
+  const nearestGap = (a, b) => {
+    const [[loA, hiA], [loB, hiB]] = [range(a), range(b)];
+    if (loA <= hiB && loB <= hiA) return 0;
+    const [low, high] = hiA < loB ? [hiA, loB] : [hiB, loA];
+    return (high - low) / high;
+  };
+  const absorbed = new Set();
+  for (const list of byKey.values()) {
+    if (list.length < 2) continue;
+    list.sort((a, b) => b.offers.length - a.offers.length);
+    for (const target of list) {
+      if (absorbed.has(target)) continue;
+      for (const other of list) {
+        if (other === target || absorbed.has(other)) continue;
+        if (nearestGap(target, other) > LAPTOP_PRICE_GAP) continue;
+        for (const listing of other.offers) addOffer(target, listing);
+        absorbed.add(other);
+      }
+    }
+  }
+  return groups.filter((group) => !absorbed.has(group));
+}
+
 export const STORAGELESS_PRICE_GAP = 0.1;
 export const MODEL_ONLY_PRICE_GAP = 0.06;
 export const MODEL_ONLY_MARGIN = 0.03;
@@ -1276,6 +1355,7 @@ export function groupListingsByProduct(listings = [], { matchStrategy = ruleMatc
   if (matchStrategy.samePlainTitles) groups = mergeStoreWordedGroups(groups, matchStrategy.samePlainTitles, networkFamilies);
   if (sameModel) groups = takeOutMisfitModelOnly(placeStoragelessPhones(mergeSamePhones(splitMixedPhones(groups))));
   if (sameModel) groups = mergeSameMacbooks(groups);
+  if (sameModel) groups = mergeSameLaptops(groups);
   // before the non-PTA check: a used unit's lower price is not a sign that it is non-PTA
   groups = separateByCondition(groups);
   groups = separateLikelyNonPta(groups, matchStrategy, networkFamilies);

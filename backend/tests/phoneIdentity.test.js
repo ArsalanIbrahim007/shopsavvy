@@ -207,6 +207,37 @@ describe("a listing that names the model only (AlfaMall's sellers, 2026-11-27)",
   });
 });
 
+describe("a laptop is one product per model, processor, RAM and storage (2026-11-28)", () => {
+  const laptop = (id, platform, title, price, condition = "new") => ({ _id: id, platform, title, price, productCategory: "laptop", inStock: true, condition });
+
+  it("reads model, processor tier and generation, RAM and storage however a store writes them", async () => {
+    const { laptopKey } = await import("../src/services/phoneIdentity.service.js");
+    expect(laptopKey("Lenovo ThinkPad T480 | Intel 8th Gen Core i5-8350U, 8GB RAM, 256GB SSD, 14 inch Display")).toBe("lenovo|thinkpad t480|i5-g8|8|256");
+    expect(laptopKey("Lenovo ThinkPad T480 Core i5 8th Generation 8GB RAM 256GB SSD")).toBe("lenovo|thinkpad t480|i5-g8|8|256");
+    expect(laptopKey("HP EliteBook 840 G3 - 6th Gen Core i5 6200u Processor 8-GB 256-GB SSD")).toBe("hp|elitebook 840 g3|i5-g6|8|256");
+    expect(laptopKey("Lenovo ThinkBook 16 G8 IAL 15.6\" Core Ultra 7 255H 16GB DDR5 512GB SSD Laptop Grey (21SK0030GQ)")).toBe("lenovo|thinkbook 16 g8|ultra7-s2|16|512");
+    expect(laptopKey("Lenovo ThinkPad E16 Gen 4 Panther Lake Intel Core Ultra 5 325 Series 3 16GB RAM 512GB SSD")).toBe("lenovo|thinkpad e16 g4|ultra5-s3|16|512");
+    expect(laptopKey("Lenovo IdeaPad Slim 3 15IRH10 Raptor Lake i5-13420H 8GB RAM 512GB SSD Laptop")).toBe("lenovo|ideapad slim 3 15|i5-g13|8|512");
+    expect(laptopKey("Dell Latitude 15 3540 15.6 Inches 13th Gen Core i7 DOS (8GB - 512GB)")).toBe("dell|latitude 3540|i7-g13|8|512");
+    expect(laptopKey("Apple MacBook Air 13 M5 16GB 512GB")).toBeNull(); // MacBooks have their own key
+  });
+
+  it("joins one used laptop's copies whatever seller code ends the title, and keeps another processor apart", () => {
+    const title = (code) => `Dell Latitude 3490 Core i5 8th Gen 14" Inches Display 8GB RAM 256GB SSD 100% authentic like new laptop with 02 months official warrenty by Tech House${code}`;
+    const groups = groupListingsByProduct([
+      laptop("a", "alfamall", title(502), 51999, "used"),
+      laptop("b", "alfamall", title(503), 51999, "used"),
+      laptop("c", "alfamall", title(504), 54999, "used"),
+      laptop("d", "alfamall", "Dell Latitude 3490 Core i7 8th Gen 14\" 8GB RAM 256GB SSD like new by Tech House505", 62999, "used"),
+      laptop("n", "priceoye", "Dell Latitude 3490 Core i5 8th Gen 8GB RAM 256GB SSD", 75000, "new"),
+    ], { matchStrategy: mlMatchStrategy });
+    expect(holding(groups, "b")).toBe(holding(groups, "a"));
+    expect(holding(groups, "c")).toBe(holding(groups, "a"));
+    expect(holding(groups, "d")).not.toBe(holding(groups, "a")); // i7
+    expect(holding(groups, "n")).not.toBe(holding(groups, "a")); // new, not used
+  });
+});
+
 describe("a MacBook is one product whatever its colour (2026-11-27)", () => {
   it("reads line, size, chip, RAM and storage however a store writes them", async () => {
     const { macbookKey } = await import("../src/services/phoneIdentity.service.js");
