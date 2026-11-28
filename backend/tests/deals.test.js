@@ -282,6 +282,18 @@ describe("getTopDeals cache", () => {
     expect(typeof all.generatedAt).toBe("string");
   });
 
+  it("keeps the other categories' deals when one category fails (2026-11-29: an AC time-out emptied the feed)", async () => {
+    find.mockImplementation((filter) => ({
+      lean: async () => {
+        if (filter.productCategory === "air_conditioner") throw new Error("grouping job timed out");
+        return filter.productCategory === "smartphone" ? listings : [];
+      },
+    }));
+    const all = await getTopDeals({ limit: 5 });
+    expect(all.deals).toHaveLength(1);
+    expect(typeof all.generatedAt).toBe("string");
+  });
+
   it("only asks the database for fresh, visible listings of that category", async () => {
     await getTopDeals({ category: "smartphone" });
     const filter = find.mock.calls[0][0];

@@ -40,6 +40,9 @@
   --accent-hover: #f5a623;
   --on-accent: #111827;
   --accent-ink: #8f5300;
+  /* the amber for a headline word: as bright as large text allows on the light page (3.15:1; large text needs 3:1). The home
+     page's "real" in --accent-ink looked brown beside the amber button and logo (2026-11-29). */
+  --accent-headline: #cc7700;
   --accent-soft: #fdf4e3;
 
   /* verdicts: meaning, not decoration */
@@ -119,6 +122,7 @@
     --on-brand: #0b0d14;
     --on-brand-soft: #1f2d4d;
     --accent-ink: #feae2c;
+    --accent-headline: #feae2c;
     --accent-soft: #2a2010;
     --good: #5ed39c;
     --good-soft: #0f2a1e;
@@ -157,6 +161,7 @@
   --on-brand: #0b0d14;
   --on-brand-soft: #1f2d4d;
   --accent-ink: #feae2c;
+  --accent-headline: #feae2c;
   --accent-soft: #2a2010;
   --good: #5ed39c;
   --good-soft: #0f2a1e;

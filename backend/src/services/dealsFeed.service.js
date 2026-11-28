@@ -28,7 +28,14 @@ export const DEAL_CATEGORIES = [
 export const isDealCategory = (value) => DEAL_CATEGORIES.includes(value);
 
 const CACHE_TTL_MS = 10 * 60 * 1000;
-const WORKER_TIMEOUT_MS = 90 * 1000;
+// The deals are computed in the background (warmDealsCache, a refresh past ten minutes), so a long computation harms nobody. 90 s
+// was too short for the big appliance categories on the team's PC (measured 2026-11-29 beside the running API: TVs 67-97 s,
+// refrigerators 85 s, air conditioners 193 s with 8,991 listings); the time-out made the whole feed fail and the home page's
+// "Verified deals" (and the header's Deals link to it) disappear.
+const WORKER_TIMEOUT_MS = 6 * 60 * 1000;
+// A visitor never waits longer than this for a category computed for the first time (no cached or saved list yet): the answer goes
+// out with the categories that are ready, and the rest join the feed when their computation ends.
+export const FIRST_WAIT_MS = 3000;
 
 const cache = new Map(); // category -> { expires, generatedAt, deals }
 const inFlight = new Map(); // category -> Promise
@@ -92,7 +99,12 @@ async function categoryDeals(category, now) {
     refresh(category, now).catch((error) => console.warn(`[deals] Could not refresh ${category}: ${error.message}`));
     return entry;
   }
-  return refresh(category, now);
+  // The first computation: waited for up to FIRST_WAIT_MS, then left to finish in the background (null: not ready yet).
+  const computation = refresh(category, now);
+  computation.catch((error) => console.warn(`[deals] Could not compute ${category}: ${error.message}`));
+  let timer;
+  const notYet = new Promise((resolve) => { timer = setTimeout(() => resolve(null), FIRST_WAIT_MS); timer.unref?.(); });
+  return Promise.race([computation, notYet]).finally(() => clearTimeout(timer));
 }
 
 /**
@@ -103,7 +115,10 @@ async function categoryDeals(category, now) {
  */
 export async function getTopDeals({ category, limit = 12, now = Date.now() } = {}) {
   const categories = category ? [category] : DEAL_CATEGORIES;
-  const entries = await Promise.all(categories.map((c) => categoryDeals(c, now)));
+  // One category that fails or is not ready yet leaves the others' deals in the answer (2026-11-29: an air-conditioner computation
+  // that timed out made the whole feed answer 500).
+  const settled = await Promise.allSettled(categories.map((c) => categoryDeals(c, now)));
+  const entries = settled.filter((s) => s.status === "fulfilled" && s.value).map((s) => s.value);
 
   const deals = entries
     .flatMap((entry) => entry.deals)
